@@ -30,9 +30,9 @@ export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({
   const isPrivacyMode = data?.settings?.privacyMode ?? false;
 
   return (
-    <PrivacyModeContext.Provider value={{ isPrivacyMode, togglePrivacyMode }}>
+    <PrivacyModeContext value={{ isPrivacyMode, togglePrivacyMode }}>
       {children}
-    </PrivacyModeContext.Provider>
+    </PrivacyModeContext>
   );
 };
 

@@ -95,7 +95,7 @@ export function transform<T extends Record<string, any>>(
 }
 
 export function transformAmounts<T extends Record<string, any>>(data: T) {
-  let returnValue: {
+  const returnValue: {
     [t: string]: any;
   } = { ...data };
 
@@ -122,7 +122,7 @@ export function getDisplayAmount(amount: number) {
   return (amount / 100).toFixed(2);
 }
 
-let dollar = new Intl.NumberFormat("en-US", {
+const dollar = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
@@ -166,7 +166,7 @@ export const getDateAdjustedForTimezone = (dateInput: Date | string): Date => {
 
 export const getDateAdjustedForTimezoneAsString = (
   dateInput: Date | string,
-): String => {
+): string => {
   if (typeof dateInput === "string") {
     // Split the date string to get year, month, and day parts
     const parts = dateInput.split("-").map((part) => parseInt(part, 10));

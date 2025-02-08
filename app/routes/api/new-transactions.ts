@@ -113,7 +113,7 @@ export const APIRoute = createAPIFileRoute("/api/new-transactions")({
 
     try {
       const allValues = [];
-      for (let transaction of parseResult.data) {
+      for (const transaction of parseResult.data) {
         allValues.push({
           ...transaction,
           displayVendor: transaction.matchVendor ? await matchDisplayVendor(user, transaction.vendor) : transaction.vendor,

@@ -118,7 +118,7 @@ export const updateUserTransactionMutation = () => {
           return {
             ...old,
             data: old.data?.map((transaction) => {
-              let updated = {
+              const updated = {
                 ...transaction,
                 ...variables,
               };

@@ -82,7 +82,7 @@ function RouteComponent() {
   }
 
   const tableControls = [
-    <TooltipProvider>
+    <TooltipProvider key="tooltip">
       <Tooltip>
         <TooltipTrigger asChild>
           <CreateTransactionForm />
@@ -92,7 +92,7 @@ function RouteComponent() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>,
-    <div className="float-right ml-2">
+    <div className="float-right ml-2" key="privacyMode">
       <Button
         variant="ghost"
         onClick={() => {

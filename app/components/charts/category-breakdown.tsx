@@ -19,7 +19,7 @@ import { Label, Pie, PieChart } from "recharts";
 import { usePrivacyMode } from "../toggle-privacy-mode";
 import { ChartSkeleton } from "./skeletons";
 
-let chartConfig: ChartConfig = {} satisfies ChartConfig;
+const chartConfig: ChartConfig = {} satisfies ChartConfig;
 
 export function CategoryBreakdownChart(props: { to?: Date; from?: Date }) {
   const { data, isLoading } = useQuery(

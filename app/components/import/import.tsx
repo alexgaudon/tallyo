@@ -15,9 +15,9 @@ interface ImportTransaction {
 }
 
 const parseQFX = (data: string): ImportTransaction[] => {
-  let statements = data.split("<STMTTRN>");
+  const statements = data.split("<STMTTRN>");
 
-  let transactions: string[] = [];
+  const transactions: string[] = [];
 
   const transactionData: ImportTransaction[] = [];
 
@@ -30,13 +30,13 @@ const parseQFX = (data: string): ImportTransaction[] => {
     }
   }
 
-  for (let line of transactions) {
-    let parts = line.split("<").filter((x) => x.trim() !== "");
-    let temp: any = {};
-    for (let part of parts) {
-      let split = part.split(">");
+  for (const line of transactions) {
+    const parts = line.split("<").filter((x) => x.trim() !== "");
+    const temp: any = {};
+    for (const part of parts) {
+      const split = part.split(">");
       if (split[0] === "DTPOSTED") {
-        let date = split[1].substring(0, 8).split("");
+        const date = split[1].substring(0, 8).split("");
         date.splice(4, 0, "-");
         date.splice(7, 0, "-");
         temp[split[0]] = date.join("");
@@ -182,7 +182,7 @@ export default function QFXFileUploader() {
           <Button
             onClick={async () => {
               const results = [];
-              for (let transaction of qfxData) {
+              for (const transaction of qfxData) {
                 results.push(
                   await mutateAsync({
                     amount: Number(transaction.TRNAMT) * 100,

@@ -58,7 +58,7 @@ const $getUserTransactions = createServerFn({ method: "GET" })
       conditions.push(eq(transaction.reviewed, false));
     }
 
-    let orderByClause = [desc(transaction.date), desc(transaction.id)];
+    const orderByClause = [desc(transaction.date), desc(transaction.id)];
 
     const query = db
       .select(transactionSelectFields)

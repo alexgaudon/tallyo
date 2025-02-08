@@ -126,7 +126,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* <ReactQueryDevtools buttonPosition="bottom-left" /> */}
         <TanStackQueryDevTools buttonPosition="bottom-left" />
         <Scripts />
-        {/* eslint-disable-next-line @eslint-react/dom/no-dangerously-set-innerhtml */}
+        { }
         <ScriptOnce>
           {`document.documentElement.classList.toggle(
                       'dark',
