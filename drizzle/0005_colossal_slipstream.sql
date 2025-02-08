@@ -1,0 +1,1 @@
+ALTER TABLE `transaction` ADD `vendor` text DEFAULT vendor_raw NOT NULL;

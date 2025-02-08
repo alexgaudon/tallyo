@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1733867571446,
+      "tag": "0000_simple_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1733867576218,
+      "tag": "0001_fearless_morbius",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1733867672891,
+      "tag": "0002_purple_miek",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1734112940266,
+      "tag": "0003_silent_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1737591950246,
+      "tag": "0004_sparkling_bloodaxe",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1737592038170,
+      "tag": "0005_colossal_slipstream",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1737592157229,
+      "tag": "0006_wonderful_forgotten_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1737671925752,
+      "tag": "0007_burly_tusk",
+      "breakpoints": true
+    }
+  ]
+}

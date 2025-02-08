@@ -1,0 +1,1 @@
+CREATE INDEX `idx_transaction_user_category_date` ON `transaction` (`user_id`,`category_id`,`strftime('%Y-%m'`,` "date")`);
