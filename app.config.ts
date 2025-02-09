@@ -14,10 +14,10 @@ const tanstackApp = defineConfig({
     ssr: {
       vite: {
         ssr: {
-          noExternal: ['react-dropzone']
-        }
-      }
-    }
+          noExternal: ["react-dropzone"],
+        },
+      },
+    },
   },
   server: {
     preset: "node-server",

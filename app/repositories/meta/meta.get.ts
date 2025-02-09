@@ -38,7 +38,10 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
     })
     .from(transaction)
     .where(
-      and(eq(transaction.userId, auth.user.id), eq(transaction.reviewed, false))
+      and(
+        eq(transaction.userId, auth.user.id),
+        eq(transaction.reviewed, false),
+      ),
     );
 
   const topCategories = await db
@@ -51,8 +54,8 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
     .where(
       and(
         eq(transaction.userId, auth.user.id),
-        eq(category.hideFromInsights, false)
-      )
+        eq(category.hideFromInsights, false),
+      ),
     )
     .groupBy(category.id, category.name, category.color)
     .orderBy(desc(sql<number>`COUNT(${transaction.id})`))

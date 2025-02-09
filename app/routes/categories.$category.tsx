@@ -26,7 +26,7 @@ export const Route = createFileRoute("/categories/$category")({
         pageSize: PAGE_SIZE,
         page: 1,
         unreviewed: false,
-      })
+      }),
     );
   },
 });
@@ -41,7 +41,7 @@ function RouteComponent() {
       pageSize: PAGE_SIZE,
       page: search.page,
       unreviewed: false,
-    })
+    }),
   );
 
   const navigate = useNavigate();

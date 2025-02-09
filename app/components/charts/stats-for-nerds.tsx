@@ -11,7 +11,7 @@ export function StatsForNerds(props: { from: Date; to: Date }) {
     ChartsRespository.getStatsDataQuery({
       from: props.from,
       to: props.to,
-    })
+    }),
   );
 
   const { isPrivacyMode } = usePrivacyMode();

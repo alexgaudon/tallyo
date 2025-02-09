@@ -28,8 +28,8 @@ const requestSchema = z.array(
     vendor: z.string(),
     amount: z.number(),
     externalId: z.string(),
-    matchVendor: z.boolean().optional()
-  })
+    matchVendor: z.boolean().optional(),
+  }),
 );
 
 const getUnauthorized = () => {
@@ -37,7 +37,7 @@ const getUnauthorized = () => {
     { ok: false, message: "Unauthorized" },
     {
       status: 401,
-    }
+    },
   );
 };
 
@@ -49,8 +49,8 @@ const getCategoryForVendor = async (vendor: string, userId: string) => {
       and(
         eq(transaction.userId, userId),
         eq(transaction.vendor, vendor),
-        eq(transaction.reviewed, true)
-      )
+        eq(transaction.reviewed, true),
+      ),
     );
 
   let categoryId;
@@ -65,7 +65,7 @@ const getCategoryForVendor = async (vendor: string, userId: string) => {
       })
       .from(transaction)
       .where(
-        and(eq(transaction.userId, userId), eq(transaction.reviewed, true))
+        and(eq(transaction.userId, userId), eq(transaction.reviewed, true)),
       );
 
     const fuse = new Fuse(allReviewedTransactions, {
@@ -116,7 +116,9 @@ export const APIRoute = createAPIFileRoute("/api/new-transactions")({
       for (const transaction of parseResult.data) {
         allValues.push({
           ...transaction,
-          displayVendor: transaction.matchVendor ? await matchDisplayVendor(user, transaction.vendor) : transaction.vendor,
+          displayVendor: transaction.matchVendor
+            ? await matchDisplayVendor(user, transaction.vendor)
+            : transaction.vendor,
           date: formatDateISO8601(new Date(transaction.date)),
           id: uuidv7(),
           userId: user,

@@ -10,7 +10,7 @@ function createKey<
       Object.entries(subkeys).map(([key, path]) => [
         key,
         [base, ...(Array.isArray(path) ? path : [path])] as string[],
-      ])
+      ]),
     ) as U),
   };
 }

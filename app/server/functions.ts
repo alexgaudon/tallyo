@@ -11,7 +11,7 @@ export const getAuth = createServerFn({ method: "GET" }).handler(
     const event = getEvent();
 
     return event.context.auth;
-  }
+  },
 );
 
 export const $getEarliestTransactionDate = createServerFn({

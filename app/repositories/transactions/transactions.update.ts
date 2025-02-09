@@ -30,8 +30,8 @@ const $updateUserTransaction = createServerFn({
       .where(
         and(
           eq(transaction.id, data.id),
-          eq(transaction.userId, context.auth.user.id)
-        )
+          eq(transaction.userId, context.auth.user.id),
+        ),
       );
 
     if (existingTransaction.length === 0) {
@@ -65,8 +65,8 @@ const $updateUserTransaction = createServerFn({
         .where(
           and(
             eq(transaction.userId, context.auth.user.id),
-            eq(transaction.id, data.id)
-          )
+            eq(transaction.id, data.id),
+          ),
         )
         .execute();
 
@@ -99,7 +99,7 @@ export const updateUserTransactionMutation = () => {
 
       const updatedCategory = variables.categoryId
         ? (await $getUserCategories()).find(
-            (x) => x.id === variables.categoryId
+            (x) => x.id === variables.categoryId,
           )
         : undefined;
 

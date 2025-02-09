@@ -16,8 +16,8 @@ async function fuzzyMatchDisplayVendor(userId: string, vendor: string) {
     .where(
       and(
         eq(transaction.userId, userId),
-        like(sql`UPPER(${transaction.vendor})`, `${prefix.toUpperCase()}%`)
-      )
+        like(sql`UPPER(${transaction.vendor})`, `${prefix.toUpperCase()}%`),
+      ),
     );
 
   if (similarVendors.length === 0) {

@@ -41,7 +41,7 @@ export const Route = createFileRoute("/categories")({
       CategoryRepository.getAllUserCategoriesQuery(),
     ];
     const match = ctx.matches.find(
-      (match) => match.fullPath === "/categories/$category"
+      (match) => match.fullPath === "/categories/$category",
     );
 
     if (match) {
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/categories")({
           pageSize: 10,
           page: match.search.page,
           unreviewed: false,
-        })
+        }),
       );
     }
 
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/categories")({
 
 function RouteComponent() {
   const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const { mutateAsync: deleteCategory } =

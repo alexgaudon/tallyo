@@ -26,7 +26,7 @@ const $createUserTransaction = createServerFn({
 
     const displayVendor = await matchDisplayVendor(
       context.auth.user.id,
-      data.vendor
+      data.vendor,
     );
 
     const res = await db.insert(transaction).values({

@@ -26,7 +26,7 @@ export function CategoryBreakdownChart(props: { to?: Date; from?: Date }) {
     ChartsRespository.getCategoryBreakdownQuery({
       to: props.to,
       from: props.from,
-    })
+    }),
   );
 
   if (isLoading) {

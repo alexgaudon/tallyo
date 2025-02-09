@@ -27,7 +27,7 @@ export function TopVendors(props: { from: Date; to: Date }) {
     ChartsRespository.getTopVendorsDataQuery({
       from: props.from,
       to: props.to,
-    })
+    }),
   );
 
   if (isLoading) {

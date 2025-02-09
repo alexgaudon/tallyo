@@ -27,10 +27,10 @@ import { ChartSkeleton } from "./skeletons";
 
 export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
   const { data, isLoading } = useQuery(
-    ChartsRespository.getMonthlyExpenseDataQuery()
+    ChartsRespository.getMonthlyExpenseDataQuery(),
   );
   const { data: categories, isLoading: isCategoriesLoading } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const [months, setMonths] = useState(props.numberOfMonths ?? 2);
@@ -48,7 +48,7 @@ export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
   for (let i = 0; i < months; i++) {
     const year = subMonths(new Date(), i).getFullYear();
     validPeriods.push(
-      `${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`
+      `${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`,
     );
   }
 
@@ -58,14 +58,14 @@ export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
         month,
         data?.find((x) => x.category === category && x.period === month)
           ?.amount ?? 0,
-      ])
+      ]),
     );
 
   const totalIncomeAmounts = Object.fromEntries(
-    validPeriods.map((month) => [month, 0])
+    validPeriods.map((month) => [month, 0]),
   );
   const totalExpenseAmounts = Object.fromEntries(
-    validPeriods.map((month) => [month, 0])
+    validPeriods.map((month) => [month, 0]),
   );
 
   const tableRows = (

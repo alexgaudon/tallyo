@@ -27,7 +27,7 @@ export const authToken = sqliteTable(
       .references(() => user.id),
     token: text("token").notNull(),
   },
-  (table) => [unique().on(table.token)]
+  (table) => [unique().on(table.token)],
 );
 
 export const category = sqliteTable(
@@ -58,9 +58,9 @@ export const category = sqliteTable(
       table.id,
       table.hideFromInsights,
       table.name,
-      table.treatAsIncome
+      table.treatAsIncome,
     ),
-  ]
+  ],
 );
 
 export type NewTransaction = InferInsertModel<typeof transaction>;
@@ -100,12 +100,12 @@ export const transaction = sqliteTable(
     index("idx_transaction_user_category_date").on(
       table.userId,
       table.categoryId,
-      table.date
+      table.date,
     ),
     index("idx_transaction_category_date").on(
       table.userId,
       table.categoryId,
-      table.date
+      table.date,
     ),
-  ]
+  ],
 );

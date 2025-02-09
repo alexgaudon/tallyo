@@ -23,10 +23,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     beforeLoad: async (ctx) => {
       const [auth, meta] = await Promise.all([
         await ctx.context.queryClient.ensureQueryData(
-          AuthRepository.getUserAuthQuery()
+          AuthRepository.getUserAuthQuery(),
         ),
         await ctx.context.queryClient.ensureQueryData(
-          MetaRepository.getUserMeta()
+          MetaRepository.getUserMeta(),
         ),
       ]);
       return { auth, meta };
@@ -66,7 +66,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         head: [],
       };
     },
-  }
+  },
 );
 
 function RootComponent() {
@@ -86,7 +86,7 @@ const TanStackRouterDevtools =
           default: res.TanStackRouterDevtools,
           // For Embedded Mode
           // default: res.TanStackRouterDevtoolsPanel
-        }))
+        })),
       );
 
 const TanStackQueryDevTools =
@@ -98,7 +98,7 @@ const TanStackQueryDevTools =
           default: res.ReactQueryDevtools,
           // For Embedded Mode
           // default: res.TanStackRouterDevtoolsPanel
-        }))
+        })),
       );
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -126,7 +126,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* <ReactQueryDevtools buttonPosition="bottom-left" /> */}
         <TanStackQueryDevTools buttonPosition="bottom-left" />
         <Scripts />
-        { }
+        {}
         <ScriptOnce>
           {`document.documentElement.classList.toggle(
                       'dark',

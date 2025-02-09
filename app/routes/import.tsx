@@ -14,7 +14,7 @@ export const Route = createFileRoute("/import")({
       });
     }
     await context.queryClient.ensureQueryData(
-      CategoryRepository.getAllUserCategoriesQuery()
+      CategoryRepository.getAllUserCategoriesQuery(),
     );
   },
 });

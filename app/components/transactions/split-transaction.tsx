@@ -89,7 +89,7 @@ export function SplitTransaction({
   };
 
   const realAmount = transform(
-    Math.round(Number(Number(newAmount).toFixed(2)) * 100)
+    Math.round(Number(Number(newAmount).toFixed(2)) * 100),
   );
 
   return (

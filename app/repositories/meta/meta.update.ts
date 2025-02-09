@@ -73,7 +73,7 @@ export const updateUserMetaMutation = () => {
               privacyMode: updatedSettings,
             },
           };
-        }
+        },
       );
 
       return { previousData };

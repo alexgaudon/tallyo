@@ -8,7 +8,6 @@ Tallyo is an attempt to measure personal finance, and provide you with the insig
 
 <img width="1800" alt="image" src="https://github.com/user-attachments/assets/2fbb3396-a218-4827-921e-1042e01687b9">
 
-
 # Features
 
 - Transaction Logging
