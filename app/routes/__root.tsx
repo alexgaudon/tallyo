@@ -2,7 +2,6 @@ import { type QueryClient } from "@tanstack/react-query";
 import {
   Outlet,
   ScriptOnce,
-  ScrollRestoration,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { Meta, Scripts } from "@tanstack/start";
@@ -23,10 +22,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     beforeLoad: async (ctx) => {
       const [auth, meta] = await Promise.all([
         await ctx.context.queryClient.ensureQueryData(
-          AuthRepository.getUserAuthQuery(),
+          AuthRepository.getUserAuthQuery()
         ),
         await ctx.context.queryClient.ensureQueryData(
-          MetaRepository.getUserMeta(),
+          MetaRepository.getUserMeta()
         ),
       ]);
       return { auth, meta };
@@ -63,7 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         head: [],
       };
     },
-  },
+  }
 );
 
 function RootComponent() {
@@ -82,7 +81,7 @@ const TanStackRouterDevtools = import.meta.env.PROD
         default: res.TanStackRouterDevtools,
         // For Embedded Mode
         // default: res.TanStackRouterDevtoolsPanel
-      })),
+      }))
     );
 
 const TanStackQueryDevTools = import.meta.env.PROD
@@ -93,7 +92,7 @@ const TanStackQueryDevTools = import.meta.env.PROD
         default: res.ReactQueryDevtools,
         // For Embedded Mode
         // default: res.TanStackRouterDevtoolsPanel
-      })),
+      }))
     );
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -116,7 +115,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <Navbar />
           <PrivacyModeProvider>{children}</PrivacyModeProvider>
         </ThemeProvider>
-        <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />
         {/* <ReactQueryDevtools buttonPosition="bottom-left" /> */}
         <TanStackQueryDevTools buttonPosition="bottom-left" />

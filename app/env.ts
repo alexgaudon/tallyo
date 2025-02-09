@@ -18,8 +18,12 @@ const prodSchema = baseSchema.extend({
   DISCORD_CLIENT_ID: z.string(),
   DISCORD_CLIENT_SECRET: z.string(),
   DISCORD_REDIRECT_URL: z.string(),
+  VITE_PUBLIC_BETTER_AUTH_URL: z.string(),
 });
 
 const schema = process.env.NODE_ENV === "production" ? prodSchema : baseSchema;
 
-export const env = schema.parse(process.env);
+export const env = schema.parse({
+  ...process.env,
+  VITE_PUBLIC_BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+});
