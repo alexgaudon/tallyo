@@ -3,9 +3,22 @@ import { db } from "./db";
 
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+import { env } from "@/env";
+
 export type Auth =
   | { isAuthenticated: false; user: null; session: null }
   | { isAuthenticated: true; user: User; session: Session };
+
+const socialProviders: Parameters<typeof betterAuth>[0]["socialProviders"] = {};
+
+if (env.DISCORD_CLIENT_ID && env.DISCORD_CLIENT_SECRET) {
+  socialProviders.discord = {
+    clientId: env.DISCORD_CLIENT_ID,
+    clientSecret: env.DISCORD_CLIENT_SECRET,
+  };
+} else {
+  console.log("No social providers configured");
+}
 
 export const auth = betterAuth({
   trustedOrigins: ["https://tallyo.app", "https://tallyo.app/signin"],
@@ -13,12 +26,7 @@ export const auth = betterAuth({
     provider: "sqlite",
   }),
   emailAndPassword: {
-    enabled: true,
+    enabled: import.meta.env.PROD !== true,
   },
-  socialProviders: {
-    discord: {
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
-    },
-  },
+  socialProviders,
 });

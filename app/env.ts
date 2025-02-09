@@ -1,12 +1,18 @@
-import "dotenv/config";
-
 import { z } from "zod";
 
-const envSchema = z.object({
+const baseSchema = z.object({
   DATABASE_URL: z.string().default("file:local.db"),
   DATABASE_TOKEN: z.string().optional(),
-  VITE_APP_NAME: z.string().default("Tallyo"),
-  VITE_APP_TITLE: z.string().default("Personal Finance"),
+  BETTER_AUTH_SECRET: z.string().optional(),
+  BETTER_AUTH_URL: z.string().optional(),
+  DISCORD_CLIENT_ID: z.string().optional(),
+  DISCORD_CLIENT_SECRET: z.string().optional(),
+  DISCORD_REDIRECT_URL: z.string().optional(),
+});
+
+const prodSchema = baseSchema.extend({
+  DATABASE_URL: z.string(),
+  DATABASE_TOKEN: z.string(),
   BETTER_AUTH_SECRET: z.string(),
   BETTER_AUTH_URL: z.string(),
   DISCORD_CLIENT_ID: z.string(),
@@ -14,4 +20,16 @@ const envSchema = z.object({
   DISCORD_REDIRECT_URL: z.string(),
 });
 
-export const safeEnv = envSchema.parse(process.env);
+const schema = process.env.NODE_ENV === "production" ? prodSchema : baseSchema;
+
+export const env = schema.parse(process.env);
+
+declare global {
+  interface Window {
+    env: typeof env;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.env = env;
+}

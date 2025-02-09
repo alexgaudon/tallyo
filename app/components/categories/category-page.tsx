@@ -141,12 +141,19 @@ export function CategoryPage({ categoryName }: { categoryName?: string }) {
           </Table>
         </div>
         <div className="lg:flex justify-center hidden">
-          {false ? (
+          {transactions === undefined ? (
             <RotateCwIcon className="animate-spin" />
           ) : (
             <>
               {categoryName ? (
-                <TransactionTable data={transactions!.data}></TransactionTable>
+                <TransactionTable
+                  data={transactions.data}
+                  totalPages={transactions.totalPages}
+                  currentPage={1}
+                  onPageChange={() => {
+                    alert("onPageChanged btw");
+                  }}
+                />
               ) : (
                 <p>Select a category for more context</p>
               )}

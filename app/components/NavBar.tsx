@@ -1,4 +1,4 @@
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, Menu } from "lucide-react";
 import * as React from "react";
@@ -35,12 +35,10 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-2">
             <img
               src={icon}
-              alt={`${import.meta.env.VITE_APP_NAME} logo`}
+              alt={`Tallyo logo`}
               className="rounded-lg w-8 h-8"
             />
-            <span className="font-bold text-xl">
-              {import.meta.env.VITE_APP_NAME}
-            </span>
+            <span className="font-bold text-xl">Tallyo</span>
           </Link>
         </div>
         <div className="lg:flex lg:items-center lg:space-x-6 hidden">
@@ -141,10 +139,16 @@ function UserDropdown() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center space-x-1">
             <Avatar className="w-5 h-5">
-              <img
-                src={authQuery.data?.user?.image ?? ""}
-                alt={authQuery.data?.user?.name.substring(0, 1).toUpperCase()}
-              />
+              {authQuery.data?.user?.image ? (
+                <img
+                  src={authQuery.data.user.image}
+                  alt={authQuery.data.user.name}
+                />
+              ) : (
+                <AvatarFallback>
+                  {authQuery.data?.user?.name.substring(0, 1).toUpperCase()}
+                </AvatarFallback>
+              )}
             </Avatar>
             <span className="font-medium text-sm">
               {authQuery.data?.user?.name || ""}

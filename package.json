@@ -6,6 +6,7 @@
     "dev": "vinxi dev",
     "build": "vinxi build",
     "start": "vinxi start",
+    "tsc": "tsc -b",
     "lint": "eslint .",
     "prod": "node --env-file .env .output/server/index.mjs",
     "format": "prettier --write . \"!**/{routeTree.gen.ts,pnpm-lock.yaml,drizzle}\"",
