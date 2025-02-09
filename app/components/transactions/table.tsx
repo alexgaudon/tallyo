@@ -220,7 +220,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
                     "text-gray-500": !transaction.reviewed,
                   },
                   "cursor-pointer",
-                  "hover:scale-105"
+                  "hover:scale-105",
                 )}
               />
             </div>

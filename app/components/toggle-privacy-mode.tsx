@@ -10,7 +10,7 @@ interface PrivacyModeContextType {
 
 // Create the context
 const PrivacyModeContext = createContext<PrivacyModeContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // Provider component

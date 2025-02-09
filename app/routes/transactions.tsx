@@ -44,7 +44,7 @@ export const Route = createFileRoute("/transactions")({
         ...search,
         pageSize: PAGE_SIZE,
       }),
-      CategoryRepository.getAllUserCategoriesQuery()
+      CategoryRepository.getAllUserCategoriesQuery(),
     );
   },
 });

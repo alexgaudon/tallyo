@@ -62,7 +62,7 @@ export default function QFXFileUploader() {
   >({});
 
   const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const { mutateAsync } = TransactionRepository.createUserTransactionMutation();
@@ -105,7 +105,7 @@ export default function QFXFileUploader() {
             fitid: transaction.FITID,
             category: category ?? "Uncategorized",
           };
-        })
+        }),
       );
 
       const categoryMap = recommendations.reduce<Record<string, string>>(
@@ -113,7 +113,7 @@ export default function QFXFileUploader() {
           map[fitid] = category;
           return map;
         },
-        {}
+        {},
       );
 
       setRecommendedCategories(categoryMap);
@@ -190,7 +190,7 @@ export default function QFXFileUploader() {
                     vendor: transaction.NAME,
                     categoryId: recommendedCategories[transaction.FITID],
                     externalId: transaction.FITID,
-                  })
+                  }),
                 );
               }
 
@@ -242,7 +242,7 @@ export default function QFXFileUploader() {
                   </td>
                   <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
                     {categories?.find(
-                      (x) => x.id === recommendedCategories[transaction.FITID]
+                      (x) => x.id === recommendedCategories[transaction.FITID],
                     )?.name || "Loading..."}
                   </td>
                 </tr>

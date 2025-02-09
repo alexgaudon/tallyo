@@ -93,7 +93,7 @@ const $getUserTransactions = createServerFn({ method: "GET" })
   });
 
 export const getAllUserTransactionsQuery = (
-  data: z.infer<typeof getUserTransactionsSchema>
+  data: z.infer<typeof getUserTransactionsSchema>,
 ) =>
   queryOptions({
     queryKey: [

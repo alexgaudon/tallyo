@@ -33,7 +33,7 @@ export default function AdvancedSearch(props: {
   const [onlyUnreviewed, setOnlyUnreviewed] = useState(props.onlyUnreviewed);
 
   const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const meta = useRouteContext({

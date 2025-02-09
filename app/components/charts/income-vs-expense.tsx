@@ -47,7 +47,7 @@ export function IncomeVsExpenseLine(props: { to?: Date; from?: Date }) {
     ChartsRespository.getIncomeVsExpensesDataQuery({
       from: props.from,
       to: props.to,
-    })
+    }),
   );
 
   if (isLoading) {
@@ -117,7 +117,7 @@ export function IncomeVsExpenseBar(props: { to?: Date; from?: Date }) {
     ChartsRespository.getIncomeVsExpensesDataQuery({
       from: props.from,
       to: props.to,
-    })
+    }),
   );
 
   const { isPrivacyMode } = usePrivacyMode();

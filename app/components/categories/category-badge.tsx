@@ -43,7 +43,7 @@ function CategoryPicker(props: {
   >;
 }) {
   const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const [open, setOpen] = useState(false);

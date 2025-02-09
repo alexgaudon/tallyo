@@ -37,31 +37,31 @@ export const Route = createFileRoute("/dashboard")({
         ChartsRespository.getStatsDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
-        })
+        }),
       ),
       context.queryClient.ensureQueryData(
-        CategoryRepository.getAllUserCategoriesQuery()
+        CategoryRepository.getAllUserCategoriesQuery(),
       ),
       context.queryClient.ensureQueryData(
-        ChartsRespository.getMonthlyExpenseDataQuery()
+        ChartsRespository.getMonthlyExpenseDataQuery(),
       ),
       context.queryClient.ensureQueryData(
         ChartsRespository.getTopVendorsDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
-        })
+        }),
       ),
       context.queryClient.ensureQueryData(
         ChartsRespository.getIncomeVsExpensesDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
-        })
+        }),
       ),
       context.queryClient.ensureQueryData(
         ChartsRespository.getCategoryBreakdownQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
-        })
+        }),
       ),
     ]);
   },
@@ -85,7 +85,7 @@ function RouteComponent() {
   const defaultTo = search.to ?? formatDateISO8601(new Date());
 
   const [from, setFrom] = useState<Date>(
-    getDateAdjustedForTimezone(defaultFrom)
+    getDateAdjustedForTimezone(defaultFrom),
   );
   const [to, setTo] = useState<Date>(getDateAdjustedForTimezone(defaultTo));
 
@@ -122,10 +122,10 @@ function RouteComponent() {
                   to: "/dashboard",
                   search: {
                     from: formatDateISO8601(
-                      getDateAdjustedForTimezone(values.range.from)
+                      getDateAdjustedForTimezone(values.range.from),
                     ),
                     to: formatDateISO8601(
-                      getDateAdjustedForTimezone(values.range.to ?? new Date())
+                      getDateAdjustedForTimezone(values.range.to ?? new Date()),
                     ),
                   },
                 });

@@ -24,7 +24,7 @@ const PAGE_SIZE = 10;
 
 export function CategoryPage({ categoryName }: { categoryName?: string }) {
   const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery()
+    CategoryRepository.getAllUserCategoriesQuery(),
   );
 
   const { mutateAsync: deleteCategory } =
@@ -39,7 +39,7 @@ export function CategoryPage({ categoryName }: { categoryName?: string }) {
       pageSize: PAGE_SIZE,
       page: 1,
       unreviewed: false,
-    })
+    }),
   );
 
   const navigate = useNavigate();

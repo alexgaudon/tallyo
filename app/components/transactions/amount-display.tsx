@@ -30,7 +30,7 @@ export default function AmountDisplay({
           "text-red-500": displayAmount <= 0 && colored,
           "text-green-500": displayAmount > 0 && colored,
         },
-        "text-nowrap"
+        "text-nowrap",
       )}
     >
       {displayAmount < 0 ? "-" : ""}$
