@@ -2,6 +2,36 @@
 
 # DISCLAIMER: This is in no way meant for "production" use. It's still very early, and there may be bugs.
 
+# Local Development Environment
+
+1. Run
+
+```sh
+cp .env.example .env
+```
+
+2. Go to discord dev portal to generate an app and get the secrets for OAuth.
+3. Fill out your .env file
+4. Run
+
+```sh
+pnpm install
+```
+
+5. Run
+
+```sh
+pnpm db:auth:generate && pnpm db
+```
+
+6. Run
+
+```sh
+pnpm dev
+```
+
+7. Open browser to `http://localhost:3000`
+
 "What is not defined cannot be measured. What is not measured, cannot be improved. What is not improved, is always degraded" - William Thomson Kelvin
 
 Tallyo is an attempt to measure personal finance, and provide you with the insights you need to hopefully make a change for the better.
