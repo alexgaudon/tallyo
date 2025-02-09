@@ -45,10 +45,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
               "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
           },
           {
-            title:
-              import.meta.env.VITE_APP_NAME +
-              " | " +
-              import.meta.env.VITE_APP_TITLE,
+            title: "Tallyo | Personal Finance",
           },
         ],
         links: [
@@ -77,29 +74,27 @@ function RootComponent() {
   );
 }
 
-const TanStackRouterDevtools =
-  process.env.NODE_ENV === "production"
-    ? () => null // Render nothing in production
-    : React.lazy(() =>
-        // Lazy load in development
-        import("@tanstack/router-devtools").then((res) => ({
-          default: res.TanStackRouterDevtools,
-          // For Embedded Mode
-          // default: res.TanStackRouterDevtoolsPanel
-        })),
-      );
+const TanStackRouterDevtools = import.meta.env.PROD
+  ? () => null // Render nothing in production
+  : React.lazy(() =>
+      // Lazy load in development
+      import("@tanstack/router-devtools").then((res) => ({
+        default: res.TanStackRouterDevtools,
+        // For Embedded Mode
+        // default: res.TanStackRouterDevtoolsPanel
+      })),
+    );
 
-const TanStackQueryDevTools =
-  process.env.NODE_ENV === "production"
-    ? () => null // Render nothing in production
-    : React.lazy(() =>
-        // Lazy load in development
-        import("@tanstack/react-query-devtools").then((res) => ({
-          default: res.ReactQueryDevtools,
-          // For Embedded Mode
-          // default: res.TanStackRouterDevtoolsPanel
-        })),
-      );
+const TanStackQueryDevTools = import.meta.env.PROD
+  ? () => null // Render nothing in production
+  : React.lazy(() =>
+      // Lazy load in development
+      import("@tanstack/react-query-devtools").then((res) => ({
+        default: res.ReactQueryDevtools,
+        // For Embedded Mode
+        // default: res.TanStackRouterDevtoolsPanel
+      })),
+    );
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

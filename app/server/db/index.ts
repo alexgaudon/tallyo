@@ -1,11 +1,11 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
-import { safeEnv } from "@/env";
+import { env } from "@/env";
 import * as schema from "./schema";
 
 const client = createClient({
-  url: safeEnv.DATABASE_URL,
+  url: env.DATABASE_URL,
 });
 
 export const db = drizzle({

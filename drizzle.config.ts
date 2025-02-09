@@ -1,6 +1,6 @@
 import type { Config } from "drizzle-kit";
 
-import { safeEnv } from "@/env";
+import { env } from "@/env";
 
 export default {
   out: "./drizzle",
@@ -8,7 +8,7 @@ export default {
   breakpoints: true,
   dialect: "turso",
   dbCredentials: {
-    url: safeEnv.DATABASE_URL,
-    // authToken: safeEnv.DATABASE_TOKEN,
+    url: env.DATABASE_URL,
+    authToken: env.DATABASE_TOKEN,
   },
 } satisfies Config;

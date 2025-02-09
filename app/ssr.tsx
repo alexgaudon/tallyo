@@ -1,4 +1,5 @@
 /// <reference types="vinxi/types/server" />
+import "dotenv/config";
 import { getRouterManifest } from "@tanstack/start/router-manifest";
 import {
   createStartHandler,
