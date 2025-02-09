@@ -23,13 +23,3 @@ const prodSchema = baseSchema.extend({
 const schema = process.env.NODE_ENV === "production" ? prodSchema : baseSchema;
 
 export const env = schema.parse(process.env);
-
-declare global {
-  interface Window {
-    env: typeof env;
-  }
-}
-
-if (typeof window !== "undefined") {
-  window.env = env;
-}
