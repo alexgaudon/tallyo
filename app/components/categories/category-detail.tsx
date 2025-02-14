@@ -11,10 +11,10 @@ import { CategoryBadge } from "./category-badge";
 
 export function CategoryDetail({ category }: { category: Category }) {
   const { mutateAsync: deleteCategory } =
-    CategoryRepository.deleteUserCategoryMutation();
+    CategoryRepository.useDeleteUserCategoryMutation();
 
   const { mutateAsync: updateCategory } =
-    CategoryRepository.updateUserCategoryMutation();
+    CategoryRepository.useUpdateUserCategoryMutation();
 
   return (
     <Card key={category.id}>

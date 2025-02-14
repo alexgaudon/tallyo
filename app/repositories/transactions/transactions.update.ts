@@ -82,7 +82,7 @@ const $updateUserTransaction = createServerFn({
     }
   });
 
-export const updateUserTransactionMutation = () => {
+export const useUpdateUserTransactionMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,

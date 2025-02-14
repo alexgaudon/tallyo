@@ -68,10 +68,10 @@ function RouteComponent() {
   );
 
   const { mutateAsync: deleteCategory } =
-    CategoryRepository.deleteUserCategoryMutation();
+    CategoryRepository.useDeleteUserCategoryMutation();
 
   const { mutateAsync: updateCategory } =
-    CategoryRepository.updateUserCategoryMutation();
+    CategoryRepository.useUpdateUserCategoryMutation();
 
   const navigate = useNavigate();
 

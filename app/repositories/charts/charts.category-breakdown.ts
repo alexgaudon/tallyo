@@ -54,6 +54,7 @@ export const getCategoryBreakdownQuery = (
   data: z.infer<typeof chartDataSchema>,
 ) =>
   queryOptions({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ...keys.charts.queries.categoryBreakdown,
       getKeyFromDate(data.to),

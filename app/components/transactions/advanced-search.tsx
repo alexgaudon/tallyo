@@ -48,6 +48,7 @@ export default function AdvancedSearch(props: {
     if (categoryName) {
       const categoryId = categories?.find((x) => x.name === categoryName)?.id;
       if (categoryId) {
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setCategory(categoryId);
       }
     }
@@ -184,6 +185,7 @@ export default function AdvancedSearch(props: {
           <div className="flex flex-wrap gap-2">
             {trendingCategories.map((search, index) => (
               <Button
+                // eslint-disable-next-line @eslint-react/no-array-index-key
                 key={index}
                 variant="outline"
                 className="rounded-full text-sm"

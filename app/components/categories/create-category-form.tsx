@@ -32,7 +32,7 @@ export function CreateCategoryForm({
 }: {
   children?: React.ReactNode;
 }) {
-  const [colors, setColors] = useState(generateRandomPalette(5));
+  const [colors, setColors] = useState(() => generateRandomPalette(5));
   const { toast } = useToast();
 
   const [preview, setPreview] = useState<{ text: string; color: string }>({
@@ -74,7 +74,7 @@ export function CreateCategoryForm({
   const [open, setOpen] = useState(false);
 
   const { mutateAsync, isError, error } =
-    CategoryRepository.createUserCategoryMutation();
+    CategoryRepository.useCreateUserCategoryMutation();
 
   return (
     <Dialog

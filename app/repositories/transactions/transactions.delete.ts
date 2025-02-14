@@ -30,7 +30,7 @@ const $deleteUserTransaction = createServerFn({
     return res.rowsAffected > 0;
   });
 
-export const deleteUserTransactionMutation = () => {
+export const useDeleteUserTransactionMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,

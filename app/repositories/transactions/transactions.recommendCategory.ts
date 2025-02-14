@@ -69,7 +69,7 @@ const $recommendTransactionCategory = createServerFn({
     return categoryId;
   });
 
-export const setRecommendedTransactionCategory = () => {
+export const useSetRecommendedTransactionCategoryMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,

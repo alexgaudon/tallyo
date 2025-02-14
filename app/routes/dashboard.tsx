@@ -84,10 +84,12 @@ function RouteComponent() {
     search.from ?? formatDateISO8601(startOfMonth(new Date()));
   const defaultTo = search.to ?? formatDateISO8601(new Date());
 
-  const [from, setFrom] = useState<Date>(
+  const [from, setFrom] = useState<Date>(() =>
     getDateAdjustedForTimezone(defaultFrom),
   );
-  const [to, setTo] = useState<Date>(getDateAdjustedForTimezone(defaultTo));
+  const [to, setTo] = useState<Date>(() =>
+    getDateAdjustedForTimezone(defaultTo),
+  );
 
   const navigate = useNavigate();
 

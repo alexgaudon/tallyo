@@ -1,15 +1,15 @@
-import { createUserTransactionMutation } from "./transactions.create";
-import { deleteUserTransactionMutation } from "./transactions.delete";
+import { useCreateUserTransactionMutation } from "./transactions.create";
+import { useDeleteUserTransactionMutation } from "./transactions.delete";
 import { getAllUserTransactionsQuery } from "./transactions.getAll";
-import { setRecommendedTransactionCategory } from "./transactions.recommendCategory";
-import { splitUserTransactionMutation } from "./transactions.split";
-import { updateUserTransactionMutation } from "./transactions.update";
+import { useSetRecommendedTransactionCategoryMutation } from "./transactions.recommendCategory";
+import { useSplitUserTransactionMutation } from "./transactions.split";
+import { useUpdateUserTransactionMutation } from "./transactions.update";
 
 export const TransactionRepository = {
-  getAllUserTransactionsQuery: getAllUserTransactionsQuery,
-  updateUserTransactionMutation: () => updateUserTransactionMutation(),
-  setRecommendedTransactionCategory: () => setRecommendedTransactionCategory(),
-  createUserTransactionMutation: () => createUserTransactionMutation(),
-  deleteUserTransactionMutation: () => deleteUserTransactionMutation(),
-  splitUserTransactionMutation: () => splitUserTransactionMutation(),
+  getAllUserTransactionsQuery,
+  useUpdateUserTransactionMutation,
+  useSetRecommendedTransactionCategoryMutation,
+  useCreateUserTransactionMutation,
+  useDeleteUserTransactionMutation,
+  useSplitUserTransactionMutation,
 } as const;

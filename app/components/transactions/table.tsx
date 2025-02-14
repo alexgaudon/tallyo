@@ -292,11 +292,11 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [editingId, setEditingId] = useState<string>("");
 
   const { mutate: updateTransaction } =
-    TransactionRepository.updateUserTransactionMutation();
+    TransactionRepository.useUpdateUserTransactionMutation();
   const { mutate: deleteTransaction } =
-    TransactionRepository.deleteUserTransactionMutation();
+    TransactionRepository.useDeleteUserTransactionMutation();
   const { mutateAsync: recommendCategory } =
-    TransactionRepository.setRecommendedTransactionCategory();
+    TransactionRepository.useSetRecommendedTransactionCategoryMutation();
 
   const onUpdate = (id: string, data: Partial<Transaction>) => {
     if ("reviewed" in data) {

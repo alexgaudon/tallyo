@@ -47,7 +47,7 @@ const $createUserCategory = createServerFn({
     }
   });
 
-export const createUserCategoryMutation = () => {
+export const useCreateUserCategoryMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.categories.mutations.create,

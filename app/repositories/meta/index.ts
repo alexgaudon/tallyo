@@ -1,7 +1,7 @@
 import { getUserMeta } from "./meta.get";
-import { updateUserMetaMutation } from "./meta.update";
+import { useUpdateUserMetaMutation } from "./meta.update";
 
 export const MetaRepository = {
-  getUserMeta: getUserMeta,
-  updateUserMetaMutation: () => updateUserMetaMutation(),
+  getUserMeta,
+  useUpdateUserMetaMutation,
 } as const;

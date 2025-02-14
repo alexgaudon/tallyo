@@ -19,7 +19,7 @@ export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const { data } = useQuery(MetaRepository.getUserMeta());
 
-  const { mutate } = MetaRepository.updateUserMetaMutation();
+  const { mutate } = MetaRepository.useUpdateUserMetaMutation();
 
   const togglePrivacyMode = () => {
     mutate({

@@ -96,6 +96,7 @@ export const getAllUserTransactionsQuery = (
   data: z.infer<typeof getUserTransactionsSchema>,
 ) =>
   queryOptions({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ...keys.transactions.queries.all,
       data.filter ?? "",

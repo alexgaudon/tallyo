@@ -12,7 +12,7 @@ const $generateUserAuthToken = createServerFn({
   method: "POST",
 })
   .middleware([userMiddleware])
-  .handler(async ({ context, data }) => {
+  .handler(async ({ context }) => {
     function generateAuthToken() {
       return randomBytes(128).toString("hex").slice(0, 64);
     }
@@ -50,7 +50,7 @@ const $generateUserAuthToken = createServerFn({
     };
   });
 
-export const generateUserAuthTokenMutation = () => {
+export const useGenerateUserAuthTokenMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.auth.mutations.generateAuthToken,

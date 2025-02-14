@@ -39,7 +39,7 @@ function CategoryPicker(props: {
   children: React.ReactNode;
   id: string;
   mutator: ReturnType<
-    typeof TransactionRepository.updateUserTransactionMutation
+    typeof TransactionRepository.useUpdateUserTransactionMutation
   >;
 }) {
   const { data: categories } = useQuery(
@@ -99,7 +99,7 @@ function CategoryPicker(props: {
 }
 
 export function CategoryBadge(props: CategoryBadgeProps) {
-  const mutator = TransactionRepository.updateUserTransactionMutation();
+  const mutator = TransactionRepository.useUpdateUserTransactionMutation();
   if ("transactionId" in props) {
     return (
       <CategoryPicker id={props.transactionId} mutator={mutator}>

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/import")({
 
 function RouteComponent() {
   const { mutateAsync, isPending } =
-    AuthRepository.generateUserAuthTokenMutation();
+    AuthRepository.useGenerateUserAuthTokenMutation();
   return (
     <div className="p-8">
       <Button

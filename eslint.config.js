@@ -7,52 +7,40 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-// TODO: clean up for better composability
-export default tseslint.config(
-  {
-    ignores: [
-      "dist",
-      ".vinxi",
-      ".wrangler",
-      ".vercel",
-      ".netlify",
-      ".output",
-      "build/",
-    ],
-  },
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-      eslintConfigPrettier,
-      ...pluginQuery.configs["flat/recommended"],
-      ...pluginRouter.configs["flat/recommended"],
-    ],
-  },
-  {
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
+export default tseslint.config({
+  ignores: [
+    "dist",
+    ".vinxi",
+    ".wrangler",
+    ".vercel",
+    ".netlify",
+    ".output",
+    "build/",
+  ],
+  files: ["**/*.{ts,tsx}"],
+  extends: [
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
+    eslintConfigPrettier,
+    ...pluginQuery.configs["flat/recommended"],
+    ...pluginRouter.configs["flat/recommended"],
+  ],
+  languageOptions: {
+    globals: {
+      ...globals.browser,
     },
-    plugins: {
-      "react-hooks": reactHooks,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
+    parserOptions: {
+      parser: tseslint.parser,
+      project: "./tsconfig.json",
+      tsconfigRootDir: import.meta.dirname,
     },
   },
-  {
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      parserOptions: {
-        parser: tseslint.parser,
-        project: "./tsconfig.json",
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    ...react.configs["recommended-type-checked"],
+  plugins: {
+    "react-hooks": reactHooks,
   },
-);
+  rules: {
+    ...reactHooks.configs.recommended.rules,
+    "@eslint-react/no-nested-components": "off",
+  },
+  ...react.configs["recommended-type-checked"],
+});

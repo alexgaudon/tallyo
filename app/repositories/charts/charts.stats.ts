@@ -66,6 +66,7 @@ export const $getUserStatsData = createServerFn({
 
 export const getStatsDataQuery = (data: z.infer<typeof chartDataSchema>) =>
   queryOptions({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ...keys.charts.queries.stats,
       getKeyFromDate(data.to),

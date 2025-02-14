@@ -1,4 +1,5 @@
 {
+  "files": ["app/env.d.ts"],
   "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "strict": true,

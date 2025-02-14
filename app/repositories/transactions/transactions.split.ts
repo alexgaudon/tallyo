@@ -66,7 +66,7 @@ const $splitUserTransaction = createServerFn({
     };
   });
 
-export const splitUserTransactionMutation = () => {
+export const useSplitUserTransactionMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,
