@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/table";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
-import { ensureQueryData } from "@/repositories";
 import { TransactionRepository } from "@/repositories/transactions";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, PlusIcon, Trash2Icon } from "lucide-react";
@@ -37,25 +36,29 @@ export const Route = createFileRoute("/categories")({
       throw redirect({ to: "/signin" });
     }
 
-    const dataToEnsure: any[] = [
-      CategoryRepository.getAllUserCategoriesQuery(),
+    const prefetches = [
+      ctx.context.queryClient.prefetchQuery(
+        CategoryRepository.getAllUserCategoriesQuery(),
+      ),
     ];
     const match = ctx.matches.find(
       (match) => match.fullPath === "/categories/$category",
     );
 
     if (match) {
-      dataToEnsure.push(
-        TransactionRepository.getAllUserTransactionsQuery({
-          categoryName: match.params.category,
-          pageSize: 10,
-          page: match.search.page,
-          unreviewed: false,
-        }),
+      prefetches.push(
+        ctx.context.queryClient.prefetchQuery(
+          TransactionRepository.getAllUserTransactionsQuery({
+            categoryName: match.params.category,
+            pageSize: 10,
+            page: match.search.page,
+            unreviewed: false,
+          }),
+        ),
       );
     }
 
-    await ensureQueryData(ctx.context.queryClient, ...dataToEnsure);
+    await Promise.all(prefetches);
   },
 });
 

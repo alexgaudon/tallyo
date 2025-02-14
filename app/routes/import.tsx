@@ -13,7 +13,7 @@ export const Route = createFileRoute("/import")({
         from: "/import",
       });
     }
-    await context.queryClient.ensureQueryData(
+    await context.queryClient.prefetchQuery(
       CategoryRepository.getAllUserCategoriesQuery(),
     );
   },

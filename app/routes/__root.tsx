@@ -21,10 +21,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     beforeLoad: async (ctx) => {
       const [auth, meta] = await Promise.all([
-        await ctx.context.queryClient.ensureQueryData(
+        await ctx.context.queryClient.prefetchQuery(
           AuthRepository.getUserAuthQuery(),
         ),
-        await ctx.context.queryClient.ensureQueryData(
+        await ctx.context.queryClient.prefetchQuery(
           MetaRepository.getUserMeta(),
         ),
       ]);

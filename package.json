@@ -16,6 +16,9 @@
     "ui": "pnpm dlx shadcn@latest",
     "db:auth:generate": "bunx @better-auth/cli generate --config ./app/server/auth.ts && prettier --write ./auth-schema.ts && mv ./auth-schema.ts ./app/server/db/auth-schema.ts"
   },
+  "prettier": {
+    "trailingComma": "all"
+  },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.9",
     "@faker-js/faker": "^9.4.0",
