@@ -34,13 +34,6 @@ function RouteComponent() {
         Generate Auth Token
       </Button>
       <h1 className="text-2xl">Importing Transactions</h1>
-      {/* <p>
-        Tallyo is different from traditional finance apps, due to the "developer
-        focused" aspect of it. This means the preferred way to import
-        transactions is via the API Route exposed at{" "}
-        <pre>/api/new-transactions</pre>
-      </p> */}
-
       <div className="mt-20">
         <Import />
       </div>
