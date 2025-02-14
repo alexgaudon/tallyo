@@ -33,31 +33,31 @@ export const Route = createFileRoute("/dashboard")({
     const defaultTo = search.to ?? formatDateISO8601(new Date());
 
     await Promise.all([
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         ChartsRespository.getStatsDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
         }),
       ),
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         CategoryRepository.getAllUserCategoriesQuery(),
       ),
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         ChartsRespository.getMonthlyExpenseDataQuery(),
       ),
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         ChartsRespository.getTopVendorsDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
         }),
       ),
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         ChartsRespository.getIncomeVsExpensesDataQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),
         }),
       ),
-      context.queryClient.ensureQueryData(
+      context.queryClient.prefetchQuery(
         ChartsRespository.getCategoryBreakdownQuery({
           from: new Date(defaultFrom),
           to: new Date(defaultTo),

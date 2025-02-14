@@ -9,7 +9,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ensureQueryData } from "@/repositories";
 import { CategoryRepository } from "@/repositories/categories";
 import { TransactionRepository } from "@/repositories/transactions";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -38,14 +37,17 @@ export const Route = createFileRoute("/transactions")({
 
     const search = ctx.search;
 
-    await ensureQueryData(
-      ctx.context.queryClient,
-      TransactionRepository.getAllUserTransactionsQuery({
-        ...search,
-        pageSize: PAGE_SIZE,
-      }),
-      CategoryRepository.getAllUserCategoriesQuery(),
-    );
+    await Promise.all([
+      ctx.context.queryClient.prefetchQuery(
+        TransactionRepository.getAllUserTransactionsQuery({
+          ...search,
+          pageSize: PAGE_SIZE,
+        }),
+      ),
+      ctx.context.queryClient.prefetchQuery(
+        CategoryRepository.getAllUserCategoriesQuery(),
+      ),
+    ]);
   },
 });
 

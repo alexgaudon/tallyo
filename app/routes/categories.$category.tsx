@@ -1,5 +1,4 @@
 import { TransactionTable } from "@/components/transactions/table";
-import { ensureQueryData } from "@/repositories";
 import { CategoryRepository } from "@/repositories/categories";
 import { TransactionRepository } from "@/repositories/transactions";
 import { useQuery } from "@tanstack/react-query";
@@ -18,16 +17,19 @@ export const Route = createFileRoute("/categories/$category")({
       throw redirect({ to: "/signin" });
     }
 
-    await ensureQueryData(
-      ctx.context.queryClient,
-      CategoryRepository.getAllUserCategoriesQuery(),
-      TransactionRepository.getAllUserTransactionsQuery({
-        categoryName: ctx.params.category,
-        pageSize: PAGE_SIZE,
-        page: 1,
-        unreviewed: false,
-      }),
-    );
+    await Promise.all([
+      ctx.context.queryClient.prefetchQuery(
+        CategoryRepository.getAllUserCategoriesQuery(),
+      ),
+      ctx.context.queryClient.prefetchQuery(
+        TransactionRepository.getAllUserTransactionsQuery({
+          categoryName: ctx.params.category,
+          pageSize: PAGE_SIZE,
+          page: 1,
+          unreviewed: false,
+        }),
+      ),
+    ]);
   },
 });
 
