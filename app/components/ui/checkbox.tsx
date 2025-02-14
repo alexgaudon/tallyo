@@ -4,7 +4,13 @@ import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Checkbox = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & { ref?: React.RefObject<React.ElementRef<typeof CheckboxPrimitive.Root> | null> }) => (
+const Checkbox = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & {
+  ref?: React.RefObject<React.ElementRef<typeof CheckboxPrimitive.Root> | null>;
+}) => (
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(

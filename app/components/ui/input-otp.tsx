@@ -4,7 +4,14 @@ import { Dot } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const InputOTP = ({ ref, className, containerClassName, ...props }: React.ComponentPropsWithoutRef<typeof OTPInput> & { ref?: React.RefObject<React.ElementRef<typeof OTPInput> | null> }) => (
+const InputOTP = ({
+  ref,
+  className,
+  containerClassName,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof OTPInput> & {
+  ref?: React.RefObject<React.ElementRef<typeof OTPInput> | null>;
+}) => (
   <OTPInput
     ref={ref}
     containerClassName={cn(
@@ -17,12 +24,25 @@ const InputOTP = ({ ref, className, containerClassName, ...props }: React.Compon
 );
 InputOTP.displayName = "InputOTP";
 
-const InputOTPGroup = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<"div"> & { ref?: React.RefObject<React.ElementRef<"div"> | null> }) => (
+const InputOTPGroup = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div"> & {
+  ref?: React.RefObject<React.ElementRef<"div"> | null>;
+}) => (
   <div ref={ref} className={cn("flex items-center", className)} {...props} />
 );
 InputOTPGroup.displayName = "InputOTPGroup";
 
-const InputOTPSlot = ({ ref, index, className, ...props }: React.ComponentPropsWithoutRef<"div"> & { index: number } & { ref?: React.RefObject<React.ElementRef<"div"> | null> }) => {
+const InputOTPSlot = ({
+  ref,
+  index,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div"> & { index: number } & {
+  ref?: React.RefObject<React.ElementRef<"div"> | null>;
+}) => {
   const inputOTPContext = React.use(OTPInputContext);
   const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index];
 
@@ -47,7 +67,12 @@ const InputOTPSlot = ({ ref, index, className, ...props }: React.ComponentPropsW
 };
 InputOTPSlot.displayName = "InputOTPSlot";
 
-const InputOTPSeparator = ({ ref, ...props }: React.ComponentPropsWithoutRef<"div"> & { ref?: React.RefObject<React.ElementRef<"div"> | null> }) => (
+const InputOTPSeparator = ({
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<"div"> & {
+  ref?: React.RefObject<React.ElementRef<"div"> | null>;
+}) => (
   <div ref={ref} role="separator" {...props}>
     <Dot />
   </div>

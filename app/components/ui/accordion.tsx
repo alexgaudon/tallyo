@@ -6,7 +6,15 @@ import { cn } from "@/lib/utils";
 
 const Accordion = AccordionPrimitive.Root;
 
-const AccordionItem = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> & { ref?: React.RefObject<React.ElementRef<typeof AccordionPrimitive.Item> | null> }) => (
+const AccordionItem = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof AccordionPrimitive.Item
+  > | null>;
+}) => (
   <AccordionPrimitive.Item
     ref={ref}
     className={cn("border-b", className)}
@@ -15,7 +23,16 @@ const AccordionItem = ({ ref, className, ...props }: React.ComponentPropsWithout
 );
 AccordionItem.displayName = "AccordionItem";
 
-const AccordionTrigger = ({ ref, className, children, ...props }: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & { ref?: React.RefObject<React.ElementRef<typeof AccordionPrimitive.Trigger> | null> }) => (
+const AccordionTrigger = ({
+  ref,
+  className,
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof AccordionPrimitive.Trigger
+  > | null>;
+}) => (
   <AccordionPrimitive.Header className="flex">
     <AccordionPrimitive.Trigger
       ref={ref}
@@ -32,7 +49,16 @@ const AccordionTrigger = ({ ref, className, children, ...props }: React.Componen
 );
 AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
 
-const AccordionContent = ({ ref, className, children, ...props }: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> & { ref?: React.RefObject<React.ElementRef<typeof AccordionPrimitive.Content> | null> }) => (
+const AccordionContent = ({
+  ref,
+  className,
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof AccordionPrimitive.Content
+  > | null>;
+}) => (
   <AccordionPrimitive.Content
     ref={ref}
     className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"

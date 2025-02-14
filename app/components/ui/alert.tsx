@@ -19,7 +19,15 @@ const alertVariants = cva(
   },
 );
 
-const Alert = ({ ref, className, variant, ...props }: React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants> & { ref?: React.RefObject<HTMLDivElement | null> }) => (
+const Alert = ({
+  ref,
+  className,
+  variant,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof alertVariants> & {
+    ref?: React.RefObject<HTMLDivElement | null>;
+  }) => (
   <div
     ref={ref}
     role="alert"
@@ -29,7 +37,13 @@ const Alert = ({ ref, className, variant, ...props }: React.HTMLAttributes<HTMLD
 );
 Alert.displayName = "Alert";
 
-const AlertTitle = ({ ref, className, ...props }: React.HTMLAttributes<HTMLHeadingElement> & { ref?: React.RefObject<HTMLParagraphElement | null> }) => (
+const AlertTitle = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLHeadingElement> & {
+  ref?: React.RefObject<HTMLParagraphElement | null>;
+}) => (
   <h5
     ref={ref}
     className={cn("mb-1 font-medium leading-none tracking-tight", className)}
@@ -38,7 +52,13 @@ const AlertTitle = ({ ref, className, ...props }: React.HTMLAttributes<HTMLHeadi
 );
 AlertTitle.displayName = "AlertTitle";
 
-const AlertDescription = ({ ref, className, ...props }: React.HTMLAttributes<HTMLParagraphElement> & { ref?: React.RefObject<HTMLParagraphElement | null> }) => (
+const AlertDescription = ({
+  ref,
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement> & {
+  ref?: React.RefObject<HTMLParagraphElement | null>;
+}) => (
   <div
     ref={ref}
     className={cn("text-sm [&_p]:leading-relaxed", className)}

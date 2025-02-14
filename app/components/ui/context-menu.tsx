@@ -16,9 +16,19 @@ const ContextMenuSub = ContextMenuPrimitive.Sub;
 
 const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup;
 
-const ContextMenuSubTrigger = ({ ref, className, inset, children, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & {
-    inset?: boolean;
-  } & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.SubTrigger> | null> }) => (
+const ContextMenuSubTrigger = ({
+  ref,
+  className,
+  inset,
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & {
+  inset?: boolean;
+} & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.SubTrigger
+  > | null>;
+}) => (
   <ContextMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
@@ -34,7 +44,15 @@ const ContextMenuSubTrigger = ({ ref, className, inset, children, ...props }: Re
 );
 ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName;
 
-const ContextMenuSubContent = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent> & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.SubContent> | null> }) => (
+const ContextMenuSubContent = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.SubContent
+  > | null>;
+}) => (
   <ContextMenuPrimitive.SubContent
     ref={ref}
     className={cn(
@@ -46,7 +64,15 @@ const ContextMenuSubContent = ({ ref, className, ...props }: React.ComponentProp
 );
 ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName;
 
-const ContextMenuContent = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content> & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.Content> | null> }) => (
+const ContextMenuContent = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.Content
+  > | null>;
+}) => (
   <ContextMenuPrimitive.Portal>
     <ContextMenuPrimitive.Content
       ref={ref}
@@ -60,9 +86,18 @@ const ContextMenuContent = ({ ref, className, ...props }: React.ComponentPropsWi
 );
 ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName;
 
-const ContextMenuItem = ({ ref, className, inset, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & {
-    inset?: boolean;
-  } & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.Item> | null> }) => (
+const ContextMenuItem = ({
+  ref,
+  className,
+  inset,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & {
+  inset?: boolean;
+} & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.Item
+  > | null>;
+}) => (
   <ContextMenuPrimitive.Item
     ref={ref}
     className={cn(
@@ -75,7 +110,17 @@ const ContextMenuItem = ({ ref, className, inset, ...props }: React.ComponentPro
 );
 ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName;
 
-const ContextMenuCheckboxItem = ({ ref, className, children, checked, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem> & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.CheckboxItem> | null> }) => (
+const ContextMenuCheckboxItem = ({
+  ref,
+  className,
+  children,
+  checked,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.CheckboxItem
+  > | null>;
+}) => (
   <ContextMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
@@ -96,7 +141,16 @@ const ContextMenuCheckboxItem = ({ ref, className, children, checked, ...props }
 ContextMenuCheckboxItem.displayName =
   ContextMenuPrimitive.CheckboxItem.displayName;
 
-const ContextMenuRadioItem = ({ ref, className, children, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem> & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.RadioItem> | null> }) => (
+const ContextMenuRadioItem = ({
+  ref,
+  className,
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.RadioItem
+  > | null>;
+}) => (
   <ContextMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
@@ -115,9 +169,18 @@ const ContextMenuRadioItem = ({ ref, className, children, ...props }: React.Comp
 );
 ContextMenuRadioItem.displayName = ContextMenuPrimitive.RadioItem.displayName;
 
-const ContextMenuLabel = ({ ref, className, inset, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & {
-    inset?: boolean;
-  } & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.Label> | null> }) => (
+const ContextMenuLabel = ({
+  ref,
+  className,
+  inset,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & {
+  inset?: boolean;
+} & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.Label
+  > | null>;
+}) => (
   <ContextMenuPrimitive.Label
     ref={ref}
     className={cn(
@@ -130,7 +193,15 @@ const ContextMenuLabel = ({ ref, className, inset, ...props }: React.ComponentPr
 );
 ContextMenuLabel.displayName = ContextMenuPrimitive.Label.displayName;
 
-const ContextMenuSeparator = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator> & { ref?: React.RefObject<React.ElementRef<typeof ContextMenuPrimitive.Separator> | null> }) => (
+const ContextMenuSeparator = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator> & {
+  ref?: React.RefObject<React.ElementRef<
+    typeof ContextMenuPrimitive.Separator
+  > | null>;
+}) => (
   <ContextMenuPrimitive.Separator
     ref={ref}
     className={cn("-mx-1 my-1 h-px bg-border", className)}

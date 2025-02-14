@@ -4,12 +4,23 @@ import { ChevronRight, MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Breadcrumb = ({ ref, ...props }: React.ComponentPropsWithoutRef<"nav"> & {
-    separator?: React.ReactNode;
-  } & { ref?: React.RefObject<HTMLElement | null> }) => <nav ref={ref} aria-label="breadcrumb" {...props} />;
+const Breadcrumb = ({
+  ref,
+  ...props
+}: React.ComponentPropsWithoutRef<"nav"> & {
+  separator?: React.ReactNode;
+} & { ref?: React.RefObject<HTMLElement | null> }) => (
+  <nav ref={ref} aria-label="breadcrumb" {...props} />
+);
 Breadcrumb.displayName = "Breadcrumb";
 
-const BreadcrumbList = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<"ol"> & { ref?: React.RefObject<HTMLOListElement | null> }) => (
+const BreadcrumbList = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"ol"> & {
+  ref?: React.RefObject<HTMLOListElement | null>;
+}) => (
   <ol
     ref={ref}
     className={cn(
@@ -21,7 +32,13 @@ const BreadcrumbList = ({ ref, className, ...props }: React.ComponentPropsWithou
 );
 BreadcrumbList.displayName = "BreadcrumbList";
 
-const BreadcrumbItem = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<"li"> & { ref?: React.RefObject<HTMLLIElement | null> }) => (
+const BreadcrumbItem = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"li"> & {
+  ref?: React.RefObject<HTMLLIElement | null>;
+}) => (
   <li
     ref={ref}
     className={cn("inline-flex items-center gap-1.5", className)}
@@ -30,9 +47,14 @@ const BreadcrumbItem = ({ ref, className, ...props }: React.ComponentPropsWithou
 );
 BreadcrumbItem.displayName = "BreadcrumbItem";
 
-const BreadcrumbLink = ({ ref, asChild, className, ...props }: React.ComponentPropsWithoutRef<"a"> & {
-    asChild?: boolean;
-  } & { ref?: React.RefObject<HTMLAnchorElement | null> }) => {
+const BreadcrumbLink = ({
+  ref,
+  asChild,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"a"> & {
+  asChild?: boolean;
+} & { ref?: React.RefObject<HTMLAnchorElement | null> }) => {
   const Comp = asChild ? Slot : "a";
 
   return (
@@ -45,7 +67,13 @@ const BreadcrumbLink = ({ ref, asChild, className, ...props }: React.ComponentPr
 };
 BreadcrumbLink.displayName = "BreadcrumbLink";
 
-const BreadcrumbPage = ({ ref, className, ...props }: React.ComponentPropsWithoutRef<"span"> & { ref?: React.RefObject<HTMLSpanElement | null> }) => (
+const BreadcrumbPage = ({
+  ref,
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"span"> & {
+  ref?: React.RefObject<HTMLSpanElement | null>;
+}) => (
   <span
     ref={ref}
     role="link"

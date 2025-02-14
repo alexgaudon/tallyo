@@ -3,12 +3,19 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Progress = ({ ref, className, value, ...props }: React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { ref?: React.RefObject<React.ElementRef<typeof ProgressPrimitive.Root> | null> }) => (
+const Progress = ({
+  ref,
+  className,
+  value,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
+  ref?: React.RefObject<React.ElementRef<typeof ProgressPrimitive.Root> | null>;
+}) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
       "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
-      className
+      className,
     )}
     {...props}
   >
