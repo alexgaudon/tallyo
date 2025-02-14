@@ -1,6 +1,6 @@
 import { MetaRepository } from "@/repositories/meta";
 import { useQuery } from "@tanstack/react-query";
-import React, { createContext, ReactNode, useContext } from "react";
+import React, { createContext, ReactNode, use } from "react";
 
 // Define the context type
 interface PrivacyModeContextType {
@@ -38,7 +38,7 @@ export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({
 
 // Custom hook to use the context
 export const usePrivacyMode = (): PrivacyModeContextType => {
-  const context = useContext(PrivacyModeContext);
+  const context = use(PrivacyModeContext);
   if (!context) {
     throw new Error("usePrivacyMode must be used within a PrivacyModeProvider");
   }

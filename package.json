@@ -8,6 +8,7 @@
     "start": "vinxi start",
     "tsc": "tsc -b",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prod": "node --env-file .env .output/server/index.mjs",
     "format": "prettier --write . \"!**/{routeTree.gen.ts,pnpm-lock.yaml,drizzle}\"",
     "db": "drizzle-kit push",
