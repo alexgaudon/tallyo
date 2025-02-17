@@ -38,6 +38,7 @@ export default function AuthPage() {
         </div>
         <div className="flex flex-col space-y-4">
           <Button
+            className="cursor-pointer"
             variant="outline"
             type="button"
             onClick={async () => {
