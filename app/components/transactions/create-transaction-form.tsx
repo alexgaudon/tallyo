@@ -49,7 +49,7 @@ export function CreateTransactionForm() {
   });
 
   const { mutateAsync, isError, error } =
-    TransactionRepository.createUserTransactionMutation();
+    TransactionRepository.useCreateUserTransactionMutation();
 
   return (
     <>

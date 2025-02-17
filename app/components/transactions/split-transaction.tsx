@@ -7,7 +7,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowRightIcon } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AlertDialogHeader } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -17,6 +17,7 @@ import { TransactionRepository } from "@/repositories/transactions";
 import type { Transaction } from "@/repositories/transactions/transactions.getAll";
 
 type DisplayType = {
+  id: string;
   vendor: string;
   amount: number;
 };
@@ -42,12 +43,12 @@ function TransactionDisplay({
       <div className="flex flex-col justify-center col-span-3">
         {newTransactions.map((transaction) => {
           return (
-            <>
+            <Fragment key={transaction.id}>
               <div className="font-medium">{transaction.vendor}</div>
               <div className="text-muted-foreground">
                 <AmountDisplay amount={transaction.amount} />
               </div>
-            </>
+            </Fragment>
           );
         })}
       </div>
@@ -66,7 +67,8 @@ export function SplitTransaction({
 }) {
   const [newAmount, setNewAmount] = useState("0.00");
 
-  const { mutateAsync } = TransactionRepository.splitUserTransactionMutation();
+  const { mutateAsync } =
+    TransactionRepository.useSplitUserTransactionMutation();
 
   const transform = (val: number) => {
     if (transaction.amount < 0) {
@@ -78,10 +80,12 @@ export function SplitTransaction({
   const getNewTransactions = (splitAmount: number) => {
     return [
       {
+        id: `${transaction.id}-a`,
         vendor: transaction.vendor,
         amount: transaction.amount - splitAmount,
       },
       {
+        id: `${transaction.id}-b`,
         vendor: transaction.vendor,
         amount: splitAmount,
       },
@@ -114,6 +118,7 @@ export function SplitTransaction({
 
         <TransactionDisplay
           oldTransaction={{
+            id: transaction.id,
             amount: transaction.amount,
             vendor: transaction.vendor,
           }}

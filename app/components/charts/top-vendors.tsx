@@ -56,6 +56,7 @@ export function TopVendors(props: { from: Date; to: Date }) {
           </TableHeader>
           <TableBody>
             {data?.slice(0, 5).map((vendor, index) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key
               <TableRow key={index}>
                 <TableCell className="font-medium">
                   {isPrivacyMode ? "••••••••••" : vendor.displayVendor}

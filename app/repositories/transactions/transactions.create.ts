@@ -43,7 +43,7 @@ const $createUserTransaction = createServerFn({
     return res.rowsAffected > 0;
   });
 
-export const createUserTransactionMutation = () => {
+export const useCreateUserTransactionMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,

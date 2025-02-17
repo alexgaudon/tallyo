@@ -51,7 +51,7 @@ const $updateUserCategory = createServerFn({
     }
   });
 
-export const updateUserCategoryMutation = () => {
+export const useUpdateUserCategoryMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.categories.mutations.update,

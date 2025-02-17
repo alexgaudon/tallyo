@@ -2,7 +2,7 @@ import { formatDateISO8601 } from "@/lib/utils";
 
 function createKey<
   T extends string,
-  U extends Record<string, string | string[]> = {},
+  U extends Record<string, string | string[]> = Record<string, never>,
 >(base: T, subkeys: U = {} as U) {
   return {
     all: [base] as string[],

@@ -50,7 +50,7 @@ const $deleteUserCategory = createServerFn({
     }
   });
 
-export const deleteUserCategoryMutation = () => {
+export const useDeleteUserCategoryMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.categories.mutations.delete,

@@ -18,7 +18,7 @@ export function DatePicker({
   value: Date | undefined;
   onChange: (val: Date | undefined) => void;
 }) {
-  const [date, setDate] = React.useState<Date>(value ?? new Date());
+  const [date, setDate] = React.useState<Date>(() => value ?? new Date());
 
   const updateDate = (day: Date) => {
     setDate(day);

@@ -82,10 +82,34 @@ const PRESETS: Preset[] = [
   { name: "lastYear", label: "Last Year" },
 ];
 
+const PresetButton = ({
+  label,
+  isSelected,
+  onClick,
+}: {
+  label: string;
+  isSelected: boolean;
+  onClick: () => void;
+}): JSX.Element => (
+  <Button
+    className={cn(isSelected && "pointer-events-none")}
+    variant="ghost"
+    onClick={onClick}
+  >
+    <>
+      <span className={cn("pr-2 opacity-0", isSelected && "opacity-70")}>
+        <CheckIcon width={18} height={18} />
+      </span>
+      {label}
+    </>
+  </Button>
+);
+
 /** The DateRangePicker component allows a user to select a range of dates */
 export const DateRangePicker: FC<DateRangePickerProps> & {
   filePath: string;
 } = ({
+  // eslint-disable-next-line @eslint-react/no-unstable-default-props
   initialDateFrom = new Date(new Date().setHours(0, 0, 0, 0)),
   initialDateTo,
   initialCompareFrom,
@@ -101,13 +125,13 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     from: "__root__",
   });
 
-  const [range, setRange] = useState<DateRange>({
+  const [range, setRange] = useState<DateRange>(() => ({
     from: getDateAdjustedForTimezone(initialDateFrom),
     to: initialDateTo
       ? getDateAdjustedForTimezone(initialDateTo)
       : getDateAdjustedForTimezone(initialDateFrom),
-  });
-  const [rangeCompare, setRangeCompare] = useState<DateRange | undefined>(
+  }));
+  const [rangeCompare, setRangeCompare] = useState<DateRange | undefined>(() =>
     initialCompareFrom
       ? {
           from: new Date(new Date(initialCompareFrom).setHours(0, 0, 0, 0)),
@@ -256,11 +280,13 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
         normalizedRangeFrom.getTime() === normalizedPresetFrom.getTime() &&
         normalizedRangeTo.getTime() === normalizedPresetTo.getTime()
       ) {
+        // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
         setSelectedPreset(preset.name);
         return;
       }
     }
 
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setSelectedPreset(undefined);
   };
 
@@ -300,32 +326,6 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   useEffect(() => {
     checkPreset();
   }, [range]);
-
-  const PresetButton = ({
-    preset,
-    label,
-    isSelected,
-  }: {
-    preset: string;
-    label: string;
-    isSelected: boolean;
-  }): JSX.Element => (
-    <Button
-      className={cn(isSelected && "pointer-events-none")}
-      variant="ghost"
-      onClick={() => {
-        setPreset(preset);
-        setIsOpen(false);
-      }}
-    >
-      <>
-        <span className={cn("pr-2 opacity-0", isSelected && "opacity-70")}>
-          <CheckIcon width={18} height={18} />
-        </span>
-        {label}
-      </>
-    </Button>
-  );
 
   // Helper function to check if two date ranges are equal
   const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
@@ -543,9 +543,12 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                 {PRESETS.map((preset) => (
                   <PresetButton
                     key={preset.name}
-                    preset={preset.name}
                     label={preset.label}
                     isSelected={selectedPreset === preset.name}
+                    onClick={() => {
+                      setPreset(preset.name);
+                      setIsOpen(false);
+                    }}
                   />
                 ))}
               </div>

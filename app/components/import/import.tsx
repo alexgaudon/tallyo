@@ -32,16 +32,16 @@ const parseQFX = (data: string): ImportTransaction[] => {
 
   for (const line of transactions) {
     const parts = line.split("<").filter((x) => x.trim() !== "");
-    const temp: any = {};
+    const temp: Partial<ImportTransaction> = {};
     for (const part of parts) {
-      const split = part.split(">");
-      if (split[0] === "DTPOSTED") {
-        const date = split[1].substring(0, 8).split("");
+      const [type, value] = part.split(">");
+      if (type === "DTPOSTED") {
+        const date = value.substring(0, 8).split("");
         date.splice(4, 0, "-");
         date.splice(7, 0, "-");
-        temp[split[0]] = date.join("");
-      } else {
-        temp[split[0]] = split[1];
+        temp[type] = date.join("");
+      } else if (type in temp) {
+        temp[type as keyof ImportTransaction] = value;
       }
     }
 
@@ -65,9 +65,10 @@ export default function QFXFileUploader() {
     CategoryRepository.getAllUserCategoriesQuery(),
   );
 
-  const { mutateAsync } = TransactionRepository.createUserTransactionMutation();
+  const { mutateAsync } =
+    TransactionRepository.useCreateUserTransactionMutation();
   const { mutateAsync: recommendCategory } =
-    TransactionRepository.setRecommendedTransactionCategory();
+    TransactionRepository.useSetRecommendedTransactionCategoryMutation();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -87,6 +88,7 @@ export default function QFXFileUploader() {
             setError("No valid transactions found in the QFX file");
           }
         } catch (err) {
+          console.error(err);
           setError("Error parsing QFX file");
         }
       };
@@ -226,8 +228,8 @@ export default function QFXFileUploader() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {qfxData.map((transaction, index) => (
-                <tr key={index}>
+              {qfxData.map((transaction) => (
+                <tr key={transaction.FITID}>
                   <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
                     {transaction.DTPOSTED}
                   </td>

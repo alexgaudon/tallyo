@@ -83,35 +83,37 @@ type TransformDate<T> = {
       : T[K];
 };
 
-export function transform<T extends Record<string, any>>(
+export function transform<T extends Record<string, unknown>>(
   data: T,
 ): TransformDate<T> {
   return Object.fromEntries(
     Object.entries(data).map(([key, value]) => [
       key,
-      value instanceof Date ? value.toString() : value,
+      value instanceof Date ? value.toISOString() : value,
     ]),
   ) as TransformDate<T>;
 }
 
-export function transformAmounts<T extends Record<string, any>>(data: T) {
-  const returnValue: {
-    [t: string]: any;
-  } = { ...data };
+export function transformAmounts<T extends Record<string, unknown>>(
+  data: T,
+): Omit<T, "amount" | "income" | "expenses"> &
+  Partial<Record<"amount" | "income" | "expenses", string>> {
+  const result = { ...data } as Omit<T, "amount" | "income" | "expenses"> &
+    Partial<Record<"amount" | "income" | "expenses", string>>;
 
-  if ("amount" in data) {
-    returnValue.amount = getDisplayAmount(Math.abs(data["amount"]));
+  if ("amount" in data && typeof data.amount === "number") {
+    result.amount = getDisplayAmount(Math.abs(data.amount));
   }
 
-  if ("income" in data) {
-    returnValue.income = getDisplayAmount(Math.abs(data["income"]));
+  if ("income" in data && typeof data.income === "number") {
+    result.income = getDisplayAmount(Math.abs(data.income));
   }
 
-  if ("expenses" in data) {
-    returnValue.expenses = getDisplayAmount(Math.abs(data["expenses"]));
+  if ("expenses" in data && typeof data.expenses === "number") {
+    result.expenses = getDisplayAmount(Math.abs(data.expenses));
   }
 
-  return returnValue;
+  return result;
 }
 
 export function getPeriodFromDate(date: Date) {

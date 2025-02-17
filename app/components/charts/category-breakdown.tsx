@@ -29,6 +29,8 @@ export function CategoryBreakdownChart(props: { to?: Date; from?: Date }) {
     }),
   );
 
+  const { isPrivacyMode } = usePrivacyMode();
+
   if (isLoading) {
     return <ChartSkeleton />;
   }
@@ -39,22 +41,23 @@ export function CategoryBreakdownChart(props: { to?: Date; from?: Date }) {
 
   // Process data to ensure it's in the correct format and positive for display purposes
   const relevantData = data.map(transformAmounts).map((x) => ({
-    name: x.name!,
-    amount: parseFloat(x.amount), // Ensure amounts are positive
+    name: x.name,
+    amount: x.amount ? parseFloat(x.amount) : undefined,
     fill: x.color!,
   }));
 
   // Configure chart settings based on the data
   relevantData.forEach((item) => {
-    chartConfig[item.name] = {
+    chartConfig[item.name ?? "???"] = {
       label: item.name,
       color: item.fill,
     };
   });
 
-  const { isPrivacyMode } = usePrivacyMode();
-
-  const totalAmount = relevantData.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalAmount = relevantData.reduce(
+    (acc, curr) => acc + (curr.amount ?? 0),
+    0,
+  );
 
   return (
     <Card className="flex flex-col">

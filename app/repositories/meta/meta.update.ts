@@ -38,7 +38,7 @@ const $updateUserMeta = createServerFn({
     }
   });
 
-export const updateUserMetaMutation = () => {
+export const useUpdateUserMetaMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: keys.transactions.mutations.update,

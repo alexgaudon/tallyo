@@ -49,6 +49,7 @@ export function StatsSkeleton() {
         { title: "Total Expenses", icon: ArrowDownIcon },
         { title: "Savings Rate", icon: PiggyBankIcon },
       ].map((item, index) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key
         <Card key={index}>
           <CardHeader className="space-y-1">
             <CardTitle className="flex items-center gap-2 font-bold text-2xl">
@@ -87,6 +88,7 @@ export default function TopVendorSkeleton() {
           </TableHeader>
           <TableBody>
             {[...Array(5)].map((_, index) => (
+              // eslint-disable-next-line @eslint-react/no-array-index-key
               <TableRow key={index} className="animate-pulse">
                 <TableCell>
                   <Skeleton className="rounded w-3/4 h-4"></Skeleton>

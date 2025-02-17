@@ -32,6 +32,7 @@ const DateInput: React.FC<DateInputProps> = ({
 
   useEffect(() => {
     const d = value ? new Date(value) : new Date();
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setDate({
       day: d.getDate(),
       month: d.getMonth() + 1,

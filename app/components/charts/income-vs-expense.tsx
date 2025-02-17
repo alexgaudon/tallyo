@@ -28,7 +28,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { usePrivacyMode } from "../toggle-privacy-mode";
 import { ChartSkeleton } from "./skeletons";
 
 const chartConfig = {
@@ -119,8 +118,6 @@ export function IncomeVsExpenseBar(props: { to?: Date; from?: Date }) {
       to: props.to,
     }),
   );
-
-  const { isPrivacyMode } = usePrivacyMode();
 
   if (isLoading) {
     return <ChartSkeleton />;

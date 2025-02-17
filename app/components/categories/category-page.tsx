@@ -28,10 +28,10 @@ export function CategoryPage({ categoryName }: { categoryName?: string }) {
   );
 
   const { mutateAsync: deleteCategory } =
-    CategoryRepository.deleteUserCategoryMutation();
+    CategoryRepository.useDeleteUserCategoryMutation();
 
   const { mutateAsync: updateCategory } =
-    CategoryRepository.updateUserCategoryMutation();
+    CategoryRepository.useUpdateUserCategoryMutation();
 
   const { data: transactions } = useQuery(
     TransactionRepository.getAllUserTransactionsQuery({
