@@ -61,7 +61,7 @@ export default function AuthPage() {
                   const formData = new FormData(e.currentTarget);
                   const { error } = await authClient.signIn.email({
                     email: formData.get("email") as string,
-                    password: formData.get("password") as string,
+                    password: "password",
                     callbackURL: "/",
                   });
 
@@ -81,13 +81,6 @@ export default function AuthPage() {
                   className="px-3 py-2 border rounded-md"
                   required
                 />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  className="px-3 py-2 border rounded-md"
-                  required
-                />
                 <Button type="submit">Sign in with credentials</Button>
               </form>
 
@@ -98,7 +91,7 @@ export default function AuthPage() {
                   const formData = new FormData(e.currentTarget);
                   const { data, error } = await authClient.signUp.email({
                     email: formData.get("email") as string,
-                    password: formData.get("password") as string,
+                    password: "password",
                     name: formData.get("email") as string, // Using email as name since we don't have a name field
                     callbackURL: "/",
                   });
@@ -108,7 +101,11 @@ export default function AuthPage() {
                   }
 
                   if (data) {
-                    alert("Account created, now login.");
+                    await authClient.signIn.email({
+                      email: formData.get("email") as string,
+                      password: "password",
+                      callbackURL: "/",
+                    });
                   }
                 }}
               >
@@ -118,22 +115,8 @@ export default function AuthPage() {
                 </p>
                 <input
                   type="text"
-                  name="name"
-                  placeholder="Name"
-                  className="px-3 py-2 border rounded-md"
-                  required
-                />
-                <input
-                  type="text"
                   name="email"
                   placeholder="Email"
-                  className="px-3 py-2 border rounded-md"
-                  required
-                />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
                   className="px-3 py-2 border rounded-md"
                   required
                 />
