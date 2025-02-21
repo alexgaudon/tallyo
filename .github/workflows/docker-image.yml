@@ -22,6 +22,8 @@ jobs:
       contents: read
       # Allow access to the GitHub container registry
       packages: write
+      # Add this permission
+      id-token: write
 
     steps:
       - name: Check out the repo
@@ -39,7 +41,8 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Use the newer GITHUB_TOKEN
+          password: ${{ github.token }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5.1.0
