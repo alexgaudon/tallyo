@@ -1,51 +1,53 @@
-name: Docker Image CI
+name: Create and publish a Docker image
 
 on:
-  # Allow manual triggering
   workflow_dispatch:
-  # Run on push
+
   push:
     branches: ["main"]
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
-  # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build-and-push-image:
     runs-on: ubuntu-latest
-
     permissions:
-      # Read the contents of the repository
       contents: read
-      # Allow access to the GitHub container registry
       packages: write
-      # Add this permission
+      attestations: write
       id-token: write
 
     steps:
-      - name: Check out the repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: make IMAGE_NAME lowercase
-        run: |
-          echo "IMAGE_NAME=${IMAGE_NAME@L}" >>${GITHUB_ENV}
-
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3.0.0
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5.1.0
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          file: ./Dockerfile
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
