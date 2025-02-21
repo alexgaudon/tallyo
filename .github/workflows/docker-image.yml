@@ -3,6 +3,9 @@ name: Docker Image CI
 on:
   # Allow manual triggering
   workflow_dispatch:
+  # Run on push
+  push:
+    branches: ["main"]
 
 env:
   # Use docker.io for Docker Hub if empty
