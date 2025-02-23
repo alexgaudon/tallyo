@@ -49,7 +49,7 @@ function RouteComponent() {
   const navigate = useNavigate();
 
   return (
-    <div className="mx-4 w-full h-full">
+    <div className="w-full h-full">
       <TransactionTable
         data={data!.data}
         totalPages={data!.totalPages}

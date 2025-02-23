@@ -96,7 +96,7 @@ function RouteComponent() {
         </CreateCategoryForm>
       </div>
 
-      <div className="space-x-2 grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2">
         <div className="mb-24 border rounded-md overflow-hidden">
           <Table>
             <TableHeader>
@@ -165,7 +165,7 @@ function RouteComponent() {
                       }}
                     />
                   </TableCell>
-                  <TableCell className="text-right p-0">
+                  <TableCell className="p-0 text-right">
                     <DangerConfirm
                       onConfirm={async () => {
                         const res = await deleteCategory({ id: category.id });
@@ -192,7 +192,7 @@ function RouteComponent() {
             </TableBody>
           </Table>
         </div>
-        <div className="lg:flex justify-center hidden">
+        <div className="lg:flex justify-center">
           {isEditing ? (
             <Outlet />
           ) : (
