@@ -1,10 +1,10 @@
 /// <reference types="vinxi/types/server" />
-import "dotenv/config";
-import { getRouterManifest } from "@tanstack/start/router-manifest";
+import { getRouterManifest } from "@tanstack/react-start/router-manifest";
 import {
   createStartHandler,
   defaultStreamHandler,
-} from "@tanstack/start/server";
+} from "@tanstack/react-start/server";
+import "dotenv/config";
 
 import { createRouter } from "./router";
 

@@ -3,10 +3,10 @@ import { db } from "@/server/db";
 import { authToken } from "@/server/db/schema";
 import { userMiddleware } from "@/server/middlewares";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
+import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
-import { randomBytes } from "crypto";
 
 const $generateUserAuthToken = createServerFn({
   method: "POST",

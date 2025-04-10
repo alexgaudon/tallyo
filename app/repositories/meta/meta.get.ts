@@ -3,7 +3,7 @@ import { keys } from "@/repositories/keys";
 import { db } from "@/server/db";
 import { category, transaction, userSettings } from "@/server/db/schema";
 import { queryOptions } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { getEvent } from "vinxi/http";

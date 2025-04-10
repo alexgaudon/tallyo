@@ -1,10 +1,11 @@
 import { type QueryClient } from "@tanstack/react-query";
 import {
+  HeadContent,
   Outlet,
   ScriptOnce,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { Meta, Scripts } from "@tanstack/start";
+import { Scripts } from "@tanstack/react-start";
 import React from "react";
 
 import Navbar from "@/components/NavBar";
@@ -107,7 +108,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             src="https://pl.amgau.com/js/script.js"
           ></script>
         )}
-        <Meta />
+        <HeadContent />
       </head>
       <body suppressHydrationWarning className="h-screen">
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

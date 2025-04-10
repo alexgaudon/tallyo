@@ -1,5 +1,5 @@
 import { auth } from "@/server/auth";
-import { createAPIFileRoute } from "@tanstack/start/api";
+import { createAPIFileRoute } from "@tanstack/react-start/api";
 
 export const APIRoute = createAPIFileRoute("/api/auth/$")({
   POST: async (request) => {

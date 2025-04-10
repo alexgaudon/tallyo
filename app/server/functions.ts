@@ -1,5 +1,5 @@
 import { formatDateISO8601 } from "@/lib/utils";
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { getEvent } from "vinxi/http";
 import type { Auth } from "./auth";

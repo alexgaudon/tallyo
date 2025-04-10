@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { category } from "@/server/db/schema";
 import { userMiddleware } from "@/server/middlewares";
 import { queryOptions } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
 import { asc, eq } from "drizzle-orm";
 
 export type Category = Awaited<ReturnType<typeof $getUserCategories>>[0];

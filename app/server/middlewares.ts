@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router";
-import { createMiddleware } from "@tanstack/start";
+import { createMiddleware } from "@tanstack/react-start";
 import { getAuth } from "./functions";
 
 export const userMiddleware = createMiddleware().server(async ({ next }) => {
