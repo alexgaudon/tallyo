@@ -54,6 +54,10 @@ interface TransactionRowProps {
   setEditingId: React.Dispatch<React.SetStateAction<string>>;
   description: string;
   setDescription: React.Dispatch<React.SetStateAction<string>>;
+  vendor: string;
+  setVendor: React.Dispatch<React.SetStateAction<string>>;
+  editingField: string;
+  setEditingField: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const TransactionRow: React.FC<TransactionRowProps> = ({
@@ -65,6 +69,10 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
   setEditingId,
   description,
   setDescription,
+  vendor,
+  setVendor,
+  editingField,
+  setEditingField,
 }) => {
   const formatVendor = (vendor: string) =>
     vendor.length > 20 ? vendor.substring(0, 20) + "..." : vendor;
@@ -106,43 +114,78 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
       <TableRow key={transaction.id}>
         <TableCell>{transaction.date}</TableCell>
         <TableCell>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p>
-                  {transaction.displayVendor
-                    ? formatVendor(transaction.displayVendor)
-                    : formatVendor(transaction.vendor)}
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{transaction.vendor}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </TableCell>
-        <TableCell>
-          <div className="flex items-center space-x-2">
+          {isEditing === transaction.id && editingField === "vendor" ? (
             <Input
               type="text"
               className="px-0 py-0 h-6"
-              onClick={() => {
-                setEditingId(transaction.id);
-                setDescription(transaction.description ?? "");
-              }}
-              onBlur={() => {
-                onUpdate(transaction.id, { description });
-                setEditingId("");
-                setDescription(transaction.description ?? "");
-              }}
               disabled={transaction.reviewed}
-              value={
-                isEditing === transaction.id
-                  ? description
-                  : (transaction.description ?? "")
-              }
-              onChange={(e) => setDescription(e.target.value)}
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+              onBlur={() => {
+                onUpdate(transaction.id, { displayVendor: vendor });
+                setEditingId("");
+                setEditingField("");
+              }}
+              autoFocus
             />
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (!transaction.reviewed) {
+                        setEditingId(transaction.id);
+                        setEditingField("vendor");
+                        setVendor(
+                          transaction.displayVendor || transaction.vendor,
+                        );
+                      }
+                    }}
+                  >
+                    {transaction.displayVendor
+                      ? formatVendor(transaction.displayVendor)
+                      : formatVendor(transaction.vendor)}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{transaction.vendor}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center space-x-2">
+            {isEditing === transaction.id && editingField === "description" ? (
+              <Input
+                type="text"
+                className="px-0 py-0 h-6"
+                disabled={transaction.reviewed}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => {
+                  onUpdate(transaction.id, { description });
+                  setEditingId("");
+                  setEditingField("");
+                }}
+                autoFocus
+              />
+            ) : (
+              <p
+                className="cursor-pointer"
+                onClick={() => {
+                  if (!transaction.reviewed) {
+                    setEditingId(transaction.id);
+                    setEditingField("description");
+                    setDescription(transaction.description ?? "");
+                  }
+                }}
+              >
+                {transaction.description ?? ""}
+              </p>
+            )}
           </div>
         </TableCell>
         <TableCell>
@@ -259,7 +302,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
           )}
           {!transaction.reviewed && (
             <SplitTransaction transaction={transaction}>
-              <SplitIcon className="text-gray-500 cursor-pointer hover:scale-105" />
+              <SplitIcon className="text-gray-500 hover:scale-105 cursor-pointer" />
             </SplitTransaction>
           )}
           <DangerConfirm onConfirm={() => onDelete(transaction.id)}>
@@ -289,7 +332,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   children,
 }) => {
   const [description, setDescription] = useState<string>("");
+  const [vendor, setVendor] = useState<string>("");
   const [editingId, setEditingId] = useState<string>("");
+  const [editingField, setEditingField] = useState<string>("");
 
   const { mutate: updateTransaction } =
     TransactionRepository.useUpdateUserTransactionMutation();
@@ -309,6 +354,12 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       updateTransaction({
         id,
         description: data.description ?? "",
+      });
+    }
+    if ("displayVendor" in data) {
+      updateTransaction({
+        id,
+        displayVendor: data.displayVendor ?? "",
       });
     }
     if ("category" in data) {
@@ -364,6 +415,10 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
               setEditingId={setEditingId}
               description={description}
               setDescription={setDescription}
+              vendor={vendor}
+              setVendor={setVendor}
+              editingField={editingField}
+              setEditingField={setEditingField}
             />
           ))}
         </TableBody>
