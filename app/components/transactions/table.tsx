@@ -174,7 +174,9 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
               />
             ) : (
               <p
-                className="cursor-pointer"
+                className={cn("cursor-pointer", {
+                  "italic text-muted-foreground": !transaction.description,
+                })}
                 onClick={() => {
                   if (!transaction.reviewed) {
                     setEditingId(transaction.id);
@@ -183,7 +185,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
                   }
                 }}
               >
-                {transaction.description ?? ""}
+                {transaction.description || "Click to add description"}
               </p>
             )}
           </div>
