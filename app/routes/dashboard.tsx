@@ -24,7 +24,7 @@ export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
   validateSearch: searchParamSchema,
   beforeLoad: async ({ context, search }) => {
-    if (!context.auth) {
+    if (!context.auth || !context.auth.isAuthenticated) {
       throw redirect({ to: "/signin" });
     }
 

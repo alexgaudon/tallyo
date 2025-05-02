@@ -10,6 +10,8 @@ export const getAuth = createServerFn({ method: "GET" }).handler(
   async (): Promise<Auth> => {
     const event = getEvent();
 
+    console.log("Auth:", event.context.auth);
+
     return event.context.auth;
   },
 );
