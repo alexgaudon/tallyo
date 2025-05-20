@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { CategoryRepository } from "@/repositories/categories";
 import { Route } from "@/routes/transactions";
 import { useQuery } from "@tanstack/react-query";
@@ -28,7 +29,7 @@ export default function AdvancedSearch(props: {
 }) {
   const search = Route.useSearch();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(search.filter ?? "");
   const [category, setCategory] = useState(search.categoryName ?? "");
   const [onlyUnreviewed, setOnlyUnreviewed] = useState(props.onlyUnreviewed);
 
@@ -41,7 +42,6 @@ export default function AdvancedSearch(props: {
   }).meta;
 
   const navigate = useNavigate();
-
   // Effect to update category from URL parameters on mount
   useEffect(() => {
     const categoryName = search.categoryName; // Get categoryName from search
@@ -52,7 +52,7 @@ export default function AdvancedSearch(props: {
         setCategory(categoryId);
       }
     }
-  }, [categories, search.categoryName]);
+  }, []); // Empty dependency array means this only runs on mount
 
   useEffect(() => {
     doSearch();
@@ -137,7 +137,7 @@ export default function AdvancedSearch(props: {
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="lg:flex space-x-2 hidden">
+        <div className="hidden lg:flex space-x-2">
           <Select
             value={category}
             onValueChange={(val) => {
@@ -188,7 +188,11 @@ export default function AdvancedSearch(props: {
                 // eslint-disable-next-line @eslint-react/no-array-index-key
                 key={index}
                 variant="outline"
-                className="rounded-full text-sm"
+                className={cn(
+                  "rounded-full text-sm",
+                  category === search.value &&
+                    "bg-primary text-primary-foreground",
+                )}
                 onClick={() => {
                   setCategory(search.value);
                 }}
