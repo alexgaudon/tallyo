@@ -48,14 +48,21 @@ export const category = sqliteTable(
     hideFromInsights: int("hidden_in_insights", {
       mode: "boolean",
     }).default(sql`false`),
-    createdAt: int("created_at", { mode: "timestamp_ms" }).notNull().default(sql`current_timestamp`),
+    createdAt: int("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`current_timestamp`),
     updatedAt: int("updated_at", { mode: "timestamp_ms" })
       .default(sql`current_timestamp`)
       .$onUpdateFn(() => new Date()),
   },
   (table) => [
     unique().on(table.name, table.userId),
-    index("idx_category_hidden").on(table.id, table.hideFromInsights, table.name, table.treatAsIncome),
+    index("idx_category_hidden").on(
+      table.id,
+      table.hideFromInsights,
+      table.name,
+      table.treatAsIncome,
+    ),
   ],
 );
 
@@ -84,14 +91,24 @@ export const transaction = sqliteTable(
       .notNull()
       .default(sql`false`),
     externalId: text("external_id"),
-    createdAt: int("created_at", { mode: "timestamp_ms" }).notNull().default(sql`current_timestamp`),
+    createdAt: int("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`current_timestamp`),
     updatedAt: int("updated_at", { mode: "timestamp_ms" })
       .default(sql`current_timestamp`)
       .$onUpdateFn(() => new Date()),
   },
   (table) => [
     unique().on(table.externalId, table.userId),
-    index("idx_transaction_user_category_date").on(table.userId, table.categoryId, table.date),
-    index("idx_transaction_category_date").on(table.userId, table.categoryId, table.date),
+    index("idx_transaction_user_category_date").on(
+      table.userId,
+      table.categoryId,
+      table.date,
+    ),
+    index("idx_transaction_category_date").on(
+      table.userId,
+      table.categoryId,
+      table.date,
+    ),
   ],
 );

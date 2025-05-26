@@ -1,13 +1,16 @@
 import { formatDateISO8601 } from "@/lib/utils";
 
-function createKey<T extends string, U extends Record<string, string | string[]> = Record<string, never>>(
-  base: T,
-  subkeys: U = {} as U,
-) {
+function createKey<
+  T extends string,
+  U extends Record<string, string | string[]> = Record<string, never>,
+>(base: T, subkeys: U = {} as U) {
   return {
     all: [base] as string[],
     ...(Object.fromEntries(
-      Object.entries(subkeys).map(([key, path]) => [key, [base, ...(Array.isArray(path) ? path : [path])] as string[]]),
+      Object.entries(subkeys).map(([key, path]) => [
+        key,
+        [base, ...(Array.isArray(path) ? path : [path])] as string[],
+      ]),
     ) as U),
   };
 }

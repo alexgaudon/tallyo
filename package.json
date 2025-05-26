@@ -14,7 +14,8 @@
     "db": "drizzle-kit push",
     "db:gen": "drizzle-kit generate",
     "ui": "pnpm dlx shadcn@latest",
-    "db:auth:generate": "bunx @better-auth/cli generate --config ./app/server/auth.ts && prettier --write ./auth-schema.ts && mv ./auth-schema.ts ./app/server/db/auth-schema.ts"
+    "db:auth:generate": "bunx @better-auth/cli generate --config ./app/server/auth.ts && prettier --write ./auth-schema.ts && mv ./auth-schema.ts ./app/server/db/auth-schema.ts",
+    "db:seed": "bun run app/server/db/seed.ts"
   },
   "prettier": {
     "trailingComma": "all"
@@ -62,7 +63,6 @@
     "@tanstack/react-start": "^1.120.10",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/zod-form-adapter": "^0.42.1",
-    "@types/bun": "^1.2.14",
     "@uidotdev/usehooks": "^2.4.1",
     "@vitejs/plugin-react": "^4.5.0",
     "ai": "^4.3.16",
@@ -111,6 +111,7 @@
     "@types/react-dom": "^19.1.5",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "drizzle-kit": "^0.31.1",
+    "drizzle-seed": "^0.3.1",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
