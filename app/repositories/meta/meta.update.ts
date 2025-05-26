@@ -10,6 +10,7 @@ import { z } from "zod";
 
 const updateUserMetaSchema = z.object({
   privacyMode: z.boolean(),
+  developerMode: z.boolean(),
 });
 
 const $updateUserMeta = createServerFn({
@@ -19,10 +20,12 @@ const $updateUserMeta = createServerFn({
   .middleware([userMiddleware])
   .handler(async ({ context, data }) => {
     try {
+      console.log(data);
       await db
         .update(userSettings)
         .set({
           privacyMode: data.privacyMode,
+          developerMode: data.developerMode,
         })
         .where(eq(userSettings.userId, context.auth.user.id))
         .execute();
@@ -54,6 +57,7 @@ export const useUpdateUserMetaMutation = () => {
       });
 
       const updatedSettings = variables.privacyMode;
+      const updatedDeveloperMode = variables.developerMode;
 
       const previousData = queryClient.getQueryData(keys.meta.queries.all);
 
@@ -62,6 +66,7 @@ export const useUpdateUserMetaMutation = () => {
         (old: {
           settings: {
             privacyMode: boolean;
+            developerMode: boolean;
           };
         }) => {
           if (!old) return;
@@ -71,6 +76,7 @@ export const useUpdateUserMetaMutation = () => {
             settings: {
               ...old.settings,
               privacyMode: updatedSettings,
+              developerMode: updatedDeveloperMode,
             },
           };
         },

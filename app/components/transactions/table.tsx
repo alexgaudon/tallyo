@@ -11,8 +11,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { MetaRepository } from "@/repositories/meta";
 import { TransactionRepository } from "@/repositories/transactions";
 import type { Transaction } from "@/repositories/transactions/transactions.getAll";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -46,6 +48,7 @@ import { SplitTransaction } from "./split-transaction";
 
 // Define the props for the TransactionRow component
 interface TransactionRowProps {
+  showIdField: boolean;
   transaction: Transaction;
   onUpdate: (id: string, data: Partial<Transaction>) => void;
   onDelete: (id: string) => void;
@@ -61,6 +64,7 @@ interface TransactionRowProps {
 }
 
 const TransactionRow: React.FC<TransactionRowProps> = ({
+  showIdField,
   transaction,
   onUpdate,
   onDelete,
@@ -112,6 +116,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
         </AlertDialogContent>
       </AlertDialog>
       <TableRow key={transaction.id}>
+        {showIdField && <TableCell>{transaction.id}</TableCell>}
         <TableCell>{transaction.date}</TableCell>
         <TableCell>
           {isEditing === transaction.id && editingField === "vendor" ? (
@@ -338,6 +343,8 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
   const [editingId, setEditingId] = useState<string>("");
   const [editingField, setEditingField] = useState<string>("");
 
+  const { data: meta } = useQuery(MetaRepository.getUserMeta());
+
   const { mutate: updateTransaction } =
     TransactionRepository.useUpdateUserTransactionMutation();
   const { mutate: deleteTransaction } =
@@ -370,12 +377,6 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         categoryId: data.category?.id ?? "",
       });
     }
-    // updateTransaction({
-    //   id,
-    //   reviewed: data.reviewed,
-    //   description: data.description ?? "",
-    //   categoryId: data.category?.id,
-    // });
   };
 
   const onDelete = (id: string) => deleteTransaction({ id });
@@ -397,6 +398,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            {meta?.settings?.developerMode && (
+              <TableHead className="w-[100px]">ID</TableHead>
+            )}
             <TableHead className="w-[180px]">Date</TableHead>
             <TableHead className="w-1/6">Vendor</TableHead>
             <TableHead className="w-1/4">Description</TableHead>
@@ -409,6 +413,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
           {data.map((transaction) => (
             <TransactionRow
               key={transaction.id}
+              showIdField={meta?.settings?.developerMode ?? false}
               transaction={transaction}
               onUpdate={onUpdate}
               onDelete={onDelete}

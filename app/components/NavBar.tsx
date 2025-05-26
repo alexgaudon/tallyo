@@ -20,7 +20,8 @@ import { authClient } from "@/lib/authClient";
 
 import icon from "@/favicon.ico?url";
 import { AuthRepository } from "@/repositories/auth";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { MetaRepository } from "@/repositories/meta";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { ModeToggle } from "./mode-toggle";
 
 export default function Navbar() {
@@ -41,7 +42,7 @@ export default function Navbar() {
             <span className="font-bold text-xl">Tallyo</span>
           </Link>
         </div>
-        <div className="lg:flex lg:items-center lg:space-x-6 hidden">
+        <div className="hidden lg:flex lg:items-center lg:space-x-6">
           {authQuery.data.isAuthenticated ? (
             <>
               <NavLinks />
@@ -59,7 +60,7 @@ export default function Navbar() {
             </>
           )}
         </div>
-        <div className="flex space-x-2 lg:hidden">
+        <div className="lg:hidden flex space-x-2">
           <ModeToggle />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -113,7 +114,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
     <Link
       key={link.href}
       to={link.href}
-      className="font-medium text-foreground text-sm hover:text-gray-400"
+      className="font-medium text-foreground hover:text-gray-400 text-sm"
     >
       {link.label}
     </Link>
@@ -132,6 +133,16 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
 
 function UserDropdown() {
   const authQuery = useSuspenseQuery(AuthRepository.getUserAuthQuery());
+
+  const { data: meta } = useQuery(MetaRepository.getUserMeta());
+  const { mutate: updateMeta } = MetaRepository.useUpdateUserMetaMutation();
+
+  const onToggleDeveloperMode = () => {
+    updateMeta({
+      privacyMode: meta?.settings?.privacyMode ?? false,
+      developerMode: !meta?.settings?.developerMode,
+    });
+  };
 
   return (
     <>
@@ -157,6 +168,12 @@ function UserDropdown() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem onClick={onToggleDeveloperMode}>
+            <span>
+              {meta?.settings?.developerMode ? "Disable" : "Enable"} Developer
+              Mode
+            </span>
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
               authClient.signOut().then(() => {

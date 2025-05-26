@@ -19,6 +19,7 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
       topCategories: [],
       settings: {
         privacyMode: false,
+        developerMode: false,
       },
     };
   }
@@ -69,6 +70,7 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
   const settings = await db
     .select({
       privacyMode: userSettings.privacyMode,
+      developerMode: userSettings.developerMode,
     })
     .from(userSettings)
     .where(eq(userSettings.userId, auth.user.id));
@@ -80,6 +82,7 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
         id: uuidv7(),
         userId: auth.user.id,
         privacyMode: false,
+        developerMode: false,
       })
       .execute();
   }

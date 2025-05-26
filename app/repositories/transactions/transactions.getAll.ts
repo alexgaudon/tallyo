@@ -58,6 +58,12 @@ const $getUserTransactions = createServerFn({ method: "GET" })
       conditions.push(eq(transaction.reviewed, false));
     }
 
+    if (data.filter && data.filter.length === 36) {
+      conditions.length = 0; // Clear all previous conditions
+      conditions.push(eq(transaction.id, data.filter));
+      conditions.push(eq(transaction.userId, context.auth.user.id));
+    }
+
     const orderByClause = [desc(transaction.date), desc(transaction.id)];
 
     const query = db

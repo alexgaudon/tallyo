@@ -3,9 +3,9 @@ import {
   HeadContent,
   Outlet,
   ScriptOnce,
+  Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { Scripts } from "@tanstack/react-start";
 import React from "react";
 
 import Navbar from "@/components/NavBar";
@@ -78,7 +78,7 @@ const TanStackRouterDevtools = import.meta.env.PROD
   ? () => null // Render nothing in production
   : React.lazy(() =>
       // Lazy load in development
-      import("@tanstack/router-devtools").then((res) => ({
+      import("@tanstack/react-router-devtools").then((res) => ({
         default: res.TanStackRouterDevtools,
         // For Embedded Mode
         // default: res.TanStackRouterDevtoolsPanel

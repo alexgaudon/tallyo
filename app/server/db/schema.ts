@@ -15,7 +15,10 @@ export const userSettings = sqliteTable("user_settings", {
     .references(() => user.id),
   privacyMode: int("privacy_mode", {
     mode: "boolean",
-  }),
+  }).default(sql`false`),
+  developerMode: int("developer_mode", {
+    mode: "boolean",
+  }).default(sql`false`),
 });
 
 export const authToken = sqliteTable(
