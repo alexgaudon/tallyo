@@ -9,8 +9,7 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-background text-foreground",
-        destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
       },
     },
     defaultVariants: {
@@ -27,14 +26,7 @@ const Alert = ({
 }: React.HTMLAttributes<HTMLDivElement> &
   VariantProps<typeof alertVariants> & {
     ref?: React.RefObject<HTMLDivElement | null>;
-  }) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-);
+  }) => <div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props} />;
 Alert.displayName = "Alert";
 
 const AlertTitle = ({
@@ -43,13 +35,7 @@ const AlertTitle = ({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement> & {
   ref?: React.RefObject<HTMLParagraphElement | null>;
-}) => (
-  <h5
-    ref={ref}
-    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
-    {...props}
-  />
-);
+}) => <h5 ref={ref} className={cn("mb-1 font-medium leading-none tracking-tight", className)} {...props} />;
 AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = ({
@@ -58,13 +44,7 @@ const AlertDescription = ({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement> & {
   ref?: React.RefObject<HTMLParagraphElement | null>;
-}) => (
-  <div
-    ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
-    {...props}
-  />
-);
+}) => <div ref={ref} className={cn("text-sm [&_p]:leading-relaxed", className)} {...props} />;
 AlertDescription.displayName = "AlertDescription";
 
 export { Alert, AlertTitle, AlertDescription };

@@ -14,10 +14,7 @@ const InputOTP = ({
 }) => (
   <OTPInput
     ref={ref}
-    containerClassName={cn(
-      "flex items-center gap-2 has-[:disabled]:opacity-50",
-      containerClassName,
-    )}
+    containerClassName={cn("flex items-center gap-2 has-[:disabled]:opacity-50", containerClassName)}
     className={cn("disabled:cursor-not-allowed", className)}
     {...props}
   />
@@ -30,9 +27,7 @@ const InputOTPGroup = ({
   ...props
 }: React.ComponentPropsWithoutRef<"div"> & {
   ref?: React.RefObject<React.ElementRef<"div"> | null>;
-}) => (
-  <div ref={ref} className={cn("flex items-center", className)} {...props} />
-);
+}) => <div ref={ref} className={cn("flex items-center", className)} {...props} />;
 InputOTPGroup.displayName = "InputOTPGroup";
 
 const InputOTPSlot = ({

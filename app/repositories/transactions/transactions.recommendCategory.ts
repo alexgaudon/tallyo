@@ -41,12 +41,7 @@ const $recommendTransactionCategory = createServerFn({
           categoryId: transaction.categoryId,
         })
         .from(transaction)
-        .where(
-          and(
-            eq(transaction.userId, context.auth.user.id),
-            eq(transaction.reviewed, true),
-          ),
-        );
+        .where(and(eq(transaction.userId, context.auth.user.id), eq(transaction.reviewed, true)));
 
       const fuse = new Fuse(allReviewedTransactions, {
         keys: ["vendor"],

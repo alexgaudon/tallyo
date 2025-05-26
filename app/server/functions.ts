@@ -6,13 +6,11 @@ import type { Auth } from "./auth";
 import { db } from "./db";
 import { transaction } from "./db/schema";
 
-export const getAuth = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Auth> => {
-    const event = getEvent();
+export const getAuth = createServerFn({ method: "GET" }).handler(async (): Promise<Auth> => {
+  const event = getEvent();
 
-    return event.context.auth;
-  },
-);
+  return event.context.auth;
+});
 
 export const $getEarliestTransactionDate = createServerFn({
   method: "GET",

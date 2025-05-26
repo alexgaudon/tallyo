@@ -26,11 +26,7 @@ export const $getMonthlyExpenseData = createServerFn({
       .from(transaction)
       .where(and(...conditions))
       .leftJoin(category, eq(category.id, transaction.categoryId))
-      .groupBy(
-        category.name,
-        sql`strftime('%Y-%m', ${transaction.date})`,
-        category.treatAsIncome,
-      );
+      .groupBy(category.name, sql`strftime('%Y-%m', ${transaction.date})`, category.treatAsIncome);
 
     return results;
   });

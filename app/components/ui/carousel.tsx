@@ -1,7 +1,5 @@
 import * as React from "react";
-import useEmblaCarousel, {
-  type UseEmblaCarouselType,
-} from "embla-carousel-react";
+import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -49,8 +47,7 @@ const Carousel = ({
   className,
   children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> &
-  CarouselProps & { ref?: React.RefObject<HTMLDivElement | null> }) => {
+}: React.HTMLAttributes<HTMLDivElement> & CarouselProps & { ref?: React.RefObject<HTMLDivElement | null> }) => {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -121,8 +118,7 @@ const Carousel = ({
         carouselRef,
         api: api,
         opts,
-        orientation:
-          orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+        orientation: orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
         scrollPrev,
         scrollNext,
         canScrollPrev,
@@ -157,11 +153,7 @@ const CarouselContent = ({
     <div ref={carouselRef} className="overflow-hidden">
       <div
         ref={ref}
-        className={cn(
-          "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-          className,
-        )}
+        className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)}
         {...props}
       />
     </div>
@@ -183,11 +175,7 @@ const CarouselItem = ({
       ref={ref}
       role="group"
       aria-roledescription="slide"
-      className={cn(
-        "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "pl-4" : "pt-4",
-        className,
-      )}
+      className={cn("min-w-0 shrink-0 grow-0 basis-full", orientation === "horizontal" ? "pl-4" : "pt-4", className)}
       {...props}
     />
   );
@@ -262,11 +250,4 @@ const CarouselNext = ({
 };
 CarouselNext.displayName = "CarouselNext";
 
-export {
-  type CarouselApi,
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-};
+export { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };

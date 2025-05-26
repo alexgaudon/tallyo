@@ -1,17 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
 
 import { getRealMonth } from "@/lib/utils";
 import { CategoryRepository } from "@/repositories/categories";
@@ -26,12 +14,8 @@ import { Button } from "../ui/button";
 import { ChartSkeleton } from "./skeletons";
 
 export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
-  const { data, isLoading } = useQuery(
-    ChartsRespository.getMonthlyExpenseDataQuery(),
-  );
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data, isLoading } = useQuery(ChartsRespository.getMonthlyExpenseDataQuery());
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
   const [months, setMonths] = useState(props.numberOfMonths ?? 2);
 
@@ -47,26 +31,19 @@ export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
 
   for (let i = 0; i < months; i++) {
     const year = subMonths(new Date(), i).getFullYear();
-    validPeriods.push(
-      `${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`,
-    );
+    validPeriods.push(`${year}-${(subMonths(new Date(), i).getMonth() + 1).toString().padStart(2, "0")}`);
   }
 
   const getAmountOfCategory = (category: string) =>
     Object.fromEntries(
       validPeriods.map((month) => [
         month,
-        data?.find((x) => x.category === category && x.period === month)
-          ?.amount ?? 0,
+        data?.find((x) => x.category === category && x.period === month)?.amount ?? 0,
       ]),
     );
 
-  const totalIncomeAmounts = Object.fromEntries(
-    validPeriods.map((month) => [month, 0]),
-  );
-  const totalExpenseAmounts = Object.fromEntries(
-    validPeriods.map((month) => [month, 0]),
-  );
+  const totalIncomeAmounts = Object.fromEntries(validPeriods.map((month) => [month, 0]));
+  const totalExpenseAmounts = Object.fromEntries(validPeriods.map((month) => [month, 0]));
 
   const tableRows = (
     <>
@@ -147,8 +124,7 @@ export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
         </CardTitle>
         <CardDescription suppressHydrationWarning>
           {" "}
-          {getRealMonth(subMonths(new Date(), months - 1))} -{" "}
-          {getRealMonth(new Date())} {new Date().getFullYear()}
+          {getRealMonth(subMonths(new Date(), months - 1))} - {getRealMonth(new Date())} {new Date().getFullYear()}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -185,13 +161,7 @@ export function MonthlyExpenseChart(props: { numberOfMonths?: number }) {
               <TableCell className="p-0">Totals</TableCell>
               {validPeriods.map((month) => (
                 <TableCell className="p-0" key={`totals-${month}`}>
-                  <AmountDisplay
-                    colored
-                    amount={
-                      totalIncomeAmounts[month] -
-                      Math.abs(totalExpenseAmounts[month])
-                    }
-                  />
+                  <AmountDisplay colored amount={totalIncomeAmounts[month] - Math.abs(totalExpenseAmounts[month])} />
                 </TableCell>
               ))}
             </TableRow>

@@ -12,9 +12,7 @@ const ToastViewport = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof ToastPrimitives.Viewport
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof ToastPrimitives.Viewport> | null>;
 }) => (
   <ToastPrimitives.Viewport
     ref={ref}
@@ -33,8 +31,7 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: "border bg-background text-foreground",
-        destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
       },
     },
     defaultVariants: {
@@ -52,13 +49,7 @@ const Toast = ({
   VariantProps<typeof toastVariants> & {
     ref?: React.RefObject<React.ElementRef<typeof ToastPrimitives.Root> | null>;
   }) => {
-  return (
-    <ToastPrimitives.Root
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
-    />
-  );
+  return <ToastPrimitives.Root ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />;
 };
 Toast.displayName = ToastPrimitives.Root.displayName;
 
@@ -107,13 +98,7 @@ const ToastTitle = ({
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title> & {
   ref?: React.RefObject<React.ElementRef<typeof ToastPrimitives.Title> | null>;
-}) => (
-  <ToastPrimitives.Title
-    ref={ref}
-    className={cn("text-sm font-semibold", className)}
-    {...props}
-  />
-);
+}) => <ToastPrimitives.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />;
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
 
 const ToastDescription = ({
@@ -121,16 +106,8 @@ const ToastDescription = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof ToastPrimitives.Description
-  > | null>;
-}) => (
-  <ToastPrimitives.Description
-    ref={ref}
-    className={cn("text-sm opacity-90", className)}
-    {...props}
-  />
-);
+  ref?: React.RefObject<React.ElementRef<typeof ToastPrimitives.Description> | null>;
+}) => <ToastPrimitives.Description ref={ref} className={cn("text-sm opacity-90", className)} {...props} />;
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
 type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>;

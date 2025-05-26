@@ -24,10 +24,7 @@ const $createUserTransaction = createServerFn({
   .handler(async ({ context, data }) => {
     const { matchDisplayVendor } = await import("./matchDisplayVendor");
 
-    const displayVendor = await matchDisplayVendor(
-      context.auth.user.id,
-      data.vendor,
-    );
+    const displayVendor = await matchDisplayVendor(context.auth.user.id, data.vendor);
 
     const res = await db.insert(transaction).values({
       id: uuidv7(),

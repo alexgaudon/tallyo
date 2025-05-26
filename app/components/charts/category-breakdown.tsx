@@ -1,17 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { formatCurrency, transformAmounts } from "@/lib/utils";
 import { ChartsRespository } from "@/repositories/charts";
 import { useQuery } from "@tanstack/react-query";
@@ -54,63 +42,31 @@ export function CategoryBreakdownChart(props: { to?: Date; from?: Date }) {
     };
   });
 
-  const totalAmount = relevantData.reduce(
-    (acc, curr) => acc + (curr.amount ?? 0),
-    0,
-  );
+  const totalAmount = relevantData.reduce((acc, curr) => acc + (curr.amount ?? 0), 0);
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Transaction Category Breakdown</CardTitle>
-        <CardDescription suppressHydrationWarning>
-          All Tracked Transactions
-        </CardDescription>
+        <CardDescription suppressHydrationWarning>All Tracked Transactions</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto max-h-[300px] aspect-square"
-        >
+        <ChartContainer config={chartConfig} className="mx-auto max-h-[300px] aspect-square">
           <PieChart>
             <ChartLegend />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Pie
-              data={relevantData}
-              dataKey="amount"
-              nameKey="name"
-              innerRadius={60}
-              strokeWidth={5}
-            >
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+            <Pie data={relevantData} dataKey="amount" nameKey="name" innerRadius={60} strokeWidth={5}>
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                     return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="font-bold text-xl fill-foreground"
-                        >
+                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
+                        <tspan x={viewBox.cx} y={viewBox.cy} className="font-bold text-xl fill-foreground">
                           {!isPrivacyMode
                             ? formatCurrency(totalAmount)
-                            : "$" +
-                              "•".repeat(totalAmount.toString().length - 3) +
-                              ".••"}
+                            : "$" + "•".repeat(totalAmount.toString().length - 3) + ".••"}
                         </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
+                        <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground">
                           Spent
                         </tspan>
                       </text>

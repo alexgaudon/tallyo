@@ -21,10 +21,7 @@ export const $getUserStatsData = createServerFn({
   .middleware([userMiddleware])
   .validator(chartDataSchema)
   .handler(async ({ context, data }) => {
-    const conditions = [
-      eq(transaction.userId, context.auth.user.id),
-      eq(category.hideFromInsights, false),
-    ];
+    const conditions = [eq(transaction.userId, context.auth.user.id), eq(category.hideFromInsights, false)];
 
     if (data.to && data.from) {
       conditions.push(gte(transaction.date, formatDateISO8601(data.from)));
@@ -45,16 +42,9 @@ export const $getUserStatsData = createServerFn({
     const stats = basicStats[0];
 
     // Calculate daily spending rate
-    const dateFrom = data.from
-      ? new Date(data.from)
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dateFrom = data.from ? new Date(data.from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const dateTo = data.to ? new Date(data.to) : new Date();
-    const daysDiff = Math.max(
-      1,
-      Math.ceil(
-        (dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24),
-      ),
-    );
+    const daysDiff = Math.max(1, Math.ceil((dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24)));
 
     const dailySpendingRate = stats.expenses / daysDiff;
 
@@ -67,11 +57,7 @@ export const $getUserStatsData = createServerFn({
 export const getStatsDataQuery = (data: z.infer<typeof chartDataSchema>) =>
   queryOptions({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      ...keys.charts.queries.stats,
-      getKeyFromDate(data.to),
-      getKeyFromDate(data.from),
-    ],
+    queryKey: [...keys.charts.queries.stats, getKeyFromDate(data.to), getKeyFromDate(data.from)],
     queryFn: () =>
       $getUserStatsData({
         data,

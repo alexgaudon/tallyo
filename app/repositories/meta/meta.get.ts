@@ -38,12 +38,7 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
       count: count(),
     })
     .from(transaction)
-    .where(
-      and(
-        eq(transaction.userId, auth.user.id),
-        eq(transaction.reviewed, false),
-      ),
-    );
+    .where(and(eq(transaction.userId, auth.user.id), eq(transaction.reviewed, false)));
 
   const topCategories = await db
     .select({
@@ -52,18 +47,12 @@ const $getUserMeta = createServerFn({ method: "GET" }).handler(async () => {
     })
     .from(transaction)
     .innerJoin(category, eq(transaction.categoryId, category.id))
-    .where(
-      and(
-        eq(transaction.userId, auth.user.id),
-        eq(category.hideFromInsights, false),
-      ),
-    )
+    .where(and(eq(transaction.userId, auth.user.id), eq(category.hideFromInsights, false)))
     .groupBy(category.id, category.name, category.color)
     .orderBy(desc(sql<number>`COUNT(${transaction.id})`))
     .limit(5);
 
-  const firstDate =
-    earliestTransaction[0]?.date ?? formatDateISO8601(new Date());
+  const firstDate = earliestTransaction[0]?.date ?? formatDateISO8601(new Date());
 
   const unreviewed = unreviewedCount.at(-1)?.count ?? 0;
 

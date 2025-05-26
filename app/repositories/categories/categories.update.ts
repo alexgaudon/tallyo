@@ -27,12 +27,7 @@ const $updateUserCategory = createServerFn({
         .set({
           ...data,
         })
-        .where(
-          and(
-            eq(category.userId, context.auth.user.id),
-            eq(category.id, data.id),
-          ),
-        )
+        .where(and(eq(category.userId, context.auth.user.id), eq(category.id, data.id)))
         .returning({
           name: category.name,
         });
@@ -68,19 +63,16 @@ export const useUpdateUserCategoryMutation = () => {
 
       const previous = queryClient.getQueryData(keys.categories.queries.all);
 
-      queryClient.setQueryData(
-        keys.categories.queries.all,
-        (old: Category[]) => {
-          return old.map((category) =>
-            category.id === variables.id
-              ? {
-                  ...category,
-                  ...variables,
-                }
-              : category,
-          );
-        },
-      );
+      queryClient.setQueryData(keys.categories.queries.all, (old: Category[]) => {
+        return old.map((category) =>
+          category.id === variables.id
+            ? {
+                ...category,
+                ...variables,
+              }
+            : category,
+        );
+      });
 
       return { previous };
     },

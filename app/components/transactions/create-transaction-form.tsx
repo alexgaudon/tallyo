@@ -6,14 +6,7 @@ import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { DatePicker } from "../ui/date-picker";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Toaster } from "../ui/toaster";
 
@@ -41,15 +34,12 @@ export function CreateTransactionForm() {
 
       toast({
         variant: res ? "default" : "destructive",
-        description: res
-          ? "Created transaction successfully."
-          : "An error has occurred. Please try again.",
+        description: res ? "Created transaction successfully." : "An error has occurred. Please try again.",
       });
     },
   });
 
-  const { mutateAsync, isError, error } =
-    TransactionRepository.useCreateUserTransactionMutation();
+  const { mutateAsync, isError, error } = TransactionRepository.useCreateUserTransactionMutation();
 
   return (
     <>
@@ -86,9 +76,7 @@ export function CreateTransactionForm() {
                   <form.Field
                     validators={{
                       onChange: ({ value, fieldApi }) =>
-                        value.length <= 0 && fieldApi.state.meta.isTouched
-                          ? "This field is required"
-                          : undefined,
+                        value.length <= 0 && fieldApi.state.meta.isTouched ? "This field is required" : undefined,
                     }}
                     name="vendor"
                     children={(field) => (
@@ -119,8 +107,7 @@ export function CreateTransactionForm() {
                   <form.Field
                     validators={{
                       onChange: ({ value, fieldApi }) =>
-                        (value === "0" || value.length === 0) &&
-                        fieldApi.state.meta.isTouched
+                        (value === "0" || value.length === 0) && fieldApi.state.meta.isTouched
                           ? "This field is required"
                           : undefined,
                     }}
@@ -156,9 +143,7 @@ export function CreateTransactionForm() {
                   <form.Field
                     validators={{
                       onChange: ({ value, fieldApi }) =>
-                        !value && fieldApi.state.meta.isTouched
-                          ? "This field is required"
-                          : undefined,
+                        !value && fieldApi.state.meta.isTouched ? "This field is required" : undefined,
                     }}
                     name="date"
                     children={(field) => (

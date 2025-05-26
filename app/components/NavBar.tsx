@@ -10,12 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { authClient } from "@/lib/authClient";
 
 import icon from "@/favicon.ico?url";
@@ -34,11 +29,7 @@ export default function Navbar() {
       <div className="flex justify-between items-center px-4 lg:px-8 py-3">
         <div className="flex items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <img
-              src={icon}
-              alt={`Tallyo logo`}
-              className="rounded-lg w-8 h-8"
-            />
+            <img src={icon} alt={`Tallyo logo`} className="rounded-lg w-8 h-8" />
             <span className="font-bold text-xl">Tallyo</span>
           </Link>
         </div>
@@ -79,12 +70,7 @@ export default function Navbar() {
                 ) : (
                   <>
                     <SheetClose asChild>
-                      <Button
-                        type="button"
-                        asChild
-                        className="mx-auto w-fit"
-                        size="lg"
-                      >
+                      <Button type="button" asChild className="mx-auto w-fit" size="lg">
                         <Link to="/signin">Sign in</Link>
                       </Button>
                     </SheetClose>
@@ -111,11 +97,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
   ];
 
   const linkElements = links.map((link) => (
-    <Link
-      key={link.href}
-      to={link.href}
-      className="font-medium text-foreground hover:text-gray-400 text-sm"
-    >
+    <Link key={link.href} to={link.href} className="font-medium text-foreground hover:text-gray-400 text-sm">
       {link.label}
     </Link>
   ));
@@ -151,28 +133,18 @@ function UserDropdown() {
           <Button variant="ghost" className="flex items-center space-x-1">
             <Avatar className="w-5 h-5">
               {authQuery.data?.user?.image ? (
-                <img
-                  src={authQuery.data.user.image}
-                  alt={authQuery.data.user.name}
-                />
+                <img src={authQuery.data.user.image} alt={authQuery.data.user.name} />
               ) : (
-                <AvatarFallback>
-                  {authQuery.data?.user?.name.substring(0, 1).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback>{authQuery.data?.user?.name.substring(0, 1).toUpperCase()}</AvatarFallback>
               )}
             </Avatar>
-            <span className="font-medium text-sm">
-              {authQuery.data?.user?.name || ""}
-            </span>
+            <span className="font-medium text-sm">{authQuery.data?.user?.name || ""}</span>
             <ChevronDown className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem onClick={onToggleDeveloperMode}>
-            <span>
-              {meta?.settings?.developerMode ? "Disable" : "Enable"} Developer
-              Mode
-            </span>
+            <span>{meta?.settings?.developerMode ? "Disable" : "Enable"} Developer Mode</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {

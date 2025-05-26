@@ -10,12 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -89,10 +84,7 @@ const SidebarProvider = ({
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
+      if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         toggleSidebar();
       }
@@ -130,10 +122,7 @@ const SidebarProvider = ({
               ...style,
             } as React.CSSProperties
           }
-          className={cn(
-            "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-            className,
-          )}
+          className={cn("group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar", className)}
           ref={ref}
           {...props}
         >
@@ -163,10 +152,7 @@ const Sidebar = ({
   if (collapsible === "none") {
     return (
       <div
-        className={cn(
-          "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
-          className,
-        )}
+        className={cn("flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground", className)}
         ref={ref}
         {...props}
       >
@@ -353,14 +339,7 @@ const SidebarHeader = ({
 }: React.ComponentProps<"div"> & {
   ref?: React.RefObject<HTMLDivElement | null>;
 }) => {
-  return (
-    <div
-      ref={ref}
-      data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
-  );
+  return <div ref={ref} data-sidebar="header" className={cn("flex flex-col gap-2 p-2", className)} {...props} />;
 };
 SidebarHeader.displayName = "SidebarHeader";
 
@@ -371,14 +350,7 @@ const SidebarFooter = ({
 }: React.ComponentProps<"div"> & {
   ref?: React.RefObject<HTMLDivElement | null>;
 }) => {
-  return (
-    <div
-      ref={ref}
-      data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
-  );
+  return <div ref={ref} data-sidebar="footer" className={cn("flex flex-col gap-2 p-2", className)} {...props} />;
 };
 SidebarFooter.displayName = "SidebarFooter";
 
@@ -497,14 +469,7 @@ const SidebarGroupContent = ({
   ...props
 }: React.ComponentProps<"div"> & {
   ref?: React.RefObject<HTMLDivElement | null>;
-}) => (
-  <div
-    ref={ref}
-    data-sidebar="group-content"
-    className={cn("w-full text-sm", className)}
-    {...props}
-  />
-);
+}) => <div ref={ref} data-sidebar="group-content" className={cn("w-full text-sm", className)} {...props} />;
 SidebarGroupContent.displayName = "SidebarGroupContent";
 
 const SidebarMenu = ({
@@ -513,14 +478,7 @@ const SidebarMenu = ({
   ...props
 }: React.ComponentProps<"ul"> & {
   ref?: React.RefObject<HTMLUListElement | null>;
-}) => (
-  <ul
-    ref={ref}
-    data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-1", className)}
-    {...props}
-  />
-);
+}) => <ul ref={ref} data-sidebar="menu" className={cn("flex w-full min-w-0 flex-col gap-1", className)} {...props} />;
 SidebarMenu.displayName = "SidebarMenu";
 
 const SidebarMenuItem = ({
@@ -529,14 +487,7 @@ const SidebarMenuItem = ({
   ...props
 }: React.ComponentProps<"li"> & {
   ref?: React.RefObject<HTMLLIElement | null>;
-}) => (
-  <li
-    ref={ref}
-    data-sidebar="menu-item"
-    className={cn("group/menu-item relative", className)}
-    {...props}
-  />
-);
+}) => <li ref={ref} data-sidebar="menu-item" className={cn("group/menu-item relative", className)} {...props} />;
 SidebarMenuItem.displayName = "SidebarMenuItem";
 
 const sidebarMenuButtonVariants = cva(
@@ -604,12 +555,7 @@ const SidebarMenuButton = ({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
-      />
+      <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltip} />
     </Tooltip>
   );
 };
@@ -693,12 +639,7 @@ const SidebarMenuSkeleton = ({
       className={cn("rounded-md h-8 flex gap-2 px-2 items-center", className)}
       {...props}
     >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
-        />
-      )}
+      {showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}
       <Skeleton
         className="h-4 flex-1 max-w-[--skeleton-width]"
         data-sidebar="menu-skeleton-text"

@@ -40,9 +40,7 @@ const $createUserCategory = createServerFn({
       const message = (e as Error).message;
       return {
         ok: false,
-        message: message.includes("SQLITE_CONSTRAINT")
-          ? "A category with this name already exists."
-          : message,
+        message: message.includes("SQLITE_CONSTRAINT") ? "A category with this name already exists." : message,
       };
     }
   });

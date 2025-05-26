@@ -27,12 +27,7 @@ const $updateUserTransaction = createServerFn({
     const existingTransaction = await db
       .select()
       .from(transaction)
-      .where(
-        and(
-          eq(transaction.id, data.id),
-          eq(transaction.userId, context.auth.user.id),
-        ),
-      );
+      .where(and(eq(transaction.id, data.id), eq(transaction.userId, context.auth.user.id)));
 
     if (existingTransaction.length === 0) {
       return { ok: false, message: "Something went wrong. Please try again" };
@@ -62,12 +57,7 @@ const $updateUserTransaction = createServerFn({
       await db
         .update(transaction)
         .set(updatedValues)
-        .where(
-          and(
-            eq(transaction.userId, context.auth.user.id),
-            eq(transaction.id, data.id),
-          ),
-        )
+        .where(and(eq(transaction.userId, context.auth.user.id), eq(transaction.id, data.id)))
         .execute();
 
       return {
@@ -98,9 +88,7 @@ export const useUpdateUserTransactionMutation = () => {
       });
 
       const updatedCategory = variables.categoryId
-        ? (await $getUserCategories()).find(
-            (x) => x.id === variables.categoryId,
-          )
+        ? (await $getUserCategories()).find((x) => x.id === variables.categoryId)
         : undefined;
 
       const allQueryKeys = queryClient.getQueriesData({

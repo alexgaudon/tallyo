@@ -18,9 +18,7 @@ export const Route = createFileRoute("/categories/$category")({
     }
 
     await Promise.all([
-      ctx.context.queryClient.prefetchQuery(
-        CategoryRepository.getAllUserCategoriesQuery(),
-      ),
+      ctx.context.queryClient.prefetchQuery(CategoryRepository.getAllUserCategoriesQuery()),
       ctx.context.queryClient.prefetchQuery(
         TransactionRepository.getAllUserTransactionsQuery({
           categoryName: ctx.params.category,

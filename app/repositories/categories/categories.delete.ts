@@ -22,12 +22,7 @@ const $deleteUserCategory = createServerFn({
     try {
       const res = await db
         .delete(category)
-        .where(
-          and(
-            eq(category.userId, context.auth.user.id),
-            eq(category.id, data.id),
-          ),
-        )
+        .where(and(eq(category.userId, context.auth.user.id), eq(category.id, data.id)))
         .returning({
           name: category.name,
         });
@@ -43,9 +38,7 @@ const $deleteUserCategory = createServerFn({
       const message = (e as Error).message;
       return {
         ok: false,
-        message: message.includes("duplicate key value")
-          ? "A category with this name already exists."
-          : message,
+        message: message.includes("duplicate key value") ? "A category with this name already exists." : message,
       };
     }
   });
@@ -67,12 +60,9 @@ export const useDeleteUserCategoryMutation = () => {
 
       const previous = queryClient.getQueryData(keys.categories.queries.all);
 
-      queryClient.setQueryData(
-        keys.categories.queries.all,
-        (old: Category[]) => {
-          return old.filter((x) => x.id !== variables.id);
-        },
-      );
+      queryClient.setQueryData(keys.categories.queries.all, (old: Category[]) => {
+        return old.filter((x) => x.id !== variables.id);
+      });
 
       return { previous };
     },

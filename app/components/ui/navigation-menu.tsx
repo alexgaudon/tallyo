@@ -11,16 +11,11 @@ const NavigationMenu = ({
   children,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Root> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.Root
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.Root> | null>;
 }) => (
   <NavigationMenuPrimitive.Root
     ref={ref}
-    className={cn(
-      "relative z-10 flex max-w-max flex-1 items-center justify-center",
-      className,
-    )}
+    className={cn("relative z-10 flex max-w-max flex-1 items-center justify-center", className)}
     {...props}
   >
     {children}
@@ -34,16 +29,11 @@ const NavigationMenuList = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.List> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.List
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.List> | null>;
 }) => (
   <NavigationMenuPrimitive.List
     ref={ref}
-    className={cn(
-      "group flex flex-1 list-none items-center justify-center space-x-1",
-      className,
-    )}
+    className={cn("group flex flex-1 list-none items-center justify-center space-x-1", className)}
     {...props}
   />
 );
@@ -61,9 +51,7 @@ const NavigationMenuTrigger = ({
   children,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.Trigger
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.Trigger> | null>;
 }) => (
   <NavigationMenuPrimitive.Trigger
     ref={ref}
@@ -84,9 +72,7 @@ const NavigationMenuContent = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Content> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.Content
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.Content> | null>;
 }) => (
   <NavigationMenuPrimitive.Content
     ref={ref}
@@ -106,9 +92,7 @@ const NavigationMenuViewport = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Viewport> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.Viewport
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.Viewport> | null>;
 }) => (
   <div className={cn("absolute left-0 top-full flex justify-center")}>
     <NavigationMenuPrimitive.Viewport
@@ -121,17 +105,14 @@ const NavigationMenuViewport = ({
     />
   </div>
 );
-NavigationMenuViewport.displayName =
-  NavigationMenuPrimitive.Viewport.displayName;
+NavigationMenuViewport.displayName = NavigationMenuPrimitive.Viewport.displayName;
 
 const NavigationMenuIndicator = ({
   ref,
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Indicator> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof NavigationMenuPrimitive.Indicator
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof NavigationMenuPrimitive.Indicator> | null>;
 }) => (
   <NavigationMenuPrimitive.Indicator
     ref={ref}
@@ -144,8 +125,7 @@ const NavigationMenuIndicator = ({
     <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md" />
   </NavigationMenuPrimitive.Indicator>
 );
-NavigationMenuIndicator.displayName =
-  NavigationMenuPrimitive.Indicator.displayName;
+NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Indicator.displayName;
 
 export {
   navigationMenuTriggerStyle,

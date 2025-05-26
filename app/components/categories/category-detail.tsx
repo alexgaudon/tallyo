@@ -10,21 +10,15 @@ import { Trash2Icon } from "lucide-react";
 import { CategoryBadge } from "./category-badge";
 
 export function CategoryDetail({ category }: { category: Category }) {
-  const { mutateAsync: deleteCategory } =
-    CategoryRepository.useDeleteUserCategoryMutation();
+  const { mutateAsync: deleteCategory } = CategoryRepository.useDeleteUserCategoryMutation();
 
-  const { mutateAsync: updateCategory } =
-    CategoryRepository.useUpdateUserCategoryMutation();
+  const { mutateAsync: updateCategory } = CategoryRepository.useUpdateUserCategoryMutation();
 
   return (
     <Card key={category.id}>
       <CardContent className="flex flex-col gap-4 p-4">
         <div className="flex justify-between items-center">
-          <CategoryBadge
-            name={category.name}
-            color={category.color}
-            link={false}
-          />
+          <CategoryBadge name={category.name} color={category.color} link={false} />
           <DangerConfirm
             onConfirm={async () => {
               const res = await deleteCategory({

@@ -1,26 +1,8 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  CreditCardIcon,
-  PiggyBankIcon,
-} from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, CreditCardIcon, PiggyBankIcon } from "lucide-react";
 
 export function ChartSkeleton() {
   return (

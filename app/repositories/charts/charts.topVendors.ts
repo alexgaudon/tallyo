@@ -59,11 +59,7 @@ export const $getTopVendorData = createServerFn({
 export const getTopVendorsDataQuery = (data: z.infer<typeof chartDataSchema>) =>
   queryOptions({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      ...keys.charts.queries.vendors,
-      getKeyFromDate(data.to),
-      getKeyFromDate(data.from),
-    ],
+    queryKey: [...keys.charts.queries.vendors, getKeyFromDate(data.to), getKeyFromDate(data.from)],
     queryFn: () =>
       $getTopVendorData({
         data,

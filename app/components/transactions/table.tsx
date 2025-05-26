@@ -4,23 +4,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { MetaRepository } from "@/repositories/meta";
 import { TransactionRepository } from "@/repositories/transactions";
 import type { Transaction } from "@/repositories/transactions/transactions.getAll";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ChevronDown,
-  CircleCheckIcon,
-} from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, ChevronDown, CircleCheckIcon } from "lucide-react";
 import React, { useState } from "react";
 import { CategoryBadge } from "../categories/category-badge";
 import {
@@ -35,14 +25,7 @@ import {
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import AmountDisplay from "./amount-display";
 import { SplitTransaction } from "./split-transaction";
 
@@ -78,28 +61,20 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
   editingField,
   setEditingField,
 }) => {
-  const formatVendor = (vendor: string) =>
-    vendor.length > 20 ? vendor.substring(0, 20) + "..." : vendor;
+  const formatVendor = (vendor: string) => (vendor.length > 20 ? vendor.substring(0, 20) + "..." : vendor);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [splitOpen, setSplitOpen] = useState(false);
 
   return (
     <>
-      <SplitTransaction
-        transaction={transaction}
-        open={splitOpen}
-        setOpen={(open) => setSplitOpen(open)}
-      />
+      <SplitTransaction transaction={transaction} open={splitOpen} setOpen={(open) => setSplitOpen(open)} />
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Are you sure you want to delete this transaction?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this transaction?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              transaction from our servers.
+              This action cannot be undone. This will permanently delete the transaction from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -143,9 +118,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
                       if (!transaction.reviewed) {
                         setEditingId(transaction.id);
                         setEditingField("vendor");
-                        setVendor(
-                          transaction.displayVendor || transaction.vendor,
-                        );
+                        setVendor(transaction.displayVendor || transaction.vendor);
                       }
                     }}
                   >
@@ -261,9 +234,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({
             </DropdownMenu>
             <div className="ml-auto">
               <CircleCheckIcon
-                onClick={() =>
-                  onUpdate(transaction.id, { reviewed: !transaction.reviewed })
-                }
+                onClick={() => onUpdate(transaction.id, { reviewed: !transaction.reviewed })}
                 className={cn(
                   {
                     "text-green-400": transaction.reviewed,
@@ -345,12 +316,9 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
 
   const { data: meta } = useQuery(MetaRepository.getUserMeta());
 
-  const { mutate: updateTransaction } =
-    TransactionRepository.useUpdateUserTransactionMutation();
-  const { mutate: deleteTransaction } =
-    TransactionRepository.useDeleteUserTransactionMutation();
-  const { mutateAsync: recommendCategory } =
-    TransactionRepository.useSetRecommendedTransactionCategoryMutation();
+  const { mutate: updateTransaction } = TransactionRepository.useUpdateUserTransactionMutation();
+  const { mutate: deleteTransaction } = TransactionRepository.useDeleteUserTransactionMutation();
+  const { mutateAsync: recommendCategory } = TransactionRepository.useSetRecommendedTransactionCategoryMutation();
 
   const onUpdate = (id: string, data: Partial<Transaction>) => {
     if ("reviewed" in data) {
@@ -398,9 +366,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            {meta?.settings?.developerMode && (
-              <TableHead className="w-[100px]">ID</TableHead>
-            )}
+            {meta?.settings?.developerMode && <TableHead className="w-[100px]">ID</TableHead>}
             <TableHead className="w-[180px]">Date</TableHead>
             <TableHead className="w-1/6">Vendor</TableHead>
             <TableHead className="w-1/4">Description</TableHead>
@@ -431,9 +397,7 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({
         </TableBody>
       </Table>
       <div className="flex justify-between items-center px-4 py-4">
-        <div className="flex-1 text-muted-foreground text-sm">
-          A list of all transactions.
-        </div>
+        <div className="flex-1 text-muted-foreground text-sm">A list of all transactions.</div>
         <div className="flex justify-center items-center space-x-2">
           <Button
             onClick={() => onPageChange(currentPage - 1)}

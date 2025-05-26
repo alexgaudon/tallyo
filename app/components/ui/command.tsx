@@ -79,13 +79,7 @@ const CommandEmpty = ({
   ...props
 }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty> & {
   ref?: React.RefObject<React.ElementRef<typeof CommandPrimitive.Empty> | null>;
-}) => (
-  <CommandPrimitive.Empty
-    ref={ref}
-    className="py-6 text-center text-sm"
-    {...props}
-  />
-);
+}) => <CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props} />;
 
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
 
@@ -113,16 +107,8 @@ const CommandSeparator = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof CommandPrimitive.Separator
-  > | null>;
-}) => (
-  <CommandPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 h-px bg-border", className)}
-    {...props}
-  />
-);
+  ref?: React.RefObject<React.ElementRef<typeof CommandPrimitive.Separator> | null>;
+}) => <CommandPrimitive.Separator ref={ref} className={cn("-mx-1 h-px bg-border", className)} {...props} />;
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const CommandItem = ({
@@ -144,19 +130,8 @@ const CommandItem = ({
 
 CommandItem.displayName = CommandPrimitive.Item.displayName;
 
-const CommandShortcut = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
-        className,
-      )}
-      {...props}
-    />
-  );
+const CommandShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
+  return <span className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)} {...props} />;
 };
 CommandShortcut.displayName = "CommandShortcut";
 

@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  createFileRoute,
-  Link,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { BarChart3, MergeIcon, PieChart, Upload } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -32,8 +27,7 @@ function Home() {
                   Measure. Understand. Improve.
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Tallyo helps you gain insights into your personal finances so
-                  you can make better financial decisions.
+                  Tallyo helps you gain insights into your personal finances so you can make better financial decisions.
                 </p>
               </div>
               <div className="space-x-4">
@@ -51,29 +45,22 @@ function Home() {
             </div>
           </div>
         </section>
-        <section
-          id="features"
-          className="bg-gray-100 dark:bg-gray-800 py-12 md:py-24 lg:py-32 w-full"
-        >
+        <section id="features" className="bg-gray-100 dark:bg-gray-800 py-12 md:py-24 lg:py-32 w-full">
           <div className="px-4 md:px-6 container">
-            <h2 className="mb-8 font-bold text-3xl text-center sm:text-4xl md:text-5xl tracking-tighter">
-              Features
-            </h2>
+            <h2 className="mb-8 font-bold text-3xl text-center sm:text-4xl md:text-5xl tracking-tighter">Features</h2>
             <div className="gap-10 grid sm:grid-cols-2 lg:grid-cols-4">
               <div className="flex flex-col items-center space-y-3 text-center">
                 <Upload className="w-12 h-12 text-primary" />
                 <h3 className="font-bold text-xl">Transaction Logging</h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Easily upload transactions from any financial provider via
-                  API.
+                  Easily upload transactions from any financial provider via API.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-3 text-center">
                 <BarChart3 className="w-12 h-12 text-primary" />
                 <h3 className="font-bold text-xl">Categorization</h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  Automatically categorize transactions for streamlined
-                  analysis.
+                  Automatically categorize transactions for streamlined analysis.
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-3 text-center">
@@ -97,9 +84,7 @@ function Home() {
           <div className="px-4 md:px-6 container">
             <div className="flex flex-col justify-center items-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl tracking-tighter">
-                  Charts
-                </h2>
+                <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl tracking-tighter">Charts</h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                   Gain actionable insights through the following:
                 </p>
@@ -120,19 +105,14 @@ function Home() {
                   </li>
                   <li>
                     <div className="gap-1 grid">
-                      <h3 className="font-bold text-xl">
-                        Transaction Category Breakdown
-                      </h3>
+                      <h3 className="font-bold text-xl">Transaction Category Breakdown</h3>
                     </div>
                   </li>
                   <li>
                     <div className="gap-1 grid">
-                      <h3 className="font-bold text-xl">
-                        &quot;Stats for Nerds&quot;
-                      </h3>
+                      <h3 className="font-bold text-xl">&quot;Stats for Nerds&quot;</h3>
                       <p className="text-gray-500 text-sm dark:text-gray-400">
-                        Track transaction count, income, expenses, and savings
-                        rate
+                        Track transaction count, income, expenses, and savings rate
                       </p>
                     </div>
                   </li>
@@ -147,16 +127,10 @@ function Home() {
           © {new Date().getFullYear()} Tallyo. All rights reserved.
         </p>
         <nav className="flex gap-4 sm:gap-6 sm:ml-auto">
-          <Link
-            className="text-xs underline-offset-4 hover:underline"
-            to="/tos"
-          >
+          <Link className="text-xs underline-offset-4 hover:underline" to="/tos">
             Terms of Service
           </Link>
-          <Link
-            className="text-xs underline-offset-4 hover:underline"
-            to="/privacy"
-          >
+          <Link className="text-xs underline-offset-4 hover:underline" to="/privacy">
             Privacy
           </Link>
         </nav>

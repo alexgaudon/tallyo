@@ -1,24 +1,12 @@
 import { CategoryRepository } from "@/repositories/categories";
-import {
-  createFileRoute,
-  Outlet,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 
 import { CategoryBadge } from "@/components/categories/category-badge";
 import { CreateCategoryForm } from "@/components/categories/create-category-form";
 import { Button } from "@/components/ui/button";
 import { DangerConfirm } from "@/components/ui/danger-confirm";
 import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { TransactionRepository } from "@/repositories/transactions";
@@ -36,14 +24,8 @@ export const Route = createFileRoute("/categories")({
       throw redirect({ to: "/signin" });
     }
 
-    const prefetches = [
-      ctx.context.queryClient.prefetchQuery(
-        CategoryRepository.getAllUserCategoriesQuery(),
-      ),
-    ];
-    const match = ctx.matches.find(
-      (match) => match.fullPath === "/categories/$category",
-    );
+    const prefetches = [ctx.context.queryClient.prefetchQuery(CategoryRepository.getAllUserCategoriesQuery())];
+    const match = ctx.matches.find((match) => match.fullPath === "/categories/$category");
 
     if (match) {
       prefetches.push(
@@ -63,15 +45,11 @@ export const Route = createFileRoute("/categories")({
 });
 
 function RouteComponent() {
-  const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data: categories } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
-  const { mutateAsync: deleteCategory } =
-    CategoryRepository.useDeleteUserCategoryMutation();
+  const { mutateAsync: deleteCategory } = CategoryRepository.useDeleteUserCategoryMutation();
 
-  const { mutateAsync: updateCategory } =
-    CategoryRepository.useUpdateUserCategoryMutation();
+  const { mutateAsync: updateCategory } = CategoryRepository.useUpdateUserCategoryMutation();
 
   const navigate = useNavigate();
 
@@ -119,11 +97,7 @@ function RouteComponent() {
                   }
                 >
                   <TableCell className="p-1 font-medium">
-                    <CategoryBadge
-                      name={category.name}
-                      color={category.color}
-                      link={true}
-                    />
+                    <CategoryBadge name={category.name} color={category.color} link={true} />
                   </TableCell>
                   <TableCell className="p-0">
                     <Switch

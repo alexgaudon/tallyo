@@ -19,19 +19,10 @@ export const $getIncomeVsExpensesData = createServerFn({
   .validator(chartDataSchema)
   .middleware([userMiddleware])
   .handler(async ({ context, data }) => {
-    const conditions = [
-      eq(transaction.userId, context.auth.user.id),
-      eq(category.hideFromInsights, false),
-    ];
+    const conditions = [eq(transaction.userId, context.auth.user.id), eq(category.hideFromInsights, false)];
 
     if (data.to && data.from) {
-      conditions.push(
-        between(
-          transaction.date,
-          formatDateISO8601(data.from),
-          formatDateISO8601(data.to),
-        ),
-      );
+      conditions.push(between(transaction.date, formatDateISO8601(data.from), formatDateISO8601(data.to)));
     }
 
     const results = await db
@@ -49,16 +40,10 @@ export const $getIncomeVsExpensesData = createServerFn({
     return results;
   });
 
-export const getIncomeVsExpensesDataQuery = (
-  data: z.infer<typeof chartDataSchema>,
-) =>
+export const getIncomeVsExpensesDataQuery = (data: z.infer<typeof chartDataSchema>) =>
   queryOptions({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      ...keys.charts.queries.incomeVsExpenses,
-      getKeyFromDate(data.to),
-      getKeyFromDate(data.from),
-    ],
+    queryKey: [...keys.charts.queries.incomeVsExpenses, getKeyFromDate(data.to), getKeyFromDate(data.from)],
     queryFn: () =>
       $getIncomeVsExpensesData({
         data,

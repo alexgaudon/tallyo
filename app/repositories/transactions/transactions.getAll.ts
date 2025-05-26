@@ -26,9 +26,7 @@ const transactionSelectFields = {
   createdAt: transaction.createdAt,
 };
 
-export type Transaction = Awaited<
-  ReturnType<typeof $getUserTransactions>
->["data"][0];
+export type Transaction = Awaited<ReturnType<typeof $getUserTransactions>>["data"][0];
 
 const getUserTransactionsSchema = z.object({
   page: z.number(),
@@ -98,9 +96,7 @@ const $getUserTransactions = createServerFn({ method: "GET" })
     return returnValue;
   });
 
-export const getAllUserTransactionsQuery = (
-  data: z.infer<typeof getUserTransactionsSchema>,
-) =>
+export const getAllUserTransactionsQuery = (data: z.infer<typeof getUserTransactionsSchema>) =>
   queryOptions({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [

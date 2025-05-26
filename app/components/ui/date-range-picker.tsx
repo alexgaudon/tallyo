@@ -8,13 +8,7 @@ import { Calendar } from "./calendar";
 import { DateInput } from "./date-input";
 import { Label } from "./label";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { Switch } from "./switch";
 
 export interface DateRangePickerProps {
@@ -91,11 +85,7 @@ const PresetButton = ({
   isSelected: boolean;
   onClick: () => void;
 }): JSX.Element => (
-  <Button
-    className={cn(isSelected && "pointer-events-none")}
-    variant="ghost"
-    onClick={onClick}
-  >
+  <Button className={cn(isSelected && "pointer-events-none")} variant="ghost" onClick={onClick}>
     <>
       <span className={cn("pr-2 opacity-0", isSelected && "opacity-70")}>
         <CheckIcon width={18} height={18} />
@@ -127,9 +117,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
   const [range, setRange] = useState<DateRange>(() => ({
     from: getDateAdjustedForTimezone(initialDateFrom),
-    to: initialDateTo
-      ? getDateAdjustedForTimezone(initialDateTo)
-      : getDateAdjustedForTimezone(initialDateFrom),
+    to: initialDateTo ? getDateAdjustedForTimezone(initialDateTo) : getDateAdjustedForTimezone(initialDateFrom),
   }));
   const [rangeCompare, setRangeCompare] = useState<DateRange | undefined>(() =>
     initialCompareFrom
@@ -146,13 +134,9 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   const openedRangeRef = useRef<DateRange | undefined>(undefined);
   const openedRangeCompareRef = useRef<DateRange | undefined>(undefined);
 
-  const [selectedPreset, setSelectedPreset] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedPreset, setSelectedPreset] = useState<string | undefined>(undefined);
 
-  const [isSmallScreen, setIsSmallScreen] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 960 : false,
-  );
+  const [isSmallScreen, setIsSmallScreen] = useState(typeof window !== "undefined" ? window.innerWidth < 960 : false);
 
   useEffect(() => {
     const handleResize = (): void => {
@@ -243,18 +227,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     setRange(range);
     if (rangeCompare) {
       const rangeCompare = {
-        from: new Date(
-          range.from.getFullYear() - 1,
-          range.from.getMonth(),
-          range.from.getDate(),
-        ),
-        to: range.to
-          ? new Date(
-              range.to.getFullYear() - 1,
-              range.to.getMonth(),
-              range.to.getDate(),
-            )
-          : undefined,
+        from: new Date(range.from.getFullYear() - 1, range.from.getMonth(), range.from.getDate()),
+        to: range.to ? new Date(range.to.getFullYear() - 1, range.to.getMonth(), range.to.getDate()) : undefined,
       };
       setRangeCompare(rangeCompare);
     }
@@ -266,15 +240,11 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
       const normalizedRangeFrom = new Date(range.from);
       normalizedRangeFrom.setHours(0, 0, 0, 0);
-      const normalizedPresetFrom = new Date(
-        presetRange.from.setHours(0, 0, 0, 0),
-      );
+      const normalizedPresetFrom = new Date(presetRange.from.setHours(0, 0, 0, 0));
 
       const normalizedRangeTo = new Date(range.to ?? 0);
       normalizedRangeTo.setHours(0, 0, 0, 0);
-      const normalizedPresetTo = new Date(
-        presetRange.to?.setHours(0, 0, 0, 0) ?? 0,
-      );
+      const normalizedPresetTo = new Date(presetRange.to?.setHours(0, 0, 0, 0) ?? 0);
 
       if (
         normalizedRangeFrom.getTime() === normalizedPresetFrom.getTime() &&
@@ -292,10 +262,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
   const resetValues = (): void => {
     setRange({
-      from:
-        typeof initialDateFrom === "string"
-          ? getDateAdjustedForTimezone(initialDateFrom)
-          : initialDateFrom,
+      from: typeof initialDateFrom === "string" ? getDateAdjustedForTimezone(initialDateFrom) : initialDateFrom,
       to: initialDateTo
         ? typeof initialDateTo === "string"
           ? getDateAdjustedForTimezone(initialDateTo)
@@ -330,10 +297,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   // Helper function to check if two date ranges are equal
   const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
     if (!a || !b) return a === b; // If either is undefined, return true if both are undefined
-    return (
-      a.from.getTime() === b.from.getTime() &&
-      (!a.to || !b.to || a.to.getTime() === b.to.getTime())
-    );
+    return a.from.getTime() === b.from.getTime() && (!a.to || !b.to || a.to.getTime() === b.to.getTime());
   };
 
   useEffect(() => {
@@ -366,19 +330,13 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
               <div className="opacity-60 -mt-1 text-xs">
                 <>
                   vs. {formatDate(rangeCompare.from, locale)}
-                  {rangeCompare.to != null
-                    ? ` - ${formatDate(rangeCompare.to, locale)}`
-                    : ""}
+                  {rangeCompare.to != null ? ` - ${formatDate(rangeCompare.to, locale)}` : ""}
                 </>
               </div>
             )}
           </div>
           <div className="opacity-60 -mr-2 pl-1 scale-125">
-            {isOpen ? (
-              <ChevronUpIcon width={24} />
-            ) : (
-              <ChevronDownIcon width={24} />
-            )}
+            {isOpen ? <ChevronUpIcon width={24} /> : <ChevronDownIcon width={24} />}
           </div>
         </Button>
       </PopoverTrigger>
@@ -400,22 +358,10 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                             });
                           }
                           setRangeCompare({
-                            from: new Date(
-                              range.from.getFullYear(),
-                              range.from.getMonth(),
-                              range.from.getDate() - 365,
-                            ),
+                            from: new Date(range.from.getFullYear(), range.from.getMonth(), range.from.getDate() - 365),
                             to: range.to
-                              ? new Date(
-                                  range.to.getFullYear() - 1,
-                                  range.to.getMonth(),
-                                  range.to.getDate(),
-                                )
-                              : new Date(
-                                  range.from.getFullYear() - 1,
-                                  range.from.getMonth(),
-                                  range.from.getDate(),
-                                ),
+                              ? new Date(range.to.getFullYear() - 1, range.to.getMonth(), range.to.getDate())
+                              : new Date(range.from.getFullYear() - 1, range.from.getMonth(), range.from.getDate()),
                           });
                         } else {
                           setRangeCompare(undefined);
@@ -431,8 +377,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                     <DateInput
                       value={range.from}
                       onChange={(date) => {
-                        const toDate =
-                          range.to == null || date > range.to ? date : range.to;
+                        const toDate = range.to == null || date > range.to ? date : range.to;
                         setRange((prevRange) => ({
                           ...prevRange,
                           from: date,
@@ -460,9 +405,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                         onChange={(date) => {
                           if (rangeCompare) {
                             const compareToDate =
-                              rangeCompare.to == null || date > rangeCompare.to
-                                ? date
-                                : rangeCompare.to;
+                              rangeCompare.to == null || date > rangeCompare.to ? date : rangeCompare.to;
                             setRangeCompare((prevRangeCompare) => ({
                               ...prevRangeCompare,
                               from: date,
@@ -481,10 +424,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                         value={rangeCompare?.to}
                         onChange={(date) => {
                           if (rangeCompare && rangeCompare.from) {
-                            const compareFromDate =
-                              date < rangeCompare.from
-                                ? date
-                                : rangeCompare.from;
+                            const compareFromDate = date < rangeCompare.from ? date : rangeCompare.from;
                             setRangeCompare({
                               ...rangeCompare,
                               from: compareFromDate,
@@ -526,13 +466,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                   }}
                   selected={range}
                   numberOfMonths={isSmallScreen ? 1 : 2}
-                  defaultMonth={
-                    new Date(
-                      new Date().setMonth(
-                        new Date().getMonth() - (isSmallScreen ? 0 : 1),
-                      ),
-                    )
-                  }
+                  defaultMonth={new Date(new Date().setMonth(new Date().getMonth() - (isSmallScreen ? 0 : 1)))}
                 />
               </div>
             </div>
@@ -585,5 +519,4 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 };
 
 DateRangePicker.displayName = "DateRangePicker";
-DateRangePicker.filePath =
-  "libs/shared/ui-kit/src/lib/date-range-picker/date-range-picker.tsx";
+DateRangePicker.filePath = "libs/shared/ui-kit/src/lib/date-range-picker/date-range-picker.tsx";

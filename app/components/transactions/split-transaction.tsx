@@ -67,8 +67,7 @@ export function SplitTransaction({
 }) {
   const [newAmount, setNewAmount] = useState("0.00");
 
-  const { mutateAsync } =
-    TransactionRepository.useSplitUserTransactionMutation();
+  const { mutateAsync } = TransactionRepository.useSplitUserTransactionMutation();
 
   const transform = (val: number) => {
     if (transaction.amount < 0) {
@@ -92,18 +91,14 @@ export function SplitTransaction({
     ];
   };
 
-  const realAmount = transform(
-    Math.round(Number(Number(newAmount).toFixed(2)) * 100),
-  );
+  const realAmount = transform(Math.round(Number(Number(newAmount).toFixed(2)) * 100));
 
   return (
     <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Split this Transaction</AlertDialogTitle>
-          <AlertDialogDescription>
-            What portion of this transaction do you want to split?
-          </AlertDialogDescription>
+          <AlertDialogDescription>What portion of this transaction do you want to split?</AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex justify-center items-center">
           $

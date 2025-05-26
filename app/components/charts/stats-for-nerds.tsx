@@ -25,17 +25,12 @@ export function StatsForNerds(props: { from: Date; to: Date }) {
   }
 
   return (
-    <div
-      className="gap-4 grid md:grid-cols-1 lg:grid-cols-2"
-      suppressHydrationWarning
-    >
+    <div className="gap-4 grid md:grid-cols-1 lg:grid-cols-2" suppressHydrationWarning>
       <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="flex items-center gap-2 font-bold text-2xl">
             <Hash className="w-5 h-5" />
-            {!isPrivacyMode
-              ? data.count
-              : "•".repeat(data.count.toString().length)}
+            {!isPrivacyMode ? data.count : "•".repeat(data.count.toString().length)}
           </CardTitle>
           <p className="text-gray-500 text-sm">tracked transactions</p>
         </CardHeader>
@@ -73,8 +68,7 @@ export function StatsForNerds(props: { from: Date; to: Date }) {
                 if (data.income === 0 || data.expenses === 0) {
                   return "0%";
                 }
-                const value =
-                  ((data.income - data.expenses) / data.income) * 100;
+                const value = ((data.income - data.expenses) / data.income) * 100;
 
                 if (value < 0) {
                   return "0%";

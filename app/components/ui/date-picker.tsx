@@ -4,11 +4,7 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 export function DatePicker({
@@ -30,10 +26,7 @@ export function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !date && "text-muted-foreground",
-          )}
+          className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <CalendarIcon />
           {date ? format(date, "PPP") : <span>Pick a date</span>}

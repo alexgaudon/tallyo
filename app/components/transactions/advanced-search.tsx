@@ -8,13 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CategoryRepository } from "@/repositories/categories";
 import { Route } from "@/routes/transactions";
@@ -33,9 +27,7 @@ export default function AdvancedSearch(props: {
   const [category, setCategory] = useState(search.categoryName ?? "");
   const [onlyUnreviewed, setOnlyUnreviewed] = useState(props.onlyUnreviewed);
 
-  const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data: categories } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
   const meta = useRouteContext({
     from: "__root__",
@@ -59,9 +51,7 @@ export default function AdvancedSearch(props: {
   }, [searchQuery, onlyUnreviewed, category]);
 
   const doSearch = () => {
-    const categoryParam = category
-      ? categories?.find((x) => x.id === category)?.name
-      : "";
+    const categoryParam = category ? categories?.find((x) => x.id === category)?.name : "";
 
     navigate({
       to: ".",
@@ -123,10 +113,7 @@ export default function AdvancedSearch(props: {
               </Select>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem
-              checked={onlyUnreviewed}
-              onCheckedChange={setOnlyUnreviewed}
-            >
+            <DropdownMenuCheckboxItem checked={onlyUnreviewed} onCheckedChange={setOnlyUnreviewed}>
               Show Unreviewed Only
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
@@ -164,10 +151,7 @@ export default function AdvancedSearch(props: {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuCheckboxItem
-                checked={onlyUnreviewed}
-                onCheckedChange={setOnlyUnreviewed}
-              >
+              <DropdownMenuCheckboxItem checked={onlyUnreviewed} onCheckedChange={setOnlyUnreviewed}>
                 Show Unreviewed Only
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
@@ -190,8 +174,7 @@ export default function AdvancedSearch(props: {
                 variant="outline"
                 className={cn(
                   "rounded-full text-sm",
-                  category === search.value &&
-                    "bg-primary text-primary-foreground",
+                  category === search.value && "bg-primary text-primary-foreground",
                 )}
                 onClick={() => {
                   setCategory(search.value);

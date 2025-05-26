@@ -4,33 +4,23 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function MenubarMenu({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Menu>) {
+function MenubarMenu({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Menu>) {
   return <MenubarPrimitive.Menu {...props} />;
 }
 
-function MenubarGroup({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Group>) {
+function MenubarGroup({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Group>) {
   return <MenubarPrimitive.Group {...props} />;
 }
 
-function MenubarPortal({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Portal>) {
+function MenubarPortal({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Portal>) {
   return <MenubarPrimitive.Portal {...props} />;
 }
 
-function MenubarRadioGroup({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.RadioGroup>) {
+function MenubarRadioGroup({ ...props }: React.ComponentProps<typeof MenubarPrimitive.RadioGroup>) {
   return <MenubarPrimitive.RadioGroup {...props} />;
 }
 
-function MenubarSub({
-  ...props
-}: React.ComponentProps<typeof MenubarPrimitive.Sub>) {
+function MenubarSub({ ...props }: React.ComponentProps<typeof MenubarPrimitive.Sub>) {
   return <MenubarPrimitive.Sub data-slot="menubar-sub" {...props} />;
 }
 
@@ -43,10 +33,7 @@ const Menubar = ({
 }) => (
   <MenubarPrimitive.Root
     ref={ref}
-    className={cn(
-      "flex h-10 items-center space-x-1 rounded-md border bg-background p-1",
-      className,
-    )}
+    className={cn("flex h-10 items-center space-x-1 rounded-md border bg-background p-1", className)}
     {...props}
   />
 );
@@ -57,9 +44,7 @@ const MenubarTrigger = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Trigger> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.Trigger
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.Trigger> | null>;
 }) => (
   <MenubarPrimitive.Trigger
     ref={ref}
@@ -81,9 +66,7 @@ const MenubarSubTrigger = ({
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubTrigger> & {
   inset?: boolean;
 } & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.SubTrigger
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.SubTrigger> | null>;
 }) => (
   <MenubarPrimitive.SubTrigger
     ref={ref}
@@ -105,9 +88,7 @@ const MenubarSubContent = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.SubContent> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.SubContent
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.SubContent> | null>;
 }) => (
   <MenubarPrimitive.SubContent
     ref={ref}
@@ -128,9 +109,7 @@ const MenubarContent = ({
   sideOffset = 8,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Content> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.Content
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.Content> | null>;
 }) => (
   <MenubarPrimitive.Portal>
     <MenubarPrimitive.Content
@@ -177,9 +156,7 @@ const MenubarCheckboxItem = ({
   checked,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.CheckboxItem> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.CheckboxItem
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.CheckboxItem> | null>;
 }) => (
   <MenubarPrimitive.CheckboxItem
     ref={ref}
@@ -206,9 +183,7 @@ const MenubarRadioItem = ({
   children,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.RadioItem> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.RadioItem
-  > | null>;
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.RadioItem> | null>;
 }) => (
   <MenubarPrimitive.RadioItem
     ref={ref}
@@ -240,11 +215,7 @@ const MenubarLabel = ({
 }) => (
   <MenubarPrimitive.Label
     ref={ref}
-    className={cn(
-      "px-2 py-1.5 text-sm font-semibold",
-      inset && "pl-8",
-      className,
-    )}
+    className={cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className)}
     {...props}
   />
 );
@@ -255,31 +226,12 @@ const MenubarSeparator = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<typeof MenubarPrimitive.Separator> & {
-  ref?: React.RefObject<React.ElementRef<
-    typeof MenubarPrimitive.Separator
-  > | null>;
-}) => (
-  <MenubarPrimitive.Separator
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
-    {...props}
-  />
-);
+  ref?: React.RefObject<React.ElementRef<typeof MenubarPrimitive.Separator> | null>;
+}) => <MenubarPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-muted", className)} {...props} />;
 MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
 
-const MenubarShortcut = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
-        className,
-      )}
-      {...props}
-    />
-  );
+const MenubarShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
+  return <span className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)} {...props} />;
 };
 MenubarShortcut.displayname = "MenubarShortcut";
 

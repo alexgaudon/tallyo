@@ -23,18 +23,10 @@ export default function AuthPage() {
       <div className="flex flex-col justify-center space-y-6 mx-auto w-full sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <div className="flex justify-center items-center space-x-2">
-            <img
-              src={icon}
-              alt={`Tallyo logo`}
-              className="rounded-lg w-8 h-8"
-            />
-            <h1 className="font-semibold text-2xl tracking-tight">
-              Welcome to Tallyo
-            </h1>
+            <img src={icon} alt={`Tallyo logo`} className="rounded-lg w-8 h-8" />
+            <h1 className="font-semibold text-2xl tracking-tight">Welcome to Tallyo</h1>
           </div>
-          <p className="text-muted-foreground text-sm">
-            Access your account with one of the signin options
-          </p>
+          <p className="text-muted-foreground text-sm">Access your account with one of the signin options</p>
         </div>
         <div className="flex flex-col space-y-4">
           <Button
@@ -74,13 +66,7 @@ export default function AuthPage() {
                   <Wrench className="w-4 h-4" />
                   Developer Sign In
                 </p>
-                <input
-                  type="text"
-                  name="email"
-                  placeholder="Email"
-                  className="px-3 py-2 border rounded-md"
-                  required
-                />
+                <input type="text" name="email" placeholder="Email" className="px-3 py-2 border rounded-md" required />
                 <Button type="submit">Sign in with credentials</Button>
               </form>
 
@@ -113,13 +99,7 @@ export default function AuthPage() {
                   <Wrench className="w-4 h-4" />
                   Developer Create Account
                 </p>
-                <input
-                  type="text"
-                  name="email"
-                  placeholder="Email"
-                  className="px-3 py-2 border rounded-md"
-                  required
-                />
+                <input type="text" name="email" placeholder="Email" className="px-3 py-2 border rounded-md" required />
                 <Button type="submit">Create account with credentials</Button>
               </form>
             </div>

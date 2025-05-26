@@ -11,10 +11,7 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 async function getUserIdFromAuthToken(token: string): Promise<string | null> {
-  const dbToken = await db
-    .select()
-    .from(authToken)
-    .where(eq(authToken.token, token));
+  const dbToken = await db.select().from(authToken).where(eq(authToken.token, token));
   if (dbToken.length === 0) {
     return null;
   }
@@ -45,13 +42,7 @@ const getCategoryForVendor = async (vendor: string, userId: string) => {
   const reviewedTransactions = await db
     .select()
     .from(transaction)
-    .where(
-      and(
-        eq(transaction.userId, userId),
-        eq(transaction.vendor, vendor),
-        eq(transaction.reviewed, true),
-      ),
-    );
+    .where(and(eq(transaction.userId, userId), eq(transaction.vendor, vendor), eq(transaction.reviewed, true)));
 
   let categoryId;
 
@@ -64,9 +55,7 @@ const getCategoryForVendor = async (vendor: string, userId: string) => {
         categoryId: transaction.categoryId,
       })
       .from(transaction)
-      .where(
-        and(eq(transaction.userId, userId), eq(transaction.reviewed, true)),
-      );
+      .where(and(eq(transaction.userId, userId), eq(transaction.reviewed, true)));
 
     const fuse = new Fuse(allReviewedTransactions, {
       keys: ["vendor"],
@@ -125,11 +114,7 @@ export const APIRoute = createAPIFileRoute("/api/new-transactions")({
           categoryId: await getCategoryForVendor(transaction.vendor, user),
         });
       }
-      const res = await db
-        .insert(transaction)
-        .values(allValues)
-        .onConflictDoNothing()
-        .execute();
+      const res = await db.insert(transaction).values(allValues).onConflictDoNothing().execute();
 
       return json({
         ok: true,

@@ -9,14 +9,10 @@ interface PrivacyModeContextType {
 }
 
 // Create the context
-const PrivacyModeContext = createContext<PrivacyModeContextType | undefined>(
-  undefined,
-);
+const PrivacyModeContext = createContext<PrivacyModeContextType | undefined>(undefined);
 
 // Provider component
-export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { data } = useQuery(MetaRepository.getUserMeta());
 
   const { mutate } = MetaRepository.useUpdateUserMetaMutation();
@@ -29,11 +25,7 @@ export const PrivacyModeProvider: React.FC<{ children: ReactNode }> = ({
 
   const isPrivacyMode = data?.settings?.privacyMode ?? false;
 
-  return (
-    <PrivacyModeContext value={{ isPrivacyMode, togglePrivacyMode }}>
-      {children}
-    </PrivacyModeContext>
-  );
+  return <PrivacyModeContext value={{ isPrivacyMode, togglePrivacyMode }}>{children}</PrivacyModeContext>;
 };
 
 // Custom hook to use the context

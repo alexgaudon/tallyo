@@ -20,12 +20,7 @@ const $deleteUserTransaction = createServerFn({
   .handler(async ({ context, data }) => {
     const res = await db
       .delete(transaction)
-      .where(
-        and(
-          eq(transaction.userId, context.auth.user.id),
-          eq(transaction.id, data.id),
-        ),
-      );
+      .where(and(eq(transaction.userId, context.auth.user.id), eq(transaction.id, data.id)));
 
     return res.rowsAffected > 0;
   });

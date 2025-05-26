@@ -26,13 +26,7 @@ export const $getCategoryBreakdownData = createServerFn({
     ];
 
     if (data.to && data.from) {
-      conditions.push(
-        between(
-          transaction.date,
-          formatDateISO8601(data.from),
-          formatDateISO8601(data.to),
-        ),
-      );
+      conditions.push(between(transaction.date, formatDateISO8601(data.from), formatDateISO8601(data.to)));
     }
 
     const results = await db
@@ -50,16 +44,10 @@ export const $getCategoryBreakdownData = createServerFn({
     return results;
   });
 
-export const getCategoryBreakdownQuery = (
-  data: z.infer<typeof chartDataSchema>,
-) =>
+export const getCategoryBreakdownQuery = (data: z.infer<typeof chartDataSchema>) =>
   queryOptions({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      ...keys.charts.queries.categoryBreakdown,
-      getKeyFromDate(data.to),
-      getKeyFromDate(data.from),
-    ],
+    queryKey: [...keys.charts.queries.categoryBreakdown, getKeyFromDate(data.to), getKeyFromDate(data.from)],
     queryFn: () =>
       $getCategoryBreakdownData({
         data,

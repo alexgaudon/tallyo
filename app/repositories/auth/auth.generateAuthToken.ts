@@ -18,17 +18,10 @@ const $generateUserAuthToken = createServerFn({
     }
 
     const hasAuthToken =
-      (
-        await db
-          .select()
-          .from(authToken)
-          .where(eq(authToken.userId, context.auth.user.id))
-      ).length > 0;
+      (await db.select().from(authToken).where(eq(authToken.userId, context.auth.user.id))).length > 0;
 
     if (hasAuthToken) {
-      await db
-        .delete(authToken)
-        .where(eq(authToken.userId, context.auth.user.id));
+      await db.delete(authToken).where(eq(authToken.userId, context.auth.user.id));
     }
 
     const newToken = generateAuthToken();
@@ -43,9 +36,7 @@ const $generateUserAuthToken = createServerFn({
       .execute();
 
     return {
-      message: hasAuthToken
-        ? "Auth token regenerated."
-        : "Auth token generated.",
+      message: hasAuthToken ? "Auth token regenerated." : "Auth token generated.",
       token: newToken,
     };
   });

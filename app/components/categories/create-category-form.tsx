@@ -1,9 +1,5 @@
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { generateRandomPalette } from "@/lib/utils";
 import { PipetteIcon } from "lucide-react";
 import { useState } from "react";
@@ -16,14 +12,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 
 import { useToast } from "@/hooks/use-toast";
 import { CategoryRepository } from "@/repositories/categories";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { CategoryBadge } from "./category-badge";
 
@@ -73,8 +62,7 @@ export function CreateCategoryForm({
 
   const [open, setOpen] = useState(false);
 
-  const { mutateAsync, isError, error } =
-    CategoryRepository.useCreateUserCategoryMutation();
+  const { mutateAsync, isError, error } = CategoryRepository.useCreateUserCategoryMutation();
 
   return (
     <Dialog
@@ -109,11 +97,7 @@ export function CreateCategoryForm({
                 >
                   {preview.text !== "" && (
                     <div className="flex items-center space-x-2 mx-auto">
-                      <CategoryBadge
-                        link={false}
-                        color={debouncedPreview.color}
-                        name={preview.text}
-                      />
+                      <CategoryBadge link={false} color={debouncedPreview.color} name={preview.text} />
                     </div>
                   )}
                   <div>
@@ -121,9 +105,7 @@ export function CreateCategoryForm({
                     <form.Field
                       validators={{
                         onChange: ({ value, fieldApi }) =>
-                          value.length <= 0 && fieldApi.state.meta.isTouched
-                            ? "This field is required"
-                            : undefined,
+                          value.length <= 0 && fieldApi.state.meta.isTouched ? "This field is required" : undefined,
                       }}
                       name="categoryName"
                       children={(field) => (

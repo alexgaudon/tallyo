@@ -1,33 +1,9 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
-  displayFormatMonth,
-  getRealMonth,
-  transformAmounts,
-} from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartConfig, ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { displayFormatMonth, getRealMonth, transformAmounts } from "@/lib/utils";
 import { ChartsRespository } from "@/repositories/charts";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { ChartSkeleton } from "./skeletons";
 
 const chartConfig = {
@@ -69,16 +45,11 @@ export function IncomeVsExpenseLine(props: { to?: Date; from?: Date }) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Income vs Expenses (Line)</CardTitle>
-        <CardDescription suppressHydrationWarning>
-          Past 12 Months
-        </CardDescription>
+        <CardDescription suppressHydrationWarning>Past 12 Months</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <LineChart
-            data={tableData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+          <LineChart data={tableData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <ChartLegend />
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -90,20 +61,8 @@ export function IncomeVsExpenseLine(props: { to?: Date; from?: Date }) {
             />
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
-            <Line
-              type="monotone"
-              dataKey="income"
-              stroke="hsl(var(--chart-2))"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="expenses"
-              stroke="hsl(var(--chart-5))"
-              strokeWidth={2}
-              dot={false}
-            />
+            <Line type="monotone" dataKey="income" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="expenses" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} />
           </LineChart>
         </ChartContainer>
       </CardContent>
@@ -140,9 +99,7 @@ export function IncomeVsExpenseBar(props: { to?: Date; from?: Date }) {
       <CardHeader>
         <CardTitle>Income v Expenses (Bar)</CardTitle>
         <CardDescription suppressHydrationWarning>
-          {props.from &&
-            props.to &&
-            `${displayFormatMonth(props.from)} - ${displayFormatMonth(props.to)}`}
+          {props.from && props.to && `${displayFormatMonth(props.from)} - ${displayFormatMonth(props.to)}`}
           {!props.from && !props.to && "Past 12 Months"}
         </CardDescription>
       </CardHeader>
@@ -158,10 +115,7 @@ export function IncomeVsExpenseBar(props: { to?: Date; from?: Date }) {
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="dashed" />}
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
             <Bar dataKey="income" fill="hsl(var(--chart-2))" radius={4} />
             <Bar dataKey="expenses" fill="hsl(var(--chart-5))" radius={4} />
           </BarChart>

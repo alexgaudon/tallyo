@@ -28,8 +28,7 @@ export const Route = createFileRoute("/dashboard")({
       throw redirect({ to: "/signin" });
     }
 
-    const defaultFrom =
-      search.from ?? formatDateISO8601(startOfMonth(new Date()));
+    const defaultFrom = search.from ?? formatDateISO8601(startOfMonth(new Date()));
     const defaultTo = search.to ?? formatDateISO8601(new Date());
 
     await Promise.all([
@@ -39,12 +38,8 @@ export const Route = createFileRoute("/dashboard")({
           to: new Date(defaultTo),
         }),
       ),
-      context.queryClient.prefetchQuery(
-        CategoryRepository.getAllUserCategoriesQuery(),
-      ),
-      context.queryClient.prefetchQuery(
-        ChartsRespository.getMonthlyExpenseDataQuery(),
-      ),
+      context.queryClient.prefetchQuery(CategoryRepository.getAllUserCategoriesQuery()),
+      context.queryClient.prefetchQuery(ChartsRespository.getMonthlyExpenseDataQuery()),
       context.queryClient.prefetchQuery(
         ChartsRespository.getTopVendorsDataQuery({
           from: new Date(defaultFrom),
@@ -69,10 +64,8 @@ export const Route = createFileRoute("/dashboard")({
 
 const isThisMonth = (range: { from: Date; to: Date }) => {
   return (
-    formatDateISO8601(range.from) ===
-      formatDateISO8601(startOfMonth(new Date())) &&
-    (formatDateISO8601(range.to) ===
-      formatDateISO8601(addDays(new Date(), 1)) ||
+    formatDateISO8601(range.from) === formatDateISO8601(startOfMonth(new Date())) &&
+    (formatDateISO8601(range.to) === formatDateISO8601(addDays(new Date(), 1)) ||
       formatDateISO8601(range.to) === formatDateISO8601(new Date()))
   );
 };
@@ -80,16 +73,11 @@ const isThisMonth = (range: { from: Date; to: Date }) => {
 function RouteComponent() {
   const search = Route.useSearch();
 
-  const defaultFrom =
-    search.from ?? formatDateISO8601(startOfMonth(new Date()));
+  const defaultFrom = search.from ?? formatDateISO8601(startOfMonth(new Date()));
   const defaultTo = search.to ?? formatDateISO8601(new Date());
 
-  const [from, setFrom] = useState<Date>(() =>
-    getDateAdjustedForTimezone(defaultFrom),
-  );
-  const [to, setTo] = useState<Date>(() =>
-    getDateAdjustedForTimezone(defaultTo),
-  );
+  const [from, setFrom] = useState<Date>(() => getDateAdjustedForTimezone(defaultFrom));
+  const [to, setTo] = useState<Date>(() => getDateAdjustedForTimezone(defaultTo));
 
   const navigate = useNavigate();
 
@@ -123,12 +111,8 @@ function RouteComponent() {
                   replace: true,
                   to: "/dashboard",
                   search: {
-                    from: formatDateISO8601(
-                      getDateAdjustedForTimezone(values.range.from),
-                    ),
-                    to: formatDateISO8601(
-                      getDateAdjustedForTimezone(values.range.to ?? new Date()),
-                    ),
+                    from: formatDateISO8601(getDateAdjustedForTimezone(values.range.from)),
+                    to: formatDateISO8601(getDateAdjustedForTimezone(values.range.to ?? new Date())),
                   },
                 });
               }

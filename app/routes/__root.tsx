@@ -1,11 +1,5 @@
 import { type QueryClient } from "@tanstack/react-query";
-import {
-  HeadContent,
-  Outlet,
-  ScriptOnce,
-  Scripts,
-  createRootRouteWithContext,
-} from "@tanstack/react-router";
+import { HeadContent, Outlet, ScriptOnce, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import React from "react";
 
 import Navbar from "@/components/NavBar";
@@ -18,53 +12,46 @@ import { AuthRepository } from "@/repositories/auth";
 import { MetaRepository } from "@/repositories/meta";
 import appCss from "@/styles/app.css?url";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
-  {
-    beforeLoad: async (ctx) => {
-      const [auth, meta] = await Promise.all([
-        await ctx.context.queryClient.ensureQueryData(
-          AuthRepository.getUserAuthQuery(),
-        ),
-        await ctx.context.queryClient.ensureQueryData(
-          MetaRepository.getUserMeta(),
-        ),
-      ]);
-      return { auth, meta };
-    },
-    loader: async () => {},
-    component: RootComponent,
-    head: () => {
-      return {
-        meta: [
-          {
-            charSet: "utf-8",
-          },
-          {
-            name: "viewport",
-            content:
-              "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
-          },
-          {
-            title: "Tallyo | Personal Finance",
-          },
-        ],
-        links: [
-          {
-            rel: "stylesheet",
-            href: appCss,
-          },
-          {
-            rel: "icon",
-            type: "image/x-icon",
-            // href: "/images/favicon.ico",
-            href: icon,
-          },
-        ],
-        head: [],
-      };
-    },
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  beforeLoad: async (ctx) => {
+    const [auth, meta] = await Promise.all([
+      await ctx.context.queryClient.ensureQueryData(AuthRepository.getUserAuthQuery()),
+      await ctx.context.queryClient.ensureQueryData(MetaRepository.getUserMeta()),
+    ]);
+    return { auth, meta };
   },
-);
+  loader: async () => {},
+  component: RootComponent,
+  head: () => {
+    return {
+      meta: [
+        {
+          charSet: "utf-8",
+        },
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
+        },
+        {
+          title: "Tallyo | Personal Finance",
+        },
+      ],
+      links: [
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+        {
+          rel: "icon",
+          type: "image/x-icon",
+          // href: "/images/favicon.ico",
+          href: icon,
+        },
+      ],
+      head: [],
+    };
+  },
+});
 
 function RootComponent() {
   return (
@@ -102,11 +89,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head suppressHydrationWarning>
         <meta name="darkreader-lock" />
         {import.meta.env.SSR && import.meta.env.PROD && (
-          <script
-            defer
-            data-domain="tallyo.app"
-            src="https://pl.amgau.com/js/script.js"
-          ></script>
+          <script defer data-domain="tallyo.app" src="https://pl.amgau.com/js/script.js"></script>
         )}
         <HeadContent />
       </head>

@@ -12,11 +12,7 @@ interface DateParts {
   year: number;
 }
 
-const DateInput: React.FC<DateInputProps> = ({
-  value,
-  onChange,
-  disabled = false,
-}) => {
+const DateInput: React.FC<DateInputProps> = ({ value, onChange, disabled = false }) => {
   const [date, setDate] = React.useState<DateParts>(() => {
     const d = value ? new Date(value) : new Date();
     return {
@@ -52,28 +48,22 @@ const DateInput: React.FC<DateInputProps> = ({
     // Validate the day of the month
     const newDate = { ...date, [field]: value };
     const d = new Date(newDate.year, newDate.month - 1, newDate.day);
-    return (
-      d.getFullYear() === newDate.year &&
-      d.getMonth() + 1 === newDate.month &&
-      d.getDate() === newDate.day
-    );
+    return d.getFullYear() === newDate.year && d.getMonth() + 1 === newDate.month && d.getDate() === newDate.day;
   };
 
-  const handleInputChange =
-    (field: keyof DateParts) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value ? Number(e.target.value) : "";
-      const isValid =
-        typeof newValue === "number" && validateDate(field, newValue);
+  const handleInputChange = (field: keyof DateParts) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value ? Number(e.target.value) : "";
+    const isValid = typeof newValue === "number" && validateDate(field, newValue);
 
-      // If the new value is valid, update the date
-      const newDate = { ...date, [field]: newValue };
-      setDate(newDate);
+    // If the new value is valid, update the date
+    const newDate = { ...date, [field]: newValue };
+    setDate(newDate);
 
-      // only call onChange when the entry is valid
-      if (isValid) {
-        onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
-      }
-    };
+    // only call onChange when the entry is valid
+    if (isValid) {
+      onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
+    }
+  };
 
   const initialDate = useRef<DateParts>(date);
 
@@ -96,113 +86,101 @@ const DateInput: React.FC<DateInputProps> = ({
       }
     };
 
-  const handleKeyDown =
-    (field: keyof DateParts) => (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // Allow command (or control) combinations
-      if (e.metaKey || e.ctrlKey) {
-        return;
+  const handleKeyDown = (field: keyof DateParts) => (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow command (or control) combinations
+    if (e.metaKey || e.ctrlKey) {
+      return;
+    }
+
+    // Prevent non-numeric characters, excluding allowed keys
+    if (
+      !/^[0-9]$/.test(e.key) &&
+      !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Delete", "Tab", "Backspace", "Enter"].includes(e.key)
+    ) {
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      let newDate = { ...date };
+
+      if (field === "day") {
+        if (date[field] === new Date(date.year, date.month, 0).getDate()) {
+          newDate = { ...newDate, day: 1, month: (date.month % 12) + 1 };
+          if (newDate.month === 1) newDate.year += 1;
+        } else {
+          newDate.day += 1;
+        }
       }
 
-      // Prevent non-numeric characters, excluding allowed keys
+      if (field === "month") {
+        if (date[field] === 12) {
+          newDate = { ...newDate, month: 1, year: date.year + 1 };
+        } else {
+          newDate.month += 1;
+        }
+      }
+
+      if (field === "year") {
+        newDate.year += 1;
+      }
+
+      setDate(newDate);
+      onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      let newDate = { ...date };
+
+      if (field === "day") {
+        if (date[field] === 1) {
+          newDate.month -= 1;
+          if (newDate.month === 0) {
+            newDate.month = 12;
+            newDate.year -= 1;
+          }
+          newDate.day = new Date(newDate.year, newDate.month, 0).getDate();
+        } else {
+          newDate.day -= 1;
+        }
+      }
+
+      if (field === "month") {
+        if (date[field] === 1) {
+          newDate = { ...newDate, month: 12, year: date.year - 1 };
+        } else {
+          newDate.month -= 1;
+        }
+      }
+
+      if (field === "year") {
+        newDate.year -= 1;
+      }
+
+      setDate(newDate);
+      onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
+    }
+
+    if (e.key === "ArrowRight") {
       if (
-        !/^[0-9]$/.test(e.key) &&
-        ![
-          "ArrowUp",
-          "ArrowDown",
-          "ArrowLeft",
-          "ArrowRight",
-          "Delete",
-          "Tab",
-          "Backspace",
-          "Enter",
-        ].includes(e.key)
+        e.currentTarget.selectionStart === e.currentTarget.value.length ||
+        (e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === e.currentTarget.value.length)
       ) {
         e.preventDefault();
-        return;
+        if (field === "month") dayRef.current?.focus();
+        if (field === "day") yearRef.current?.focus();
       }
-
-      if (e.key === "ArrowUp") {
+    } else if (e.key === "ArrowLeft") {
+      if (
+        e.currentTarget.selectionStart === 0 ||
+        (e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === e.currentTarget.value.length)
+      ) {
         e.preventDefault();
-        let newDate = { ...date };
-
-        if (field === "day") {
-          if (date[field] === new Date(date.year, date.month, 0).getDate()) {
-            newDate = { ...newDate, day: 1, month: (date.month % 12) + 1 };
-            if (newDate.month === 1) newDate.year += 1;
-          } else {
-            newDate.day += 1;
-          }
-        }
-
-        if (field === "month") {
-          if (date[field] === 12) {
-            newDate = { ...newDate, month: 1, year: date.year + 1 };
-          } else {
-            newDate.month += 1;
-          }
-        }
-
-        if (field === "year") {
-          newDate.year += 1;
-        }
-
-        setDate(newDate);
-        onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        let newDate = { ...date };
-
-        if (field === "day") {
-          if (date[field] === 1) {
-            newDate.month -= 1;
-            if (newDate.month === 0) {
-              newDate.month = 12;
-              newDate.year -= 1;
-            }
-            newDate.day = new Date(newDate.year, newDate.month, 0).getDate();
-          } else {
-            newDate.day -= 1;
-          }
-        }
-
-        if (field === "month") {
-          if (date[field] === 1) {
-            newDate = { ...newDate, month: 12, year: date.year - 1 };
-          } else {
-            newDate.month -= 1;
-          }
-        }
-
-        if (field === "year") {
-          newDate.year -= 1;
-        }
-
-        setDate(newDate);
-        onChange(new Date(newDate.year, newDate.month - 1, newDate.day));
+        if (field === "day") monthRef.current?.focus();
+        if (field === "year") dayRef.current?.focus();
       }
-
-      if (e.key === "ArrowRight") {
-        if (
-          e.currentTarget.selectionStart === e.currentTarget.value.length ||
-          (e.currentTarget.selectionStart === 0 &&
-            e.currentTarget.selectionEnd === e.currentTarget.value.length)
-        ) {
-          e.preventDefault();
-          if (field === "month") dayRef.current?.focus();
-          if (field === "day") yearRef.current?.focus();
-        }
-      } else if (e.key === "ArrowLeft") {
-        if (
-          e.currentTarget.selectionStart === 0 ||
-          (e.currentTarget.selectionStart === 0 &&
-            e.currentTarget.selectionEnd === e.currentTarget.value.length)
-        ) {
-          e.preventDefault();
-          if (field === "day") monthRef.current?.focus();
-          if (field === "year") dayRef.current?.focus();
-        }
-      }
-    };
+    }
+  };
 
   return (
     <div className="flex items-center px-1 border rounded-lg text-sm">

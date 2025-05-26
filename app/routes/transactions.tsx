@@ -3,12 +3,7 @@ import AdvancedSearch from "@/components/transactions/advanced-search";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { TransactionTable } from "@/components/transactions/table";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CategoryRepository } from "@/repositories/categories";
 import { TransactionRepository } from "@/repositories/transactions";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -44,9 +39,7 @@ export const Route = createFileRoute("/transactions")({
           pageSize: PAGE_SIZE,
         }),
       ),
-      ctx.context.queryClient.prefetchQuery(
-        CategoryRepository.getAllUserCategoriesQuery(),
-      ),
+      ctx.context.queryClient.prefetchQuery(CategoryRepository.getAllUserCategoriesQuery()),
     ]);
   },
 });
@@ -109,15 +102,10 @@ function RouteComponent() {
   return (
     <div className="w-full">
       <div className="sm:block md:flex items-center gap-x-2 mx-4 py-4">
-        <AdvancedSearch
-          selectedCategory={search.categoryName}
-          onlyUnreviewed={search.unreviewed ?? false}
-        />
+        <AdvancedSearch selectedCategory={search.categoryName} onlyUnreviewed={search.unreviewed ?? false} />
       </div>
       <div className="mx-4">
-        <div className="flex items-center space-x-2 py-2">
-          {...tableControls}
-        </div>
+        <div className="flex items-center space-x-2 py-2">{...tableControls}</div>
         <TransactionTable
           data={data!.data}
           totalPages={data!.totalPages}

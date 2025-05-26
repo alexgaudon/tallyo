@@ -1,23 +1,10 @@
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger } from "@/components/ui/select";
 import { CategoryRepository } from "@/repositories/categories";
 import { TransactionRepository } from "@/repositories/transactions";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../ui/dialog";
 
 type UncategorizedProps = {
   transactionId: string;
@@ -38,22 +25,16 @@ type CategoryBadgeProps = (UncategorizedProps | CategorizedProps) & {
 function CategoryPicker(props: {
   children: React.ReactNode;
   id: string;
-  mutator: ReturnType<
-    typeof TransactionRepository.useUpdateUserTransactionMutation
-  >;
+  mutator: ReturnType<typeof TransactionRepository.useUpdateUserTransactionMutation>;
 }) {
-  const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data: categories } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={(val) => setOpen(val)}>
       <DialogTrigger>
-        <div className="flex justify-center items-center gap-x-2 underline">
-          {props.children}
-        </div>
+        <div className="flex justify-center items-center gap-x-2 underline">{props.children}</div>
       </DialogTrigger>
       <DialogContent>
         <div className="lg:grid mx-auto w-fit">
@@ -81,10 +62,7 @@ function CategoryPicker(props: {
                     <SelectLabel>Categories</SelectLabel>
                     {categories?.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        <CategoryBadge
-                          name={category.name}
-                          color={category.color}
-                        />
+                        <CategoryBadge name={category.name} color={category.color} />
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -117,9 +95,7 @@ export function CategoryBadge(props: CategoryBadgeProps) {
         className={`w-4 h-4 rounded-full mr-3`}
         aria-hidden="true"
       />
-      <h2 className="text-sm truncate whitespace-nowrap overflow-hidden">
-        {props.name}
-      </h2>
+      <h2 className="text-sm truncate whitespace-nowrap overflow-hidden">{props.name}</h2>
     </div>
   );
 

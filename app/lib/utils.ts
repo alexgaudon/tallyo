@@ -76,28 +76,18 @@ function hslToHex(hue: number, saturation: number, lightness: number): string {
 }
 
 type TransformDate<T> = {
-  [K in keyof T]: T[K] extends Date
-    ? string
-    : T[K] extends Date | null
-      ? string | null
-      : T[K];
+  [K in keyof T]: T[K] extends Date ? string : T[K] extends Date | null ? string | null : T[K];
 };
 
-export function transform<T extends Record<string, unknown>>(
-  data: T,
-): TransformDate<T> {
+export function transform<T extends Record<string, unknown>>(data: T): TransformDate<T> {
   return Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [
-      key,
-      value instanceof Date ? value.toISOString() : value,
-    ]),
+    Object.entries(data).map(([key, value]) => [key, value instanceof Date ? value.toISOString() : value]),
   ) as TransformDate<T>;
 }
 
 export function transformAmounts<T extends Record<string, unknown>>(
   data: T,
-): Omit<T, "amount" | "income" | "expenses"> &
-  Partial<Record<"amount" | "income" | "expenses", string>> {
+): Omit<T, "amount" | "income" | "expenses"> & Partial<Record<"amount" | "income" | "expenses", string>> {
   const result = { ...data } as Omit<T, "amount" | "income" | "expenses"> &
     Partial<Record<"amount" | "income" | "expenses", string>>;
 
@@ -166,9 +156,7 @@ export const getDateAdjustedForTimezone = (dateInput: Date | string): Date => {
   }
 };
 
-export const getDateAdjustedForTimezoneAsString = (
-  dateInput: Date | string,
-): string => {
+export const getDateAdjustedForTimezoneAsString = (dateInput: Date | string): string => {
   if (typeof dateInput === "string") {
     // Split the date string to get year, month, and day parts
     const parts = dateInput.split("-").map((part) => parseInt(part, 10));

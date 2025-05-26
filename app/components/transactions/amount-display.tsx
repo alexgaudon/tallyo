@@ -33,8 +33,7 @@ export default function AmountDisplay({
         "text-nowrap",
       )}
     >
-      {displayAmount < 0 ? "-" : ""}$
-      {isPrivacyMode ? hiddenAmount : formattedAmount}
+      {displayAmount < 0 ? "-" : ""}${isPrivacyMode ? hiddenAmount : formattedAmount}
     </span>
   );
 }

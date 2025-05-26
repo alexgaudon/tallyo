@@ -25,12 +25,7 @@ const $splitUserTransaction = createServerFn({
     const existingTransaction = await db
       .select()
       .from(transaction)
-      .where(
-        and(
-          eq(transaction.userId, context.auth.user.id),
-          eq(transaction.id, data.transactionId),
-        ),
-      );
+      .where(and(eq(transaction.userId, context.auth.user.id), eq(transaction.id, data.transactionId)));
 
     if (!existingTransaction || existingTransaction.length === 0) {
       return {
@@ -46,8 +41,7 @@ const $splitUserTransaction = createServerFn({
       amount: data.firstAmount,
       categoryId: existingTransaction[0].categoryId,
       vendor: existingTransaction[0].vendor,
-      externalId:
-        existingTransaction[0].externalId + "SPLIT" + data.firstAmount,
+      externalId: existingTransaction[0].externalId + "SPLIT" + data.firstAmount,
     };
 
     await db.insert(transaction).values(newTransaction).execute();

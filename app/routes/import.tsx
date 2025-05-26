@@ -13,15 +13,12 @@ export const Route = createFileRoute("/import")({
         from: "/import",
       });
     }
-    await context.queryClient.prefetchQuery(
-      CategoryRepository.getAllUserCategoriesQuery(),
-    );
+    await context.queryClient.prefetchQuery(CategoryRepository.getAllUserCategoriesQuery());
   },
 });
 
 function RouteComponent() {
-  const { mutateAsync, isPending } =
-    AuthRepository.useGenerateUserAuthTokenMutation();
+  const { mutateAsync, isPending } = AuthRepository.useGenerateUserAuthTokenMutation();
   return (
     <div className="p-8">
       <Button

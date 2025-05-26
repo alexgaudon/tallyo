@@ -34,9 +34,7 @@ export function UnreviewedBanner() {
         aria-hidden="true"
       ></div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <p className="text-gray-900 text-sm/6">
-          You have {data?.unreviewed ?? 0} unreviewed transactions.
-        </p>
+        <p className="text-gray-900 text-sm/6">You have {data?.unreviewed ?? 0} unreviewed transactions.</p>
         <Link
           to="/transactions"
           search={{
@@ -50,10 +48,7 @@ export function UnreviewedBanner() {
         </Link>
       </div>
       <div className="flex flex-1 justify-end">
-        <button
-          type="button"
-          className="-m-3 p-3 focus-visible:outline-offset-[-4px]"
-        >
+        <button type="button" className="-m-3 p-3 focus-visible:outline-offset-[-4px]">
           <span className="sr-only">Dismiss</span>
           <svg
             className="text-gray-900 size-5"

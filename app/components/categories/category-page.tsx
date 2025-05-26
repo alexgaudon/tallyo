@@ -8,14 +8,7 @@ import { PlusIcon, RotateCwIcon, Trash2Icon } from "lucide-react";
 import { TransactionTable } from "../transactions/table";
 import { DangerConfirm } from "../ui/danger-confirm";
 import { Switch } from "../ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Toaster } from "../ui/toaster";
 import { CategoryBadge } from "./category-badge";
 import { CreateCategoryForm } from "./create-category-form";
@@ -23,15 +16,11 @@ import { CreateCategoryForm } from "./create-category-form";
 const PAGE_SIZE = 10;
 
 export function CategoryPage({ categoryName }: { categoryName?: string }) {
-  const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data: categories } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
-  const { mutateAsync: deleteCategory } =
-    CategoryRepository.useDeleteUserCategoryMutation();
+  const { mutateAsync: deleteCategory } = CategoryRepository.useDeleteUserCategoryMutation();
 
-  const { mutateAsync: updateCategory } =
-    CategoryRepository.useUpdateUserCategoryMutation();
+  const { mutateAsync: updateCategory } = CategoryRepository.useUpdateUserCategoryMutation();
 
   const { data: transactions } = useQuery(
     TransactionRepository.getAllUserTransactionsQuery({
@@ -79,11 +68,7 @@ export function CategoryPage({ categoryName }: { categoryName?: string }) {
                   }
                 >
                   <TableCell className="p-1 font-medium">
-                    <CategoryBadge
-                      name={category.name}
-                      color={category.color}
-                      link={true}
-                    />
+                    <CategoryBadge name={category.name} color={category.color} link={true} />
                   </TableCell>
                   <TableCell className="p-0">
                     <Switch

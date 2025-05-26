@@ -57,18 +57,12 @@ export default function QFXFileUploader() {
   const [files, setFiles] = useState<File[]>([]);
   const [qfxData, setQfxData] = useState<ImportTransaction[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [recommendedCategories, setRecommendedCategories] = useState<
-    Record<string, string>
-  >({});
+  const [recommendedCategories, setRecommendedCategories] = useState<Record<string, string>>({});
 
-  const { data: categories } = useQuery(
-    CategoryRepository.getAllUserCategoriesQuery(),
-  );
+  const { data: categories } = useQuery(CategoryRepository.getAllUserCategoriesQuery());
 
-  const { mutateAsync } =
-    TransactionRepository.useCreateUserTransactionMutation();
-  const { mutateAsync: recommendCategory } =
-    TransactionRepository.useSetRecommendedTransactionCategoryMutation();
+  const { mutateAsync } = TransactionRepository.useCreateUserTransactionMutation();
+  const { mutateAsync: recommendCategory } = TransactionRepository.useSetRecommendedTransactionCategoryMutation();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles(acceptedFiles);
@@ -110,13 +104,10 @@ export default function QFXFileUploader() {
         }),
       );
 
-      const categoryMap = recommendations.reduce<Record<string, string>>(
-        (map, { fitid, category }) => {
-          map[fitid] = category;
-          return map;
-        },
-        {},
-      );
+      const categoryMap = recommendations.reduce<Record<string, string>>((map, { fitid, category }) => {
+        map[fitid] = category;
+        return map;
+      }, {});
 
       setRecommendedCategories(categoryMap);
     };
@@ -144,13 +135,9 @@ export default function QFXFileUploader() {
         <input {...getInputProps()} />
         <Upload className="mx-auto w-12 h-12 text-gray-400" />
         {isDragActive ? (
-          <p className="mt-2 text-gray-600 text-sm">
-            Drop the QFX file here ...
-          </p>
+          <p className="mt-2 text-gray-600 text-sm">Drop the QFX file here ...</p>
         ) : (
-          <p className="mt-2 text-gray-600 text-sm">
-            Drag 'n' drop a QFX file here, or click to select a file
-          </p>
+          <p className="mt-2 text-gray-600 text-sm">Drag 'n' drop a QFX file here, or click to select a file</p>
         )}
       </div>
 
@@ -166,10 +153,7 @@ export default function QFXFileUploader() {
           <h4 className="mb-2 font-semibold text-lg">Accepted file:</h4>
           <ul className="space-y-2">
             {files.map((file) => (
-              <li
-                key={file.name}
-                className="flex items-center text-sm text-white"
-              >
+              <li key={file.name} className="flex items-center text-sm text-white">
                 <File className="mr-2 w-4 h-4" />
                 {file.name} - {file.size} bytes
               </li>
@@ -210,15 +194,9 @@ export default function QFXFileUploader() {
           <table className="divide-y divide-gray-200 min-w-full">
             <thead>
               <tr>
-                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">
-                  Name
-                </th>
+                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 font-medium text-left text-white text-xs uppercase tracking-wider">
                   Transaction ID
                 </th>
@@ -230,22 +208,12 @@ export default function QFXFileUploader() {
             <tbody className="divide-y">
               {qfxData.map((transaction) => (
                 <tr key={transaction.FITID}>
+                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{transaction.DTPOSTED}</td>
+                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{transaction.TRNAMT}</td>
+                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{transaction.NAME}</td>
+                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">{transaction.FITID}</td>
                   <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                    {transaction.DTPOSTED}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                    {transaction.TRNAMT}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                    {transaction.NAME}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                    {transaction.FITID}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                    {categories?.find(
-                      (x) => x.id === recommendedCategories[transaction.FITID],
-                    )?.name || "Loading..."}
+                    {categories?.find((x) => x.id === recommendedCategories[transaction.FITID])?.name || "Loading..."}
                   </td>
                 </tr>
               ))}
