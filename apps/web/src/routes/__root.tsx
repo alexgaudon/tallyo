@@ -2,6 +2,7 @@ import Header from "@/components/header";
 import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { useSessionFetch } from "@/lib/auth-client";
 import { ORPCContext, link, type orpc } from "@/utils/orpc";
 import { createORPCClient } from "@orpc/client";
 import { createORPCReactQueryUtils } from "@orpc/react-query";
@@ -26,6 +27,13 @@ export interface RouterAppContext {
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
 	component: RootComponent,
+	beforeLoad: async ({ context }) => {
+		const queryClient = context.queryClient;
+		await queryClient.ensureQueryData({
+			queryKey: ["session"],
+			queryFn: useSessionFetch,
+		});
+	},
 	head: () => ({
 		meta: [
 			{
