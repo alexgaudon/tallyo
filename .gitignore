@@ -1,7 +1,4 @@
 .env
-.vinxi
-.output
 node_modules
-*.db
-
-better-auth_migrations/
+.turbo
+postgres-data
