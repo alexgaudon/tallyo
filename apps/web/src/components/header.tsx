@@ -15,10 +15,13 @@ import {
 	Sheet,
 	SheetClose,
 	SheetContent,
+	SheetDescription,
+	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient, useSession } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 import { ModeToggle } from "./mode-toggle";
 
 export default function Header() {
@@ -71,10 +74,14 @@ export default function Header() {
 							</Button>
 						</SheetTrigger>
 						<SheetContent side="right">
-							<div className="mt-4 flex flex-col space-y-4">
+							<SheetTitle className="sr-only">Menu</SheetTitle>
+							<SheetDescription className="sr-only">Menu</SheetDescription>
+							<div className="mt-4 flex flex-col space-y-4 px-4">
 								{session?.data ? (
 									<>
-										<NavLinks asChild />
+										<div className="flex flex-col space-y-4">
+											<NavLinks asChild />
+										</div>
 										<UserDropdown session={session.data} />
 									</>
 								) : (
@@ -134,7 +141,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
 		<Link
 			key={link.to}
 			to={link.to}
-			className="font-medium text-foreground text-sm hover:text-gray-400"
+			className="font-medium hover:text-gray-400 px-2 py-1.5 text-foreground text-sm"
 		>
 			{link.label}
 		</Link>
@@ -201,6 +208,7 @@ function UserDropdown({
 						authClient.signOut({
 							fetchOptions: {
 								onSuccess: () => {
+									queryClient.invalidateQueries({ queryKey: ["session"] });
 									navigate({ to: "/" });
 								},
 							},

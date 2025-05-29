@@ -1,4 +1,5 @@
 import { authClient } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export default function SignInForm({
 				},
 				{
 					onSuccess: () => {
+						queryClient.invalidateQueries({ queryKey: ["session"] });
 						navigate({
 							to: "/",
 						});

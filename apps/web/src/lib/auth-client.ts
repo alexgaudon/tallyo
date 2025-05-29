@@ -18,3 +18,9 @@ export const useSession = () => {
 		queryFn: useSessionFetch,
 	});
 };
+
+export const ensureSession = (isAuthenticated: boolean) => {
+	if (!isAuthenticated) {
+		throw redirect({ to: "/login" });
+	}
+};

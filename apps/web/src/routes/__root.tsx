@@ -29,19 +29,21 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	component: RootComponent,
 	beforeLoad: async ({ context }) => {
 		const queryClient = context.queryClient;
-		await queryClient.ensureQueryData({
+		const session = await queryClient.ensureQueryData({
 			queryKey: ["session"],
 			queryFn: useSessionFetch,
 		});
+
+		return { auth: session.data, isAuthenticated: !!session.data };
 	},
 	head: () => ({
 		meta: [
 			{
-				title: "My App",
+				title: "Tallyo",
 			},
 			{
 				name: "description",
-				content: "My App is a web application",
+				content: "Tallyo is a personal finance inspection tool",
 			},
 		],
 		links: [
