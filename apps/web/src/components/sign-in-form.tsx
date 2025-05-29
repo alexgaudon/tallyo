@@ -1,7 +1,6 @@
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod/v4";
 import Loader from "./loader";
@@ -9,16 +8,16 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
+import { useNavigate } from "@tanstack/react-router";
 export default function SignInForm({
 	onSwitchToSignUp,
+	from,
 }: {
 	onSwitchToSignUp: () => void;
+	from: string;
 }) {
-	const navigate = useNavigate({
-		from: "/",
-	});
 	const { isPending } = authClient.useSession();
-
+	const navigate = useNavigate();
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -33,10 +32,12 @@ export default function SignInForm({
 				{
 					onSuccess: () => {
 						queryClient.invalidateQueries({ queryKey: ["session"] });
-						navigate({
-							to: "/",
-						});
-						toast.success("Sign in successful");
+						toast.success("Sign in successful. Redirecting...");
+						setTimeout(() => {
+							navigate({
+								to: from ?? "/",
+							});
+						}, 500);
 					},
 					onError: (error) => {
 						toast.error(error.error.message);

@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, Menu } from "lucide-react";
+import { BlocksIcon, ChevronDown, ListIcon, Menu } from "lucide-react";
 import * as React from "react";
 
 import { DelayedLoading } from "@/components/delayed-loading";
@@ -133,16 +133,17 @@ export default function Header() {
 
 function NavLinks({ asChild }: { asChild?: boolean }) {
 	const links = [
-		{ to: "/dashboard", label: "Dashboard" },
-		{ to: "/categories", label: "Categories" },
+		{ to: "/dashboard", label: "Dashboard", icon: <BlocksIcon /> },
+		{ to: "/categories", label: "Categories", icon: <ListIcon /> },
 	];
 
 	const linkElements = links.map((link) => (
 		<Link
 			key={link.to}
 			to={link.to}
-			className="font-medium hover:text-gray-400 px-2 py-1.5 text-foreground text-sm"
+			className="flex items-center gap-2 font-medium text-foreground text-sm hover:text-gray-400"
 		>
+			{link.icon}
 			{link.label}
 		</Link>
 	));

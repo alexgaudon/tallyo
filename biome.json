@@ -32,15 +32,6 @@
 			"recommended": true,
 			"correctness": {
 				"useExhaustiveDependencies": "info"
-			},
-			"nursery": {
-				"useSortedClasses": {
-					"level": "error",
-					"fix": "safe",
-					"options": {
-						"functions": ["clsx", "cva", "cn"]
-					}
-				}
 			}
 		}
 	},

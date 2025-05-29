@@ -19,8 +19,8 @@ export const useSession = () => {
 	});
 };
 
-export const ensureSession = (isAuthenticated: boolean) => {
+export const ensureSession = (isAuthenticated: boolean, from = "/") => {
 	if (!isAuthenticated) {
-		throw redirect({ to: "/login" });
+		throw redirect({ to: "/login", search: { from } });
 	}
 };

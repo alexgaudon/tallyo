@@ -1,4 +1,5 @@
 import { authClient } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -10,12 +11,12 @@ import { Label } from "./ui/label";
 
 export default function SignUpForm({
 	onSwitchToSignIn,
+	from,
 }: {
 	onSwitchToSignIn: () => void;
+	from: string;
 }) {
-	const navigate = useNavigate({
-		from: "/",
-	});
+	const navigate = useNavigate();
 	const { isPending } = authClient.useSession();
 
 	const form = useForm({
@@ -33,10 +34,11 @@ export default function SignUpForm({
 				},
 				{
 					onSuccess: () => {
-						navigate({
-							to: "/dashboard",
-						});
+						queryClient.invalidateQueries({ queryKey: ["session"] });
 						toast.success("Sign up successful");
+						navigate({
+							to: from ?? "/dashboard",
+						});
 					},
 					onError: (error) => {
 						toast.error(error.error.message);

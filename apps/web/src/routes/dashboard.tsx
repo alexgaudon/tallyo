@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
 	beforeLoad: async ({ context }) => {
-		ensureSession(context.isAuthenticated);
+		ensureSession(context.isAuthenticated, "/dashboard");
 	},
 });
 
@@ -16,7 +16,7 @@ function RouteComponent() {
 	const { data: session } = useSession();
 
 	return (
-		<div>
+		<div className="p-4">
 			<h1>Dashboard</h1>
 			<p>Welcome {session?.data?.user?.name}</p>
 			<p>privateData: {privateData.data?.message}</p>
