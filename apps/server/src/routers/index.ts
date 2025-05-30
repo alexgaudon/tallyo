@@ -88,6 +88,43 @@ export const categoriesRouter = {
 				throw new Error("An unexpected error occurred while creating category");
 			}
 		}),
+	updateCategory: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				name: z.string().optional(),
+				parentCategoryId: z.string().nullable().optional(),
+				icon: z.string().optional(),
+				treatAsIncome: z.boolean().optional(),
+				hideFromInsights: z.boolean().optional(),
+			}),
+		)
+		.handler(async ({ context, input }) => {
+			try {
+				const { id, ...updateData } = input;
+				const updatedCategory = await db
+					.update(category)
+					.set({
+						...updateData,
+						updatedAt: new Date(),
+					})
+					.where(eq(category.id, id))
+					.returning();
+
+				if (!updatedCategory || updatedCategory.length === 0) {
+					throw new Error("Category not found or update failed");
+				}
+
+				return {
+					category: updatedCategory[0],
+				};
+			} catch (error) {
+				if (error instanceof Error) {
+					throw new Error(`Failed to update category: ${error.message}`);
+				}
+				throw new Error("An unexpected error occurred while updating category");
+			}
+		}),
 };
 
 export const appRouter = {

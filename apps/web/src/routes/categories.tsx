@@ -46,31 +46,25 @@ function RouteComponent() {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<FolderTreeIcon className="h-6 w-6" />
-					<div className="grid grid-cols-2 gap-2">
-						<div>
-							<h1 className="text-2xl font-bold">Categories</h1>
-						</div>
-						<div className="float-right">
-							<Dialog open={open} onOpenChange={setOpen}>
-								<DialogTrigger asChild>
-									<Button variant="outline">
-										<PlusIcon className="h-4 w-4" />
-										New Category
-									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle className="flex items-center gap-2 text-lg">
-											<PlusIcon className="h-4 w-4" />
-											New Category
-										</DialogTitle>
-									</DialogHeader>
-									<CreateCategoryForm callback={() => setOpen(false)} />
-								</DialogContent>
-							</Dialog>
-						</div>
-					</div>
+					<h1 className="text-2xl font-bold">Categories</h1>
 				</div>
+				<Dialog open={open} onOpenChange={setOpen}>
+					<DialogTrigger asChild>
+						<Button variant="outline">
+							<PlusIcon className="h-4 w-4 mr-2" />
+							New Category
+						</Button>
+					</DialogTrigger>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle className="flex items-center gap-2 text-lg">
+								<PlusIcon className="h-4 w-4" />
+								New Category
+							</DialogTitle>
+						</DialogHeader>
+						<CreateCategoryForm callback={() => setOpen(false)} />
+					</DialogContent>
+				</Dialog>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-[1fr,300px]">

@@ -6,6 +6,7 @@
 		"verbatimModuleSyntax": true,
 		"strict": true,
 		"skipLibCheck": true,
+		"composite": true,
 		"baseUrl": "./",
 		"paths": {
 			"@/*": ["./src/*"]
