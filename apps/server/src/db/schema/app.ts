@@ -7,6 +7,7 @@ import {
 	uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+
 export const category = pgTable(
 	"categories",
 	{
@@ -22,7 +23,9 @@ export const category = pgTable(
 		createdAt: timestamp("created_at").notNull().defaultNow(),
 		updatedAt: timestamp("updated_at").notNull().defaultNow(),
 	},
-	(table) => [uniqueIndex("name_user_id_unique").on(table.name, table.userId)],
+	(table) => [
+		uniqueIndex("category_name_user_id_unique").on(table.name, table.userId),
+	],
 );
 
 export const categoryRelations = relations(category, ({ many, one }) => ({
@@ -39,3 +42,60 @@ export const categoryRelations = relations(category, ({ many, one }) => ({
 		references: [user.id],
 	}),
 }));
+
+export const merchant = pgTable(
+	"merchants",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn((): string => Bun.randomUUIDv7()),
+		name: text("name").notNull(),
+		userId: text("user_id").notNull(),
+		recommendedCategoryId: text("recommended_category_id"),
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("merchant_name_user_id_unique").on(table.name, table.userId),
+	],
+);
+
+export const merchantKeyword = pgTable("merchant_keywords", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn((): string => Bun.randomUUIDv7()),
+	merchantId: text("merchant_id").notNull().unique(),
+	userId: text("user_id").notNull(),
+	keywords: text("keywords").notNull(), // Stored as comma-separated values
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const merchantRelations = relations(merchant, ({ one }) => ({
+	user: one(user, {
+		fields: [merchant.userId],
+		references: [user.id],
+	}),
+	recommendedCategory: one(category, {
+		fields: [merchant.recommendedCategoryId],
+		references: [category.id],
+	}),
+	keywords: one(merchantKeyword, {
+		fields: [merchant.id],
+		references: [merchantKeyword.merchantId],
+	}),
+}));
+
+export const merchantKeywordRelations = relations(
+	merchantKeyword,
+	({ one }) => ({
+		merchant: one(merchant, {
+			fields: [merchantKeyword.merchantId],
+			references: [merchant.id],
+		}),
+		user: one(user, {
+			fields: [merchantKeyword.userId],
+			references: [user.id],
+		}),
+	}),
+);

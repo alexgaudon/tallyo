@@ -11,12 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as MerchantsImport } from './routes/merchants'
 import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as CategoriesImport } from './routes/categories'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const MerchantsRoute = MerchantsImport.update({
+  id: '/merchants',
+  path: '/merchants',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/merchants': {
+      id: '/merchants'
+      path: '/merchants'
+      fullPath: '/merchants'
+      preLoaderRoute: typeof MerchantsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchants': typeof MerchantsRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchants': typeof MerchantsRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,15 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/merchants': typeof MerchantsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/categories' | '/dashboard' | '/login'
+  fullPaths: '/' | '/categories' | '/dashboard' | '/login' | '/merchants'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/categories' | '/dashboard' | '/login'
-  id: '__root__' | '/' | '/categories' | '/dashboard' | '/login'
+  to: '/' | '/categories' | '/dashboard' | '/login' | '/merchants'
+  id: '__root__' | '/' | '/categories' | '/dashboard' | '/login' | '/merchants'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +132,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  MerchantsRoute: typeof MerchantsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  MerchantsRoute: MerchantsRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +156,8 @@ export const routeTree = rootRoute
         "/",
         "/categories",
         "/dashboard",
-        "/login"
+        "/login",
+        "/merchants"
       ]
     },
     "/": {
@@ -151,6 +171,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/merchants": {
+      "filePath": "merchants.tsx"
     }
   }
 }

@@ -1,6 +1,12 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BlocksIcon, ChevronDown, ListIcon, Menu } from "lucide-react";
+import {
+	BlocksIcon,
+	ChevronDown,
+	FolderTreeIcon,
+	Menu,
+	StoreIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import { DelayedLoading } from "@/components/delayed-loading";
@@ -134,7 +140,8 @@ export default function Header() {
 function NavLinks({ asChild }: { asChild?: boolean }) {
 	const links = [
 		{ to: "/dashboard", label: "Dashboard", icon: <BlocksIcon /> },
-		{ to: "/categories", label: "Categories", icon: <ListIcon /> },
+		{ to: "/merchants", label: "Merchants", icon: <StoreIcon /> },
+		{ to: "/categories", label: "Categories", icon: <FolderTreeIcon /> },
 	];
 
 	const linkElements = links.map((link) => (
