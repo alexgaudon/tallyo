@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { StoreIcon } from "lucide-react";
+import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { MerchantCard } from "./merchant-card";
 
 interface MerchantListProps {
-	merchants: MerchantWithKeywords[];
+	merchants: MerchantWithKeywordsAndCategory[];
 	isLoading: boolean;
 	onDelete: (id: string) => Promise<void>;
 }

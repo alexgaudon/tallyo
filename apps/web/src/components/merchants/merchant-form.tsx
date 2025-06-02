@@ -8,19 +8,13 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
+import { CategorySelect } from "../categories/category-select";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -36,10 +30,6 @@ interface MerchantFormProps {
 }
 
 export function MerchantForm({ merchant, callback }: MerchantFormProps) {
-	const { data: categoriesData } = useQuery(
-		orpc.categories.getUserCategories.queryOptions(),
-	);
-
 	const form = useForm<FormValues>({
 		defaultValues: {
 			name: merchant?.name ?? "",
@@ -104,22 +94,24 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 		}
 	}
 
-	const categories = categoriesData?.categories ?? [];
-
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
+			<form
+				onSubmit={form.handleSubmit(onSubmit)}
+				className="mt-4 space-y-4 w-full"
+			>
 				<FormField
 					control={form.control}
 					name="name"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem className="w-full">
 							<FormLabel>Merchant Name</FormLabel>
 							<FormControl>
 								<Input
 									placeholder="Enter merchant name"
 									{...field}
 									autoComplete="off"
+									className="w-full"
 								/>
 							</FormControl>
 							<FormMessage />
@@ -133,20 +125,14 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Recommended Category (Optional)</FormLabel>
-							<Select onValueChange={field.onChange} value={field.value}>
-								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select a category" />
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									{categories.map((category) => (
-										<SelectItem key={category.id} value={category.id}>
-											{category.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<FormControl>
+								<CategorySelect
+									value={field.value}
+									onValueChange={field.onChange}
+									placeholder="Select a category"
+									className="w-full"
+								/>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -156,13 +142,14 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 					control={form.control}
 					name="keywords"
 					render={({ field }) => (
-						<FormItem>
+						<FormItem className="w-full">
 							<FormLabel>Keywords (Optional)</FormLabel>
 							<FormControl>
 								<Input
 									placeholder="Enter keywords separated by commas"
 									{...field}
 									autoComplete="off"
+									className="w-full"
 								/>
 							</FormControl>
 							<FormMessage />

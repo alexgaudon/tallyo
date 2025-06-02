@@ -1,7 +1,10 @@
 {
 	"name": "tallyo-rewrite",
 	"private": true,
-	"workspaces": ["apps/*", "packages/*"],
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"scripts": {
 		"check": "biome check --write .",
 		"format": "biome check --fix .",
@@ -14,7 +17,8 @@
 		"db:push": "turbo -F server db:push",
 		"db:studio": "turbo -F server db:studio",
 		"db:generate": "turbo -F server db:generate",
-		"db:migrate": "turbo -F server db:migrate"
+		"db:migrate": "turbo -F server db:migrate",
+		"db:dev": "docker-compose up -d postgres"
 	},
 	"dependencies": {},
 	"devDependencies": {

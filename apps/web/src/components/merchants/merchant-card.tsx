@@ -88,10 +88,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 								</AlertDialogHeader>
 								<AlertDialogFooter>
 									<AlertDialogCancel>Cancel</AlertDialogCancel>
-									<AlertDialogAction
-										onClick={() => onDelete(merchant.id)}
-										className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-									>
+									<AlertDialogAction onClick={() => onDelete(merchant.id)}>
 										Delete
 									</AlertDialogAction>
 								</AlertDialogFooter>
