@@ -2,19 +2,28 @@ import { merchant, merchantKeyword } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
+import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 
 export const merchantsRouter = {
 	getUserMerchants: protectedProcedure.handler(async ({ context }) => {
-		const userMerchants = await db.query.merchant.findMany({
-			where: eq(merchant.userId, context.session?.user?.id),
-			with: {
-				recommendedCategory: true,
-				keywords: true,
-			},
-		});
+		try {
+			const userMerchants = await db.query.merchant.findMany({
+				where: eq(merchant.userId, context.session?.user?.id),
+				with: {
+					recommendedCategory: true,
+					keywords: true,
+				},
+			});
 
-		return userMerchants;
+			return userMerchants;
+		} catch (error) {
+			logger.error(
+				`Error fetching merchants for user ${context.session?.user?.id}:`,
+				{ error },
+			);
+			throw error;
+		}
 	}),
 	createMerchant: protectedProcedure
 		.input(
@@ -36,6 +45,9 @@ export const merchantsRouter = {
 					.returning();
 
 				if (!newMerchant || newMerchant.length === 0) {
+					logger.error(
+						`Failed to create merchant "${input.name}" for user ${context.session?.user?.id}`,
+					);
 					throw new Error("Failed to create merchant. Please try again.");
 				}
 
@@ -51,6 +63,7 @@ export const merchantsRouter = {
 					merchant: newMerchant[0],
 				};
 			} catch (error) {
+				logger.error(`Error creating merchant "${input.name}":`, { error });
 				if (error instanceof Error) {
 					throw new Error(`Failed to create merchant: ${error.message}`);
 				}
@@ -79,6 +92,9 @@ export const merchantsRouter = {
 					.returning();
 
 				if (!updatedMerchant || updatedMerchant.length === 0) {
+					logger.error(
+						`Merchant ${input.id} not found or update failed for user ${context.session?.user?.id}`,
+					);
 					throw new Error("Merchant not found or update failed");
 				}
 
@@ -102,6 +118,7 @@ export const merchantsRouter = {
 					merchant: updatedMerchant[0],
 				};
 			} catch (error) {
+				logger.error(`Error updating merchant ${input.id}:`, { error });
 				if (error instanceof Error) {
 					throw new Error(`Failed to update merchant: ${error.message}`);
 				}
@@ -114,7 +131,10 @@ export const merchantsRouter = {
 				id: z.string(),
 			}),
 		)
-		.handler(async ({ input }) => {
+		.handler(async ({ input, context }) => {
+			logger.info(
+				`Deleting merchant ${input.id} for user ${context.session?.user?.id}`,
+			);
 			try {
 				const deletedMerchant = await db
 					.delete(merchant)
@@ -122,13 +142,20 @@ export const merchantsRouter = {
 					.returning();
 
 				if (!deletedMerchant || deletedMerchant.length === 0) {
+					logger.error(
+						`Merchant ${input.id} not found or already deleted for user ${context.session?.user?.id}`,
+					);
 					throw new Error("Merchant not found or already deleted");
 				}
 
+				logger.info(
+					`Successfully deleted merchant ${input.id} for user ${context.session?.user?.id}`,
+				);
 				return {
 					merchant: deletedMerchant[0],
 				};
 			} catch (error) {
+				logger.error(`Error deleting merchant ${input.id}:`, { error });
 				if (error instanceof Error) {
 					throw new Error(`Failed to delete merchant: ${error.message}`);
 				}

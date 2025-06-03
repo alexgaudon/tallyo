@@ -2,20 +2,29 @@ import { transaction } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
+import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 
 export const transactionsRouter = {
 	getUserTransactions: protectedProcedure.handler(async ({ context }) => {
-		const userTransactions = await db.query.transaction.findMany({
-			where: eq(transaction.userId, context.session?.user?.id),
-			with: {
-				merchant: true,
-				category: true,
-			},
-			orderBy: [desc(transaction.date), desc(transaction.amount)],
-		});
+		try {
+			const userTransactions = await db.query.transaction.findMany({
+				where: eq(transaction.userId, context.session?.user?.id),
+				with: {
+					merchant: true,
+					category: true,
+				},
+				orderBy: [desc(transaction.date), desc(transaction.amount)],
+			});
 
-		return userTransactions;
+			return userTransactions;
+		} catch (error) {
+			logger.error(
+				`Error fetching transactions for user ${context.session?.user?.id}:`,
+				{ error },
+			);
+			throw error;
+		}
 	}),
 	updateTransactionCategory: protectedProcedure
 		.input(
@@ -24,7 +33,7 @@ export const transactionsRouter = {
 				categoryId: z.string().nullable(),
 			}),
 		)
-		.handler(async ({ input }) => {
+		.handler(async ({ input, context }) => {
 			try {
 				const updatedTransaction = await db
 					.update(transaction)
@@ -36,6 +45,9 @@ export const transactionsRouter = {
 					.returning();
 
 				if (!updatedTransaction || updatedTransaction.length === 0) {
+					logger.error(
+						`Transaction ${input.id} not found or update failed for user ${context.session?.user?.id}`,
+					);
 					throw new Error("Transaction not found or update failed");
 				}
 
@@ -43,6 +55,7 @@ export const transactionsRouter = {
 					transaction: updatedTransaction[0],
 				};
 			} catch (error) {
+				logger.error(`Error updating transaction ${input.id}:`, { error });
 				if (error instanceof Error) {
 					throw new Error(`Failed to update transaction: ${error.message}`);
 				}
