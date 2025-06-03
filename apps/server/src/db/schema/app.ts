@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
 	boolean,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -99,3 +100,32 @@ export const merchantKeywordRelations = relations(
 		}),
 	}),
 );
+
+export const transaction = pgTable("transactions", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn((): string => Bun.randomUUIDv7()),
+	userId: text("user_id").notNull(),
+	merchantId: text("merchant_id"),
+	categoryId: text("category_id"),
+	amount: integer("amount").notNull(),
+	date: timestamp("date").notNull(),
+	transactionDetails: text("transaction_details").notNull(),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const transactionRelations = relations(transaction, ({ one }) => ({
+	user: one(user, {
+		fields: [transaction.userId],
+		references: [user.id],
+	}),
+	merchant: one(merchant, {
+		fields: [transaction.merchantId],
+		references: [merchant.id],
+	}),
+	category: one(category, {
+		fields: [transaction.categoryId],
+		references: [category.id],
+	}),
+}));

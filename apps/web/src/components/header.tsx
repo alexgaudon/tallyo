@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	BlocksIcon,
 	ChevronDown,
+	CreditCardIcon,
 	FolderTreeIcon,
 	Menu,
 	StoreIcon,
@@ -142,6 +143,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
 		{ to: "/dashboard", label: "Dashboard", icon: <BlocksIcon /> },
 		{ to: "/merchants", label: "Merchants", icon: <StoreIcon /> },
 		{ to: "/categories", label: "Categories", icon: <FolderTreeIcon /> },
+		{ to: "/transactions", label: "Transactions", icon: <CreditCardIcon /> },
 	];
 
 	const linkElements = links.map((link) => (

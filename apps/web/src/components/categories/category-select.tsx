@@ -10,11 +10,12 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 
 interface CategorySelectProps {
-	value?: string;
-	onValueChange: (value: string) => void;
+	value?: string | null;
+	onValueChange: (value: string | null) => void;
 	placeholder?: string;
 	excludeCategoryId?: string;
 	className?: string;
+	allowNull?: boolean;
 }
 
 export function CategorySelect({
@@ -23,6 +24,7 @@ export function CategorySelect({
 	placeholder = "Select a category",
 	excludeCategoryId,
 	className,
+	allowNull = false,
 }: CategorySelectProps) {
 	const { data } = useQuery(orpc.categories.getUserCategories.queryOptions());
 
@@ -31,7 +33,9 @@ export function CategorySelect({
 		? categories.filter((cat) => cat.id !== excludeCategoryId)
 		: categories;
 
-	const selectedCategory = categories.find((cat) => cat.id === value);
+	const selectedCategory = value
+		? categories.find((cat) => cat.id === value)
+		: null;
 
 	const formatCategoryName = (category: (typeof categories)[0]) => {
 		if (category.parentCategory) {
@@ -47,20 +51,29 @@ export function CategorySelect({
 	};
 
 	return (
-		<Select value={value} onValueChange={onValueChange}>
+		<Select value={value ?? ""} onValueChange={onValueChange}>
 			<SelectTrigger className={className}>
 				<SelectValue placeholder={placeholder}>
 					{selectedCategory
 						? formatCategoryName(selectedCategory)
-						: placeholder}
+						: value === null && allowNull
+							? "No category"
+							: placeholder}
 				</SelectValue>
 			</SelectTrigger>
 			<SelectContent>
-				{filteredCategories.map((category) => (
-					<SelectItem key={category.id} value={category.id}>
-						{formatCategoryName(category)}
-					</SelectItem>
-				))}
+				{allowNull && <SelectItem value="__null__">No category</SelectItem>}
+				{filteredCategories.length === 0 ? (
+					<div className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-muted-foreground">
+						No categories available
+					</div>
+				) : (
+					filteredCategories.map((category) => (
+						<SelectItem key={category.id} value={category.id}>
+							{formatCategoryName(category)}
+						</SelectItem>
+					))
+				)}
 			</SelectContent>
 		</Select>
 	);
