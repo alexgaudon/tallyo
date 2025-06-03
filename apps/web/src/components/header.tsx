@@ -91,7 +91,7 @@ export default function Header() {
 										<div className="flex flex-col space-y-4">
 											<NavLinks asChild />
 										</div>
-										<UserDropdown session={session.data} />
+										<UserDropdown session={session.data} inSheet />
 									</>
 								) : (
 									<>
@@ -172,6 +172,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
 
 function UserDropdown({
 	session,
+	inSheet = false,
 }: {
 	session: {
 		user: {
@@ -191,6 +192,7 @@ function UserDropdown({
 			userAgent?: string | null;
 		};
 	};
+	inSheet?: boolean;
 }) {
 	const navigate = useNavigate();
 
@@ -216,10 +218,19 @@ function UserDropdown({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
 				<DropdownMenuItem asChild>
-					<Link to="/settings" className="flex items-center gap-2">
-						<Settings className="h-4 w-4" />
-						<span>Settings</span>
-					</Link>
+					{inSheet ? (
+						<SheetClose asChild>
+							<Link to="/settings" className="flex items-center gap-2">
+								<Settings className="h-4 w-4" />
+								<span>Settings</span>
+							</Link>
+						</SheetClose>
+					) : (
+						<Link to="/settings" className="flex items-center gap-2">
+							<Settings className="h-4 w-4" />
+							<span>Settings</span>
+						</Link>
+					)}
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					onClick={() => {
