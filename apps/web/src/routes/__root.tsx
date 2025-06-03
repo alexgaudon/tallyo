@@ -34,7 +34,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			queryFn: useSessionFetch,
 		});
 
-		return { auth: session.data, isAuthenticated: !!session.data };
+		return { auth: session, isAuthenticated: !!session };
 	},
 	head: () => ({
 		meta: [

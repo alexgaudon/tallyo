@@ -1,4 +1,5 @@
 import { orpc } from "@/utils/orpc";
+import { ORPCError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createAuthClient } from "better-auth/react";
@@ -9,15 +10,21 @@ export const authClient = createAuthClient({
 
 export const useSessionFetch = async () => {
 	const session = await authClient.getSession();
-	if (!session) throw redirect({ to: "/login" });
+	if (!session) return null;
 
-	// Fetch user settings
-	const settings = await orpc.settings.getUserSettings.call();
-
-	return {
-		...session,
-		settings: settings.settings,
-	};
+	try {
+		const settings = await orpc.settings.getUserSettings.call();
+		return {
+			...session,
+			settings: settings.settings,
+		};
+	} catch (error) {
+		if (error instanceof ORPCError) {
+			if (error.code === "UNAUTHORIZED") {
+				return null;
+			}
+		}
+	}
 };
 
 export const useSession = () => {
