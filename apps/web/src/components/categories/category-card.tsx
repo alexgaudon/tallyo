@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type { orpc } from "@/utils/orpc";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { DotIcon, FolderIcon, PencilIcon, XIcon } from "lucide-react";
+import { FolderIcon, PencilIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import {
 	AlertDialog,
@@ -54,17 +54,12 @@ export function CategoryCard({
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<Icon className="h-4 w-4 text-muted-foreground" />
-						<span
+						<Icon
 							className={cn(
-								{
-									"text-green-500": category.treatAsIncome,
-								},
-								"font-mono",
+								"h-4 w-4 text-muted-foreground",
+								category.treatAsIncome && "text-green-500",
 							)}
-						>
-							<DotIcon className="h-12 w-12" />
-						</span>
+						/>
 						<span className="font-medium">{category.name}</span>
 					</div>
 					<div className="flex items-center gap-1">

@@ -8,10 +8,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { KeywordPills } from "@/components/ui/keyword-pills";
 import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { CategorySelect } from "../categories/category-select";
@@ -19,7 +20,7 @@ import { CategorySelect } from "../categories/category-select";
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	recommendedCategoryId: z.string().optional(),
-	keywords: z.string().optional(),
+	keywords: z.array(z.string()),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -34,7 +35,9 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 		defaultValues: {
 			name: merchant?.name ?? "",
 			recommendedCategoryId: merchant?.recommendedCategoryId ?? undefined,
-			keywords: merchant?.keywords?.keywords ?? "",
+			keywords: merchant?.keywords?.keywords
+				? merchant.keywords.keywords.split(",").map((k) => k.trim())
+				: [],
 		},
 		resolver: zodResolver(formSchema),
 	});
@@ -57,7 +60,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 		},
 	});
 
-	async function onSubmit(values: FormValues) {
+	const onSubmit: SubmitHandler<FormValues> = async (values) => {
 		try {
 			if (merchant) {
 				await updateMerchant({
@@ -66,9 +69,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 					...(values.recommendedCategoryId && {
 						recommendedCategoryId: values.recommendedCategoryId,
 					}),
-					...(values.keywords && {
-						keywords: values.keywords.split(",").map((k) => k.trim()),
-					}),
+					keywords: values.keywords,
 				});
 			} else {
 				await createMerchant({
@@ -76,9 +77,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 					...(values.recommendedCategoryId && {
 						recommendedCategoryId: values.recommendedCategoryId,
 					}),
-					...(values.keywords && {
-						keywords: values.keywords.split(",").map((k) => k.trim()),
-					}),
+					keywords: values.keywords,
 				});
 			}
 
@@ -92,7 +91,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 				error,
 			);
 		}
-	}
+	};
 
 	return (
 		<Form {...form}>
@@ -145,10 +144,10 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 						<FormItem className="w-full">
 							<FormLabel>Keywords (Optional)</FormLabel>
 							<FormControl>
-								<Input
-									placeholder="Enter keywords separated by commas"
-									{...field}
-									autoComplete="off"
+								<KeywordPills
+									value={field.value}
+									onChange={field.onChange}
+									placeholder="Add keywords..."
 									className="w-full"
 								/>
 							</FormControl>
