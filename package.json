@@ -1,10 +1,7 @@
 {
 	"name": "tallyo-rewrite",
 	"private": true,
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
+	"workspaces": ["apps/*", "packages/*"],
 	"scripts": {
 		"check": "biome check --write .",
 		"format": "biome check --fix .",
