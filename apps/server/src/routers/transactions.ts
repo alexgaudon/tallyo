@@ -24,7 +24,7 @@ export const transactionsRouter = {
 				categoryId: z.string().nullable(),
 			}),
 		)
-		.handler(async ({ context, input }) => {
+		.handler(async ({ input }) => {
 			try {
 				const updatedTransaction = await db
 					.update(transaction)
