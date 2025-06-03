@@ -5,7 +5,9 @@ import {
 	ChevronDown,
 	CreditCardIcon,
 	FolderTreeIcon,
+	LogOut,
 	Menu,
+	Settings,
 	StoreIcon,
 } from "lucide-react";
 import * as React from "react";
@@ -213,6 +215,12 @@ function UserDropdown({
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
+				<DropdownMenuItem asChild>
+					<Link to="/settings" className="flex items-center gap-2">
+						<Settings className="h-4 w-4" />
+						<span>Settings</span>
+					</Link>
+				</DropdownMenuItem>
 				<DropdownMenuItem
 					onClick={() => {
 						authClient.signOut({
@@ -224,7 +232,9 @@ function UserDropdown({
 							},
 						});
 					}}
+					className="flex items-center gap-2"
 				>
+					<LogOut className="h-4 w-4" />
 					<span>Log out</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>

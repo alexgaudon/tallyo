@@ -9,6 +9,24 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
+export const settings = pgTable("settings", {
+	id: text("id")
+		.primaryKey()
+		.$defaultFn((): string => Bun.randomUUIDv7()),
+	userId: text("user_id").notNull().unique(),
+	isDevMode: boolean("is_dev_mode").notNull().default(false),
+	isPrivacyMode: boolean("is_privacy_mode").notNull().default(false),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const settingsRelations = relations(settings, ({ one }) => ({
+	user: one(user, {
+		fields: [settings.userId],
+		references: [user.id],
+	}),
+}));
+
 export const category = pgTable(
 	"categories",
 	{
