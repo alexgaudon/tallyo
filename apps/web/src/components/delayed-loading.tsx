@@ -26,13 +26,14 @@ export function DelayedLoading({
 		return () => clearTimeout(timer);
 	}, [isLoading, delay]);
 
-	if (!isLoading) {
-		return <>{children}</>;
-	}
-
-	if (!showLoading) {
-		return null;
-	}
-
-	return <>{children}</>;
+	return (
+		<>
+			{showLoading && isLoading && (
+				<div className="fixed left-0 top-0 z-50 h-1 w-full overflow-hidden bg-muted">
+					<div className="h-full w-full animate-[loading_1s_ease-in-out_infinite] bg-primary" />
+				</div>
+			)}
+			{children}
+		</>
+	);
 }

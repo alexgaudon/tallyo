@@ -17,7 +17,7 @@ export type MerchantWithKeywordsAndCategory = InferRouterOutputs<
 
 export type Transaction = InferRouterOutputs<
 	typeof transactionsRouter
->["getUserTransactions"][number];
+>["getUserTransactions"]["transactions"][number];
 
 export const appRouter = {
 	healthCheck: publicProcedure.handler(async () => {

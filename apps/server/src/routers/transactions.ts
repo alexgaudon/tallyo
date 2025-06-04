@@ -1,31 +1,53 @@
 import { transaction } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 
 export const transactionsRouter = {
-	getUserTransactions: protectedProcedure.handler(async ({ context }) => {
-		try {
-			const userTransactions = await db.query.transaction.findMany({
-				where: eq(transaction.userId, context.session?.user?.id),
-				with: {
-					merchant: true,
-					category: true,
-				},
-				orderBy: [desc(transaction.date), desc(transaction.amount)],
-			});
+	getUserTransactions: protectedProcedure
+		.input(
+			z.object({
+				page: z.number().min(1).default(1),
+				pageSize: z.number().min(1).max(100).default(10),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			try {
+				const [{ count }] = await db
+					.select({ count: sql<number>`count(*)` })
+					.from(transaction)
+					.where(eq(transaction.userId, context.session?.user?.id));
 
-			return userTransactions;
-		} catch (error) {
-			logger.error(
-				`Error fetching transactions for user ${context.session?.user?.id}:`,
-				{ error },
-			);
-			throw error;
-		}
-	}),
+				const userTransactions = await db.query.transaction.findMany({
+					where: eq(transaction.userId, context.session?.user?.id),
+					with: {
+						merchant: true,
+						category: true,
+					},
+					orderBy: [desc(transaction.date), desc(transaction.amount)],
+					limit: input.pageSize,
+					offset: (input.page - 1) * input.pageSize,
+				});
+
+				return {
+					transactions: userTransactions,
+					pagination: {
+						total: count,
+						page: input.page,
+						pageSize: input.pageSize,
+						totalPages: Math.ceil(count / input.pageSize),
+					},
+				};
+			} catch (error) {
+				logger.error(
+					`Error fetching transactions for user ${context.session?.user?.id}:`,
+					{ error },
+				);
+				throw error;
+			}
+		}),
 	updateTransactionCategory: protectedProcedure
 		.input(
 			z.object({
@@ -110,7 +132,6 @@ export const transactionsRouter = {
 		)
 		.handler(async ({ input, context }) => {
 			try {
-				// First get the current transaction to check ownership and current reviewed status
 				const currentTransaction = await db.query.transaction.findFirst({
 					where: eq(transaction.id, input.id),
 				});

@@ -1,84 +1,158 @@
 import { TransactionsTable } from "@/components/transactions/transactions-table";
-import { ensureSession } from "@/lib/auth-client";
-import { orpc, queryClient } from "@/utils/orpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { orpc } from "@/utils/orpc";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
+import { z } from "zod";
+import type { RouterAppContext } from "./__root";
+
+const searchSchema = z.object({
+	page: z.coerce.number().int().min(1).default(1),
+	pageSize: z.coerce.number().int().min(1).max(100).default(25),
+});
+
+type SearchParams = z.infer<typeof searchSchema>;
 
 export const Route = createFileRoute("/transactions")({
-	component: RouteComponent,
-	beforeLoad: async ({ context }) => {
-		ensureSession(context.isAuthenticated, "/transactions");
-		await context.queryClient.ensureQueryData(
-			orpc.categories.getUserCategories.queryOptions(),
-		);
+	validateSearch: searchSchema,
+	beforeLoad: async ({
+		context,
+		search,
+	}: {
+		context: RouterAppContext & { isAuthenticated: boolean };
+		search: SearchParams;
+	}) => {
+		const { isAuthenticated } = context;
+		if (!isAuthenticated) {
+			throw new Error("Not authenticated");
+		}
 
-		await context.queryClient.ensureQueryData(
-			orpc.transactions.getUserTransactions.queryOptions(),
-		);
-
-		await context.queryClient.ensureQueryData(
-			orpc.merchants.getUserMerchants.queryOptions(),
-		);
+		await Promise.all([
+			context.queryClient.prefetchQuery(
+				orpc.categories.getUserCategories.queryOptions(),
+			),
+			context.queryClient.prefetchQuery(
+				orpc.merchants.getUserMerchants.queryOptions(),
+			),
+			context.queryClient.prefetchQuery(
+				orpc.transactions.getUserTransactions.queryOptions({
+					input: { page: search.page, pageSize: search.pageSize },
+				}),
+			),
+		]);
 	},
+	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const { data: transactions } = useQuery(
-		orpc.transactions.getUserTransactions.queryOptions(),
+	const navigate = useNavigate();
+	const search = useSearch({ from: "/transactions" });
+	const queryClient = useQueryClient();
+
+	type TransactionData = Awaited<
+		ReturnType<typeof orpc.transactions.getUserTransactions.call>
+	>;
+
+	type Transaction = TransactionData["transactions"][number];
+
+	const { data: transactionsData, isLoading: isLoadingTransactions } =
+		useQuery<TransactionData>(
+			orpc.transactions.getUserTransactions.queryOptions({
+				input: { page: search.page, pageSize: search.pageSize },
+			}),
+		);
+
+	useQuery(
+		orpc.transactions.getUserTransactions.queryOptions({
+			input: {
+				page: search.page + 1,
+				pageSize: search.pageSize,
+			},
+		}),
 	);
 
-	const { mutate: updateCategory } = useMutation({
+	const { mutateAsync: updateCategory } = useMutation({
 		mutationFn: orpc.transactions.updateTransactionCategory.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
-			});
+		onSettled: async (data, error, input) => {
+			await queryClient.invalidateQueries(
+				orpc.transactions.getUserTransactions.queryOptions({
+					input: { page: search.page, pageSize: search.pageSize },
+				}),
+			);
 		},
 	});
 
-	const { mutate: updateMerchant } = useMutation({
+	const { mutateAsync: updateMerchant } = useMutation({
 		mutationFn: orpc.transactions.updateTransactionMerchant.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
-			});
+		onSettled: async (data, error, input) => {
+			await queryClient.invalidateQueries(
+				orpc.transactions.getUserTransactions.queryOptions({
+					input: { page: search.page, pageSize: search.pageSize },
+				}),
+			);
 		},
 	});
 
-	const { mutate: toggleReviewed } = useMutation({
-		mutationFn: orpc.transactions.toggleTransactionReviewed.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
-			});
-		},
-	});
-
-	const { mutate: updateNotes } = useMutation({
+	const { mutateAsync: updateNotes } = useMutation({
 		mutationFn: orpc.transactions.updateTransactionNotes.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
-			});
+		onSettled: async (data, error, input) => {
+			await queryClient.invalidateQueries(
+				orpc.transactions.getUserTransactions.queryOptions({
+					input: { page: search.page, pageSize: search.pageSize },
+				}),
+			);
 		},
 	});
 
-	if (!transactions) {
-		return <div>Loading...</div>;
-	}
+	const { mutateAsync: toggleReviewed } = useMutation({
+		mutationFn: orpc.transactions.toggleTransactionReviewed.call,
+		onSettled: async (data, error, input) => {
+			await queryClient.invalidateQueries(
+				orpc.transactions.getUserTransactions.queryOptions({
+					input: { page: search.page, pageSize: search.pageSize },
+				}),
+			);
+		},
+	});
+
+	const handlePageChange = (page: number) => {
+		navigate({
+			to: "/transactions",
+			search: (prev) => ({ ...prev, page }),
+		});
+	};
+
+	const handlePageSizeChange = (pageSize: number) => {
+		navigate({
+			to: "/transactions",
+			search: { ...search, pageSize, page: 1 },
+		});
+	};
 
 	return (
-		<div className="container mx-auto py-10">
-			<h1 className="text-2xl font-bold mb-6">Transactions</h1>
-			<div className="rounded-md border">
-				<TransactionsTable
-					transactions={transactions}
-					updateCategory={updateCategory}
-					updateMerchant={updateMerchant}
-					toggleReviewed={toggleReviewed}
-					updateNotes={updateNotes}
-				/>
+		<div className="container mx-auto p-6 space-y-6">
+			<div className="flex items-center gap-2">
+				<h1 className="text-2xl font-bold">Transactions</h1>
 			</div>
+			<TransactionsTable
+				transactions={transactionsData?.transactions ?? []}
+				pagination={{
+					total: transactionsData?.pagination.total ?? 0,
+					page: transactionsData?.pagination.page ?? 1,
+					pageSize: transactionsData?.pagination.pageSize ?? 25,
+					totalPages: transactionsData?.pagination.totalPages ?? 1,
+				}}
+				onPageChange={handlePageChange}
+				onPageSizeChange={handlePageSizeChange}
+				updateCategory={updateCategory}
+				updateMerchant={updateMerchant}
+				updateNotes={updateNotes}
+				toggleReviewed={toggleReviewed}
+				isLoading={false}
+			/>
 		</div>
 	);
 }

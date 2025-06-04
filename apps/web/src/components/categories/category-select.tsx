@@ -11,6 +11,7 @@ interface CategorySelectProps {
 	excludeCategoryId?: string;
 	className?: string;
 	allowNull?: boolean;
+	disabled?: boolean;
 }
 
 export function CategorySelect({
@@ -20,6 +21,7 @@ export function CategorySelect({
 	excludeCategoryId,
 	className,
 	allowNull = false,
+	disabled = false,
 }: CategorySelectProps) {
 	const { data } = useQuery(orpc.categories.getUserCategories.queryOptions());
 
@@ -52,6 +54,7 @@ export function CategorySelect({
 			formatEntity={formatCategory}
 			nullLabel="No category"
 			emptyLabel="No categories available"
+			disabled={disabled}
 		/>
 	);
 }

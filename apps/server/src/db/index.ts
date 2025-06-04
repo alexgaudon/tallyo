@@ -61,36 +61,23 @@ export async function seed() {
 		now.getDate(),
 	);
 
-	await db.insert(transaction).values([
-		// Grocery Store transactions
-		{
-			userId,
-			merchantId: merchants[0].id,
-			amount: -8500, // $85.00
-			date: lastMonth,
-			transactionDetails: "Weekly groceries",
-		},
-		{
-			userId,
-			merchantId: merchants[0].id,
-			amount: -9200, // $92.00
-			date: now,
-			transactionDetails: "Monthly groceries",
-		},
-		// Coffee Shop transactions
-		{
-			userId,
-			merchantId: merchants[1].id,
-			amount: -450, // $4.50
-			date: lastMonth,
-			transactionDetails: "Morning coffee",
-		},
-		{
-			userId,
-			merchantId: merchants[1].id,
-			amount: -550, // $5.50
-			date: now,
-			transactionDetails: "Coffee and pastry",
-		},
-	]);
+	await db.insert(transaction).values(
+		Array.from({ length: 45 }, (_, i) => {
+			const isGrocery = i % 2 === 0;
+			const merchantId = isGrocery ? merchants[0].id : merchants[1].id;
+			const baseAmount = isGrocery ? -8500 : -450;
+			const date = i % 2 === 0 ? lastMonth : now;
+			const details = isGrocery
+				? `Grocery trip ${i + 1}`
+				: `Coffee visit ${i + 1}`;
+
+			return {
+				userId,
+				merchantId,
+				amount: baseAmount + i * 100, // Vary amounts slightly
+				date,
+				transactionDetails: details,
+			};
+		}),
+	);
 }

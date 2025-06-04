@@ -1,6 +1,7 @@
 import { CategorySelect } from "@/components/categories/category-select";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
+import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
 	Table,
 	TableBody,
@@ -23,18 +24,26 @@ import type { Transaction } from "../../../../server/src/routers/index";
 
 interface TransactionsTableProps {
 	transactions: Transaction[];
+	pagination: PaginationInfo;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (pageSize: number) => void;
 	updateCategory: (args: { id: string; categoryId: string | null }) => void;
 	updateMerchant: (args: { id: string; merchantId: string | null }) => void;
 	updateNotes: (args: { id: string; notes: string }) => void;
 	toggleReviewed: (args: { id: string }) => void;
+	isLoading?: boolean;
 }
 
 export function TransactionsTable({
 	transactions,
+	pagination,
+	onPageChange,
+	onPageSizeChange,
 	updateCategory,
 	updateMerchant,
 	updateNotes,
 	toggleReviewed,
+	isLoading = false,
 }: TransactionsTableProps) {
 	const { data: session } = useSession();
 	const isDevMode = session?.settings?.isDevMode;
@@ -99,8 +108,9 @@ export function TransactionsTable({
 							transaction.reviewed ? "text-green-600" : "text-muted-foreground"
 						}
 						disabled={
-							!transaction.reviewed &&
-							(!transaction.category || !transaction.merchant)
+							(!transaction.reviewed &&
+								(!transaction.category || !transaction.merchant)) ||
+							isLoading
 						}
 					>
 						<Check className="h-4 w-4" />
@@ -123,106 +133,123 @@ export function TransactionsTable({
 	);
 
 	return (
-		<Table>
-			<TableHeader>
-				<TableRow>
-					{isDevMode && <TableHead>ID</TableHead>}
-					<TableHead>Date</TableHead>
-					<TableHead>Merchant</TableHead>
-					<TableHead>Category</TableHead>
-					<TableHead>Details</TableHead>
-					<TableHead>Notes</TableHead>
-					<TableHead className="text-right">Amount</TableHead>
-					<TableHead className="text-center">Reviewed</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{transactions.map((transaction) => (
-					<TableRow key={transaction.id}>
-						{isDevMode && (
-							<TableCell className="font-mono text-xs text-muted-foreground">
-								{transaction.id}
-							</TableCell>
-						)}
-						<TableCell>
-							{format(new Date(transaction.date), "MMM d, yyyy")}
-						</TableCell>
-						<TableCell>
-							{transaction.reviewed ? (
-								<span className="text-muted-foreground">
-									{transaction.merchant?.name ?? "No merchant"}
-								</span>
-							) : (
-								<MerchantSelect
-									value={transaction.merchant?.id}
-									onValueChange={(merchantId) =>
-										updateMerchant({
-											id: transaction.id,
-											merchantId: merchantId === "__null__" ? null : merchantId,
-										})
-									}
-									placeholder="Select merchant"
-									className="w-[200px]"
-									allowNull
-								/>
-							)}
-						</TableCell>
-						<TableCell>
-							{transaction.reviewed ? (
-								<span className="text-muted-foreground">
-									{transaction.category?.name ?? "No category"}
-								</span>
-							) : (
-								<CategorySelect
-									value={transaction.category?.id}
-									onValueChange={(categoryId) =>
-										updateCategory({
-											id: transaction.id,
-											categoryId: categoryId === "__null__" ? null : categoryId,
-										})
-									}
-									placeholder="Select category"
-									className="w-[200px]"
-									allowNull
-								/>
-							)}
-						</TableCell>
-						<TableCell>
-							{transaction.reviewed ? (
-								<span className="text-muted-foreground italic">
-									Hidden after review
-								</span>
-							) : (
-								<span>{transaction.transactionDetails}</span>
-							)}
-						</TableCell>
-						<TableCell>
-							<input
-								type="text"
-								value={localNotes[transaction.id] ?? ""}
-								onChange={(e) =>
-									handleNoteChange(transaction.id, e.target.value)
-								}
-								onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
-								placeholder="Add notes..."
-								className="w-full border rounded px-2 py-1 text-sm bg-background"
-							/>
-						</TableCell>
-						<TableCell className="text-right">
-							<span
-								className={
-									transaction.amount < 0 ? "text-red-600" : "text-green-600"
-								}
-							>
-								${Math.abs(transaction.amount / 100).toFixed(2)}
-							</span>
-						</TableCell>
-						<TableCell className="text-center">
-							{renderReviewButton(transaction)}
-						</TableCell>
+		<div className="rounded-md border">
+			<Table>
+				<TableHeader>
+					<TableRow className="hover:bg-muted/50">
+						{isDevMode && <TableHead className="w-[100px] px-4">ID</TableHead>}
+						<TableHead className="w-[120px] px-4">Date</TableHead>
+						<TableHead className="min-w-[250px] px-4">Merchant</TableHead>
+						<TableHead className="min-w-[200px] px-4">Category</TableHead>
+						<TableHead className="px-4">Notes</TableHead>
+						<TableHead className="w-[120px] px-4 text-right">Amount</TableHead>
+						<TableHead className="w-[100px] px-4 text-center">
+							Reviewed
+						</TableHead>
 					</TableRow>
-				))}
-			</TableBody>
-		</Table>
+				</TableHeader>
+				<TableBody>
+					{transactions.map((transaction) => (
+						<TableRow
+							key={transaction.id}
+							className="hover:bg-muted/50 transition-colors"
+						>
+							{isDevMode && (
+								<TableCell className="font-mono text-xs text-muted-foreground px-4 py-3">
+									{transaction.id}
+								</TableCell>
+							)}
+							<TableCell className="whitespace-nowrap px-4 py-3">
+								{format(new Date(transaction.date), "MMM d, yyyy")}
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<div className="flex flex-col gap-1.5">
+									{transaction.reviewed ? (
+										<span className="text-muted-foreground">
+											{transaction.merchant?.name ?? "No merchant"}
+										</span>
+									) : (
+										<>
+											<MerchantSelect
+												value={transaction.merchant?.id}
+												onValueChange={(merchantId) =>
+													updateMerchant({
+														id: transaction.id,
+														merchantId:
+															merchantId === "__null__" ? null : merchantId,
+													})
+												}
+												placeholder="Select merchant"
+												className="w-[200px]"
+												allowNull
+												disabled={isLoading}
+											/>
+											<span className="text-sm text-muted-foreground">
+												{transaction.transactionDetails}
+											</span>
+										</>
+									)}
+								</div>
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								{transaction.reviewed ? (
+									<span className="text-muted-foreground">
+										{transaction.category?.name ?? "No category"}
+									</span>
+								) : (
+									<CategorySelect
+										value={transaction.category?.id}
+										onValueChange={(categoryId) =>
+											updateCategory({
+												id: transaction.id,
+												categoryId:
+													categoryId === "__null__" ? null : categoryId,
+											})
+										}
+										placeholder="Select category"
+										className="w-[200px]"
+										allowNull
+										disabled={isLoading}
+									/>
+								)}
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<input
+									type="text"
+									value={localNotes[transaction.id] ?? ""}
+									onChange={(e) =>
+										handleNoteChange(transaction.id, e.target.value)
+									}
+									onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
+									placeholder="Add notes..."
+									className="w-full border rounded px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+									disabled={isLoading}
+								/>
+							</TableCell>
+							<TableCell className="text-right font-medium px-4 py-3">
+								<span
+									className={
+										transaction.amount < 0 ? "text-red-600" : "text-green-600"
+									}
+								>
+									${Math.abs(transaction.amount / 100).toFixed(2)}
+								</span>
+							</TableCell>
+							<TableCell className="text-center px-4 py-3">
+								{renderReviewButton(transaction)}
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+			<div className="border-t px-4">
+				<Paginator
+					pagination={pagination}
+					onPageChange={onPageChange}
+					onPageSizeChange={onPageSizeChange}
+					isLoading={isLoading}
+				/>
+			</div>
+		</div>
 	);
 }

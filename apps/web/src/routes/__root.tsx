@@ -1,5 +1,4 @@
 import Header from "@/components/header";
-import Loader from "@/components/loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { useSessionFetch } from "@/lib/auth-client";
@@ -72,7 +71,7 @@ function RootComponent() {
 				<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
 					<div className="grid h-svh grid-rows-[auto_1fr]">
 						<Header />
-						{isFetching ? <Loader /> : <Outlet />}
+						<Outlet />
 					</div>
 					<Toaster richColors />
 				</ThemeProvider>

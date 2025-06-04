@@ -9,6 +9,7 @@ interface MerchantSelectProps {
 	placeholder?: string;
 	className?: string;
 	allowNull?: boolean;
+	disabled?: boolean;
 }
 
 export function MerchantSelect({
@@ -17,6 +18,7 @@ export function MerchantSelect({
 	placeholder = "Select a merchant",
 	className,
 	allowNull = false,
+	disabled = false,
 }: MerchantSelectProps) {
 	const { data } = useQuery(orpc.merchants.getUserMerchants.queryOptions());
 
@@ -32,6 +34,7 @@ export function MerchantSelect({
 			entities={merchants}
 			nullLabel="No merchant"
 			emptyLabel="No merchants available"
+			disabled={disabled}
 		/>
 	);
 }

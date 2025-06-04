@@ -30,6 +30,7 @@ interface EntitySelectProps<T extends Entity> {
 	formatEntity?: (entity: T) => ReactNode;
 	nullLabel?: string;
 	emptyLabel?: string;
+	disabled?: boolean;
 }
 
 export function EntitySelect<T extends Entity>({
@@ -42,13 +43,18 @@ export function EntitySelect<T extends Entity>({
 	formatEntity = (entity) => entity.name,
 	nullLabel = "No item",
 	emptyLabel = "No items available",
+	disabled = false,
 }: EntitySelectProps<T>) {
 	const selectedEntity = value
 		? entities.find((entity) => entity.id === value)
 		: null;
 
 	return (
-		<Select value={value ?? ""} onValueChange={onValueChange}>
+		<Select
+			value={value ?? ""}
+			onValueChange={onValueChange}
+			disabled={disabled}
+		>
 			<SelectTrigger className={className}>
 				<SelectValue placeholder={placeholder}>
 					{selectedEntity
