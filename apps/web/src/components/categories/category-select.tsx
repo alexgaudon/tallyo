@@ -1,13 +1,8 @@
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
+import type { Category } from "../../../../server/src/routers";
+import { EntitySelect } from "../ui/entity-select";
 
 interface CategorySelectProps {
 	value?: string | null;
@@ -33,11 +28,7 @@ export function CategorySelect({
 		? categories.filter((cat) => cat.id !== excludeCategoryId)
 		: categories;
 
-	const selectedCategory = value
-		? categories.find((cat) => cat.id === value)
-		: null;
-
-	const formatCategoryName = (category: (typeof categories)[0]) => {
+	const formatCategory = (category: Category) => {
 		if (category.parentCategory) {
 			return (
 				<span className="flex items-center gap-1">
@@ -51,30 +42,16 @@ export function CategorySelect({
 	};
 
 	return (
-		<Select value={value ?? ""} onValueChange={onValueChange}>
-			<SelectTrigger className={className}>
-				<SelectValue placeholder={placeholder}>
-					{selectedCategory
-						? formatCategoryName(selectedCategory)
-						: value === null && allowNull
-							? "No category"
-							: placeholder}
-				</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				{allowNull && <SelectItem value="__null__">No category</SelectItem>}
-				{filteredCategories.length === 0 ? (
-					<div className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-muted-foreground">
-						No categories available
-					</div>
-				) : (
-					filteredCategories.map((category) => (
-						<SelectItem key={category.id} value={category.id}>
-							{formatCategoryName(category)}
-						</SelectItem>
-					))
-				)}
-			</SelectContent>
-		</Select>
+		<EntitySelect
+			value={value}
+			onValueChange={onValueChange}
+			placeholder={placeholder}
+			className={className}
+			allowNull={allowNull}
+			entities={filteredCategories}
+			formatEntity={formatCategory}
+			nullLabel="No category"
+			emptyLabel="No categories available"
+		/>
 	);
 }

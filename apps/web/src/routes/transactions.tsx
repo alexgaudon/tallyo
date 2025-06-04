@@ -15,6 +15,10 @@ export const Route = createFileRoute("/transactions")({
 		await context.queryClient.ensureQueryData(
 			orpc.transactions.getUserTransactions.queryOptions(),
 		);
+
+		await context.queryClient.ensureQueryData(
+			orpc.merchants.getUserMerchants.queryOptions(),
+		);
 	},
 });
 
@@ -25,6 +29,33 @@ function RouteComponent() {
 
 	const { mutate: updateCategory } = useMutation({
 		mutationFn: orpc.transactions.updateTransactionCategory.call,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
+			});
+		},
+	});
+
+	const { mutate: updateMerchant } = useMutation({
+		mutationFn: orpc.transactions.updateTransactionMerchant.call,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
+			});
+		},
+	});
+
+	const { mutate: toggleReviewed } = useMutation({
+		mutationFn: orpc.transactions.toggleTransactionReviewed.call,
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
+			});
+		},
+	});
+
+	const { mutate: updateNotes } = useMutation({
+		mutationFn: orpc.transactions.updateTransactionNotes.call,
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				queryKey: orpc.transactions.getUserTransactions.queryOptions().queryKey,
@@ -43,6 +74,9 @@ function RouteComponent() {
 				<TransactionsTable
 					transactions={transactions}
 					updateCategory={updateCategory}
+					updateMerchant={updateMerchant}
+					toggleReviewed={toggleReviewed}
+					updateNotes={updateNotes}
 				/>
 			</div>
 		</div>

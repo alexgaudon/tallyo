@@ -129,6 +129,8 @@ export const transaction = pgTable("transactions", {
 	amount: integer("amount").notNull(),
 	date: timestamp("date").notNull(),
 	transactionDetails: text("transaction_details").notNull(),
+	notes: text("notes"),
+	reviewed: boolean("reviewed").notNull().default(false),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
