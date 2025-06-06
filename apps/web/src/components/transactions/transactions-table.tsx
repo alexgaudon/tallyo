@@ -1,4 +1,7 @@
-import { CategorySelect } from "@/components/categories/category-select";
+import {
+	CategorySelect,
+	formatCategory,
+} from "@/components/categories/category-select";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
@@ -17,10 +20,26 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { orpc } from "@/utils/orpc";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Transaction } from "../../../../server/src/routers/index";
+
+interface SessionData {
+	settings?: {
+		isDevMode: boolean;
+		isPrivacyMode: boolean;
+	};
+	meta?: {
+		topFiveCategories?: Array<{
+			id: string;
+			name: string;
+		}>;
+	};
+}
 
 interface TransactionsTableProps {
 	transactions: Transaction[];
@@ -46,27 +65,42 @@ export function TransactionsTable({
 	isLoading = false,
 }: TransactionsTableProps) {
 	const { data: session } = useSession();
-	const isDevMode = session?.settings?.isDevMode;
+	const isDevMode = session?.settings?.isDevMode ?? false;
 
 	const [localNotes, setLocalNotes] = useState<Record<string, string>>(() =>
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
+	);
+
+	const { data: categories } = useQuery(
+		orpc.categories.getUserCategories.queryOptions({
+			select: (data) => data.categories,
+		}),
 	);
 
 	const unsavedChanges = useRef<Record<string, string>>({});
 	const updateNotesRef = useRef(updateNotes);
 	const transactionsRef = useRef(transactions);
 
+	// Update refs when props change
 	useEffect(() => {
 		updateNotesRef.current = updateNotes;
 		transactionsRef.current = transactions;
 	}, [updateNotes, transactions]);
 
+	// Handle unsaved changes before unload
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-			for (const [id, value] of Object.entries(unsavedChanges.current)) {
-				const transaction = transactionsRef.current.find((t) => t.id === id);
-				if (transaction?.notes !== value) {
-					updateNotesRef.current({ id, notes: value });
+			const hasUnsavedChanges = Object.keys(unsavedChanges.current).length > 0;
+			if (hasUnsavedChanges) {
+				e.preventDefault();
+				e.returnValue = "";
+
+				// Try to save changes before unload
+				for (const [id, value] of Object.entries(unsavedChanges.current)) {
+					const transaction = transactionsRef.current.find((t) => t.id === id);
+					if (transaction?.notes !== value) {
+						updateNotesRef.current({ id, notes: value });
+					}
 				}
 			}
 		};
@@ -75,6 +109,7 @@ export function TransactionsTable({
 		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
 	}, []);
 
+	// Sync notes with server data
 	useEffect(() => {
 		const serverNotes = Object.fromEntries(
 			transactions.map((t) => [t.id, t.notes ?? ""]),
@@ -96,41 +131,48 @@ export function TransactionsTable({
 		}
 	};
 
-	const renderReviewButton = (transaction: Transaction) => (
-		<TooltipProvider>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => toggleReviewed({ id: transaction.id })}
-						className={
-							transaction.reviewed ? "text-green-600" : "text-muted-foreground"
-						}
-						disabled={
-							(!transaction.reviewed &&
-								(!transaction.category || !transaction.merchant)) ||
-							isLoading
-						}
-					>
-						<Check className="h-4 w-4" />
-					</Button>
-				</TooltipTrigger>
-				{!transaction.reviewed &&
-					(!transaction.category || !transaction.merchant) && (
+	const renderReviewButton = (transaction: Transaction) => {
+		const isDisabled =
+			(!transaction.reviewed &&
+				(!transaction.category || !transaction.merchant)) ||
+			isLoading;
+		const tooltipMessage =
+			!transaction.reviewed && (!transaction.category || !transaction.merchant)
+				? !transaction.category && !transaction.merchant
+					? "Assign a category and merchant before reviewing"
+					: !transaction.category
+						? "Assign a category before reviewing"
+						: "Assign a merchant before reviewing"
+				: undefined;
+
+		return (
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => toggleReviewed({ id: transaction.id })}
+							className={cn(
+								"transition-colors",
+								transaction.reviewed
+									? "text-green-600"
+									: "text-muted-foreground",
+							)}
+							disabled={isDisabled}
+						>
+							<Check className="h-4 w-4" />
+						</Button>
+					</TooltipTrigger>
+					{isDisabled && tooltipMessage && (
 						<TooltipContent>
-							<p>
-								{!transaction.category && !transaction.merchant
-									? "Assign a category and merchant before reviewing"
-									: !transaction.category
-										? "Assign a category before reviewing"
-										: "Assign a merchant before reviewing"}
-							</p>
+							<p>{tooltipMessage}</p>
 						</TooltipContent>
 					)}
-			</Tooltip>
-		</TooltipProvider>
-	);
+				</Tooltip>
+			</TooltipProvider>
+		);
+	};
 
 	return (
 		<div className="rounded-md border">
@@ -152,7 +194,10 @@ export function TransactionsTable({
 					{transactions.map((transaction) => (
 						<TableRow
 							key={transaction.id}
-							className="hover:bg-muted/50 transition-colors"
+							className={cn(
+								"hover:bg-muted/50 transition-colors",
+								isLoading && "opacity-50",
+							)}
 						>
 							{isDevMode && (
 								<TableCell className="font-mono text-xs text-muted-foreground px-4 py-3">
@@ -194,7 +239,9 @@ export function TransactionsTable({
 							<TableCell className="px-4 py-3">
 								{transaction.reviewed ? (
 									<span className="text-muted-foreground">
-										{transaction.category?.name ?? "No category"}
+										{transaction.category
+											? formatCategory(transaction.category)
+											: "No category"}
 									</span>
 								) : (
 									<CategorySelect
@@ -222,15 +269,21 @@ export function TransactionsTable({
 									}
 									onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
 									placeholder="Add notes..."
-									className="w-full border rounded px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+									className={cn(
+										"w-full border rounded px-2 py-1.5 text-sm bg-background",
+										"focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+										"disabled:opacity-50 disabled:cursor-not-allowed",
+										"transition-colors",
+									)}
 									disabled={isLoading}
 								/>
 							</TableCell>
 							<TableCell className="text-right font-medium px-4 py-3">
 								<span
-									className={
-										transaction.amount < 0 ? "text-red-600" : "text-green-600"
-									}
+									className={cn(
+										"transition-colors",
+										transaction.amount < 0 ? "text-red-600" : "text-green-600",
+									)}
 								>
 									${Math.abs(transaction.amount / 100).toFixed(2)}
 								</span>

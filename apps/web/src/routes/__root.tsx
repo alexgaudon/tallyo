@@ -12,7 +12,6 @@ import {
 	HeadContent,
 	Outlet,
 	createRootRouteWithContext,
-	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useState } from "react";
@@ -55,10 +54,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
-	const isFetching = useRouterState({
-		select: (s) => s.isLoading,
-	});
-
 	const [client] = useState<RouterClient<typeof appRouter>>(() =>
 		createORPCClient(link),
 	);

@@ -7,6 +7,7 @@ export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
 	beforeLoad: async ({ context }) => {
 		ensureSession(context.isAuthenticated, "/dashboard");
+		await context.queryClient.prefetchQuery(orpc.privateData.queryOptions());
 	},
 });
 

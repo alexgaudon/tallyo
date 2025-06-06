@@ -1,7 +1,9 @@
+import type { settings } from "@/db/schema";
 import { healthCheck } from "../db";
 import { protectedProcedure, publicProcedure } from "../lib/orpc";
 import { categoriesRouter } from "./categories";
 import { merchantsRouter } from "./merchants";
+import { metaRouter } from "./meta";
 import { settingsRouter } from "./settings";
 import { transactionsRouter } from "./transactions";
 
@@ -38,6 +40,7 @@ export const appRouter = {
 	merchants: merchantsRouter,
 	transactions: transactionsRouter,
 	settings: settingsRouter,
+	meta: metaRouter,
 };
 
 export type AppRouter = typeof appRouter;

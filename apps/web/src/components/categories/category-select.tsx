@@ -14,6 +14,19 @@ interface CategorySelectProps {
 	disabled?: boolean;
 }
 
+export const formatCategory = (category: Category) => {
+	if (category.parentCategory) {
+		return (
+			<span className="flex items-center gap-1">
+				{category.parentCategory.name}
+				<ArrowRight className="h-3 w-3" />
+				{category.name}
+			</span>
+		);
+	}
+	return category.name;
+};
+
 export function CategorySelect({
 	value,
 	onValueChange,
@@ -29,19 +42,6 @@ export function CategorySelect({
 	const filteredCategories = excludeCategoryId
 		? categories.filter((cat) => cat.id !== excludeCategoryId)
 		: categories;
-
-	const formatCategory = (category: Category) => {
-		if (category.parentCategory) {
-			return (
-				<span className="flex items-center gap-1">
-					{category.parentCategory.name}
-					<ArrowRight className="h-3 w-3" />
-					{category.name}
-				</span>
-			);
-		}
-		return category.name;
-	};
 
 	return (
 		<EntitySelect

@@ -13,10 +13,15 @@ export const useSessionFetch = async () => {
 	if (!session) return null;
 
 	try {
-		const settings = await orpc.settings.getUserSettings.call();
+		const data = await Promise.all([
+			orpc.meta.getUserMeta.call(),
+			orpc.settings.getUserSettings.call(),
+		]);
+
 		return {
 			...session,
-			settings: settings.settings,
+			...data[1],
+			meta: data[0],
 		};
 	} catch (error) {
 		if (error instanceof ORPCError) {

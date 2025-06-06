@@ -1,5 +1,5 @@
-import { transaction } from "@/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { merchant, transaction } from "@/db/schema";
+import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -11,20 +11,47 @@ export const transactionsRouter = {
 			z.object({
 				page: z.number().min(1).default(1),
 				pageSize: z.number().min(1).max(100).default(10),
+				category: z.string().optional(),
+				filter: z.string().optional(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
 			try {
+				const conditions = [];
+
+				if (input.category) {
+					conditions.push(eq(transaction.categoryId, input.category));
+				}
+
+				if (input.filter) {
+					conditions.push(ilike(merchant.name, `%${input.filter}%`));
+				}
+
+				console.log(input);
+
 				const [{ count }] = await db
 					.select({ count: sql<number>`count(*)` })
 					.from(transaction)
-					.where(eq(transaction.userId, context.session?.user?.id));
+					.leftJoin(merchant, eq(transaction.merchantId, merchant.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session?.user?.id),
+							...conditions,
+						),
+					);
 
 				const userTransactions = await db.query.transaction.findMany({
-					where: eq(transaction.userId, context.session?.user?.id),
+					where: and(
+						eq(transaction.userId, context.session?.user?.id),
+						...conditions,
+					),
 					with: {
 						merchant: true,
-						category: true,
+						category: {
+							with: {
+								parentCategory: true,
+							},
+						},
 					},
 					orderBy: [desc(transaction.date), desc(transaction.amount)],
 					limit: input.pageSize,
