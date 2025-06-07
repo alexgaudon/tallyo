@@ -35,8 +35,10 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 		defaultValues: {
 			name: merchant?.name ?? "",
 			recommendedCategoryId: merchant?.recommendedCategoryId ?? undefined,
-			keywords: merchant?.keywords?.keywords
-				? merchant.keywords.keywords.split(",").map((k) => k.trim())
+			keywords: merchant?.keywords
+				? Array.isArray(merchant.keywords)
+					? merchant.keywords.map((k) => k.keyword)
+					: []
 				: [],
 		},
 		resolver: zodResolver(formSchema),

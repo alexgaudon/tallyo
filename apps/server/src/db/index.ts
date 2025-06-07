@@ -44,12 +44,32 @@ export async function seed() {
 		{
 			merchantId: merchants[0].id,
 			userId,
-			keywords: "GROCERY,FOOD MARKET,SUPERMARKET",
+			keyword: "GROCERY",
+		},
+		{
+			merchantId: merchants[0].id,
+			userId,
+			keyword: "FOOD MARKET",
+		},
+		{
+			merchantId: merchants[0].id,
+			userId,
+			keyword: "SUPERMARKET",
 		},
 		{
 			merchantId: merchants[1].id,
 			userId,
-			keywords: "COFFEE,CAFE,COFFEE SHOP",
+			keyword: "COFFEE",
+		},
+		{
+			merchantId: merchants[1].id,
+			userId,
+			keyword: "CAFE",
+		},
+		{
+			merchantId: merchants[1].id,
+			userId,
+			keyword: "COFFEE SHOP",
 		},
 	]);
 

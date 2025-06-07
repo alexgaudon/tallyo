@@ -31,6 +31,8 @@ interface MerchantCardProps {
 export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 	const [editOpen, setEditOpen] = useState(false);
 
+	console.log(merchant);
+
 	return (
 		<Card>
 			<CardContent className="p-4">
@@ -96,15 +98,15 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 						</AlertDialog>
 					</div>
 				</div>
-				{merchant.keywords?.keywords && (
+				{merchant.keywords && merchant.keywords.length > 0 && (
 					<div className="mt-2 flex flex-wrap gap-1">
-						{merchant.keywords.keywords.split(",").map((keyword: string) => (
+						{merchant.keywords.map((keyword) => (
 							<span
-								key={keyword}
+								key={keyword.id}
 								className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
 							>
 								<TagIcon className="h-3 w-3" />
-								{keyword.trim()}
+								{keyword.keyword}
 							</span>
 						))}
 					</div>

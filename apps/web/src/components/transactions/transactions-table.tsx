@@ -21,25 +21,10 @@ import {
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Transaction } from "../../../../server/src/routers/index";
-
-interface SessionData {
-	settings?: {
-		isDevMode: boolean;
-		isPrivacyMode: boolean;
-	};
-	meta?: {
-		topFiveCategories?: Array<{
-			id: string;
-			name: string;
-		}>;
-	};
-}
 
 interface TransactionsTableProps {
 	transactions: Transaction[];
@@ -69,12 +54,6 @@ export function TransactionsTable({
 
 	const [localNotes, setLocalNotes] = useState<Record<string, string>>(() =>
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
-	);
-
-	const { data: categories } = useQuery(
-		orpc.categories.getUserCategories.queryOptions({
-			select: (data) => data.categories,
-		}),
 	);
 
 	const unsavedChanges = useRef<Record<string, string>>({});
@@ -200,21 +179,21 @@ export function TransactionsTable({
 							)}
 						>
 							{isDevMode && (
-								<TableCell className="font-mono text-xs text-muted-foreground px-4 py-3">
+								<TableCell className="font-mono text-xs text-muted-foreground px-4 h-10 align-middle">
 									{transaction.id}
 								</TableCell>
 							)}
-							<TableCell className="whitespace-nowrap px-4 py-3">
+							<TableCell className="whitespace-nowrap px-4 h-10 align-middle">
 								{format(new Date(transaction.date), "MMM d, yyyy")}
 							</TableCell>
-							<TableCell className="px-4 py-3">
-								<div className="flex flex-col gap-1.5">
+							<TableCell className="px-4 h-10 align-middle">
+								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
 										<span className="text-muted-foreground">
 											{transaction.merchant?.name ?? "No merchant"}
 										</span>
 									) : (
-										<>
+										<div className="flex flex-col justify-center">
 											<MerchantSelect
 												value={transaction.merchant?.id}
 												onValueChange={(merchantId) =>
@@ -228,39 +207,39 @@ export function TransactionsTable({
 												className="w-[200px]"
 												allowNull
 												disabled={isLoading}
+												transactionDetails={transaction.transactionDetails}
 											/>
-											<span className="text-sm text-muted-foreground">
-												{transaction.transactionDetails}
-											</span>
-										</>
+										</div>
 									)}
 								</div>
 							</TableCell>
-							<TableCell className="px-4 py-3">
-								{transaction.reviewed ? (
-									<span className="text-muted-foreground">
-										{transaction.category
-											? formatCategory(transaction.category)
-											: "No category"}
-									</span>
-								) : (
-									<CategorySelect
-										value={transaction.category?.id}
-										onValueChange={(categoryId) =>
-											updateCategory({
-												id: transaction.id,
-												categoryId:
-													categoryId === "__null__" ? null : categoryId,
-											})
-										}
-										placeholder="Select category"
-										className="w-[200px]"
-										allowNull
-										disabled={isLoading}
-									/>
-								)}
+							<TableCell className="px-4 h-10 align-middle">
+								<div className="flex items-center h-full">
+									{transaction.reviewed ? (
+										<span className="text-muted-foreground">
+											{transaction.category
+												? formatCategory(transaction.category)
+												: "No category"}
+										</span>
+									) : (
+										<CategorySelect
+											value={transaction.category?.id}
+											onValueChange={(categoryId) =>
+												updateCategory({
+													id: transaction.id,
+													categoryId:
+														categoryId === "__null__" ? null : categoryId,
+												})
+											}
+											placeholder="Select category"
+											className="w-[200px]"
+											allowNull
+											disabled={isLoading}
+										/>
+									)}
+								</div>
 							</TableCell>
-							<TableCell className="px-4 py-3">
+							<TableCell className="px-4 h-10 align-middle">
 								<input
 									type="text"
 									value={localNotes[transaction.id] ?? ""}
@@ -270,7 +249,7 @@ export function TransactionsTable({
 									onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
 									placeholder="Add notes..."
 									className={cn(
-										"w-full border rounded px-2 py-1.5 text-sm bg-background",
+										"w-full border rounded px-2 h-7 text-sm bg-background",
 										"focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
 										"disabled:opacity-50 disabled:cursor-not-allowed",
 										"transition-colors",
@@ -278,7 +257,7 @@ export function TransactionsTable({
 									disabled={isLoading}
 								/>
 							</TableCell>
-							<TableCell className="text-right font-medium px-4 py-3">
+							<TableCell className="text-right font-medium px-4 h-10 align-middle">
 								<span
 									className={cn(
 										"transition-colors",
@@ -288,7 +267,7 @@ export function TransactionsTable({
 									${Math.abs(transaction.amount / 100).toFixed(2)}
 								</span>
 							</TableCell>
-							<TableCell className="text-center px-4 py-3">
+							<TableCell className="text-center px-4 h-10 align-middle">
 								{renderReviewButton(transaction)}
 							</TableCell>
 						</TableRow>

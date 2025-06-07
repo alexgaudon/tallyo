@@ -65,7 +65,9 @@ export function EntitySelect<T extends Entity>({
 				</SelectValue>
 			</SelectTrigger>
 			<SelectContent>
-				{allowNull && <SelectItem value="__null__">{nullLabel}</SelectItem>}
+				{allowNull && (
+					<SelectItem value="__null__">{placeholder ?? nullLabel}</SelectItem>
+				)}
 				{entities.length === 0 ? (
 					<div className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-muted-foreground">
 						{emptyLabel}

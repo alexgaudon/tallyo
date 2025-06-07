@@ -1,5 +1,5 @@
 import { merchant, transaction } from "@/db/schema";
-import { and, desc, eq, ilike, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -24,27 +24,27 @@ export const transactionsRouter = {
 				}
 
 				if (input.filter) {
-					conditions.push(ilike(merchant.name, `%${input.filter}%`));
+					conditions.push(
+						or(
+							ilike(transaction.transactionDetails, `%${input.filter}%`),
+							ilike(transaction.notes, `%${input.filter}%`),
+						),
+					);
 				}
 
-				console.log(input);
+				const baseConditions = and(
+					eq(transaction.userId, context.session?.user?.id),
+					...conditions,
+				);
 
 				const [{ count }] = await db
 					.select({ count: sql<number>`count(*)` })
 					.from(transaction)
 					.leftJoin(merchant, eq(transaction.merchantId, merchant.id))
-					.where(
-						and(
-							eq(transaction.userId, context.session?.user?.id),
-							...conditions,
-						),
-					);
+					.where(and(baseConditions));
 
 				const userTransactions = await db.query.transaction.findMany({
-					where: and(
-						eq(transaction.userId, context.session?.user?.id),
-						...conditions,
-					),
+					where: and(baseConditions),
 					with: {
 						merchant: true,
 						category: {
@@ -72,6 +72,7 @@ export const transactionsRouter = {
 					`Error fetching transactions for user ${context.session?.user?.id}:`,
 					{ error },
 				);
+				console.error(error);
 				throw error;
 			}
 		}),
@@ -130,6 +131,19 @@ export const transactionsRouter = {
 					})
 					.where(eq(transaction.id, input.id))
 					.returning();
+
+				if (input.merchantId) {
+					const merchantRecord = await db.query.merchant.findFirst({
+						where: eq(merchant.id, input.merchantId),
+						with: {
+							keywords: true,
+						},
+					});
+
+					if (merchantRecord) {
+						console.log(merchantRecord);
+					}
+				}
 
 				if (!updatedTransaction || updatedTransaction.length === 0) {
 					logger.error(

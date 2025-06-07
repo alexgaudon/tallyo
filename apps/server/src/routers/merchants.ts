@@ -1,5 +1,5 @@
 import { merchant, merchantKeyword } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -12,8 +12,14 @@ export const merchantsRouter = {
 				where: eq(merchant.userId, context.session?.user?.id),
 				with: {
 					recommendedCategory: true,
-					keywords: true,
+					keywords: {
+						columns: {
+							id: true,
+							keyword: true,
+						},
+					},
 				},
+				orderBy: [asc(merchant.name)],
 			});
 
 			return userMerchants;
@@ -52,11 +58,13 @@ export const merchantsRouter = {
 				}
 
 				if (input.keywords && input.keywords.length > 0) {
-					await db.insert(merchantKeyword).values({
-						merchantId: newMerchant[0].id,
-						userId: context.session?.user?.id,
-						keywords: input.keywords.join(","),
-					});
+					await db.insert(merchantKeyword).values(
+						input.keywords.map((keyword) => ({
+							merchantId: newMerchant[0].id,
+							userId: context.session?.user?.id,
+							keyword: keyword.trim(),
+						})),
+					);
 				}
 
 				return {
@@ -106,11 +114,13 @@ export const merchantsRouter = {
 
 					// Insert new keywords if any
 					if (keywords.length > 0) {
-						await db.insert(merchantKeyword).values({
-							merchantId: id,
-							userId: context.session?.user?.id,
-							keywords: keywords.join(","),
-						});
+						await db.insert(merchantKeyword).values(
+							keywords.map((keyword) => ({
+								merchantId: id,
+								userId: context.session?.user?.id,
+								keyword: keyword.trim(),
+							})),
+						);
 					}
 				}
 

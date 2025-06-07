@@ -79,18 +79,28 @@ export const merchant = pgTable(
 	],
 );
 
-export const merchantKeyword = pgTable("merchant_keywords", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn((): string => Bun.randomUUIDv7()),
-	merchantId: text("merchant_id").notNull().unique(),
-	userId: text("user_id").notNull(),
-	keywords: text("keywords").notNull(), // Stored as comma-separated values
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const merchantKeyword = pgTable(
+	"merchant_keywords",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn((): string => Bun.randomUUIDv7()),
+		merchantId: text("merchant_id").notNull(),
+		userId: text("user_id").notNull(),
+		keyword: text("keyword").notNull(),
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("merchant_keyword_unique").on(
+			table.merchantId,
+			table.keyword,
+			table.userId,
+		),
+	],
+);
 
-export const merchantRelations = relations(merchant, ({ one }) => ({
+export const merchantRelations = relations(merchant, ({ one, many }) => ({
 	user: one(user, {
 		fields: [merchant.userId],
 		references: [user.id],
@@ -99,10 +109,7 @@ export const merchantRelations = relations(merchant, ({ one }) => ({
 		fields: [merchant.recommendedCategoryId],
 		references: [category.id],
 	}),
-	keywords: one(merchantKeyword, {
-		fields: [merchant.id],
-		references: [merchantKeyword.merchantId],
-	}),
+	keywords: many(merchantKeyword),
 }));
 
 export const merchantKeywordRelations = relations(

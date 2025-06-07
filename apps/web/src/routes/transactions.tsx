@@ -1,4 +1,4 @@
-import Search, { type SearchParams } from "@/components/transactions/search";
+import { Search } from "@/components/transactions/search";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
@@ -14,11 +14,8 @@ import type { RouterAppContext } from "./__root";
 const searchSchema = z.object({
 	page: z.coerce.number().int().min(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).default(10),
-	category: z.string().optional(),
 	filter: z.string().optional(),
-	onlyUnreviewed: z.coerce.boolean().optional(),
-	onlyWithoutPayee: z.coerce.boolean().optional(),
-	onlyWithoutCategory: z.coerce.boolean().optional(),
+	category: z.string().optional(),
 });
 
 export const Route = createFileRoute("/transactions")({
@@ -44,11 +41,8 @@ export const Route = createFileRoute("/transactions")({
 					input: {
 						page: search.page,
 						pageSize: search.pageSize,
-						category: search.category,
 						filter: search.filter,
-						onlyUnreviewed: search.onlyUnreviewed,
-						onlyWithoutPayee: search.onlyWithoutPayee,
-						onlyWithoutCategory: search.onlyWithoutCategory,
+						category: search.category,
 					},
 				}),
 			),
@@ -62,114 +56,98 @@ function RouteComponent() {
 	const search = useSearch({ from: "/transactions" });
 	const queryClient = useQueryClient();
 
-	type TransactionData = Awaited<
-		ReturnType<typeof orpc.transactions.getUserTransactions.call>
-	>;
-
-	const { data: transactionsData } = useQuery<TransactionData>(
+	const { data: transactionsData } = useQuery(
 		orpc.transactions.getUserTransactions.queryOptions({
+			keepPreviousData: true,
 			input: {
 				page: search.page,
 				pageSize: search.pageSize,
-				category: search.category,
 				filter: search.filter,
-				onlyUnreviewed: search.onlyUnreviewed,
-				onlyWithoutPayee: search.onlyWithoutPayee,
-				onlyWithoutCategory: search.onlyWithoutCategory,
+				category: search.category,
 			},
 		}),
 	);
 
 	// Prefetch next page
-	useQuery(
-		orpc.transactions.getUserTransactions.queryOptions({
+	useQuery({
+		...orpc.transactions.getUserTransactions.queryOptions({
 			input: {
 				page: search.page + 1,
 				pageSize: search.pageSize,
 				category: search.category,
 				filter: search.filter,
-				onlyUnreviewed: search.onlyUnreviewed,
-				onlyWithoutPayee: search.onlyWithoutPayee,
-				onlyWithoutCategory: search.onlyWithoutCategory,
+			},
+		}),
+		staleTime: 1000 * 60, // Keep data fresh for 1 minute
+	});
+
+	const { mutateAsync: updateCategory } = useMutation(
+		orpc.transactions.updateTransactionCategory.mutationOptions({
+			onSettled: async () => {
+				await queryClient.invalidateQueries(
+					orpc.transactions.getUserTransactions.queryOptions({
+						input: {
+							page: search.page,
+							pageSize: search.pageSize,
+							category: search.category,
+							filter: search.filter,
+						},
+					}),
+				);
 			},
 		}),
 	);
 
-	const { mutateAsync: updateCategory } = useMutation({
-		mutationFn: orpc.transactions.updateTransactionCategory.call,
-		onSettled: async () => {
-			await queryClient.invalidateQueries(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: {
-						page: search.page,
-						pageSize: search.pageSize,
-						category: search.category,
-						filter: search.filter,
-						onlyUnreviewed: search.onlyUnreviewed,
-						onlyWithoutPayee: search.onlyWithoutPayee,
-						onlyWithoutCategory: search.onlyWithoutCategory,
-					},
-				}),
-			);
-		},
-	});
+	const { mutateAsync: updateMerchant } = useMutation(
+		orpc.transactions.updateTransactionMerchant.mutationOptions({
+			onSettled: async () => {
+				await queryClient.invalidateQueries(
+					orpc.transactions.getUserTransactions.queryOptions({
+						input: {
+							page: search.page,
+							pageSize: search.pageSize,
+							category: search.category,
+							filter: search.filter,
+						},
+					}),
+				);
+			},
+		}),
+	);
 
-	const { mutateAsync: updateMerchant } = useMutation({
-		mutationFn: orpc.transactions.updateTransactionMerchant.call,
-		onSettled: async () => {
-			await queryClient.invalidateQueries(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: {
-						page: search.page,
-						pageSize: search.pageSize,
-						category: search.category,
-						filter: search.filter,
-						onlyUnreviewed: search.onlyUnreviewed,
-						onlyWithoutPayee: search.onlyWithoutPayee,
-						onlyWithoutCategory: search.onlyWithoutCategory,
-					},
-				}),
-			);
-		},
-	});
+	const { mutateAsync: updateNotes } = useMutation(
+		orpc.transactions.updateTransactionNotes.mutationOptions({
+			onSettled: async () => {
+				await queryClient.invalidateQueries(
+					orpc.transactions.getUserTransactions.queryOptions({
+						input: {
+							page: search.page,
+							pageSize: search.pageSize,
+							category: search.category,
+							filter: search.filter,
+						},
+					}),
+				);
+			},
+		}),
+	);
 
-	const { mutateAsync: updateNotes } = useMutation({
-		mutationFn: orpc.transactions.updateTransactionNotes.call,
-		onSettled: async () => {
-			await queryClient.invalidateQueries(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: {
-						page: search.page,
-						pageSize: search.pageSize,
-						category: search.category,
-						filter: search.filter,
-						onlyUnreviewed: search.onlyUnreviewed,
-						onlyWithoutPayee: search.onlyWithoutPayee,
-						onlyWithoutCategory: search.onlyWithoutCategory,
-					},
-				}),
-			);
-		},
-	});
-
-	const { mutateAsync: toggleReviewed } = useMutation({
-		mutationFn: orpc.transactions.toggleTransactionReviewed.call,
-		onSettled: async () => {
-			await queryClient.invalidateQueries(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: {
-						page: search.page,
-						pageSize: search.pageSize,
-						category: search.category,
-						filter: search.filter,
-						onlyUnreviewed: search.onlyUnreviewed,
-						onlyWithoutPayee: search.onlyWithoutPayee,
-						onlyWithoutCategory: search.onlyWithoutCategory,
-					},
-				}),
-			);
-		},
-	});
+	const { mutateAsync: toggleReviewed } = useMutation(
+		orpc.transactions.toggleTransactionReviewed.mutationOptions({
+			onSettled: async () => {
+				await queryClient.invalidateQueries(
+					orpc.transactions.getUserTransactions.queryOptions({
+						input: {
+							page: search.page,
+							pageSize: search.pageSize,
+							category: search.category,
+							filter: search.filter,
+						},
+					}),
+				);
+			},
+		}),
+	);
 
 	const handlePageChange = (page: number) => {
 		navigate({
@@ -185,36 +163,12 @@ function RouteComponent() {
 		});
 	};
 
-	const handleSearch = (searchParams: SearchParams) => {
-		navigate({
-			to: "/transactions",
-			search: {
-				page: 1,
-				pageSize: search.pageSize,
-				category: searchParams.category?.id,
-				filter: searchParams.filter || undefined,
-				onlyUnreviewed: searchParams.onlyUnreviewed || undefined,
-				onlyWithoutPayee: searchParams.onlyWithoutPayee || undefined,
-				onlyWithoutCategory: searchParams.onlyWithoutCategory || undefined,
-			},
-		});
-	};
-
 	return (
 		<div className="container mx-auto p-6 space-y-6">
 			<div className="flex items-center gap-2">
 				<h1 className="text-2xl font-bold">Transactions</h1>
 			</div>
-			<Search
-				searchFn={handleSearch}
-				initialSearch={{
-					filter: search.filter || "",
-					category: search.category ? { id: search.category, name: "" } : null,
-					onlyUnreviewed: search.onlyUnreviewed || false,
-					onlyWithoutPayee: search.onlyWithoutPayee || false,
-					onlyWithoutCategory: search.onlyWithoutCategory || false,
-				}}
-			/>
+			<Search />
 			<TransactionsTable
 				transactions={transactionsData?.transactions ?? []}
 				pagination={{

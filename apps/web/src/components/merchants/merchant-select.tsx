@@ -10,6 +10,7 @@ interface MerchantSelectProps {
 	className?: string;
 	allowNull?: boolean;
 	disabled?: boolean;
+	transactionDetails?: string;
 }
 
 export function MerchantSelect({
@@ -19,19 +20,21 @@ export function MerchantSelect({
 	className,
 	allowNull = false,
 	disabled = false,
+	transactionDetails,
 }: MerchantSelectProps) {
 	const { data } = useQuery(orpc.merchants.getUserMerchants.queryOptions());
 
 	const merchants: MerchantWithKeywordsAndCategory[] = data ?? [];
+	const entities = merchants.map(({ id, name }) => ({ id, name }));
 
 	return (
 		<EntitySelect
 			value={value}
 			onValueChange={onValueChange}
-			placeholder={placeholder}
+			placeholder={transactionDetails ?? placeholder}
 			className={className}
 			allowNull={allowNull}
-			entities={merchants}
+			entities={entities}
 			nullLabel="No merchant"
 			emptyLabel="No merchants available"
 			disabled={disabled}
