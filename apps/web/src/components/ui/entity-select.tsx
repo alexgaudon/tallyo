@@ -1,11 +1,21 @@
+import { Button } from "@/components/ui/button";
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 
 interface Entity {
 	id: string;
@@ -31,6 +41,7 @@ interface EntitySelectProps<T extends Entity> {
 	nullLabel?: string;
 	emptyLabel?: string;
 	disabled?: boolean;
+	searchPlaceholder?: string;
 }
 
 export function EntitySelect<T extends Entity>({
@@ -44,42 +55,87 @@ export function EntitySelect<T extends Entity>({
 	nullLabel = "No item",
 	emptyLabel = "No items available",
 	disabled = false,
+	searchPlaceholder = "Search...",
 }: EntitySelectProps<T>) {
+	const [open, setOpen] = useState(false);
 	const selectedEntity = value
 		? entities.find((entity) => entity.id === value)
 		: null;
 
 	return (
-		<Select
-			value={value ?? ""}
-			onValueChange={onValueChange}
-			disabled={disabled}
-		>
-			<SelectTrigger className={className}>
-				<SelectValue placeholder={placeholder}>
-					{selectedEntity
-						? formatEntity(selectedEntity)
-						: value === null && allowNull
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					variant="outline"
+					aria-haspopup="listbox"
+					aria-expanded={open}
+					className={cn(
+						"w-full max-w-[200px] h-9 justify-between gap-2 text-sm",
+						!value && "text-muted-foreground",
+						className,
+					)}
+					disabled={disabled}
+				>
+					<div className="flex-1 min-w-0">
+						{value === "__null__" && allowNull
 							? nullLabel
-							: placeholder}
-				</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				{allowNull && (
-					<SelectItem value="__null__">{placeholder ?? nullLabel}</SelectItem>
-				)}
-				{entities.length === 0 ? (
-					<div className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm text-muted-foreground">
-						{emptyLabel}
+							: selectedEntity
+								? formatEntity(selectedEntity)
+								: placeholder}
 					</div>
-				) : (
-					entities.map((entity) => (
-						<SelectItem key={entity.id} value={entity.id}>
-							{formatEntity(entity)}
-						</SelectItem>
-					))
-				)}
-			</SelectContent>
-		</Select>
+					<ChevronsUpDownIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="w-[200px] p-0">
+				<Command className="w-full">
+					<CommandInput
+						placeholder={searchPlaceholder}
+						className="h-9 text-sm"
+					/>
+					<CommandList>
+						<CommandEmpty className="py-2 text-sm">{emptyLabel}</CommandEmpty>
+						<CommandGroup>
+							{allowNull && (
+								<CommandItem
+									value={nullLabel}
+									onSelect={() => {
+										onValueChange("__null__");
+										setOpen(false);
+									}}
+									className="flex items-center gap-2 h-9 text-sm"
+								>
+									<CheckIcon
+										className={cn(
+											"h-3.5 w-3.5 shrink-0",
+											value === null ? "opacity-100" : "opacity-0",
+										)}
+									/>
+									<div className="flex-1 min-w-0">{nullLabel}</div>
+								</CommandItem>
+							)}
+							{entities.map((entity) => (
+								<CommandItem
+									key={entity.id}
+									value={entity.name}
+									onSelect={() => {
+										onValueChange(entity.id);
+										setOpen(false);
+									}}
+									className="flex items-center gap-2 h-9 text-sm"
+								>
+									<CheckIcon
+										className={cn(
+											"h-3.5 w-3.5 shrink-0",
+											value === entity.id ? "opacity-100" : "opacity-0",
+										)}
+									/>
+									<div className="flex-1 min-w-0">{formatEntity(entity)}</div>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</CommandList>
+				</Command>
+			</PopoverContent>
+		</Popover>
 	);
 }
