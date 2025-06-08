@@ -16,6 +16,7 @@ const searchSchema = z.object({
 	pageSize: z.coerce.number().int().min(1).max(100).default(10),
 	filter: z.string().optional(),
 	category: z.string().optional(),
+	merchant: z.string().optional(),
 });
 
 export const Route = createFileRoute("/transactions")({
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/transactions")({
 						pageSize: search.pageSize,
 						filter: search.filter,
 						category: search.category,
+						merchant: search.merchant,
 					},
 				}),
 			),
@@ -64,6 +66,7 @@ function RouteComponent() {
 				pageSize: search.pageSize,
 				filter: search.filter,
 				category: search.category,
+				merchant: search.merchant,
 			},
 		}),
 	);
@@ -76,6 +79,7 @@ function RouteComponent() {
 				pageSize: search.pageSize,
 				filter: search.filter,
 				category: search.category,
+				merchant: search.merchant,
 			},
 		}),
 		staleTime: 1000 * 60, // Keep data fresh for 1 minute
@@ -106,8 +110,9 @@ function RouteComponent() {
 						input: {
 							page: search.page,
 							pageSize: search.pageSize,
-							category: search.category,
 							filter: search.filter,
+							category: search.category,
+							merchant: search.merchant,
 						},
 					}),
 				);
@@ -123,8 +128,9 @@ function RouteComponent() {
 						input: {
 							page: search.page,
 							pageSize: search.pageSize,
-							category: search.category,
 							filter: search.filter,
+							category: search.category,
+							merchant: search.merchant,
 						},
 					}),
 				);
@@ -140,8 +146,9 @@ function RouteComponent() {
 						input: {
 							page: search.page,
 							pageSize: search.pageSize,
-							category: search.category,
 							filter: search.filter,
+							category: search.category,
+							merchant: search.merchant,
 						},
 					}),
 				);

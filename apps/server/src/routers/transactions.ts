@@ -13,6 +13,7 @@ export const transactionsRouter = {
 				pageSize: z.number().min(1).max(100).default(10),
 				category: z.string().optional(),
 				filter: z.string().optional(),
+				merchant: z.string().optional(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -21,6 +22,10 @@ export const transactionsRouter = {
 
 				if (input.category) {
 					conditions.push(eq(transaction.categoryId, input.category));
+				}
+
+				if (input.merchant) {
+					conditions.push(eq(transaction.merchantId, input.merchant));
 				}
 
 				if (input.filter) {
