@@ -74,8 +74,8 @@ function RouteComponent() {
 			input: {
 				page: search.page + 1,
 				pageSize: search.pageSize,
-				category: search.category,
 				filter: search.filter,
+				category: search.category,
 			},
 		}),
 		staleTime: 1000 * 60, // Keep data fresh for 1 minute

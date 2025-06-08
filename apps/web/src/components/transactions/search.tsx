@@ -18,7 +18,7 @@ export function Search() {
 			to: "/transactions",
 			search: (prev) => ({
 				...prev,
-				filter: debouncedFilter,
+				filter: debouncedFilter || undefined,
 				category: category || undefined,
 				page: 1,
 			}),
