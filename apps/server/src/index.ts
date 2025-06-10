@@ -12,7 +12,7 @@ const app = new Hono();
 
 if (process.env.NODE_ENV === "development") {
 	app.use(async (c, next) => {
-		const delay = Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+		const delay = Math.floor(Math.random() * (200 - 50 + 1)) + 500;
 		console.log(`Delaying request by ${delay}ms`);
 		await new Promise((resolve) => setTimeout(resolve, delay));
 		await next();

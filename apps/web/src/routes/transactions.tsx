@@ -9,6 +9,10 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { z } from "zod";
+import type {
+	MerchantWithKeywordsAndCategory,
+	Transaction,
+} from "../../../server/src/routers";
 import type { RouterAppContext } from "./__root";
 
 const searchSchema = z.object({
@@ -22,6 +26,11 @@ const searchSchema = z.object({
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
+
+// Infer the query response type from the orpc query
+type TransactionQueryResponse = Awaited<
+	ReturnType<typeof orpc.transactions.getUserTransactions.call>
+>;
 
 const createTransactionQueryOptions = (
 	search: SearchParams,
@@ -82,6 +91,43 @@ function RouteComponent() {
 
 	const { mutateAsync: updateCategory } = useMutation(
 		orpc.transactions.updateTransactionCategory.mutationOptions({
+			onMutate: async ({ id, categoryId }) => {
+				// Cancel any outgoing refetches
+				await queryClient.cancelQueries(createTransactionQueryOptions(search));
+
+				// Snapshot the previous value
+				const previousData = queryClient.getQueryData(
+					createTransactionQueryOptions(search).queryKey,
+				);
+
+				// Optimistically update to the new value
+				queryClient.setQueryData(
+					createTransactionQueryOptions(search).queryKey,
+					(old: TransactionQueryResponse | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							transactions: old.transactions.map((transaction: Transaction) =>
+								transaction.id === id
+									? { ...transaction, categoryId, category: null }
+									: transaction,
+							),
+						};
+					},
+				);
+
+				// Return a context object with the snapshotted value
+				return { previousData };
+			},
+			onError: (err, variables, context) => {
+				// If the mutation fails, use the context returned from onMutate to roll back
+				if (context?.previousData) {
+					queryClient.setQueryData(
+						createTransactionQueryOptions(search).queryKey,
+						context.previousData,
+					);
+				}
+			},
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
 					createTransactionQueryOptions(search),
@@ -92,7 +138,64 @@ function RouteComponent() {
 
 	const { mutateAsync: updateMerchant } = useMutation(
 		orpc.transactions.updateTransactionMerchant.mutationOptions({
+			onMutate: async ({ id, merchantId }) => {
+				await queryClient.cancelQueries(createTransactionQueryOptions(search));
+
+				const previousData = queryClient.getQueryData(
+					createTransactionQueryOptions(search).queryKey,
+				);
+
+				// Get available merchants for optimistic update
+				const merchantsData = queryClient.getQueryData(
+					orpc.merchants.getUserMerchants.queryOptions().queryKey,
+				);
+
+				queryClient.setQueryData(
+					createTransactionQueryOptions(search).queryKey,
+					(old: TransactionQueryResponse | undefined) => {
+						console.log("Optimistically updating merchant for transaction:", {
+							id,
+							merchantId,
+						});
+						if (!old) return old;
+
+						// Find the merchant object if merchantId is provided
+						const selectedMerchant =
+							merchantId && merchantsData
+								? (merchantsData as MerchantWithKeywordsAndCategory[]).find(
+										(m) => m.id === merchantId,
+									)
+								: null;
+
+						const updated = {
+							...old,
+							transactions: old.transactions.map((transaction) =>
+								transaction.id === id
+									? {
+											...transaction,
+											merchantId,
+											merchant: selectedMerchant || null,
+										}
+									: transaction,
+							),
+						};
+						console.log("Updated transaction data:", updated);
+						return updated;
+					},
+				);
+
+				return { previousData };
+			},
+			onError: (err, variables, context) => {
+				if (context?.previousData) {
+					queryClient.setQueryData(
+						createTransactionQueryOptions(search).queryKey,
+						context.previousData,
+					);
+				}
+			},
 			onSettled: async () => {
+				console.log("Invalidating queries");
 				await queryClient.invalidateQueries(
 					createTransactionQueryOptions(search),
 				);
@@ -102,6 +205,36 @@ function RouteComponent() {
 
 	const { mutateAsync: updateNotes } = useMutation(
 		orpc.transactions.updateTransactionNotes.mutationOptions({
+			onMutate: async ({ id, notes }) => {
+				await queryClient.cancelQueries(createTransactionQueryOptions(search));
+
+				const previousData = queryClient.getQueryData(
+					createTransactionQueryOptions(search).queryKey,
+				);
+
+				queryClient.setQueryData(
+					createTransactionQueryOptions(search).queryKey,
+					(old: TransactionQueryResponse | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							transactions: old.transactions.map((transaction) =>
+								transaction.id === id ? { ...transaction, notes } : transaction,
+							),
+						};
+					},
+				);
+
+				return { previousData };
+			},
+			onError: (err, variables, context) => {
+				if (context?.previousData) {
+					queryClient.setQueryData(
+						createTransactionQueryOptions(search).queryKey,
+						context.previousData,
+					);
+				}
+			},
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
 					createTransactionQueryOptions(search),
@@ -112,6 +245,38 @@ function RouteComponent() {
 
 	const { mutateAsync: toggleReviewed } = useMutation(
 		orpc.transactions.toggleTransactionReviewed.mutationOptions({
+			onMutate: async ({ id }) => {
+				await queryClient.cancelQueries(createTransactionQueryOptions(search));
+
+				const previousData = queryClient.getQueryData(
+					createTransactionQueryOptions(search).queryKey,
+				);
+
+				queryClient.setQueryData(
+					createTransactionQueryOptions(search).queryKey,
+					(old: TransactionQueryResponse | undefined) => {
+						if (!old) return old;
+						return {
+							...old,
+							transactions: old.transactions.map((transaction) =>
+								transaction.id === id
+									? { ...transaction, reviewed: !transaction.reviewed }
+									: transaction,
+							),
+						};
+					},
+				);
+
+				return { previousData };
+			},
+			onError: (err, variables, context) => {
+				if (context?.previousData) {
+					queryClient.setQueryData(
+						createTransactionQueryOptions(search).queryKey,
+						context.previousData,
+					);
+				}
+			},
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
 					createTransactionQueryOptions(search),
