@@ -56,14 +56,15 @@ export function EditCategoryForm({
 		resolver: zodResolver(formSchema),
 	});
 
-	const { mutateAsync: updateCategory } = useMutation({
-		mutationFn: orpc.categories.updateCategory.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
-			});
-		},
-	});
+	const { mutateAsync: updateCategory } = useMutation(
+		orpc.categories.updateCategory.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
 
 	async function onSubmit(values: FormValues) {
 		try {

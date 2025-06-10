@@ -51,14 +51,15 @@ export function CreateCategoryForm({
 		resolver: zodResolver(formSchema),
 	});
 
-	const { mutateAsync: createCategory } = useMutation({
-		mutationFn: orpc.categories.createCategory.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
-			});
-		},
-	});
+	const { mutateAsync: createCategory } = useMutation(
+		orpc.categories.createCategory.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
 
 	async function onSubmit(values: FormValues) {
 		try {
@@ -120,7 +121,10 @@ export function CreateCategoryForm({
 						<FormItem>
 							<FormLabel>Icon (Optional)</FormLabel>
 							<FormControl>
-								<IconPicker value={field.value} onChange={field.onChange} />
+								<IconPicker
+									value={field.value}
+									onValueChange={field.onChange}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>

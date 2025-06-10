@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FolderTreeIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -34,11 +34,18 @@ function RouteComponent() {
 		}),
 	);
 
+	const { mutateAsync: deleteCategory } = useMutation(
+		orpc.categories.deleteCategory.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
+
 	async function handleDelete(id: string) {
-		await orpc.categories.deleteCategory.call({ id });
-		queryClient.invalidateQueries({
-			queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
-		});
+		await deleteCategory({ id });
 	}
 
 	return (

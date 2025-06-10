@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Building2Icon, PlusIcon } from "lucide-react";
 import { useState } from "react";
@@ -32,11 +32,18 @@ function RouteComponent() {
 		orpc.merchants.getUserMerchants.queryOptions(),
 	);
 
+	const { mutateAsync: deleteMerchant } = useMutation(
+		orpc.merchants.deleteMerchant.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
+
 	async function handleDelete(id: string) {
-		await orpc.merchants.deleteMerchant.call({ id });
-		queryClient.invalidateQueries({
-			queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
-		});
+		await deleteMerchant({ id });
 	}
 
 	return (
