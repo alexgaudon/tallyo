@@ -17,7 +17,29 @@ const searchSchema = z.object({
 	filter: z.string().optional(),
 	category: z.string().optional(),
 	merchant: z.string().optional(),
+	onlyUnreviewed: z.boolean().optional(),
+	onlyWithoutMerchant: z.boolean().optional(),
 });
+
+type SearchParams = z.infer<typeof searchSchema>;
+
+const createTransactionQueryOptions = (
+	search: SearchParams,
+	options?: { keepPreviousData?: boolean },
+) => {
+	return orpc.transactions.getUserTransactions.queryOptions({
+		...options,
+		input: {
+			page: search.page,
+			pageSize: search.pageSize,
+			filter: search.filter,
+			category: search.category,
+			merchant: search.merchant,
+			onlyUnreviewed: search.onlyUnreviewed,
+			onlyWithoutMerchant: search.onlyWithoutMerchant,
+		},
+	});
+};
 
 export const Route = createFileRoute("/transactions")({
 	validateSearch: searchSchema,
@@ -26,7 +48,7 @@ export const Route = createFileRoute("/transactions")({
 		search,
 	}: {
 		context: RouterAppContext & { isAuthenticated: boolean };
-		search: z.infer<typeof searchSchema>;
+		search: SearchParams;
 	}) => {
 		ensureSession(context.isAuthenticated, "/transactions");
 
@@ -37,17 +59,7 @@ export const Route = createFileRoute("/transactions")({
 			context.queryClient.prefetchQuery(
 				orpc.merchants.getUserMerchants.queryOptions(),
 			),
-			context.queryClient.prefetchQuery(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: {
-						page: search.page,
-						pageSize: search.pageSize,
-						filter: search.filter,
-						category: search.category,
-						merchant: search.merchant,
-					},
-				}),
-			),
+			context.queryClient.prefetchQuery(createTransactionQueryOptions(search)),
 		]);
 	},
 	component: RouteComponent,
@@ -59,29 +71,12 @@ function RouteComponent() {
 	const queryClient = useQueryClient();
 
 	const { data: transactionsData } = useQuery(
-		orpc.transactions.getUserTransactions.queryOptions({
-			keepPreviousData: true,
-			input: {
-				page: search.page,
-				pageSize: search.pageSize,
-				filter: search.filter,
-				category: search.category,
-				merchant: search.merchant,
-			},
-		}),
+		createTransactionQueryOptions(search, { keepPreviousData: true }),
 	);
 
 	// Prefetch next page
 	useQuery({
-		...orpc.transactions.getUserTransactions.queryOptions({
-			input: {
-				page: search.page + 1,
-				pageSize: search.pageSize,
-				filter: search.filter,
-				category: search.category,
-				merchant: search.merchant,
-			},
-		}),
+		...createTransactionQueryOptions({ ...search, page: search.page + 1 }),
 		staleTime: 1000 * 60, // Keep data fresh for 1 minute
 	});
 
@@ -89,14 +84,7 @@ function RouteComponent() {
 		orpc.transactions.updateTransactionCategory.mutationOptions({
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
-					orpc.transactions.getUserTransactions.queryOptions({
-						input: {
-							page: search.page,
-							pageSize: search.pageSize,
-							category: search.category,
-							filter: search.filter,
-						},
-					}),
+					createTransactionQueryOptions(search),
 				);
 			},
 		}),
@@ -106,15 +94,7 @@ function RouteComponent() {
 		orpc.transactions.updateTransactionMerchant.mutationOptions({
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
-					orpc.transactions.getUserTransactions.queryOptions({
-						input: {
-							page: search.page,
-							pageSize: search.pageSize,
-							filter: search.filter,
-							category: search.category,
-							merchant: search.merchant,
-						},
-					}),
+					createTransactionQueryOptions(search),
 				);
 			},
 		}),
@@ -124,15 +104,7 @@ function RouteComponent() {
 		orpc.transactions.updateTransactionNotes.mutationOptions({
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
-					orpc.transactions.getUserTransactions.queryOptions({
-						input: {
-							page: search.page,
-							pageSize: search.pageSize,
-							filter: search.filter,
-							category: search.category,
-							merchant: search.merchant,
-						},
-					}),
+					createTransactionQueryOptions(search),
 				);
 			},
 		}),
@@ -142,15 +114,7 @@ function RouteComponent() {
 		orpc.transactions.toggleTransactionReviewed.mutationOptions({
 			onSettled: async () => {
 				await queryClient.invalidateQueries(
-					orpc.transactions.getUserTransactions.queryOptions({
-						input: {
-							page: search.page,
-							pageSize: search.pageSize,
-							filter: search.filter,
-							category: search.category,
-							merchant: search.merchant,
-						},
-					}),
+					createTransactionQueryOptions(search),
 				);
 			},
 		}),

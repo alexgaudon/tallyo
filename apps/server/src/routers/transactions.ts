@@ -1,5 +1,5 @@
 import { merchant, transaction } from "@/db/schema";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -14,6 +14,8 @@ export const transactionsRouter = {
 				category: z.string().optional(),
 				filter: z.string().optional(),
 				merchant: z.string().optional(),
+				onlyWithoutMerchant: z.boolean().optional(),
+				onlyUnreviewed: z.boolean().optional(),
 			}),
 		)
 		.handler(async ({ input, context }) => {
@@ -26,6 +28,16 @@ export const transactionsRouter = {
 
 				if (input.merchant) {
 					conditions.push(eq(transaction.merchantId, input.merchant));
+				}
+
+				if (input.onlyUnreviewed) {
+					conditions.push(eq(transaction.reviewed, false));
+				}
+
+				if (input.onlyWithoutMerchant) {
+					conditions.push(
+						or(isNull(transaction.merchantId), eq(transaction.merchantId, "")),
+					);
 				}
 
 				if (input.filter) {

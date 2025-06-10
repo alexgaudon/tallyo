@@ -12,6 +12,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import {
 	Banknote,
 	Bell,
@@ -35,50 +36,50 @@ import {
 	Users,
 	Wallet,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-// Simple hardcoded list of icons
-const availableIcons = [
-	{ name: "Home", Icon: Home },
-	{ name: "Calendar", Icon: Calendar },
-	{ name: "Car", Icon: Car },
-	{ name: "Fuel", Icon: Fuel },
-	{ name: "Tag", Icon: Tag },
-	{ name: "ShoppingCart", Icon: ShoppingCart },
-	{ name: "Wallet", Icon: Wallet },
-	{ name: "Banknote", Icon: Banknote },
-	{ name: "DollarSign", Icon: DollarSign },
-	{ name: "CreditCard", Icon: CreditCard },
-	{ name: "Users", Icon: Users },
-	{ name: "Settings", Icon: Settings },
-	{ name: "Star", Icon: Star },
-	{ name: "Heart", Icon: Heart },
-	{ name: "Bookmark", Icon: Bookmark },
-	{ name: "Bell", Icon: Bell },
-	{ name: "MessageSquare", Icon: MessageSquare },
-	{ name: "FileText", Icon: FileText },
-	{ name: "Folder", Icon: Folder },
-].sort((a, b) => a.name.localeCompare(b.name));
+const ICONS = {
+	Home,
+	Calendar,
+	Car,
+	Fuel,
+	Tag,
+	ShoppingCart,
+	Wallet,
+	Banknote,
+	DollarSign,
+	CreditCard,
+	Users,
+	Settings,
+	Star,
+	Heart,
+	Bookmark,
+	Bell,
+	MessageSquare,
+	FileText,
+	Folder,
+} as const;
 
 interface IconPickerProps {
-	value?: string;
-	onChange: (value: string) => void;
+	value?: string | null;
+	onValueChange: (value: string | null) => void;
+	placeholder?: string;
+	className?: string;
+	disabled?: boolean;
 }
 
-export function IconPicker({ value, onChange }: IconPickerProps) {
+export function IconPicker({
+	value,
+	onValueChange,
+	placeholder = "Select an icon",
+	className,
+	disabled = false,
+}: IconPickerProps) {
 	const [open, setOpen] = useState(false);
-	const [search, setSearch] = useState("");
 
 	const selectedIcon = value
-		? availableIcons.find((icon) => icon.name === value)
+		? Object.entries(ICONS).find(([name]) => name === value)
 		: null;
-
-	const filteredIcons = useMemo(() => {
-		if (!search) return availableIcons;
-		return availableIcons.filter((icon) =>
-			icon.name.toLowerCase().includes(search.toLowerCase()),
-		);
-	}, [search]);
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -86,44 +87,48 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
 				<Button
 					variant="outline"
 					aria-expanded={open}
-					className="w-full justify-between"
+					className={cn("justify-between", className)}
+					disabled={disabled}
 				>
 					{selectedIcon ? (
 						<div className="flex items-center gap-2">
-							<selectedIcon.Icon className="h-4 w-4" />
-							<span>{selectedIcon.name}</span>
+							{(() => {
+								const Icon = selectedIcon[1];
+								return <Icon className="h-4 w-4" />;
+							})()}
+							<span>{selectedIcon[0]}</span>
 						</div>
 					) : (
-						"Select an icon..."
+						placeholder
 					)}
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-[300px] p-0" align="start">
-				<Command shouldFilter={false}>
-					<CommandInput
-						placeholder="Search icons..."
-						value={search}
-						onValueChange={setSearch}
-					/>
-					<CommandList>
+			<PopoverContent className="w-[300px] p-0">
+				<Command>
+					<CommandInput placeholder="Search icons..." />
+					<CommandList className="overflow-y-auto">
 						<CommandEmpty>No icon found.</CommandEmpty>
-						<CommandGroup className="max-h-[300px] overflow-auto">
-							{filteredIcons.map((icon) => (
+						<CommandGroup>
+							{Object.entries(ICONS).map(([name, Icon]) => (
 								<CommandItem
-									key={icon.name}
-									onSelect={() => {
-										onChange(icon.name);
+									key={name}
+									value={name}
+									onSelect={(currentValue) => {
+										onValueChange(currentValue === value ? null : currentValue);
 										setOpen(false);
-										setSearch("");
 									}}
-									className="flex items-center justify-between"
 								>
 									<div className="flex items-center gap-2">
-										<icon.Icon className="h-4 w-4" />
-										<span>{icon.name}</span>
+										<Icon className="h-4 w-4" />
+										<span>{name}</span>
 									</div>
-									{value === icon.name && <Check className="ml-2 h-4 w-4" />}
+									<Check
+										className={cn(
+											"ml-auto h-4 w-4",
+											value === name ? "opacity-100" : "opacity-0",
+										)}
+									/>
 								</CommandItem>
 							))}
 						</CommandGroup>
