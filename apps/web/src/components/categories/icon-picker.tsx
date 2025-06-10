@@ -14,27 +14,46 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
+	Apple,
+	Baby,
 	Banknote,
+	Beer,
 	Bell,
+	BookOpen,
 	Bookmark,
+	Briefcase,
+	Building,
+	Bus,
 	Calendar,
+	Camera,
 	Car,
 	Check,
 	ChevronsUpDown,
+	Coffee,
 	CreditCard,
 	DollarSign,
+	Dumbbell,
 	FileText,
 	Folder,
 	Fuel,
+	Gift,
+	GraduationCap,
 	Heart,
 	Home,
+	Hotel,
+	Laptop,
 	MessageSquare,
+	Music,
+	Pizza,
+	Plane,
 	Settings,
 	ShoppingCart,
 	Star,
 	Tag,
+	Train,
 	Users,
 	Wallet,
+	Wifi,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -58,11 +77,30 @@ const ICONS = {
 	MessageSquare,
 	FileText,
 	Folder,
+	Apple,
+	Baby,
+	Beer,
+	BookOpen,
+	Briefcase,
+	Building,
+	Bus,
+	Camera,
+	Coffee,
+	Dumbbell,
+	Gift,
+	GraduationCap,
+	Hotel,
+	Laptop,
+	Music,
+	Pizza,
+	Plane,
+	Train,
+	Wifi,
 } as const;
 
 interface IconPickerProps {
 	value?: string | null;
-	onValueChange: (value: string | null) => void;
+	onValueChange?: (value: string | null) => void;
 	placeholder?: string;
 	className?: string;
 	disabled?: boolean;
@@ -70,7 +108,7 @@ interface IconPickerProps {
 
 export function IconPicker({
 	value,
-	onValueChange,
+	onValueChange = () => {},
 	placeholder = "Select an icon",
 	className,
 	disabled = false,
@@ -107,7 +145,7 @@ export function IconPicker({
 			<PopoverContent className="w-[300px] p-0">
 				<Command>
 					<CommandInput placeholder="Search icons..." />
-					<CommandList className="overflow-y-auto">
+					<CommandList className="max-h-[200px] overflow-y-auto">
 						<CommandEmpty>No icon found.</CommandEmpty>
 						<CommandGroup>
 							{Object.entries(ICONS).map(([name, Icon]) => (
@@ -115,7 +153,7 @@ export function IconPicker({
 									key={name}
 									value={name}
 									onSelect={(currentValue) => {
-										onValueChange(currentValue === value ? null : currentValue);
+										onValueChange?.(currentValue);
 										setOpen(false);
 									}}
 								>

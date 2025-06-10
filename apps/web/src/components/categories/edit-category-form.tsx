@@ -125,7 +125,10 @@ export function EditCategoryForm({
 						<FormItem>
 							<FormLabel>Icon (Optional)</FormLabel>
 							<FormControl>
-								<IconPicker value={field.value} onChange={field.onChange} />
+								<IconPicker
+									value={field.value}
+									onValueChange={field.onChange}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
