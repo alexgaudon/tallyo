@@ -44,23 +44,25 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 		resolver: zodResolver(formSchema),
 	});
 
-	const { mutateAsync: createMerchant } = useMutation({
-		mutationFn: orpc.merchants.createMerchant.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
-			});
-		},
-	});
+	const { mutateAsync: createMerchant } = useMutation(
+		orpc.merchants.createMerchant.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
 
-	const { mutateAsync: updateMerchant } = useMutation({
-		mutationFn: orpc.merchants.updateMerchant.call,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
-			});
-		},
-	});
+	const { mutateAsync: updateMerchant } = useMutation(
+		orpc.merchants.updateMerchant.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+				});
+			},
+		}),
+	);
 
 	const onSubmit: SubmitHandler<FormValues> = async (values) => {
 		try {

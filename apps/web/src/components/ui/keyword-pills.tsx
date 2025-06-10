@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
-import { XIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 import { useCallback, useState } from "react";
 
 interface KeywordPillsProps {
@@ -41,7 +42,9 @@ export function KeywordPills({
 	);
 
 	return (
-		<div className={`flex flex-wrap gap-2 rounded-md border p-2 ${className}`}>
+		<div
+			className={cn("flex flex-wrap gap-2 rounded-md border p-2", className)}
+		>
 			{value.map((keyword) => (
 				<span
 					key={keyword}
@@ -53,7 +56,7 @@ export function KeywordPills({
 						onClick={() => removeKeyword(keyword)}
 						className="ml-1 rounded-full hover:bg-muted-foreground/20"
 					>
-						<XIcon className="h-3 w-3" />
+						<X className="h-3 w-3" />
 					</button>
 				</span>
 			))}
