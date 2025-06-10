@@ -12,12 +12,32 @@ export default defineConfig({
 		},
 	},
 	build: {
+		chunkSizeWarningLimit: 1000, // Increase warning limit to 1MB
+		// Enable source maps for debugging
+		sourcemap: false,
+		// Optimize dependencies
+		commonjsOptions: {
+			include: [/node_modules/],
+		},
+		// Enable minification
+		minify: "esbuild",
+		// Target modern browsers for better tree-shaking
+		target: "esnext",
+		// Enable code splitting
 		rollupOptions: {
 			output: {
+				// Split vendor chunks
 				manualChunks: {
-					// Split vendor chunks
-					"react-vendor": ["react", "react-dom"],
-					"ui-vendor": [
+					// React and core libraries
+					vendor: ["react", "react-dom"],
+					// TanStack libraries
+					tanstack: [
+						"@tanstack/react-router",
+						"@tanstack/react-query",
+						"@tanstack/react-form",
+					],
+					// Radix UI components
+					radix: [
 						"@radix-ui/react-alert-dialog",
 						"@radix-ui/react-avatar",
 						"@radix-ui/react-checkbox",
@@ -30,27 +50,26 @@ export default defineConfig({
 						"@radix-ui/react-slot",
 						"@radix-ui/react-switch",
 					],
-					"form-vendor": [
-						"@tanstack/react-form",
-						"react-hook-form",
-						"@hookform/resolvers",
-						"zod",
-					],
-					"query-vendor": ["@tanstack/react-query", "@orpc/react-query"],
+					// Icons and utilities
+					icons: ["lucide-react"],
+					// Form libraries
+					forms: ["react-hook-form", "@hookform/resolvers", "zod"],
+					// Date utilities
+					dates: ["date-fns"],
+					// ORPC libraries
+					orpc: ["@orpc/client", "@orpc/react-query", "@orpc/server"],
 				},
 			},
 		},
-		// Enable minification
-		minify: "terser",
-		terserOptions: {
-			compress: {
-				drop_console: true,
-				drop_debugger: true,
-			},
-		},
-		// Enable source maps in production for better debugging
-		sourcemap: true,
-		// Ensure CSS is also minified
-		cssMinify: true,
+	},
+	// Optimize dependencies
+	optimizeDeps: {
+		include: [
+			"react",
+			"react-dom",
+			"@tanstack/react-router",
+			"@tanstack/react-query",
+			"lucide-react",
+		],
 	},
 });

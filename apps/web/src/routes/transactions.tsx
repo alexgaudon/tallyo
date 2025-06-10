@@ -10,8 +10,8 @@ import {
 } from "@tanstack/react-router";
 import { z } from "zod";
 import type {
+	Category,
 	MerchantWithKeywordsAndCategory,
-	Transaction,
 } from "../../../server/src/routers";
 import type { RouterAppContext } from "./__root";
 
@@ -100,16 +100,34 @@ function RouteComponent() {
 					createTransactionQueryOptions(search).queryKey,
 				);
 
+				// Get available categories for optimistic update
+				const categoriesData = queryClient.getQueryData(
+					orpc.categories.getUserCategories.queryOptions().queryKey,
+				);
+
 				// Optimistically update to the new value
 				queryClient.setQueryData(
 					createTransactionQueryOptions(search).queryKey,
 					(old: TransactionQueryResponse | undefined) => {
 						if (!old) return old;
+
+						// Find the category object if categoryId is provided
+						const selectedCategory =
+							categoryId && categoriesData
+								? (
+										categoriesData as { categories: Category[] }
+									).categories?.find((c) => c.id === categoryId)
+								: null;
+
 						return {
 							...old,
-							transactions: old.transactions.map((transaction: Transaction) =>
+							transactions: old.transactions.map((transaction) =>
 								transaction.id === id
-									? { ...transaction, categoryId, category: null }
+									? {
+											...transaction,
+											categoryId,
+											category: selectedCategory || null,
+										}
 									: transaction,
 							),
 						};
@@ -153,10 +171,6 @@ function RouteComponent() {
 				queryClient.setQueryData(
 					createTransactionQueryOptions(search).queryKey,
 					(old: TransactionQueryResponse | undefined) => {
-						console.log("Optimistically updating merchant for transaction:", {
-							id,
-							merchantId,
-						});
 						if (!old) return old;
 
 						// Find the merchant object if merchantId is provided
@@ -167,7 +181,7 @@ function RouteComponent() {
 									)
 								: null;
 
-						const updated = {
+						return {
 							...old,
 							transactions: old.transactions.map((transaction) =>
 								transaction.id === id
@@ -179,8 +193,6 @@ function RouteComponent() {
 									: transaction,
 							),
 						};
-						console.log("Updated transaction data:", updated);
-						return updated;
 					},
 				);
 
@@ -195,7 +207,6 @@ function RouteComponent() {
 				}
 			},
 			onSettled: async () => {
-				console.log("Invalidating queries");
 				await queryClient.invalidateQueries(
 					createTransactionQueryOptions(search),
 				);
