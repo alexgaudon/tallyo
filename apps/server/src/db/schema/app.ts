@@ -126,21 +126,31 @@ export const merchantKeywordRelations = relations(
 	}),
 );
 
-export const transaction = pgTable("transactions", {
-	id: text("id")
-		.primaryKey()
-		.$defaultFn((): string => Bun.randomUUIDv7()),
-	userId: text("user_id").notNull(),
-	merchantId: text("merchant_id"),
-	categoryId: text("category_id"),
-	amount: integer("amount").notNull(),
-	date: timestamp("date").notNull(),
-	transactionDetails: text("transaction_details").notNull(),
-	notes: text("notes"),
-	reviewed: boolean("reviewed").notNull().default(false),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const transaction = pgTable(
+	"transactions",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn((): string => Bun.randomUUIDv7()),
+		userId: text("user_id").notNull(),
+		merchantId: text("merchant_id"),
+		categoryId: text("category_id"),
+		amount: integer("amount").notNull(),
+		date: timestamp("date").notNull(),
+		transactionDetails: text("transaction_details").notNull(),
+		notes: text("notes"),
+		externalId: text("external_id"),
+		reviewed: boolean("reviewed").notNull().default(false),
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("transaction_external_id_user_id_unique").on(
+			table.externalId,
+			table.userId,
+		),
+	],
+);
 
 export const transactionRelations = relations(transaction, ({ one }) => ({
 	user: one(user, {

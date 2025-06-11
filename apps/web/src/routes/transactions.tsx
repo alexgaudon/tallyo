@@ -1,5 +1,15 @@
+import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { Search } from "@/components/transactions/search";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +18,7 @@ import {
 	useNavigate,
 	useSearch,
 } from "@tanstack/react-router";
+import { CreditCardIcon, Plus } from "lucide-react";
 import { z } from "zod";
 import type {
 	Category,
@@ -312,8 +323,32 @@ function RouteComponent() {
 
 	return (
 		<div className="container mx-auto p-6 space-y-6">
-			<div className="flex items-center gap-2">
-				<h1 className="text-2xl font-bold">Transactions</h1>
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-2">
+					<CreditCardIcon className="h-6 w-6" />
+					<h1 className="text-2xl font-bold">Transactions</h1>
+				</div>
+				<Dialog>
+					<DialogTrigger asChild>
+						<Button variant="outline">
+							<Plus className="h-4 w-4 mr-2" />
+							New Transaction
+						</Button>
+					</DialogTrigger>
+					<DialogContent className="sm:max-w-[600px]">
+						<DialogHeader>
+							<DialogTitle>Create New Transaction</DialogTitle>
+							<DialogDescription>
+								Add a new transaction to your records.
+							</DialogDescription>
+						</DialogHeader>
+						<CreateTransactionForm
+							callback={() => {
+								// The dialog will close automatically when the form is submitted
+							}}
+						/>
+					</DialogContent>
+				</Dialog>
 			</div>
 			<Search />
 			<TransactionsTable

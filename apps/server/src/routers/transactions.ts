@@ -6,6 +6,70 @@ import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 
 export const transactionsRouter = {
+	createTransaction: protectedProcedure
+		.input(
+			z.object({
+				amount: z.number().int(),
+				date: z.date(),
+				transactionDetails: z
+					.string()
+					.min(1, "Transaction details are required"),
+				merchantId: z.string().optional(),
+				categoryId: z.string().optional(),
+				notes: z.string().optional(),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			try {
+				const newTransaction = await db
+					.insert(transaction)
+					.values({
+						userId: context.session?.user?.id,
+						amount: input.amount,
+						date: input.date,
+						transactionDetails: input.transactionDetails,
+						merchantId: input.merchantId,
+						categoryId: input.categoryId,
+						notes: input.notes,
+					})
+					.returning();
+
+				if (!newTransaction || newTransaction.length === 0) {
+					logger.error(
+						`Failed to create transaction for user ${context.session?.user?.id}`,
+					);
+					throw new Error("Failed to create transaction");
+				}
+
+				// Fetch the created transaction with relations
+				const createdTransaction = await db.query.transaction.findFirst({
+					where: eq(transaction.id, newTransaction[0].id),
+					with: {
+						merchant: true,
+						category: {
+							with: {
+								parentCategory: true,
+							},
+						},
+					},
+				});
+
+				return {
+					transaction: createdTransaction,
+				};
+			} catch (error) {
+				logger.error(
+					`Error creating transaction for user ${context.session?.user?.id}:`,
+					{ error },
+				);
+				if (error instanceof Error) {
+					throw new Error(`Failed to create transaction: ${error.message}`);
+				}
+				throw new Error(
+					"An unexpected error occurred while creating transaction",
+				);
+			}
+		}),
 	getUserTransactions: protectedProcedure
 		.input(
 			z.object({
