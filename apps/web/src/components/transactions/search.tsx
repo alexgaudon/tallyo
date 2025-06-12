@@ -26,7 +26,8 @@ export function Search() {
 	const [merchant, setMerchant] = useState<string | null>(
 		params.merchant ?? null,
 	);
-	const [isOpen, setIsOpen] = useState(false);
+	const [isOpenMobile, setIsOpenMobile] = useState(false);
+	const [isOpenDesktop, setIsOpenDesktop] = useState(false);
 	const [onlyUnreviewed, setOnlyUnreviewed] = useState(
 		params.onlyUnreviewed ?? false,
 	);
@@ -61,106 +62,226 @@ export function Search() {
 	};
 
 	return (
-		<div className="flex items-center gap-2">
-			<Input
-				value={filter}
-				onChange={handleChange}
-				placeholder="Search transactions..."
-			/>
-			<MerchantSelect
-				allowNull
-				onValueChange={(value) => {
-					if (value === "__null__") {
-						setMerchant(null);
-						navigate({
-							to: "/transactions",
-							search: {
-								...params,
-								merchant: undefined,
-								onlyWithoutMerchant: false,
-								page: 1,
-							},
-						});
-					} else {
-						const merchantValue: string = value;
-						setMerchant(merchantValue);
-						setOnlyWithoutMerchant(false);
-						navigate({
-							to: "/transactions",
-							search: {
-								...params,
-								merchant: merchantValue,
-								onlyWithoutMerchant: false,
-								page: 1,
-							},
-						});
-					}
-				}}
-				value={merchant}
-			/>
-			<CategorySelect
-				allowNull
-				onValueChange={(value) => {
-					if (value === "__null__") {
-						setCategory(null);
-					} else {
-						setCategory(value);
-					}
-				}}
-				value={category}
-			/>
-			<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="h-10">
-						<SlidersHorizontal className="w-4 h-4" />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="w-[200px]">
-					<DropdownMenuLabel>Filters</DropdownMenuLabel>
-					<DropdownMenuSeparator />
-					<DropdownMenuCheckboxItem
-						checked={onlyUnreviewed}
-						onCheckedChange={(checked: boolean) => {
-							setOnlyUnreviewed(checked);
+		<div className="flex flex-col gap-2 w-full">
+			{/* Mobile layout: Two rows */}
+			<div className="flex lg:hidden flex-col gap-2 w-full">
+				{/* First row: Search input and filters dropdown */}
+				<div className="flex gap-2 w-full">
+					<Input
+						value={filter}
+						onChange={handleChange}
+						placeholder="Search transactions..."
+						className="flex-1"
+					/>
+					<DropdownMenu open={isOpenMobile} onOpenChange={setIsOpenMobile}>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline">
+								<SlidersHorizontal className="w-4 h-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-[200px]">
+							<DropdownMenuLabel>Filters</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuCheckboxItem
+								checked={onlyUnreviewed}
+								onSelect={(e) => e.preventDefault()}
+								onCheckedChange={(checked: boolean) => {
+									setOnlyUnreviewed(checked);
+									navigate({
+										to: "/transactions",
+										search: (prev) => ({
+											...prev,
+											filter: filter || undefined,
+											category: category || undefined,
+											merchant: merchant || undefined,
+											onlyUnreviewed: checked,
+											onlyWithoutMerchant: onlyWithoutMerchant,
+											page: 1,
+										}),
+									});
+								}}
+							>
+								Show Unreviewed Only
+							</DropdownMenuCheckboxItem>
+							<DropdownMenuCheckboxItem
+								checked={onlyWithoutMerchant}
+								disabled={merchant !== null}
+								onSelect={(e) => e.preventDefault()}
+								onCheckedChange={(checked: boolean) => {
+									setOnlyWithoutMerchant(checked);
+									navigate({
+										to: "/transactions",
+										search: (prev) => ({
+											...prev,
+											filter: filter || undefined,
+											category: category || undefined,
+											merchant: merchant || undefined,
+											onlyUnreviewed: onlyUnreviewed,
+											onlyWithoutMerchant: checked,
+											page: 1,
+										}),
+									});
+								}}
+							>
+								Show Without Merchant Only
+							</DropdownMenuCheckboxItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+				{/* Second row: Merchant and Category selects */}
+				<div className="flex gap-2 w-full">
+					<MerchantSelect
+						allowNull
+						onValueChange={(value) => {
+							if (value === "__null__") {
+								setMerchant(null);
+								navigate({
+									to: "/transactions",
+									search: {
+										...params,
+										merchant: undefined,
+										onlyWithoutMerchant: false,
+										page: 1,
+									},
+								});
+							} else {
+								const merchantValue: string = value as unknown as string;
+								setMerchant(merchantValue);
+								setOnlyWithoutMerchant(false);
+								navigate({
+									to: "/transactions",
+									search: {
+										...params,
+										merchant: merchantValue,
+										onlyWithoutMerchant: false,
+										page: 1,
+									},
+								});
+							}
+						}}
+						value={merchant}
+						className="flex-1"
+					/>
+					<CategorySelect
+						allowNull
+						onValueChange={(value) => {
+							if (value === "__null__") {
+								setCategory(null);
+							} else {
+								setCategory(value);
+							}
+						}}
+						value={category}
+						className="flex-1"
+					/>
+				</div>
+			</div>
+
+			{/* Desktop layout: Single row */}
+			<div className="hidden lg:flex gap-2 w-full">
+				<Input
+					value={filter}
+					onChange={handleChange}
+					placeholder="Search transactions..."
+					className="flex-1"
+				/>
+				<MerchantSelect
+					allowNull
+					onValueChange={(value) => {
+						if (value === "__null__") {
+							setMerchant(null);
 							navigate({
 								to: "/transactions",
-								search: (prev) => ({
-									...prev,
-									filter: filter || undefined,
-									category: category || undefined,
-									merchant: merchant || undefined,
-									onlyUnreviewed: checked,
-									onlyWithoutMerchant: onlyWithoutMerchant,
+								search: {
+									...params,
+									merchant: undefined,
+									onlyWithoutMerchant: false,
 									page: 1,
-								}),
+								},
 							});
-						}}
-					>
-						Show Unreviewed Only
-					</DropdownMenuCheckboxItem>
-					<DropdownMenuCheckboxItem
-						checked={onlyWithoutMerchant}
-						disabled={merchant !== null}
-						onCheckedChange={(checked: boolean) => {
-							setOnlyWithoutMerchant(checked);
+						} else {
+							const merchantValue: string = value as unknown as string;
+							setMerchant(merchantValue);
+							setOnlyWithoutMerchant(false);
 							navigate({
 								to: "/transactions",
-								search: (prev) => ({
-									...prev,
-									filter: filter || undefined,
-									category: category || undefined,
-									merchant: merchant || undefined,
-									onlyUnreviewed: onlyUnreviewed,
-									onlyWithoutMerchant: checked,
+								search: {
+									...params,
+									merchant: merchantValue,
+									onlyWithoutMerchant: false,
 									page: 1,
-								}),
+								},
 							});
-						}}
-					>
-						Show Without Merchant Only
-					</DropdownMenuCheckboxItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
+						}
+					}}
+					value={merchant}
+					className="flex-1"
+				/>
+				<CategorySelect
+					allowNull
+					onValueChange={(value) => {
+						if (value === "__null__") {
+							setCategory(null);
+						} else {
+							setCategory(value);
+						}
+					}}
+					value={category}
+					className="flex-1"
+				/>
+				<DropdownMenu open={isOpenDesktop} onOpenChange={setIsOpenDesktop}>
+					<DropdownMenuTrigger asChild>
+						<Button variant="outline">
+							<SlidersHorizontal className="w-4 h-4" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-[200px]">
+						<DropdownMenuLabel>Filters</DropdownMenuLabel>
+						<DropdownMenuSeparator />
+						<DropdownMenuCheckboxItem
+							checked={onlyUnreviewed}
+							onCheckedChange={(checked: boolean) => {
+								setOnlyUnreviewed(checked);
+								navigate({
+									to: "/transactions",
+									search: (prev) => ({
+										...prev,
+										filter: filter || undefined,
+										category: category || undefined,
+										merchant: merchant || undefined,
+										onlyUnreviewed: checked,
+										onlyWithoutMerchant: onlyWithoutMerchant,
+										page: 1,
+									}),
+								});
+							}}
+						>
+							Show Unreviewed Only
+						</DropdownMenuCheckboxItem>
+						<DropdownMenuCheckboxItem
+							checked={onlyWithoutMerchant}
+							disabled={merchant !== null}
+							onCheckedChange={(checked: boolean) => {
+								setOnlyWithoutMerchant(checked);
+								navigate({
+									to: "/transactions",
+									search: (prev) => ({
+										...prev,
+										filter: filter || undefined,
+										category: category || undefined,
+										merchant: merchant || undefined,
+										onlyUnreviewed: onlyUnreviewed,
+										onlyWithoutMerchant: checked,
+										page: 1,
+									}),
+								});
+							}}
+						>
+							Show Without Merchant Only
+						</DropdownMenuCheckboxItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 		</div>
 	);
 }

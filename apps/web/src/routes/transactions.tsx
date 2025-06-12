@@ -19,6 +19,7 @@ import {
 	useSearch,
 } from "@tanstack/react-router";
 import { CreditCardIcon, Plus } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
 import type {
 	Category,
@@ -89,7 +90,7 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const search = useSearch({ from: "/transactions" });
 	const queryClient = useQueryClient();
-
+	const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 	const { data: transactionsData } = useQuery(
 		createTransactionQueryOptions(search, { keepPreviousData: true }),
 	);
@@ -307,6 +308,16 @@ function RouteComponent() {
 		}),
 	);
 
+	const { mutateAsync: deleteTransaction } = useMutation(
+		orpc.transactions.deleteTransaction.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: createTransactionQueryOptions(search).queryKey,
+				});
+			},
+		}),
+	);
+
 	const handlePageChange = (page: number) => {
 		navigate({
 			to: "/transactions",
@@ -322,51 +333,65 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="container mx-auto p-6 space-y-6">
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<CreditCardIcon className="h-6 w-6" />
-					<h1 className="text-2xl font-bold">Transactions</h1>
+		<div className="w-dvw">
+			<div className="mx-auto p-6 space-y-6">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<CreditCardIcon className="h-6 w-6" />
+						<h1 className="text-2xl font-bold">Transactions</h1>
+					</div>
+					<Dialog
+						open={isCreateFormOpen}
+						onOpenChange={(open) => {
+							setIsCreateFormOpen(open);
+						}}
+					>
+						<DialogTrigger asChild>
+							<Button variant="outline">
+								<Plus className="h-4 w-4 mr-2" />
+								<span className="hidden sm:inline">New Transaction</span>
+								<span className="sm:hidden">New</span>
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="sm:max-w-[600px]">
+							<DialogHeader>
+								<DialogTitle>Create New Transaction</DialogTitle>
+								<DialogDescription>
+									Add a new transaction to your records.
+								</DialogDescription>
+							</DialogHeader>
+							<CreateTransactionForm
+								callback={() => {
+									queryClient.invalidateQueries({
+										queryKey: createTransactionQueryOptions(search).queryKey,
+									});
+									setIsCreateFormOpen(false);
+								}}
+							/>
+						</DialogContent>
+					</Dialog>
 				</div>
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button variant="outline">
-							<Plus className="h-4 w-4 mr-2" />
-							New Transaction
-						</Button>
-					</DialogTrigger>
-					<DialogContent className="sm:max-w-[600px]">
-						<DialogHeader>
-							<DialogTitle>Create New Transaction</DialogTitle>
-							<DialogDescription>
-								Add a new transaction to your records.
-							</DialogDescription>
-						</DialogHeader>
-						<CreateTransactionForm
-							callback={() => {
-								// The dialog will close automatically when the form is submitted
-							}}
-						/>
-					</DialogContent>
-				</Dialog>
+				<Search />
+				<div className="">
+					<TransactionsTable
+						transactions={transactionsData?.transactions ?? []}
+						pagination={{
+							total: transactionsData?.pagination.total ?? 0,
+							page: transactionsData?.pagination.page ?? 1,
+							pageSize: transactionsData?.pagination.pageSize ?? 25,
+							totalPages: transactionsData?.pagination.totalPages ?? 1,
+						}}
+						onPageChange={handlePageChange}
+						onPageSizeChange={handlePageSizeChange}
+						updateCategory={updateCategory}
+						updateMerchant={updateMerchant}
+						updateNotes={updateNotes}
+						toggleReviewed={toggleReviewed}
+						deleteTransaction={deleteTransaction}
+						isLoading={false}
+					/>
+				</div>
 			</div>
-			<Search />
-			<TransactionsTable
-				transactions={transactionsData?.transactions ?? []}
-				pagination={{
-					total: transactionsData?.pagination.total ?? 0,
-					page: transactionsData?.pagination.page ?? 1,
-					pageSize: transactionsData?.pagination.pageSize ?? 25,
-					totalPages: transactionsData?.pagination.totalPages ?? 1,
-				}}
-				onPageChange={handlePageChange}
-				onPageSizeChange={handlePageSizeChange}
-				updateCategory={updateCategory}
-				updateMerchant={updateMerchant}
-				updateNotes={updateNotes}
-				toggleReviewed={toggleReviewed}
-				isLoading={false}
-			/>
 		</div>
 	);
 }

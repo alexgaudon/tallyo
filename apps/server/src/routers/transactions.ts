@@ -340,4 +340,31 @@ export const transactionsRouter = {
 				);
 			}
 		}),
+	deleteTransaction: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.handler(async ({ input }) => {
+			try {
+				const deletedTransaction = await db
+					.delete(transaction)
+					.where(eq(transaction.id, input.id))
+					.returning();
+
+				if (!deletedTransaction || deletedTransaction.length === 0) {
+					logger.error(`Transaction ${input.id} not found`);
+					throw new Error("Transaction not found");
+				}
+
+				return {
+					success: true,
+				};
+			} catch (error) {
+				logger.error(`Error deleting transaction ${input.id}:`, { error });
+				if (error instanceof Error) {
+					throw new Error(`Failed to delete transaction: ${error.message}`);
+				}
+				throw new Error(
+					"An unexpected error occurred while deleting transaction",
+				);
+			}
+		}),
 };
