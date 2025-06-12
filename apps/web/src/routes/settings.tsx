@@ -28,6 +28,82 @@ function RouteComponent() {
 
 	const { mutate: updateSettings, isPending } = useMutation(
 		orpc.settings.updateSettings.mutationOptions({
+			onMutate: async (newSettings) => {
+				// Cancel any outgoing refetches
+				await queryClient.cancelQueries({
+					queryKey: orpc.settings.getUserSettings.queryOptions().queryKey,
+				});
+
+				// Snapshot the previous value
+				const previousSettings = queryClient.getQueryData(
+					orpc.settings.getUserSettings.queryOptions().queryKey,
+				);
+
+				// Optimistically update to the new value
+				queryClient.setQueryData(
+					orpc.settings.getUserSettings.queryOptions().queryKey,
+					(
+						old:
+							| { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+							| undefined,
+					) => ({
+						...old,
+						settings: newSettings,
+					}),
+				);
+
+				// Also update session data optimistically
+				queryClient.setQueryData(
+					["session"],
+					(
+						old:
+							| { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+							| undefined,
+					) => ({
+						...old,
+						settings: newSettings,
+					}),
+				);
+
+				// Return a context object with the snapshotted value
+				return { previousSettings };
+			},
+			onError: (err, newSettings, context) => {
+				// If the mutation fails, use the context returned from onMutate to roll back
+				if (context?.previousSettings) {
+					queryClient.setQueryData(
+						orpc.settings.getUserSettings.queryOptions().queryKey,
+						context.previousSettings,
+					);
+				}
+
+				// Also revert session data
+				queryClient.setQueryData(
+					["session"],
+					(
+						old:
+							| { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+							| undefined,
+					) => ({
+						...old,
+						settings: session?.settings,
+					}),
+				);
+
+				toast.error("Failed to update settings", {
+					description:
+						err instanceof Error
+							? `Error: ${err.message}`
+							: "An unexpected error occurred. Please try again.",
+					duration: 5000,
+					action: {
+						label: "Retry",
+						onClick: () => {
+							updateSettings(newSettings);
+						},
+					},
+				});
+			},
 			onSuccess: (data) => {
 				queryClient.invalidateQueries({
 					queryKey: orpc.settings.getUserSettings.queryOptions().queryKey,
@@ -64,24 +140,6 @@ function RouteComponent() {
 						duration: 4000,
 					});
 				}
-			},
-			onError: (error) => {
-				toast.error("Failed to update settings", {
-					description:
-						error instanceof Error
-							? `Error: ${error.message}`
-							: "An unexpected error occurred. Please try again.",
-					duration: 5000,
-					action: {
-						label: "Retry",
-						onClick: () => {
-							updateSettings({
-								isDevMode: session?.settings?.isDevMode ?? false,
-								isPrivacyMode: session?.settings?.isPrivacyMode ?? false,
-							});
-						},
-					},
-				});
 			},
 		}),
 	);
