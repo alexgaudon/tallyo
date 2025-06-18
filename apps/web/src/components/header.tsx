@@ -68,7 +68,7 @@ export default function Header() {
 						<>
 							<ModeToggle />
 							<Button asChild className="w-fit" size="lg" type="button">
-								<Link to="/login">Sign in</Link>
+								<Link to="/signin">Sign in</Link>
 							</Button>
 						</>
 					)}
@@ -102,7 +102,7 @@ export default function Header() {
 												size="lg"
 												type="button"
 											>
-												<Link to="/login">Sign in</Link>
+												<Link to="/signin">Sign in</Link>
 											</Button>
 										</SheetClose>
 									</>

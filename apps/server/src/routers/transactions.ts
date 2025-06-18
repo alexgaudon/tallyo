@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
+import { getMerchantFromVendor } from "./merchants";
 
 export const transactionsRouter = {
 	createTransaction: protectedProcedure
@@ -21,6 +22,11 @@ export const transactionsRouter = {
 		)
 		.handler(async ({ input, context }) => {
 			try {
+				const merchantRecord = await getMerchantFromVendor(
+					input.transactionDetails,
+					context.session?.user?.id,
+				);
+
 				const newTransaction = await db
 					.insert(transaction)
 					.values({
@@ -28,8 +34,9 @@ export const transactionsRouter = {
 						amount: input.amount,
 						date: input.date,
 						transactionDetails: input.transactionDetails,
-						merchantId: input.merchantId,
-						categoryId: input.categoryId,
+						merchantId: input.merchantId || merchantRecord?.id,
+						categoryId:
+							input.categoryId || merchantRecord?.recommendedCategoryId,
 						notes: input.notes,
 					})
 					.returning();

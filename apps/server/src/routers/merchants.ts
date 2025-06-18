@@ -1,11 +1,59 @@
 import { merchant, merchantKeyword } from "@/db/schema";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, ilike } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 
+export async function getMerchantFromVendor(vendor: string, userId: string) {
+	try {
+		const keyword = await db.query.merchantKeyword.findFirst({
+			where: and(
+				eq(merchantKeyword.userId, userId),
+				ilike(merchantKeyword.keyword, `%${vendor}%`),
+			),
+			with: {
+				merchant: {
+					columns: {
+						id: true,
+						name: true,
+						recommendedCategoryId: true,
+					},
+				},
+			},
+		});
+
+		return keyword?.merchant || null;
+	} catch (error) {
+		logger.error(
+			`Error fetching merchant for vendor "${vendor}" for user ${userId}:`,
+			{ error },
+		);
+		throw error;
+	}
+}
+
 export const merchantsRouter = {
+	getMerchantFromVendor: protectedProcedure
+		.input(
+			z.object({
+				vendor: z.string(),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			try {
+				return await getMerchantFromVendor(
+					input.vendor,
+					context.session?.user?.id,
+				);
+			} catch (error) {
+				logger.error(
+					`Error fetching merchant for vendor "${input.vendor}" for user ${context.session?.user?.id}:`,
+					{ error },
+				);
+				throw error;
+			}
+		}),
 	getUserMerchants: protectedProcedure.handler(async ({ context }) => {
 		try {
 			const userMerchants = await db.query.merchant.findMany({

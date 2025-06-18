@@ -12,6 +12,7 @@ import {
 	HeadContent,
 	Outlet,
 	createRootRouteWithContext,
+	useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useState } from "react";
@@ -59,13 +60,16 @@ function RootComponent() {
 	);
 	const [orpcUtils] = useState(() => createORPCReactQueryUtils(client));
 
+	const location = useLocation();
+	console.log(location);
+
 	return (
 		<>
 			<HeadContent />
 			<ORPCContext.Provider value={orpcUtils}>
 				<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
 					<div className="grid h-svh grid-rows-[auto_1fr]">
-						<Header />
+						{location.pathname.startsWith("/sign") ? null : <Header />}
 						<Outlet />
 					</div>
 					<Toaster richColors />

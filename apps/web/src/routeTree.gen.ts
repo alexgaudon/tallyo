@@ -14,10 +14,11 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as MerchantsImport } from './routes/merchants'
-import { Route as LoginImport } from './routes/login'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as CategoriesImport } from './routes/categories'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthSignupImport } from './routes/_auth/signup'
+import { Route as AuthSigninImport } from './routes/_auth/signin'
 
 // Create/Update Routes
 
@@ -39,12 +40,6 @@ const MerchantsRoute = MerchantsImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const LoginRoute = LoginImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -60,6 +55,18 @@ const CategoriesRoute = CategoriesImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthSignupRoute = AuthSignupImport.update({
+  id: '/_auth/signup',
+  path: '/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthSigninRoute = AuthSigninImport.update({
+  id: '/_auth/signin',
+  path: '/signin',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -88,13 +95,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
     '/merchants': {
       id: '/merchants'
       path: '/merchants'
@@ -116,6 +116,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransactionsImport
       parentRoute: typeof rootRoute
     }
+    '/_auth/signin': {
+      id: '/_auth/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof AuthSigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/_auth/signup': {
+      id: '/_auth/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof AuthSignupImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -125,20 +139,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/signin': typeof AuthSigninRoute
+  '/signup': typeof AuthSignupRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/signin': typeof AuthSigninRoute
+  '/signup': typeof AuthSignupRoute
 }
 
 export interface FileRoutesById {
@@ -146,10 +162,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
-  '/login': typeof LoginRoute
   '/merchants': typeof MerchantsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
+  '/_auth/signin': typeof AuthSigninRoute
+  '/_auth/signup': typeof AuthSignupRoute
 }
 
 export interface FileRouteTypes {
@@ -158,28 +175,31 @@ export interface FileRouteTypes {
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/login'
     | '/merchants'
     | '/settings'
     | '/transactions'
+    | '/signin'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/login'
     | '/merchants'
     | '/settings'
     | '/transactions'
+    | '/signin'
+    | '/signup'
   id:
     | '__root__'
     | '/'
     | '/categories'
     | '/dashboard'
-    | '/login'
     | '/merchants'
     | '/settings'
     | '/transactions'
+    | '/_auth/signin'
+    | '/_auth/signup'
   fileRoutesById: FileRoutesById
 }
 
@@ -187,20 +207,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
-  LoginRoute: typeof LoginRoute
   MerchantsRoute: typeof MerchantsRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
+  AuthSigninRoute: typeof AuthSigninRoute
+  AuthSignupRoute: typeof AuthSignupRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
-  LoginRoute: LoginRoute,
   MerchantsRoute: MerchantsRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
+  AuthSigninRoute: AuthSigninRoute,
+  AuthSignupRoute: AuthSignupRoute,
 }
 
 export const routeTree = rootRoute
@@ -216,10 +238,11 @@ export const routeTree = rootRoute
         "/",
         "/categories",
         "/dashboard",
-        "/login",
         "/merchants",
         "/settings",
-        "/transactions"
+        "/transactions",
+        "/_auth/signin",
+        "/_auth/signup"
       ]
     },
     "/": {
@@ -231,9 +254,6 @@ export const routeTree = rootRoute
     "/dashboard": {
       "filePath": "dashboard.tsx"
     },
-    "/login": {
-      "filePath": "login.tsx"
-    },
     "/merchants": {
       "filePath": "merchants.tsx"
     },
@@ -242,6 +262,12 @@ export const routeTree = rootRoute
     },
     "/transactions": {
       "filePath": "transactions.tsx"
+    },
+    "/_auth/signin": {
+      "filePath": "_auth/signin.tsx"
+    },
+    "/_auth/signup": {
+      "filePath": "_auth/signup.tsx"
     }
   }
 }
