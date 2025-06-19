@@ -1,7 +1,7 @@
-import type { settings } from "@/db/schema";
 import { healthCheck } from "../db";
 import { protectedProcedure, publicProcedure } from "../lib/orpc";
 import { categoriesRouter } from "./categories";
+import { dashboardRouter } from "./dashboard";
 import { merchantsRouter } from "./merchants";
 import { metaRouter } from "./meta";
 import { settingsRouter } from "./settings";
@@ -20,6 +20,10 @@ export type MerchantWithKeywordsAndCategory = InferRouterOutputs<
 export type Transaction = InferRouterOutputs<
 	typeof transactionsRouter
 >["getUserTransactions"]["transactions"][number];
+
+export type DashboardStats = InferRouterOutputs<
+	typeof dashboardRouter
+>["getStatsCounts"]["stats"];
 
 export const appRouter = {
 	healthCheck: publicProcedure.handler(async () => {
@@ -41,6 +45,7 @@ export const appRouter = {
 	transactions: transactionsRouter,
 	settings: settingsRouter,
 	meta: metaRouter,
+	dashboard: dashboardRouter,
 };
 
 export type AppRouter = typeof appRouter;
