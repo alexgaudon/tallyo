@@ -96,6 +96,128 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 	}
 });
 
+// API route for creating transactions with Bearer token
+app.post("/api/transactions", async (c) => {
+	try {
+		const authHeader = c.req.header("Authorization");
+		if (!authHeader || !authHeader.startsWith("Bearer ")) {
+			return c.json({ error: "Missing or invalid Authorization header" }, 401);
+		}
+
+		const token = authHeader.substring(7); // Remove "Bearer " prefix
+
+		// Validate the session using the token
+		const session = await auth.api.getSession({
+			headers: new Headers({
+				Authorization: `Bearer ${token}`,
+			}),
+		});
+
+		if (!session?.user?.id) {
+			return c.json({ error: "Invalid or expired token" }, 401);
+		}
+
+		// Parse request body
+		const body = await c.req.json();
+
+		// Validate required fields
+		if (!body.amount || !body.date || !body.transactionDetails) {
+			return c.json(
+				{
+					error:
+						"Missing required fields: amount, date, and transactionDetails are required",
+				},
+				400,
+			);
+		}
+
+		// Validate amount is a number
+		const amount = Number(body.amount);
+		if (Number.isNaN(amount) || amount <= 0) {
+			return c.json({ error: "Amount must be a positive number" }, 400);
+		}
+
+		// Validate date
+		const date = new Date(body.date);
+		if (Number.isNaN(date.getTime())) {
+			return c.json({ error: "Invalid date format" }, 400);
+		}
+
+		// Import the transaction creation logic
+		const { getMerchantFromVendor } = await import("./routers/merchants");
+		const { transaction } = await import("./db/schema");
+		const { db } = await import("./db");
+
+		// Get merchant from vendor name
+		const merchantRecord = await getMerchantFromVendor(
+			body.transactionDetails,
+			session.user.id,
+		);
+
+		// Create the transaction
+		const newTransaction = await db
+			.insert(transaction)
+			.values({
+				userId: session.user.id,
+				amount: amount,
+				date: date,
+				transactionDetails: body.transactionDetails,
+				merchantId: body.merchantId || merchantRecord?.id,
+				categoryId: body.categoryId || merchantRecord?.recommendedCategoryId,
+				notes: body.notes,
+			})
+			.returning();
+
+		if (!newTransaction || newTransaction.length === 0) {
+			logger.error(`Failed to create transaction for user ${session.user.id}`);
+			return c.json({ error: "Failed to create transaction" }, 500);
+		}
+
+		// Fetch the created transaction with relations
+		const { eq } = await import("drizzle-orm");
+		const createdTransaction = await db.query.transaction.findFirst({
+			where: eq(transaction.id, newTransaction[0].id),
+			with: {
+				merchant: true,
+				category: {
+					with: {
+						parentCategory: true,
+					},
+				},
+			},
+		});
+
+		logger.info(
+			`Transaction created successfully for user ${session.user.id}`,
+			{
+				transactionId: newTransaction[0].id,
+				amount: amount,
+			},
+		);
+
+		return c.json(
+			{
+				success: true,
+				transaction: createdTransaction,
+			},
+			201,
+		);
+	} catch (error) {
+		logger.error("API transaction creation failed", {
+			error,
+			metadata: {
+				method: c.req.method,
+				url: c.req.url,
+			},
+		});
+
+		if (error instanceof Error) {
+			return c.json({ error: error.message }, 500);
+		}
+		return c.json({ error: "Internal server error" }, 500);
+	}
+});
+
 const handler = new RPCHandler(appRouter);
 app.use("/rpc/*", async (c, next) => {
 	const context = await createContext({ context: c });

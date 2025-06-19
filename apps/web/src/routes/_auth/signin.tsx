@@ -25,13 +25,16 @@ type SignInFormData = z.infer<typeof signInSchema>;
 
 export const Route = createFileRoute("/_auth/signin")({
 	component: RouteComponent,
-	beforeLoad: async ({ context }) => {
-		if (context.isAuthenticated) {
-			redirect({ to: "/" });
+	beforeLoad: async ({ context, search }) => {
+		if (search.scope !== "token") {
+			if (context.isAuthenticated) {
+				redirect({ to: "/" });
+			}
 		}
 	},
 	validateSearch: z.object({
 		from: z.string().optional(),
+		scope: z.string().optional(),
 	}),
 });
 
@@ -46,7 +49,7 @@ function RouteComponent() {
 		resolver: zodResolver(signInSchema),
 	});
 
-	const { from } = Route.useSearch();
+	const { from, scope } = Route.useSearch();
 
 	const navigate = useNavigate();
 
@@ -57,14 +60,25 @@ function RouteComponent() {
 				password: data.password,
 			},
 			{
-				onSuccess: () => {
+				onSuccess: (ctx) => {
 					queryClient.invalidateQueries({ queryKey: ["session"] });
-					toast.success("Sign in successful. Redirecting...");
-					setTimeout(() => {
-						navigate({
-							to: from ?? "/",
-						});
-					}, 500);
+					if (scope === "token") {
+						const authToken = ctx.response.headers.get("set-auth-token");
+						if (authToken && from === "/settings") {
+							navigate({
+								to: "/settings",
+								search: {
+									op: "afterTokenGenerate",
+								},
+							});
+						}
+					} else {
+						setTimeout(() => {
+							navigate({
+								to: from ?? "/",
+							});
+						}, 500);
+					}
 				},
 				onError: (error) => {
 					toast.error(error.error.message);

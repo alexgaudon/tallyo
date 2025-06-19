@@ -1,3 +1,5 @@
+import { ConfirmPassword } from "@/components/settings/confirm-password";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -5,13 +7,17 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 import { useMutation } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 export const Route = createFileRoute("/settings")({
 	component: RouteComponent,
@@ -21,10 +27,16 @@ export const Route = createFileRoute("/settings")({
 			orpc.settings.getUserSettings.queryOptions(),
 		);
 	},
+	validateSearch: z.object({
+		op: z.string().optional(),
+	}),
 });
 
 function RouteComponent() {
 	const { data: session } = useSession();
+	const { op } = Route.useSearch();
+
+	const [authToken, setAuthToken] = useState<string | null>(null);
 
 	const { mutate: updateSettings, isPending } = useMutation(
 		orpc.settings.updateSettings.mutationOptions({
@@ -144,11 +156,82 @@ function RouteComponent() {
 		}),
 	);
 
+	const navigate = useNavigate();
+
+	const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
+
 	return (
 		<div className="container mx-auto py-10">
+			<Dialog open={isConfirmPasswordOpen}>
+				<DialogContent>
+					<ConfirmPassword
+						onCancel={() => {
+							setIsConfirmPasswordOpen(false);
+						}}
+						onConfirm={(apiKey: string) => {
+							setIsConfirmPasswordOpen(false);
+							setAuthToken(apiKey);
+						}}
+					/>
+				</DialogContent>
+			</Dialog>
+
 			<h1 className="text-2xl font-bold mb-6">Settings</h1>
 
 			<div className="grid gap-6">
+				<Card className="border-destructive">
+					<CardHeader>
+						<CardTitle className="text-destructive">API Token</CardTitle>
+						<CardDescription>
+							Your API token for programmatic access to your transaction data.
+							Keep this token secure and never share it publicly. If
+							compromised, you can regenerate it here.
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div className="flex items-center space-x-2">
+								<div className="relative flex-1">
+									<Input
+										type={authToken ? "text" : "password"}
+										value={authToken || "•".repeat(79)}
+										readOnly
+										placeholder="No token generated"
+										className="pr-20"
+									/>
+									{authToken && (
+										<Button
+											size="sm"
+											variant="ghost"
+											onClick={async () => {
+												await navigator.clipboard.writeText(authToken);
+												toast.success("API token copied to clipboard");
+											}}
+											className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 hover:bg-muted cursor-copy"
+										>
+											Copy
+										</Button>
+									)}
+								</div>
+								<Button
+									onClick={async () => {
+										setIsConfirmPasswordOpen(true);
+									}}
+									className="px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-md transition-colors"
+								>
+									Regenerate
+								</Button>
+							</div>
+							<p className="text-sm text-muted-foreground">
+								Use this token in the Authorization header:{" "}
+								<code className="bg-muted px-1 rounded">
+									Bearer YOUR_TOKEN_HERE
+								</code>
+							</p>
+						</div>
+					</CardContent>
+				</Card>
+
 				<Card>
 					<CardHeader>
 						<CardTitle>Developer Mode</CardTitle>
