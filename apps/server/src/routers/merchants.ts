@@ -174,18 +174,29 @@ export const merchantsRouter = {
 
 				let updatedCount = 0;
 
-				// Update unreviewed transactions that match the keywords with the recommended category
-				if (input.recommendedCategoryId && keywords && keywords.length > 0) {
+				// Update unreviewed transactions that match the keywords with the merchant and recommended category
+				if (keywords && keywords.length > 0) {
 					const keywordConditions = keywords.map((keyword) =>
 						ilike(transaction.transactionDetails, `%${keyword}%`),
 					);
 
+					const updateData: {
+						merchantId: string;
+						updatedAt: Date;
+						categoryId?: string;
+					} = {
+						merchantId: id,
+						updatedAt: new Date(),
+					};
+
+					// Only update category if recommendedCategoryId is provided
+					if (input.recommendedCategoryId) {
+						updateData.categoryId = input.recommendedCategoryId;
+					}
+
 					const updatedResult = await db
 						.update(transaction)
-						.set({
-							categoryId: input.recommendedCategoryId,
-							updatedAt: new Date(),
-						})
+						.set(updateData)
 						.where(
 							and(
 								eq(transaction.userId, context.session?.user?.id),
@@ -197,9 +208,31 @@ export const merchantsRouter = {
 					updatedCount = updatedResult.rowCount ?? 0;
 				}
 
+				// Also update category for transactions that already have this merchant assigned
+				if (input.recommendedCategoryId) {
+					const existingMerchantUpdateResult = await db
+						.update(transaction)
+						.set({
+							categoryId: input.recommendedCategoryId,
+							updatedAt: new Date(),
+						})
+						.where(
+							and(
+								eq(transaction.userId, context.session?.user?.id),
+								eq(transaction.merchantId, id),
+							),
+						);
+
+					const existingUpdatedCount =
+						existingMerchantUpdateResult.rowCount ?? 0;
+					if (existingUpdatedCount > 0) {
+						updatedCount += existingUpdatedCount;
+					}
+				}
+
 				const message =
 					updatedCount > 0
-						? `Merchant updated successfully. ${updatedCount} unreviewed transactions updated.`
+						? `Merchant updated successfully. ${updatedCount} transactions updated.`
 						: "Merchant updated successfully.";
 
 				console.log(message);

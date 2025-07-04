@@ -29,9 +29,6 @@ function HomeComponent() {
 									? "Connected"
 									: "Disconnected"}
 						</span>
-						<pre className="text-xs">
-							{JSON.stringify(healthCheck.data, null, 2)}
-						</pre>
 					</div>
 				</section>
 			</div>

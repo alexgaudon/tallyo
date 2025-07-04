@@ -116,6 +116,7 @@ export const transactionsRouter = {
 						or(
 							ilike(transaction.transactionDetails, `%${input.filter}%`),
 							ilike(transaction.notes, `%${input.filter}%`),
+							ilike(transaction.id, `%${input.filter}%`),
 						),
 					);
 				}

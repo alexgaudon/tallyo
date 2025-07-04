@@ -4,6 +4,13 @@ import {
 } from "@/components/categories/category-select";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
 	Table,
@@ -22,7 +29,7 @@ import {
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Check, Trash } from "lucide-react";
+import { Check, MoreHorizontal, Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Transaction } from "../../../../server/src/routers/index";
 import {
@@ -69,6 +76,10 @@ export function TransactionsTable({
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
 	);
 
+	const [selectedTransactions, setSelectedTransactions] = useState<Set<string>>(
+		new Set(),
+	);
+
 	const unsavedChanges = useRef<Record<string, string>>({});
 	const updateNotesRef = useRef(updateNotes);
 	const transactionsRef = useRef(transactions);
@@ -107,6 +118,8 @@ export function TransactionsTable({
 		);
 		setLocalNotes(serverNotes);
 		unsavedChanges.current = {};
+		// Clear selections when transactions change
+		setSelectedTransactions(new Set());
 	}, [transactions]);
 
 	const handleNoteChange = (id: string, value: string) => {
@@ -120,6 +133,51 @@ export function TransactionsTable({
 			updateNotes({ id, notes: value });
 			delete unsavedChanges.current[id];
 		}
+	};
+
+	const handleSelectAll = (checked: boolean) => {
+		if (checked) {
+			setSelectedTransactions(new Set(transactions.map((t) => t.id)));
+		} else {
+			setSelectedTransactions(new Set());
+		}
+	};
+
+	const handleSelectTransaction = (id: string, checked: boolean) => {
+		const newSelected = new Set(selectedTransactions);
+		if (checked) {
+			newSelected.add(id);
+		} else {
+			newSelected.delete(id);
+		}
+		setSelectedTransactions(newSelected);
+	};
+
+	const handleMassAction = (action: string) => {
+		const selectedIds = Array.from(selectedTransactions);
+
+		switch (action) {
+			case "set-reviewed":
+				for (const id of selectedIds) {
+					const transaction = transactions.find((t) => t.id === id);
+					if (
+						transaction &&
+						!transaction.reviewed &&
+						transaction.category &&
+						transaction.merchant
+					) {
+						toggleReviewed({ id });
+					}
+				}
+				break;
+			case "delete":
+				for (const id of selectedIds) {
+					deleteTransaction({ id });
+				}
+				break;
+		}
+
+		setSelectedTransactions(new Set());
 	};
 
 	const renderReviewButton = (transaction: Transaction) => {
@@ -165,11 +223,53 @@ export function TransactionsTable({
 		);
 	};
 
+	const selectedCount = selectedTransactions.size;
+	const allSelected =
+		selectedCount === transactions.length && transactions.length > 0;
+	const someSelected = selectedCount > 0 && selectedCount < transactions.length;
+
 	return (
 		<div>
+			{selectedCount > 0 && (
+				<div className="flex items-center justify-between p-4 bg-muted/50 border-b">
+					<span className="text-sm text-muted-foreground">
+						{selectedCount} transaction{selectedCount !== 1 ? "s" : ""} selected
+					</span>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="sm">
+								<MoreHorizontal className="h-4 w-4 mr-2" />
+								Actions
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem
+								onClick={() => handleMassAction("set-reviewed")}
+							>
+								<Check className="h-4 w-4 mr-2" />
+								Set Reviewed
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => handleMassAction("delete")}
+								className="text-red-600"
+							>
+								<Trash className="h-4 w-4 mr-2" />
+								Delete Selected
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			)}
 			<Table>
 				<TableHeader>
 					<TableRow className="hover:bg-muted/50">
+						<TableHead className="w-[50px] px-2 sm:px-4">
+							<Checkbox
+								checked={allSelected}
+								onCheckedChange={handleSelectAll}
+								disabled={isLoading}
+							/>
+						</TableHead>
 						{isDevMode && (
 							<TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
 						)}

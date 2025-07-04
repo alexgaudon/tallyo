@@ -5,6 +5,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import {
 	addDays,
@@ -70,19 +71,40 @@ const presets = [
 			to: endOfYear(subYears(new Date(), 1)),
 		}),
 	},
+	{
+		label: "All time",
+		value: () => ({
+			from: startOfYear(new Date()),
+			to: endOfYear(new Date()),
+		}),
+	},
 ];
 
 export default function DateRangePicker({
 	className,
 	onRangeChange,
+	value,
 }: {
 	className?: string;
 	onRangeChange?: (date: DateRange | undefined) => void;
+	value?: DateRange | undefined;
 }) {
-	const [date, setDate] = React.useState<DateRange | undefined>({
-		from: startOfMonth(new Date()),
-		to: endOfMonth(new Date()),
-	});
+	const [date, setDate] = React.useState<DateRange | undefined>(
+		value || {
+			from: startOfMonth(new Date()),
+			to: endOfMonth(new Date()),
+		},
+	);
+
+	const { data } = useSession();
+	const userCreatedAt = data?.meta.userCreatedAt;
+
+	// Sync with external value
+	React.useEffect(() => {
+		if (value !== undefined) {
+			setDate(value);
+		}
+	}, [value]);
 
 	React.useEffect(() => {
 		onRangeChange?.(date);
@@ -127,17 +149,24 @@ export default function DateRangePicker({
 						/>
 						<div className="p-3 border-b">
 							<div className="grid grid-cols-1 gap-2">
-								{presets.map((preset) => (
-									<Button
-										key={preset.label}
-										variant="outline"
-										size="sm"
-										className="text-xs"
-										onClick={() => setDate(preset.value())}
-									>
-										{preset.label}
-									</Button>
-								))}
+								{presets.map((preset) => {
+									const value = preset.value();
+									if (preset.label === "All time" && userCreatedAt) {
+										value.from = userCreatedAt.createdAt;
+										value.to = new Date();
+									}
+									return (
+										<Button
+											key={preset.label}
+											variant="outline"
+											size="sm"
+											className="text-xs"
+											onClick={() => setDate(value)}
+										>
+											{preset.label}
+										</Button>
+									);
+								})}
 							</div>
 						</div>
 					</div>

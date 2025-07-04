@@ -32,22 +32,22 @@ export function CategoryChart({ data }: { data: CategoryData }) {
 				<CardTitle>Category Breakdown</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="space-y-3">
+				<div className="space-y-2">
 					{sortedData.map((item) => (
 						<div
 							key={item.category.id}
-							className="flex items-center justify-between p-3 rounded-lg border bg-card"
+							className="flex items-center justify-between p-2 rounded-md border bg-card"
 						>
 							<div className="flex flex-col">
-								<span className="font-medium">
+								<span className="font-medium text-sm">
 									{formatCategoryText(item.category)}
 								</span>
-								<span className="text-sm text-muted-foreground">
+								<span className="text-xs text-muted-foreground">
 									{item.count} transaction{item.count !== 1 ? "s" : ""}
 								</span>
 							</div>
 							<div className="text-right">
-								<span className="font-semibold text-lg">
+								<span className="font-semibold text-base">
 									{formatCurrency(Number(item.amount))}
 								</span>
 							</div>

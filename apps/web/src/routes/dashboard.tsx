@@ -1,11 +1,12 @@
 import { CategoryChart } from "@/components/dashboard/category-chart";
 import { Stats } from "@/components/dashboard/stats";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
+import { DelayedLoading } from "@/components/delayed-loading";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { addDays } from "date-fns";
+import { startOfMonth } from "date-fns";
 import { CreditCardIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -14,12 +15,20 @@ export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
 	beforeLoad: async ({ context }) => {
 		ensureSession(context.isAuthenticated, "/dashboard");
+		const defaultDateRange = {
+			from: startOfMonth(new Date()),
+			to: new Date(),
+		};
 		await Promise.all([
 			context.queryClient.prefetchQuery(
-				orpc.dashboard.getStatsCounts.queryOptions(),
+				orpc.dashboard.getStatsCounts.queryOptions({
+					input: defaultDateRange,
+				}),
 			),
 			context.queryClient.prefetchQuery(
-				orpc.dashboard.getCategoryData.queryOptions(),
+				orpc.dashboard.getCategoryData.queryOptions({
+					input: defaultDateRange,
+				}),
 			),
 		]);
 	},
@@ -27,18 +36,22 @@ export const Route = createFileRoute("/dashboard")({
 
 function RouteComponent() {
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
-		from: addDays(new Date(), -20),
+		from: startOfMonth(new Date()),
 		to: new Date(),
 	});
 
-	const { data: statsData } = useQuery(
+	const { data: statsData, isLoading: isStatsLoading } = useQuery(
 		orpc.dashboard.getStatsCounts.queryOptions({
+			keepPreviousData: true,
+			input: dateRange,
 			select: (data) => data.stats,
 		}),
 	);
 
-	const { data: categoryData } = useQuery(
+	const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
 		orpc.dashboard.getCategoryData.queryOptions({
+			keepPreviousData: true,
+			input: dateRange,
 			select: (data) => data,
 		}),
 	);
@@ -64,23 +77,25 @@ function RouteComponent() {
 				</div>
 			</div>
 			<div className="flex mx-auto justify-center mt-4">
-				<DateRangePicker onRangeChange={setDateRange} />
+				<DateRangePicker value={dateRange} onRangeChange={setDateRange} />
 			</div>
 
-			{/* Main Content */}
-			<div className="container mx-auto px-4 py-8">
-				{/* Stats Section */}
-				<div className="mb-8">
-					<h2 className="text-lg font-semibold mb-4">Overview</h2>
-					<Stats data={statsData} />
-				</div>
+			<DelayedLoading isLoading={isStatsLoading || isCategoryLoading}>
+				{/* Main Content */}
+				<div className="container mx-auto px-4 py-8">
+					{/* Stats Section */}
+					<div className="mb-8">
+						<h2 className="text-lg font-semibold mb-4">Overview</h2>
+						<Stats data={statsData} />
+					</div>
 
-				{/* Category Chart Section */}
-				<div className="space-y-4">
-					<h2 className="text-lg font-semibold">Category Breakdown</h2>
-					<CategoryChart data={categoryData ?? []} />
+					{/* Category Chart Section */}
+					<div className="space-y-4">
+						<h2 className="text-lg font-semibold">Category Breakdown</h2>
+						<CategoryChart data={categoryData ?? []} />
+					</div>
 				</div>
-			</div>
+			</DelayedLoading>
 		</div>
 	);
 }
