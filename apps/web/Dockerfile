@@ -10,7 +10,6 @@ WORKDIR /app
 # Copy package files
 COPY package.json bun.lockb ./
 COPY apps/web/package.json ./apps/web/
-COPY packages/ ./packages/
 
 # Install dependencies
 RUN bun install
