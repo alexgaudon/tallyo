@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { category, merchant } from "@/db/schema";
+import { category, merchant, user } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { protectedProcedure } from "../lib/orpc";
 
@@ -17,6 +17,13 @@ export const metaRouter = {
 			limit: 5,
 		});
 
-		return { topFiveCategories, topFiveMerchants };
+		const userCreatedAt = await db.query.user.findFirst({
+			where: eq(user.id, context.session?.user?.id),
+			columns: {
+				createdAt: true,
+			},
+		});
+
+		return { topFiveCategories, topFiveMerchants, userCreatedAt };
 	}),
 };

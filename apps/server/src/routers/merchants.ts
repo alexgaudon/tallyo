@@ -1,5 +1,5 @@
-import { merchant, merchantKeyword } from "@/db/schema";
-import { and, asc, eq, ilike } from "drizzle-orm";
+import { merchant, merchantKeyword, transaction } from "@/db/schema";
+import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -172,8 +172,41 @@ export const merchantsRouter = {
 					}
 				}
 
+				let updatedCount = 0;
+
+				// Update unreviewed transactions that match the keywords with the recommended category
+				if (input.recommendedCategoryId && keywords && keywords.length > 0) {
+					const keywordConditions = keywords.map((keyword) =>
+						ilike(transaction.transactionDetails, `%${keyword}%`),
+					);
+
+					const updatedResult = await db
+						.update(transaction)
+						.set({
+							categoryId: input.recommendedCategoryId,
+							updatedAt: new Date(),
+						})
+						.where(
+							and(
+								eq(transaction.userId, context.session?.user?.id),
+								eq(transaction.reviewed, false),
+								or(...keywordConditions),
+							),
+						);
+
+					updatedCount = updatedResult.rowCount ?? 0;
+				}
+
+				const message =
+					updatedCount > 0
+						? `Merchant updated successfully. ${updatedCount} unreviewed transactions updated.`
+						: "Merchant updated successfully.";
+
+				console.log(message);
+
 				return {
 					merchant: updatedMerchant[0],
+					message,
 				};
 			} catch (error) {
 				logger.error(`Error updating merchant ${input.id}:`, { error });

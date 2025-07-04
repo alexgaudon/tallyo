@@ -41,11 +41,14 @@ export function KeywordPills({
 		[value, onChange],
 	);
 
+	const displayKeywords = value.slice(-15);
+	const remainingCount = value.length - 15;
+
 	return (
 		<div
 			className={cn("flex flex-wrap gap-2 rounded-md border p-2", className)}
 		>
-			{value.map((keyword) => (
+			{displayKeywords.map((keyword) => (
 				<span
 					key={keyword}
 					className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
@@ -60,6 +63,11 @@ export function KeywordPills({
 					</button>
 				</span>
 			))}
+			{remainingCount > 0 && (
+				<span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+					and {remainingCount} more items
+				</span>
+			)}
 			<Input
 				value={inputValue}
 				onChange={(e) => setInputValue(e.target.value)}

@@ -8,12 +8,13 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2Icon, PlusIcon } from "lucide-react";
-import { useState } from "react";
+import { Building2Icon, PlusIcon, SearchIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/merchants")({
 	component: RouteComponent,
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/merchants")({
 
 function RouteComponent() {
 	const [open, setOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
 	const { data: merchants, isLoading } = useQuery(
 		orpc.merchants.getUserMerchants.queryOptions(),
 	);
@@ -41,6 +43,37 @@ function RouteComponent() {
 			},
 		}),
 	);
+
+	// Filter merchants based on search query
+	const filteredMerchants = useMemo(() => {
+		if (!merchants || !searchQuery.trim()) {
+			return merchants ?? [];
+		}
+
+		const query = searchQuery.toLowerCase().trim();
+		return merchants.filter((merchant) => {
+			// Search in merchant name
+			if (merchant.name.toLowerCase().includes(query)) {
+				return true;
+			}
+
+			// Search in keywords
+			if (
+				merchant.keywords?.some((keyword) =>
+					keyword.keyword.toLowerCase().includes(query),
+				)
+			) {
+				return true;
+			}
+
+			// Search in recommended category name
+			if (merchant.recommendedCategory?.name.toLowerCase().includes(query)) {
+				return true;
+			}
+
+			return false;
+		});
+	}, [merchants, searchQuery]);
 
 	async function handleDelete(id: string) {
 		await deleteMerchant({ id });
@@ -72,9 +105,20 @@ function RouteComponent() {
 				</Dialog>
 			</div>
 
+			{/* Search Bar */}
+			<div className="relative">
+				<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder="Search merchants by name, keywords, or category..."
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					className="pl-10"
+				/>
+			</div>
+
 			<div className="grid gap-6 md:grid-cols-[1fr,300px]">
 				<MerchantList
-					merchants={merchants ?? []}
+					merchants={filteredMerchants}
 					isLoading={isLoading}
 					onDelete={handleDelete}
 				/>

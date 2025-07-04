@@ -13,6 +13,7 @@ import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { type SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { CategorySelect } from "../categories/category-select";
@@ -67,7 +68,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 	const onSubmit: SubmitHandler<FormValues> = async (values) => {
 		try {
 			if (merchant) {
-				await updateMerchant({
+				const result = await updateMerchant({
 					id: merchant.id,
 					name: values.name,
 					...(values.recommendedCategoryId && {
@@ -75,6 +76,8 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 					}),
 					keywords: values.keywords,
 				});
+
+				toast.success(result.message);
 			} else {
 				await createMerchant({
 					name: values.name,
@@ -86,13 +89,12 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 			}
 
 			callback?.();
-			if (!merchant) {
-				form.reset();
-			}
+			form.reset();
 		} catch (error) {
-			console.error(
-				`Failed to ${merchant ? "update" : "create"} merchant:`,
-				error,
+			toast.error(
+				`Failed to ${merchant ? "update" : "create"} merchant: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`,
 			);
 		}
 	};
@@ -130,6 +132,7 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 							<FormLabel>Recommended Category (Optional)</FormLabel>
 							<FormControl>
 								<CategorySelect
+									allowNull
 									value={field.value}
 									onValueChange={field.onChange}
 									placeholder="Select a category"

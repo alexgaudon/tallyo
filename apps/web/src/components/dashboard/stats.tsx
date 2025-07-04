@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	CreditCardIcon,
 	FolderTreeIcon,
@@ -32,46 +32,62 @@ export function Stats({
 			title: "Total Transactions",
 			value: data.totalTransactions,
 			icon: CreditCardIcon,
-			description: "All recorded transactions",
+			description: "tracked transactions",
 		},
 		{
 			title: "Categories",
 			value: data.totalCategories,
 			icon: FolderTreeIcon,
-			description: "Transaction categories",
+			description: "transaction categories",
+		},
+		{
+			title: "Total Expenses",
+			value: data.totalExpenses,
+			icon: CreditCardIcon,
+			description: "of expenses paid",
+		},
+		{
+			title: "Total Income",
+			value: data.totalIncome,
+			icon: CreditCardIcon,
+			description: "of income recorded",
 		},
 		{
 			title: "Merchants",
 			value: data.totalMerchants,
 			icon: StoreIcon,
-			description: "Registered merchants",
+			description: "registered merchants",
 		},
 		{
 			title: "Merchant Keywords",
 			value: data.totalMerchantKeywords,
 			icon: TagIcon,
-			description: "Auto-matching keywords",
+			description: "auto-matching keywords",
 		},
 	];
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 			{stats.map((stat) => {
 				const Icon = stat.icon;
 				return (
-					<Card key={stat.title}>
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">
-								{stat.title}
-							</CardTitle>
-							<Icon className="h-4 w-4 text-muted-foreground" />
+					<Card key={stat.title} className="hover:shadow-md transition-shadow">
+						<CardHeader className="space-y-2">
+							<div className="flex items-center gap-2">
+								<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+									<Icon className="w-4 h-4 text-primary" />
+								</div>
+								<CardTitle className="text-lg font-semibold">
+									{stat.title}
+								</CardTitle>
+							</div>
+							<div className="space-y-1">
+								<p className="text-2xl font-bold">{stat.value}</p>
+								<p className="text-sm text-muted-foreground">
+									{stat.description}
+								</p>
+							</div>
 						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold">{stat.value}</div>
-							<p className="text-xs text-muted-foreground">
-								{stat.description}
-							</p>
-						</CardContent>
 					</Card>
 				);
 			})}

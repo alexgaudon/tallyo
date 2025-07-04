@@ -27,6 +27,13 @@ export const formatCategory = (category: Category) => {
 	return category.name;
 };
 
+export const formatCategoryText = (category: Category) => {
+	if (category.parentCategory) {
+		return `${category.parentCategory.name} → ${category.name}`;
+	}
+	return category.name;
+};
+
 export function CategorySelect({
 	value,
 	onValueChange,

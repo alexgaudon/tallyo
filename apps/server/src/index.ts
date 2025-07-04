@@ -2,6 +2,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import "dotenv/config";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { z } from "zod";
 import { healthCheck } from "./db";
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
@@ -117,91 +118,127 @@ app.post("/api/transactions", async (c) => {
 			return c.json({ error: "Invalid or expired token" }, 401);
 		}
 
-		// Parse request body
+		// Parse and validate request body with Zod
 		const body = await c.req.json();
 
-		// Validate required fields
-		if (!body.amount || !body.date || !body.transactionDetails) {
+		const transactionSchema = z.object({
+			amount: z.number().int(),
+			date: z.string().or(z.date()),
+			transactionDetails: z.string(),
+			merchantId: z.string().optional(),
+			categoryId: z.string().optional(),
+			notes: z.string().optional(),
+		});
+
+		const requestSchema = z.object({
+			transactions: z.array(transactionSchema).min(1).max(100),
+		});
+
+		const validationResult = requestSchema.safeParse(body);
+		if (!validationResult.success) {
 			return c.json(
 				{
-					error:
-						"Missing required fields: amount, date, and transactionDetails are required",
+					error: "Invalid request format",
+					details: validationResult.error.errors,
 				},
 				400,
 			);
 		}
 
-		// Validate amount is a number
-		const amount = Number(body.amount);
-		if (Number.isNaN(amount) || amount <= 0) {
-			return c.json({ error: "Amount must be a positive number" }, 400);
-		}
-
-		// Validate date
-		const date = new Date(body.date);
-		if (Number.isNaN(date.getTime())) {
-			return c.json({ error: "Invalid date format" }, 400);
-		}
+		const { transactions } = validationResult.data;
 
 		// Import the transaction creation logic
 		const { getMerchantFromVendor } = await import("./routers/merchants");
 		const { transaction } = await import("./db/schema");
 		const { db } = await import("./db");
 
-		// Get merchant from vendor name
-		const merchantRecord = await getMerchantFromVendor(
-			body.transactionDetails,
-			session.user.id,
-		);
+		const createdTransactions = [];
+		const errors = [];
 
-		// Create the transaction
-		const newTransaction = await db
-			.insert(transaction)
-			.values({
-				userId: session.user.id,
-				amount: amount,
-				date: date,
-				transactionDetails: body.transactionDetails,
-				merchantId: body.merchantId || merchantRecord?.id,
-				categoryId: body.categoryId || merchantRecord?.recommendedCategoryId,
-				notes: body.notes,
-			})
-			.returning();
+		// Process each transaction
+		for (const transactionData of transactions) {
+			try {
+				// Validate date
+				const date = new Date(transactionData.date);
+				if (Number.isNaN(date.getTime())) {
+					errors.push({
+						transaction: transactionData,
+						error: "Invalid date format",
+					});
+					continue;
+				}
 
-		if (!newTransaction || newTransaction.length === 0) {
-			logger.error(`Failed to create transaction for user ${session.user.id}`);
-			return c.json({ error: "Failed to create transaction" }, 500);
+				// Get merchant from vendor name
+				const merchantRecord = await getMerchantFromVendor(
+					transactionData.transactionDetails,
+					session.user.id,
+				);
+
+				// Create the transaction
+				const newTransaction = await db
+					.insert(transaction)
+					.values({
+						userId: session.user.id,
+						amount: transactionData.amount,
+						date: date,
+						transactionDetails: transactionData.transactionDetails,
+						merchantId: transactionData.merchantId || merchantRecord?.id,
+						categoryId:
+							transactionData.categoryId ||
+							merchantRecord?.recommendedCategoryId,
+						notes: transactionData.notes,
+					})
+					.returning();
+
+				if (!newTransaction || newTransaction.length === 0) {
+					errors.push({
+						transaction: transactionData,
+						error: "Failed to create transaction",
+					});
+					continue;
+				}
+
+				// Fetch the created transaction with relations
+				const { eq } = await import("drizzle-orm");
+				const createdTransaction = await db.query.transaction.findFirst({
+					where: eq(transaction.id, newTransaction[0].id),
+					with: {
+						merchant: true,
+						category: {
+							with: {
+								parentCategory: true,
+							},
+						},
+					},
+				});
+
+				createdTransactions.push(createdTransaction);
+
+				logger.info(
+					`Transaction created successfully for user ${session.user.id}`,
+					{
+						transactionId: newTransaction[0].id,
+						amount: transactionData.amount,
+					},
+				);
+			} catch (error) {
+				errors.push({
+					transaction: transactionData,
+					error: error instanceof Error ? error.message : "Unknown error",
+				});
+			}
 		}
 
-		// Fetch the created transaction with relations
-		const { eq } = await import("drizzle-orm");
-		const createdTransaction = await db.query.transaction.findFirst({
-			where: eq(transaction.id, newTransaction[0].id),
-			with: {
-				merchant: true,
-				category: {
-					with: {
-						parentCategory: true,
-					},
-				},
-			},
-		});
+		// Return results
+		const response = {
+			success: createdTransactions.length > 0,
+			created: createdTransactions,
+			errors: errors.length > 0 ? errors : undefined,
+		};
 
-		logger.info(
-			`Transaction created successfully for user ${session.user.id}`,
-			{
-				transactionId: newTransaction[0].id,
-				amount: amount,
-			},
-		);
+		const statusCode = createdTransactions.length > 0 ? 201 : 400;
 
-		return c.json(
-			{
-				success: true,
-				transaction: createdTransaction,
-			},
-			201,
-		);
+		return c.json(response, statusCode);
 	} catch (error) {
 		logger.error("API transaction creation failed", {
 			error,
