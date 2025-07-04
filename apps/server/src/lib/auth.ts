@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer } from "better-auth/plugins";
 import { db } from "../db";
 import * as schema from "../db/schema/auth";
 
@@ -13,5 +12,10 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
-	plugins: [bearer()],
+	socialProviders: {
+		discord: {
+			clientId: process.env.DISCORD_CLIENT_ID || "",
+			clientSecret: process.env.DISCORD_CLIENT_SECRET || "",
+		},
+	},
 });

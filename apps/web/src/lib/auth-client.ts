@@ -16,12 +16,14 @@ export const useSessionFetch = async () => {
 		const data = await Promise.all([
 			orpc.meta.getUserMeta.call(),
 			orpc.settings.getUserSettings.call(),
+			orpc.meta.isOauthUserOrEmailUser.call(),
 		]);
 
 		return {
 			...session,
 			...data[1],
 			meta: data[0],
+			isOauthUserOrEmailUser: data[2],
 		};
 	} catch (error) {
 		if (error instanceof ORPCError) {

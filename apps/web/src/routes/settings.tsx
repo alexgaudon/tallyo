@@ -221,6 +221,21 @@ function RouteComponent() {
 								>
 									Regenerate
 								</Button>
+								<Button
+									onClick={async () => {
+										try {
+											await orpc.settings.deleteAuthToken.call();
+											setAuthToken(null);
+											toast.success("API token deleted successfully");
+										} catch (error) {
+											toast.error("Failed to delete API token");
+										}
+									}}
+									variant="outline"
+									className="px-4 py-2 text-sm font-medium"
+								>
+									Delete
+								</Button>
 							</div>
 							<p className="text-sm text-muted-foreground">
 								Use this token in the Authorization header:{" "}

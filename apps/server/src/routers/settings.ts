@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { settings } from "../db/schema/app";
+import { createOrUpdateAuthToken, deleteAuthToken } from "../lib/auth-token";
 import { protectedProcedure } from "../lib/orpc";
 
 export const settingsRouter = {
@@ -60,4 +61,32 @@ export const settingsRouter = {
 				throw new Error("An unexpected error occurred while updating settings");
 			}
 		}),
+	generateAuthToken: protectedProcedure.handler(async ({ context }) => {
+		try {
+			const token = await createOrUpdateAuthToken(context.session.user.id);
+			return {
+				token,
+			};
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(`Failed to generate auth token: ${error.message}`);
+			}
+			throw new Error(
+				"An unexpected error occurred while generating auth token",
+			);
+		}
+	}),
+	deleteAuthToken: protectedProcedure.handler(async ({ context }) => {
+		try {
+			await deleteAuthToken(context.session.user.id);
+			return {
+				success: true,
+			};
+		} catch (error) {
+			if (error instanceof Error) {
+				throw new Error(`Failed to delete auth token: ${error.message}`);
+			}
+			throw new Error("An unexpected error occurred while deleting auth token");
+		}
+	}),
 };

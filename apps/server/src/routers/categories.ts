@@ -1,5 +1,5 @@
 import { category } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -9,10 +9,11 @@ export const categoriesRouter = {
 	getUserCategories: protectedProcedure.handler(async ({ context }) => {
 		try {
 			const userCategories = await db.query.category.findMany({
-				where: eq(category.userId, context.session?.user?.id),
 				with: {
 					parentCategory: true,
 				},
+				where: eq(category.userId, context.session?.user?.id),
+				orderBy: [asc(category.name)],
 			});
 
 			return {

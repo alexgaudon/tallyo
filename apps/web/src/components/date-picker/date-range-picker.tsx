@@ -97,7 +97,7 @@ export default function DateRangePicker({
 	);
 
 	const { data } = useSession();
-	const userCreatedAt = data?.meta.userCreatedAt;
+	const earliestTransactionDate = data?.meta.earliestTransactionDate;
 
 	// Sync with external value
 	React.useEffect(() => {
@@ -151,8 +151,8 @@ export default function DateRangePicker({
 							<div className="grid grid-cols-1 gap-2">
 								{presets.map((preset) => {
 									const value = preset.value();
-									if (preset.label === "All time" && userCreatedAt) {
-										value.from = userCreatedAt.createdAt;
+									if (preset.label === "All time" && earliestTransactionDate) {
+										value.from = earliestTransactionDate;
 										value.to = new Date();
 									}
 									return (

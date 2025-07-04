@@ -166,3 +166,27 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
 		references: [category.id],
 	}),
 }));
+
+export const authToken = pgTable(
+	"auth_token",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn((): string => Bun.randomUUIDv7()),
+		userId: text("user_id").notNull(),
+		token: text("token").notNull(),
+		createdAt: timestamp("created_at").notNull().defaultNow(),
+		updatedAt: timestamp("updated_at").notNull().defaultNow(),
+	},
+	(table) => [
+		uniqueIndex("auth_token_user_id_unique").on(table.userId),
+		uniqueIndex("auth_token_token_unique").on(table.token),
+	],
+);
+
+export const authTokenRelations = relations(authToken, ({ one }) => ({
+	user: one(user, {
+		fields: [authToken.userId],
+		references: [user.id],
+	}),
+}));

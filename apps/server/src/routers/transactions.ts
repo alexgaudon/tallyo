@@ -1,4 +1,4 @@
-import { merchant, transaction } from "@/db/schema";
+import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
@@ -212,6 +212,11 @@ export const transactionsRouter = {
 		)
 		.handler(async ({ input, context }) => {
 			try {
+				logger.info(
+					`Starting merchant update for transaction ${input.id} with merchantId: ${input.merchantId}`,
+					{ userId: context.session?.user?.id },
+				);
+
 				const updatedTransaction = await db
 					.update(transaction)
 					.set({
@@ -221,7 +226,15 @@ export const transactionsRouter = {
 					.where(eq(transaction.id, input.id))
 					.returning();
 
+				logger.info(
+					`Successfully updated transaction ${input.id} with merchantId: ${input.merchantId}`,
+				);
+
 				if (input.merchantId) {
+					logger.info(
+						`Merchant ID provided (${input.merchantId}), checking for keyword processing`,
+					);
+
 					const merchantRecord = await db.query.merchant.findFirst({
 						where: eq(merchant.id, input.merchantId),
 						with: {
@@ -230,8 +243,124 @@ export const transactionsRouter = {
 					});
 
 					if (merchantRecord) {
-						console.log(merchantRecord);
+						logger.info(
+							`Found merchant record for ${merchantRecord.name} with ${merchantRecord.keywords.length} existing keywords`,
+							{
+								merchantId: merchantRecord.id,
+								existingKeywords: merchantRecord.keywords.map((k) => k.keyword),
+							},
+						);
+
+						const transactionRecord = await db.query.transaction.findFirst({
+							where: eq(transaction.id, input.id),
+						});
+
+						if (transactionRecord && merchantRecord.keywords.length > 0) {
+							const description =
+								transactionRecord.transactionDetails.toLowerCase();
+
+							logger.info(
+								"Processing transaction description for keyword matching",
+								{
+									transactionId: transactionRecord.id,
+									description: transactionRecord.transactionDetails,
+									descriptionLower: description,
+								},
+							);
+
+							let keywordMatchFound = false;
+							for (const keywordRecord of merchantRecord.keywords) {
+								const keywordLower = keywordRecord.keyword.toLowerCase();
+								logger.debug(
+									`Checking if description contains keyword: "${keywordRecord.keyword}"`,
+									{
+										keyword: keywordRecord.keyword,
+										keywordLower,
+										descriptionContains: description.includes(keywordLower),
+									},
+								);
+
+								if (description.includes(keywordLower)) {
+									logger.info(
+										`Found matching keyword "${keywordRecord.keyword}" in transaction description`,
+										{
+											keyword: keywordRecord.keyword,
+											transactionDescription:
+												transactionRecord.transactionDetails,
+										},
+									);
+									keywordMatchFound = true;
+									break;
+								}
+							}
+
+							if (!keywordMatchFound) {
+								logger.info(
+									"No existing keywords match transaction description, attempting to add new keyword",
+									{
+										transactionDescription:
+											transactionRecord.transactionDetails,
+										merchantId: merchantRecord.id,
+										merchantName: merchantRecord.name,
+									},
+								);
+
+								try {
+									await db.insert(merchantKeyword).values({
+										keyword: transactionRecord.transactionDetails,
+										merchantId: merchantRecord.id,
+										userId: context.session?.user?.id,
+										createdAt: new Date(),
+										updatedAt: new Date(),
+									});
+
+									logger.info(
+										`Successfully added new keyword "${transactionRecord.transactionDetails}" for merchant ${merchantRecord.name}`,
+										{
+											newKeyword: transactionRecord.transactionDetails,
+											merchantId: merchantRecord.id,
+											merchantName: merchantRecord.name,
+										},
+									);
+								} catch (error) {
+									logger.warn(
+										`Failed to add keyword "${transactionRecord.transactionDetails}" for merchant ${merchantRecord.name}`,
+										{
+											error,
+											keyword: transactionRecord.transactionDetails,
+											merchantId: merchantRecord.id,
+											merchantName: merchantRecord.name,
+										},
+									);
+									// Keyword might already exist, ignore the error
+								}
+							} else {
+								logger.info(
+									"Skipping keyword addition - existing keyword already matches transaction description",
+								);
+							}
+						} else {
+							if (!transactionRecord) {
+								logger.warn(
+									`Transaction record not found for ID ${input.id} during keyword processing`,
+								);
+							}
+							if (merchantRecord.keywords.length === 0) {
+								logger.info(
+									`Merchant ${merchantRecord.name} has no existing keywords, skipping keyword processing`,
+									{ merchantId: merchantRecord.id },
+								);
+							}
+						}
+					} else {
+						logger.warn(
+							`Merchant record not found for ID ${input.merchantId} during keyword processing`,
+						);
 					}
+				} else {
+					logger.info(
+						`No merchant ID provided, skipping keyword processing for transaction ${input.id}`,
+					);
 				}
 
 				if (!updatedTransaction || updatedTransaction.length === 0) {
@@ -240,6 +369,15 @@ export const transactionsRouter = {
 					);
 					throw new Error("Transaction not found or update failed");
 				}
+
+				logger.info(
+					`Successfully completed merchant update for transaction ${input.id}`,
+					{
+						transactionId: input.id,
+						merchantId: input.merchantId,
+						userId: context.session?.user?.id,
+					},
+				);
 
 				return {
 					transaction: updatedTransaction[0],

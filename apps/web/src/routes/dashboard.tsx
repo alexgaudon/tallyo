@@ -6,7 +6,7 @@ import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { startOfMonth } from "date-fns";
+import { endOfMonth, startOfMonth } from "date-fns";
 import { CreditCardIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/dashboard")({
 		ensureSession(context.isAuthenticated, "/dashboard");
 		const defaultDateRange = {
 			from: startOfMonth(new Date()),
-			to: new Date(),
+			to: endOfMonth(new Date()),
 		};
 		await Promise.all([
 			context.queryClient.prefetchQuery(
@@ -37,12 +37,12 @@ export const Route = createFileRoute("/dashboard")({
 function RouteComponent() {
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
 		from: startOfMonth(new Date()),
-		to: new Date(),
+		to: endOfMonth(new Date()),
 	});
 
 	const { data: statsData, isLoading: isStatsLoading } = useQuery(
 		orpc.dashboard.getStatsCounts.queryOptions({
-			keepPreviousData: true,
+			placeholderData: (previousData) => previousData,
 			input: dateRange,
 			select: (data) => data.stats,
 		}),
@@ -50,7 +50,7 @@ function RouteComponent() {
 
 	const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
 		orpc.dashboard.getCategoryData.queryOptions({
-			keepPreviousData: true,
+			placeholderData: (previousData) => previousData,
 			input: dateRange,
 			select: (data) => data,
 		}),

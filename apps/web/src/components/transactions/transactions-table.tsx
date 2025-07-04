@@ -143,16 +143,6 @@ export function TransactionsTable({
 		}
 	};
 
-	const handleSelectTransaction = (id: string, checked: boolean) => {
-		const newSelected = new Set(selectedTransactions);
-		if (checked) {
-			newSelected.add(id);
-		} else {
-			newSelected.delete(id);
-		}
-		setSelectedTransactions(newSelected);
-	};
-
 	const handleMassAction = (action: string) => {
 		const selectedIds = Array.from(selectedTransactions);
 
@@ -330,6 +320,9 @@ export function TransactionsTable({
 												disabled={isLoading}
 												transactionDetails={transaction.transactionDetails}
 											/>
+											<p className="text-xs text-muted-foreground truncate">
+												{transaction.transactionDetails}
+											</p>
 										</div>
 									)}
 								</div>

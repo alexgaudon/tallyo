@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { healthCheck } from "./db";
+
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";
@@ -97,7 +98,7 @@ app.on(["POST", "GET"], "/api/auth/**", async (c) => {
 	}
 });
 
-// API route for creating transactions with Bearer token
+// API route for creating transactions with custom auth token
 app.post("/api/transactions", async (c) => {
 	try {
 		const authHeader = c.req.header("Authorization");
@@ -107,14 +108,11 @@ app.post("/api/transactions", async (c) => {
 
 		const token = authHeader.substring(7); // Remove "Bearer " prefix
 
-		// Validate the session using the token
-		const session = await auth.api.getSession({
-			headers: new Headers({
-				Authorization: `Bearer ${token}`,
-			}),
-		});
+		// Validate the custom auth token
+		const { validateAuthToken } = await import("./lib/auth-token");
+		const userId = await validateAuthToken(token);
 
-		if (!session?.user?.id) {
+		if (!userId) {
 			return c.json({ error: "Invalid or expired token" }, 401);
 		}
 
@@ -171,14 +169,14 @@ app.post("/api/transactions", async (c) => {
 				// Get merchant from vendor name
 				const merchantRecord = await getMerchantFromVendor(
 					transactionData.transactionDetails,
-					session.user.id,
+					userId,
 				);
 
 				// Create the transaction
 				const newTransaction = await db
 					.insert(transaction)
 					.values({
-						userId: session.user.id,
+						userId: userId,
 						amount: transactionData.amount,
 						date: date,
 						transactionDetails: transactionData.transactionDetails,
@@ -214,13 +212,10 @@ app.post("/api/transactions", async (c) => {
 
 				createdTransactions.push(createdTransaction);
 
-				logger.info(
-					`Transaction created successfully for user ${session.user.id}`,
-					{
-						transactionId: newTransaction[0].id,
-						amount: transactionData.amount,
-					},
-				);
+				logger.info(`Transaction created successfully for user ${userId}`, {
+					transactionId: newTransaction[0].id,
+					amount: transactionData.amount,
+				});
 			} catch (error) {
 				errors.push({
 					transaction: transactionData,
@@ -283,6 +278,10 @@ app.use("/rpc/*", async (c, next) => {
 
 app.get("/", async (c) => {
 	try {
+		const url = new URL(c.req.url);
+		if (url.hostname === "localhost") {
+			return c.redirect("http://localhost:3001");
+		}
 		await healthCheck();
 		return c.text("OK");
 	} catch (error) {
