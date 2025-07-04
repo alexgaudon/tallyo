@@ -372,25 +372,23 @@ function RouteComponent() {
 					</Dialog>
 				</div>
 				<Search />
-				<div className="">
-					<TransactionsTable
-						transactions={transactionsData?.transactions ?? []}
-						pagination={{
-							total: transactionsData?.pagination.total ?? 0,
-							page: transactionsData?.pagination.page ?? 1,
-							pageSize: transactionsData?.pagination.pageSize ?? 25,
-							totalPages: transactionsData?.pagination.totalPages ?? 1,
-						}}
-						onPageChange={handlePageChange}
-						onPageSizeChange={handlePageSizeChange}
-						updateCategory={updateCategory}
-						updateMerchant={updateMerchant}
-						updateNotes={updateNotes}
-						toggleReviewed={toggleReviewed}
-						deleteTransaction={deleteTransaction}
-						isLoading={false}
-					/>
-				</div>
+				<TransactionsTable
+					transactions={transactionsData?.transactions ?? []}
+					pagination={{
+						total: transactionsData?.pagination.total ?? 0,
+						page: transactionsData?.pagination.page ?? 1,
+						pageSize: transactionsData?.pagination.pageSize ?? 25,
+						totalPages: transactionsData?.pagination.totalPages ?? 1,
+					}}
+					onPageChange={handlePageChange}
+					onPageSizeChange={handlePageSizeChange}
+					updateCategory={updateCategory}
+					updateMerchant={updateMerchant}
+					updateNotes={updateNotes}
+					toggleReviewed={toggleReviewed}
+					deleteTransaction={deleteTransaction}
+					isLoading={false}
+				/>
 			</div>
 		</div>
 	);

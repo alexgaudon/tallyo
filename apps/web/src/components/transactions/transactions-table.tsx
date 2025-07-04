@@ -85,7 +85,6 @@ export function TransactionsTable({
 			const hasUnsavedChanges = Object.keys(unsavedChanges.current).length > 0;
 			if (hasUnsavedChanges) {
 				e.preventDefault();
-				e.returnValue = "";
 
 				// Try to save changes before unload
 				for (const [id, value] of Object.entries(unsavedChanges.current)) {
@@ -167,7 +166,7 @@ export function TransactionsTable({
 	};
 
 	return (
-		<div className="overflow-x-scroll">
+		<div>
 			<Table>
 				<TableHeader>
 					<TableRow className="hover:bg-muted/50">
@@ -175,13 +174,11 @@ export function TransactionsTable({
 							<TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
 						)}
 						<TableHead className="w-[100px] px-2 sm:px-4">Date</TableHead>
-						<TableHead className="min-w-[150px] sm:min-w-[200px] px-2 sm:px-4">
-							Merchant
-						</TableHead>
+						<TableHead className="min-w-fit px-2 sm:px-4">Merchant</TableHead>
 						<TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4">
 							Category
 						</TableHead>
-						<TableHead className="px-2 sm:px-4">Notes</TableHead>
+						<TableHead className="px-2 sm:px-4 min-w-[200px]">Notes</TableHead>
 						<TableHead className="w-[100px] px-2 sm:px-4 text-right">
 							Amount
 						</TableHead>
@@ -228,7 +225,7 @@ export function TransactionsTable({
 													})
 												}
 												placeholder="Select merchant"
-												className="w-full min-w-[120px] sm:min-w-[150px]"
+												className="min-w-[280px]"
 												allowNull
 												disabled={isLoading}
 												transactionDetails={transaction.transactionDetails}
@@ -256,7 +253,7 @@ export function TransactionsTable({
 												})
 											}
 											placeholder="Select category"
-											className="w-full min-w-[100px] sm:min-w-[120px]"
+											className="w-full min-w-[180px] sm:min-w-[200px]"
 											allowNull
 											disabled={isLoading}
 										/>
@@ -325,14 +322,12 @@ export function TransactionsTable({
 					))}
 				</TableBody>
 			</Table>
-			<div className="border-t px-2 sm:px-4">
-				<Paginator
-					pagination={pagination}
-					onPageChange={onPageChange}
-					onPageSizeChange={onPageSizeChange}
-					isLoading={isLoading}
-				/>
-			</div>
+			<Paginator
+				pagination={pagination}
+				onPageChange={onPageChange}
+				onPageSizeChange={onPageSizeChange}
+				isLoading={isLoading}
+			/>
 		</div>
 	);
 }
