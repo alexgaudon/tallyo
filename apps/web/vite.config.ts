@@ -6,6 +6,20 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [tailwindcss(), TanStackRouterVite({}), react()],
+	server: {
+		host: true,
+		port: 3001,
+		proxy: {
+			"/api": {
+				target: "http://localhost:3000",
+				changeOrigin: true,
+			},
+			"/rpc": {
+				target: "http://localhost:3000",
+				changeOrigin: true,
+			},
+		},
+	},
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),

@@ -1,7 +1,7 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
-import { createORPCReactQueryUtils } from "@orpc/react-query";
 import type { RouterUtils } from "@orpc/react-query";
+import { createORPCReactQueryUtils } from "@orpc/react-query";
 import type { RouterClient } from "@orpc/server";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createContext, use } from "react";
@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
 });
 
 export const link = new RPCLink({
-	url: `${import.meta.env.VITE_SERVER_URL}/rpc`,
+	url: `${window.location.origin}/rpc`,
 	fetch(url, options) {
 		return fetch(url, {
 			...options,
