@@ -22,8 +22,8 @@ jobs:
       with:
         context: .
         file: ./apps/server/Dockerfile
-        push: false
-        tags: tallyo-server:latest
+        push: true
+        tags: tallyo-server:beta
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
@@ -32,8 +32,8 @@ jobs:
       with:
         context: .
         file: ./apps/web/Dockerfile
-        push: false
-        tags: tallyo-web:latest
+        push: true
+        tags: tallyo-web:beta
         cache-from: type=gha
         cache-to: type=gha,mode=max
         build-args: |
