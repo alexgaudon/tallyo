@@ -30,6 +30,8 @@ services:
       - BETTER_AUTH_SECRET=jGPMFFPWinrqQzg39rwipBCaiA3mnWkJ #this is a random generated string, use a secure value in prod.
       - BETTER_AUTH_URL=http://localhost
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres #placeholder creds, use secure values in prod.
+    ports:
+      - "80:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,20 +43,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    container_name: tallyo-web
-    ports:
-      - "80:80"
-    depends_on:
-      server:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - public
 
 networks:
   public:

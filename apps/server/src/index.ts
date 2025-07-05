@@ -1,6 +1,7 @@
 import { RPCHandler } from "@orpc/server/fetch";
 import "dotenv/config";
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { healthCheck } from "./db";
@@ -279,10 +280,16 @@ app.use("/rpc/*", async (c, next) => {
 app.get("/", async (c) => {
 	try {
 		const url = new URL(c.req.url);
-		if (url.hostname === "localhost") {
+		if (
+			process.env.NODE_ENV === "development" &&
+			url.hostname === "localhost"
+		) {
 			return c.redirect("http://localhost:3001");
 		}
 		await healthCheck();
+		if (process.env.NODE_ENV === "production") {
+			return c.html(await Bun.file("./public/index.html").text());
+		}
 		return c.text("OK");
 	} catch (error) {
 		logger.error("Health check failed", {
@@ -294,6 +301,21 @@ app.get("/", async (c) => {
 		return c.text("DB Not OK", 500);
 	}
 });
+
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+	app.use("/*", serveStatic({ root: "./public" }));
+
+	// Handle client-side routing for SPA
+	app.get("*", async (c) => {
+		const url = new URL(c.req.url);
+		// Don't serve index.html for API routes
+		if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/rpc/")) {
+			return c.notFound();
+		}
+		return c.html(await Bun.file("./public/index.html").text());
+	});
+}
 
 // Log application startup errors
 process.on("uncaughtException", (error) => {
