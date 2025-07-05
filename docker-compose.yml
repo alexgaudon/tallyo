@@ -1,61 +1,61 @@
 services:
-    postgres:
-      image: postgres:16
-      container_name: tallyo-postgres
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: password
-        POSTGRES_DB: postgres
-      ports:
-        - "5432:5432"
-      volumes:
-        - ./postgres-data:/var/lib/postgresql/data
-      restart: unless-stopped
-      networks:
-        - public
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U postgres"]
-        interval: 5s
-        timeout: 5s
-        retries: 5
-  
-    server:
-      build:
-        context: .
-        dockerfile: apps/server/Dockerfile
-      container_name: tallyo-server
-      environment:
-        - NODE_ENV=production
-        - CORS_ORIGIN=http://localhost
-        - BETTER_AUTH_SECRET=jGPMFFPWinrqQzg39rwipBCaiA3mnWkJ #this is a random generated string, use a secure value in prod.
-        - BETTER_AUTH_URL=http://localhost
-        - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres #placeholder creds, use secure values in prod.
-      ports:
-        - "3000:3000"
-      depends_on:
-        postgres:
-          condition: service_healthy
-      restart: unless-stopped
-      networks:
-        - public
-  
-    web:
-      build:
-        context: .
-        dockerfile: apps/web/Dockerfile
-        args:
-          # Using host.docker.internal to access the host machine from the container
-          # This ensures the browser can reach the server
-          VITE_SERVER_URL: http://localhost:3000
-      container_name: tallyo-web
-      ports:
-        - "80:80"
-      depends_on:
-        - server
-      restart: unless-stopped
-      networks:
-        - public
-  
-  networks:
-    public:
-      name: tallyo-network 
+  postgres:
+    image: postgres:16
+    container_name: tallyo-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - public
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: tallyo-server
+    environment:
+      - NODE_ENV=production
+      - CORS_ORIGIN=http://localhost
+      - BETTER_AUTH_SECRET=jGPMFFPWinrqQzg39rwipBCaiA3mnWkJ #this is a random generated string, use a secure value in prod.
+      - BETTER_AUTH_URL=http://localhost
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres #placeholder creds, use secure values in prod.
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - public
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Using host.docker.internal to access the host machine from the container
+        # This ensures the browser can reach the server
+        VITE_SERVER_URL: http://localhost:3000
+    container_name: tallyo-web
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - public
+
+networks:
+  public:
+    name: tallyo-network 
