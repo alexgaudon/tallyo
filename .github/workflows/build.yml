@@ -1,4 +1,4 @@
-name: Build Docker Images
+name: Build Docker Image
 
 on:
   push:
@@ -24,24 +24,12 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
       
-    - name: Build and push server image
+    - name: Build and push single image
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./apps/server/Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/tallyo-server:beta
+        tags: ghcr.io/${{ github.repository_owner }}/tallyo:beta
         cache-from: type=gha
-        cache-to: type=gha,mode=max
-        
-    - name: Build and push web image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./apps/web/Dockerfile
-        push: true
-        tags: ghcr.io/${{ github.repository_owner }}/tallyo-web:beta
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        build-args: |
-          VITE_SERVER_URL=http://localhost:3000 
+        cache-to: type=gha,mode=max 
