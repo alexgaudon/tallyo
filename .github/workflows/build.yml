@@ -1,0 +1,40 @@
+name: Build Docker Images
+
+on:
+  push:
+    branches: [ main, rewrite ]
+  pull_request:
+    branches: [ main, rewrite ]
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build and push server image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./apps/server/Dockerfile
+        push: false
+        tags: tallyo-server:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Build and push web image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./apps/web/Dockerfile
+        push: false
+        tags: tallyo-web:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          VITE_SERVER_URL=http://localhost:3000 
