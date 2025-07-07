@@ -74,8 +74,8 @@ const presets = [
 	{
 		label: "All time",
 		value: () => ({
-			from: startOfYear(new Date()),
-			to: endOfYear(new Date()),
+			from: undefined,
+			to: new Date(),
 		}),
 	},
 ];
@@ -152,7 +152,7 @@ export default function DateRangePicker({
 								{presets.map((preset) => {
 									const value = preset.value();
 									if (preset.label === "All time" && earliestTransactionDate) {
-										value.from = earliestTransactionDate;
+										value.from = new Date(earliestTransactionDate);
 										value.to = new Date();
 									}
 									return (
