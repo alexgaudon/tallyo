@@ -95,7 +95,7 @@ export async function seed() {
 				userId,
 				merchantId,
 				amount: baseAmount + i * 100, // Vary amounts slightly
-				date,
+				date: date.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
 				transactionDetails: details,
 			};
 		}),

@@ -183,7 +183,7 @@ app.post("/api/transactions", async (c) => {
 					.values({
 						userId: userId,
 						amount: transactionData.amount,
-						date: date,
+						date: date.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
 						transactionDetails: transactionData.transactionDetails,
 						merchantId: transactionData.merchantId || merchantRecord?.id,
 						categoryId:

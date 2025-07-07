@@ -32,7 +32,7 @@ export const transactionsRouter = {
 					.values({
 						userId: context.session?.user?.id,
 						amount: input.amount,
-						date: input.date,
+						date: input.date.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
 						transactionDetails: input.transactionDetails,
 						merchantId: input.merchantId || merchantRecord?.id,
 						categoryId:

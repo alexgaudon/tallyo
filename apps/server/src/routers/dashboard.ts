@@ -38,8 +38,22 @@ export const dashboardRouter = {
 					and(
 						eq(transaction.userId, context.session.user.id),
 						eq(transaction.reviewed, true),
-						...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-						...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+						...(dateRange.from
+							? [
+									gte(
+										transaction.date,
+										dateRange.from.toISOString().split("T")[0],
+									),
+								]
+							: []),
+						...(dateRange.to
+							? [
+									lte(
+										transaction.date,
+										dateRange.to.toISOString().split("T")[0],
+									),
+								]
+							: []),
 					),
 				)
 				.groupBy(
@@ -123,9 +137,21 @@ export const dashboardRouter = {
 						and(
 							eq(transaction.userId, context.session.user.id),
 							...(dateRange.from
-								? [gte(transaction.date, dateRange.from)]
+								? [
+										gte(
+											transaction.date,
+											dateRange.from.toISOString().split("T")[0],
+										),
+									]
 								: []),
-							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+							...(dateRange.to
+								? [
+										lte(
+											transaction.date,
+											dateRange.to.toISOString().split("T")[0],
+										),
+									]
+								: []),
 						),
 					),
 				db
@@ -159,9 +185,21 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							eq(transaction.reviewed, true),
 							...(dateRange.from
-								? [gte(transaction.date, dateRange.from)]
+								? [
+										gte(
+											transaction.date,
+											dateRange.from.toISOString().split("T")[0],
+										),
+									]
 								: []),
-							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+							...(dateRange.to
+								? [
+										lte(
+											transaction.date,
+											dateRange.to.toISOString().split("T")[0],
+										),
+									]
+								: []),
 						),
 					),
 				db
@@ -177,9 +215,21 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							eq(transaction.reviewed, true),
 							...(dateRange.from
-								? [gte(transaction.date, dateRange.from)]
+								? [
+										gte(
+											transaction.date,
+											dateRange.from.toISOString().split("T")[0],
+										),
+									]
 								: []),
-							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+							...(dateRange.to
+								? [
+										lte(
+											transaction.date,
+											dateRange.to.toISOString().split("T")[0],
+										),
+									]
+								: []),
 						),
 					),
 			]);
