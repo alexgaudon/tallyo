@@ -24,6 +24,7 @@ export const useSessionFetch = async () => {
 			...data[1],
 			meta: data[0],
 			isOauthUserOrEmailUser: data[2],
+			isAuthenticated: true,
 		};
 	} catch (error) {
 		if (error instanceof ORPCError) {

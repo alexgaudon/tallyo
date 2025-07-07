@@ -1,12 +1,15 @@
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
 	component: HomeComponent,
 	beforeLoad: async ({ context }) => {
 		const queryClient = context.queryClient;
 		await queryClient.prefetchQuery(orpc.healthCheck.queryOptions());
+		if (context.auth?.isAuthenticated) {
+			throw redirect({ to: "/dashboard" });
+		}
 	},
 });
 
