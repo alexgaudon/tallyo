@@ -190,6 +190,7 @@ app.post("/api/transactions", async (c) => {
 							transactionData.categoryId ||
 							merchantRecord?.recommendedCategoryId,
 						notes: transactionData.notes,
+						externalId: transactionData.externalId,
 					})
 					.returning();
 
@@ -226,6 +227,8 @@ app.post("/api/transactions", async (c) => {
 					transaction: transactionData,
 					error: error instanceof Error ? error.message : "Unknown error",
 				});
+
+				console.error(error);
 			}
 		}
 
