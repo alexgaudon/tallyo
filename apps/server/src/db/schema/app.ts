@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
 	boolean,
+	date,
 	integer,
 	pgTable,
 	text,
@@ -136,7 +137,7 @@ export const transaction = pgTable(
 		merchantId: text("merchant_id"),
 		categoryId: text("category_id"),
 		amount: integer("amount").notNull(),
-		date: timestamp("date").notNull(),
+		date: date("date").notNull(),
 		transactionDetails: text("transaction_details").notNull(),
 		notes: text("notes"),
 		externalId: text("external_id"),

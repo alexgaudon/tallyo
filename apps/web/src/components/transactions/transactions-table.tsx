@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Check, Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Transaction } from "../../../../server/src/routers/index";
@@ -122,6 +122,71 @@ export function TransactionsTable({
 		}
 	};
 
+	// Helper function to parse date and ensure correct local display
+	const parseTransactionDate = (dateValue: string | Date) => {
+		console.log("=== Date Debug ===");
+		console.log("Input dateValue:", dateValue);
+		console.log("Input type:", typeof dateValue);
+		console.log("Input toString():", dateValue.toString());
+
+		let year: number;
+		let month: number;
+		let day: number;
+
+		if (typeof dateValue === "string") {
+			// Extract just the date part (YYYY-MM-DD) from any date string
+			const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+			if (dateMatch) {
+				year = Number.parseInt(dateMatch[1], 10);
+				month = Number.parseInt(dateMatch[2], 10) - 1; // Month is 0-indexed
+				day = Number.parseInt(dateMatch[3], 10);
+				console.log(
+					"Extracted from string - Year:",
+					year,
+					"Month:",
+					month,
+					"Day:",
+					day,
+				);
+			} else {
+				// Fallback to parsing as ISO
+				const date = parseISO(dateValue);
+				year = date.getFullYear();
+				month = date.getMonth();
+				day = date.getDate();
+				console.log(
+					"Parsed as ISO - Year:",
+					year,
+					"Month:",
+					month,
+					"Day:",
+					day,
+				);
+			}
+		} else {
+			// If it's a Date object, extract the components
+			year = dateValue.getFullYear();
+			month = dateValue.getMonth();
+			day = dateValue.getDate();
+			console.log(
+				"Extracted from Date object - Year:",
+				year,
+				"Month:",
+				month,
+				"Day:",
+				day,
+			);
+		}
+
+		// Create a new date using the local date constructor (this ensures local time)
+		const finalDate = new Date(year, month, day);
+		console.log("Final date object:", finalDate);
+		console.log("Final date formatted:", format(finalDate, "MMM d, yyyy"));
+		console.log("=== End Debug ===");
+
+		return finalDate;
+	};
+
 	const renderReviewButton = (transaction: Transaction) => {
 		const isDisabled =
 			(!transaction.reviewed &&
@@ -169,23 +234,34 @@ export function TransactionsTable({
 		<div>
 			<Table>
 				<TableHeader>
-					<TableRow className="hover:bg-muted/50">
+					<TableRow compact className="hover:bg-muted/50">
 						{isDevMode && (
-							<TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
+							<TableHead compact className="w-[80px] px-2 sm:px-4">
+								ID
+							</TableHead>
 						)}
-						<TableHead className="w-[100px] px-2 sm:px-4">Date</TableHead>
-						<TableHead className="min-w-fit px-2 sm:px-4">Merchant</TableHead>
-						<TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4">
+						<TableHead compact className="w-[100px] px-2 sm:px-4">
+							Date
+						</TableHead>
+						<TableHead compact className="min-w-fit px-2 sm:px-4">
+							Merchant
+						</TableHead>
+						<TableHead
+							compact
+							className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4"
+						>
 							Category
 						</TableHead>
-						<TableHead className="px-2 sm:px-4 min-w-[200px]">Notes</TableHead>
-						<TableHead className="w-[100px] px-2 sm:px-4 text-right">
+						<TableHead compact className="px-2 sm:px-4 min-w-[200px]">
+							Notes
+						</TableHead>
+						<TableHead compact className="w-[100px] px-2 sm:px-4 text-right">
 							Amount
 						</TableHead>
-						<TableHead className="w-[80px] px-2 sm:px-4 text-center">
+						<TableHead compact className="w-[80px] px-2 sm:px-4 text-center">
 							Reviewed
 						</TableHead>
-						<TableHead className="w-[80px] px-2 sm:px-4 text-center">
+						<TableHead compact className="w-[80px] px-2 sm:px-4 text-center">
 							Actions
 						</TableHead>
 					</TableRow>
@@ -194,20 +270,27 @@ export function TransactionsTable({
 					{transactions.map((transaction) => (
 						<TableRow
 							key={transaction.id}
+							compact
 							className={cn(
 								"hover:bg-muted/50 transition-colors",
 								isLoading && "opacity-50",
 							)}
 						>
 							{isDevMode && (
-								<TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+								<TableCell
+									compact
+									className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle"
+								>
 									{transaction.id}
 								</TableCell>
 							)}
-							<TableCell className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle">
-								{format(new Date(transaction.date), "MMM d, yyyy")}
+							<TableCell
+								compact
+								className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle"
+							>
+								{format(parseTransactionDate(transaction.date), "MMM d, yyyy")}
 							</TableCell>
-							<TableCell className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
 										<span className="text-muted-foreground truncate">
@@ -237,7 +320,7 @@ export function TransactionsTable({
 									)}
 								</div>
 							</TableCell>
-							<TableCell className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
 										<span className="text-muted-foreground truncate">
@@ -263,7 +346,7 @@ export function TransactionsTable({
 									)}
 								</div>
 							</TableCell>
-							<TableCell className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<input
 									type="text"
 									value={localNotes[transaction.id] ?? ""}
@@ -281,7 +364,10 @@ export function TransactionsTable({
 									disabled={isLoading}
 								/>
 							</TableCell>
-							<TableCell className="text-right font-medium px-2 sm:px-4 h-10 align-middle">
+							<TableCell
+								compact
+								className="text-right font-medium px-2 sm:px-4 h-10 align-middle"
+							>
 								<span
 									className={cn(
 										"transition-colors",
@@ -291,10 +377,16 @@ export function TransactionsTable({
 									${Math.abs(transaction.amount / 100).toFixed(2)}
 								</span>
 							</TableCell>
-							<TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
+							<TableCell
+								compact
+								className="text-center px-2 sm:px-4 h-10 align-middle"
+							>
 								{renderReviewButton(transaction)}
 							</TableCell>
-							<TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
+							<TableCell
+								compact
+								className="text-center px-2 sm:px-4 h-10 align-middle"
+							>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
 										<Button variant="ghost" size="icon">

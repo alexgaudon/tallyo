@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { FolderIcon, PencilIcon, XIcon } from "lucide-react";
+import {
+	DollarSignIcon,
+	EyeOffIcon,
+	FolderIcon,
+	PencilIcon,
+	XIcon,
+} from "lucide-react";
 import { useState } from "react";
 import type { Category } from "../../../../server/src/routers";
 import {
@@ -40,6 +46,20 @@ export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
 			<div className="flex items-center gap-2">
 				<Icon className="h-3 w-3 text-muted-foreground" />
 				<span className="text-sm">{category.name}</span>
+				<div className="flex items-center gap-1">
+					{category.treatAsIncome && (
+						<div className="flex items-center gap-1 rounded-md bg-green-100 px-1.5 py-0.5 text-xs text-green-700 dark:bg-green-900/20 dark:text-green-400">
+							<DollarSignIcon className="h-2.5 w-2.5" />
+							<span>Income</span>
+						</div>
+					)}
+					{category.hideFromInsights && (
+						<div className="flex items-center gap-1 rounded-md bg-orange-100 px-1.5 py-0.5 text-xs text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+							<EyeOffIcon className="h-2.5 w-2.5" />
+							<span>Hidden</span>
+						</div>
+					)}
+				</div>
 			</div>
 
 			<div className="flex items-center gap-1">

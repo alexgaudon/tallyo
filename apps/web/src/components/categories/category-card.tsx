@@ -4,7 +4,13 @@ import { cn } from "@/lib/utils";
 import type { orpc } from "@/utils/orpc";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { FolderIcon, PencilIcon, XIcon } from "lucide-react";
+import {
+	DollarSignIcon,
+	EyeOffIcon,
+	FolderIcon,
+	PencilIcon,
+	XIcon,
+} from "lucide-react";
 import { useState } from "react";
 import {
 	AlertDialog,
@@ -61,6 +67,20 @@ export function CategoryCard({
 							)}
 						/>
 						<span className="font-medium">{category.name}</span>
+						<div className="flex items-center gap-1">
+							{category.treatAsIncome && (
+								<div className="flex items-center gap-1 rounded-md bg-green-100 px-2 py-1 text-xs text-green-700 dark:bg-green-900/20 dark:text-green-400">
+									<DollarSignIcon className="h-3 w-3" />
+									<span>Income</span>
+								</div>
+							)}
+							{category.hideFromInsights && (
+								<div className="flex items-center gap-1 rounded-md bg-orange-100 px-2 py-1 text-xs text-orange-700 dark:bg-orange-900/20 dark:text-orange-400">
+									<EyeOffIcon className="h-3 w-3" />
+									<span>Hidden</span>
+								</div>
+							)}
+						</div>
 					</div>
 					<div className="flex items-center gap-1">
 						<Dialog open={editOpen} onOpenChange={setEditOpen}>
