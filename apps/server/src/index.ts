@@ -3,6 +3,7 @@ import "dotenv/config";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
+import { logger as honoLogger } from "hono/logger";
 import { z } from "zod";
 import { healthCheck } from "./db";
 
@@ -12,6 +13,8 @@ import { logger } from "./lib/logger";
 import { appRouter } from "./routers/index";
 
 const app = new Hono();
+
+app.use(honoLogger());
 
 if (process.env.NODE_ENV === "development") {
 	app.use(async (c, next) => {
@@ -127,6 +130,7 @@ app.post("/api/transactions", async (c) => {
 			merchantId: z.string().optional(),
 			categoryId: z.string().optional(),
 			notes: z.string().optional(),
+			externalId: z.string(),
 		});
 
 		const requestSchema = z.object({

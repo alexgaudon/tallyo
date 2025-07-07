@@ -286,4 +286,133 @@ export const merchantsRouter = {
 				throw new Error("An unexpected error occurred while deleting merchant");
 			}
 		}),
+	mergeMerchants: protectedProcedure
+		.input(
+			z.object({
+				sourceMerchantId: z.string(),
+				targetMerchantId: z.string(),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			logger.info(
+				`Merging merchant ${input.sourceMerchantId} into ${input.targetMerchantId} for user ${context.session?.user?.id}`,
+			);
+			try {
+				// Verify both merchants exist and belong to the user
+				const [sourceMerchant, targetMerchant] = await Promise.all([
+					db.query.merchant.findFirst({
+						where: and(
+							eq(merchant.id, input.sourceMerchantId),
+							eq(merchant.userId, context.session?.user?.id),
+						),
+						with: {
+							keywords: {
+								columns: {
+									id: true,
+									keyword: true,
+								},
+							},
+						},
+					}),
+					db.query.merchant.findFirst({
+						where: and(
+							eq(merchant.id, input.targetMerchantId),
+							eq(merchant.userId, context.session?.user?.id),
+						),
+						with: {
+							keywords: {
+								columns: {
+									id: true,
+									keyword: true,
+								},
+							},
+						},
+					}),
+				]);
+
+				if (!sourceMerchant) {
+					throw new Error("Source merchant not found");
+				}
+
+				if (!targetMerchant) {
+					throw new Error("Target merchant not found");
+				}
+
+				if (sourceMerchant.id === targetMerchant.id) {
+					throw new Error("Cannot merge a merchant into itself");
+				}
+
+				// Get existing keywords from both merchants
+				const sourceKeywords = sourceMerchant.keywords.map((k) =>
+					k.keyword.toLowerCase(),
+				);
+				const targetKeywords = targetMerchant.keywords.map((k) =>
+					k.keyword.toLowerCase(),
+				);
+
+				// Find keywords that need to be added to target merchant
+				const keywordsToAdd = sourceMerchant.keywords.filter(
+					(keyword) => !targetKeywords.includes(keyword.keyword.toLowerCase()),
+				);
+
+				// Add missing keywords to target merchant
+				if (keywordsToAdd.length > 0) {
+					await db.insert(merchantKeyword).values(
+						keywordsToAdd.map((keyword) => ({
+							merchantId: targetMerchant.id,
+							userId: context.session?.user?.id,
+							keyword: keyword.keyword,
+						})),
+					);
+				}
+
+				// Reassign all transactions from source merchant to target merchant
+				const reassignedTransactions = await db
+					.update(transaction)
+					.set({
+						merchantId: targetMerchant.id,
+						updatedAt: new Date(),
+					})
+					.where(
+						and(
+							eq(transaction.merchantId, sourceMerchant.id),
+							eq(transaction.userId, context.session?.user?.id),
+						),
+					)
+					.returning();
+
+				// Delete the source merchant (this will cascade delete its keywords)
+				const deletedMerchant = await db
+					.delete(merchant)
+					.where(eq(merchant.id, sourceMerchant.id))
+					.returning();
+
+				if (!deletedMerchant || deletedMerchant.length === 0) {
+					throw new Error("Failed to delete source merchant");
+				}
+
+				const message = `Successfully merged "${sourceMerchant.name}" into "${targetMerchant.name}". ${keywordsToAdd.length} keywords added, ${reassignedTransactions.length} transactions reassigned.`;
+
+				logger.info(
+					`Successfully merged merchant ${input.sourceMerchantId} into ${input.targetMerchantId} for user ${context.session?.user?.id}`,
+				);
+
+				return {
+					message,
+					sourceMerchant: deletedMerchant[0],
+					targetMerchant,
+					keywordsAdded: keywordsToAdd.length,
+					transactionsReassigned: reassignedTransactions.length,
+				};
+			} catch (error) {
+				logger.error(
+					`Error merging merchant ${input.sourceMerchantId} into ${input.targetMerchantId}:`,
+					{ error },
+				);
+				if (error instanceof Error) {
+					throw new Error(`Failed to merge merchants: ${error.message}`);
+				}
+				throw new Error("An unexpected error occurred while merging merchants");
+			}
+		}),
 };

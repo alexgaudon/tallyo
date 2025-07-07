@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PencilIcon, StoreIcon, TagIcon, XIcon } from "lucide-react";
+import {
+	GitMergeIcon,
+	PencilIcon,
+	StoreIcon,
+	TagIcon,
+	XIcon,
+} from "lucide-react";
 import { useState } from "react";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import {
@@ -22,6 +28,7 @@ import {
 	DialogTrigger,
 } from "../ui/dialog";
 import { EditMerchantForm } from "./edit-merchant-form";
+import { MergeMerchantForm } from "./merge-merchant-form";
 
 interface MerchantCardProps {
 	merchant: MerchantWithKeywordsAndCategory;
@@ -30,6 +37,7 @@ interface MerchantCardProps {
 
 export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 	const [editOpen, setEditOpen] = useState(false);
+	const [mergeOpen, setMergeOpen] = useState(false);
 
 	console.log(merchant);
 
@@ -67,6 +75,29 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 								<EditMerchantForm
 									merchant={merchant}
 									callback={() => setEditOpen(false)}
+								/>
+							</DialogContent>
+						</Dialog>
+						<Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+							<DialogTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="h-8 w-8 text-muted-foreground hover:text-orange-600"
+								>
+									<GitMergeIcon className="h-4 w-4" />
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle className="flex items-center gap-2 text-lg">
+										<GitMergeIcon className="h-4 w-4" />
+										Merge Merchant
+									</DialogTitle>
+								</DialogHeader>
+								<MergeMerchantForm
+									sourceMerchant={merchant}
+									callback={() => setMergeOpen(false)}
 								/>
 							</DialogContent>
 						</Dialog>
