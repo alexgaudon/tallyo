@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
 import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { CategoryData } from "../../../../server/src/routers";
@@ -40,6 +41,8 @@ function getColorFromCategoryId(categoryId: string): string {
 }
 
 export function CategoryPieChart({ data }: { data: CategoryData }) {
+	const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
 	if (!data || data.length === 0) {
 		return (
 			<Card>
@@ -125,6 +128,9 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 										outerRadius="80%"
 										innerRadius="20%"
 										fill="#8884d8"
+										activeIndex={activeIndex !== null ? [activeIndex] : []}
+										onMouseEnter={(_, index) => setActiveIndex(index)}
+										onMouseLeave={() => setActiveIndex(null)}
 									/>
 									<Tooltip content={<CustomTooltip />} />
 								</PieChart>
@@ -134,10 +140,14 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 
 					{/* Legend */}
 					<div className="grid grid-cols-2 gap-1.5">
-						{chartData.map((item) => (
+						{chartData.map((item, index) => (
 							<div
 								key={item.name}
-								className="flex items-center justify-between p-1.5 rounded-md border bg-card hover:bg-accent/50 transition-colors"
+								className={`flex items-center justify-between p-1.5 rounded-md border transition-colors ${
+									activeIndex === index
+										? "bg-accent border-accent-foreground/20"
+										: "bg-card hover:bg-accent/50"
+								}`}
 							>
 								<div className="flex items-center gap-2">
 									<div
