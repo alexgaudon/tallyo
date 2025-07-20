@@ -61,7 +61,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 	}
 
 	const sortedData = [...data].sort(
-		(a, b) => Number(b.amount) - Number(a.amount),
+		(a, b) => Number(a.amount) - Number(b.amount),
 	);
 
 	// Filter out income categories and prepare chart data
