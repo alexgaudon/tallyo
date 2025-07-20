@@ -143,34 +143,41 @@ export function IconPicker({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-[300px] p-0">
-				<Command>
+				<Command className="overflow-visible">
 					<CommandInput placeholder="Search icons..." />
-					<CommandList className="max-h-[200px] overflow-y-auto">
-						<CommandEmpty>No icon found.</CommandEmpty>
-						<CommandGroup>
-							{Object.entries(ICONS).map(([name, Icon]) => (
-								<CommandItem
-									key={name}
-									value={name}
-									onSelect={(currentValue) => {
-										onValueChange?.(currentValue);
-										setOpen(false);
-									}}
-								>
-									<div className="flex items-center gap-2">
-										<Icon className="h-4 w-4" />
-										<span>{name}</span>
-									</div>
-									<Check
-										className={cn(
-											"ml-auto h-4 w-4",
-											value === name ? "opacity-100" : "opacity-0",
-										)}
-									/>
-								</CommandItem>
-							))}
-						</CommandGroup>
-					</CommandList>
+					<div
+						className="max-h-[400px] overflow-y-auto"
+						onWheel={(e) => {
+							e.stopPropagation();
+						}}
+					>
+						<CommandList className="scroll-py-0">
+							<CommandEmpty>No icon found.</CommandEmpty>
+							<CommandGroup className="!overflow-visible !p-1">
+								{Object.entries(ICONS).map(([name, Icon]) => (
+									<CommandItem
+										key={name}
+										value={name}
+										onSelect={(currentValue) => {
+											onValueChange?.(currentValue);
+											setOpen(false);
+										}}
+									>
+										<div className="flex items-center gap-2">
+											<Icon className="h-4 w-4" />
+											<span>{name}</span>
+										</div>
+										<Check
+											className={cn(
+												"ml-auto h-4 w-4",
+												value === name ? "opacity-100" : "opacity-0",
+											)}
+										/>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						</CommandList>
+					</div>
 				</Command>
 			</PopoverContent>
 		</Popover>
