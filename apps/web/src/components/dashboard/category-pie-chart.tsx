@@ -144,7 +144,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 						{chartData.map((item, index) => (
 							<div
 								key={item.name}
-								className={`flex items-center justify-between p-1.5 rounded-md border transition-colors ${
+								className={`flex items-center justify-between p-1.5 rounded-md border ${
 									activeIndex === index
 										? "bg-accent border-accent-foreground/20"
 										: "bg-card hover:bg-accent/50"

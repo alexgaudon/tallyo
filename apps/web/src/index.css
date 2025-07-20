@@ -29,6 +29,19 @@ body {
 	}
 }
 
+/* Prevent FOUC on buttons */
+button[data-slot="button"] {
+	background-color: var(--background);
+	border-color: var(--border);
+	color: var(--foreground);
+}
+
+.dark button[data-slot="button"] {
+	background-color: var(--background);
+	border-color: var(--border);
+	color: var(--foreground);
+}
+
 :root {
 	--radius: 0.625rem;
 	--background: oklch(1 0 0);
