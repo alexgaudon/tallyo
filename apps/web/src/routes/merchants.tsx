@@ -90,7 +90,8 @@ function RouteComponent() {
 					<DialogTrigger asChild>
 						<Button variant="outline">
 							<PlusIcon className="h-4 w-4 mr-2" />
-							New Merchant
+							<span className="hidden sm:inline">New Merchant</span>
+							<span className="sm:hidden">New</span>
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
