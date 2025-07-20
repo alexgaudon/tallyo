@@ -46,6 +46,14 @@ export const metaRouter = {
 			},
 		});
 
+		const transferCategoryId = await db.query.category.findFirst({
+			where: and(
+				eq(category.userId, context.session?.user?.id),
+				eq(category.hideFromInsights, true),
+				eq(category.name, "Transfer"),
+			),
+		});
+
 		const unreviewedTransactionCount = await db
 			.select({ count: count() })
 			.from(transaction)

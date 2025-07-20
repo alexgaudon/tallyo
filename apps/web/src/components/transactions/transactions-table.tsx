@@ -2,6 +2,9 @@ import {
 	CategorySelect,
 	formatCategory,
 } from "@/components/categories/category-select";
+import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
+import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
+import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
@@ -69,6 +72,19 @@ export function TransactionsTable({
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
 	);
 
+	// Dialog state
+	const [editMerchantDialog, setEditMerchantDialog] = useState<{
+		open: boolean;
+		merchantId: string;
+	}>({ open: false, merchantId: "" });
+
+	const [editCategoryDialog, setEditCategoryDialog] = useState<{
+		open: boolean;
+		categoryId: string;
+	}>({ open: false, categoryId: "" });
+
+	const [createCategoryDialog, setCreateCategoryDialog] = useState(false);
+
 	const unsavedChanges = useRef<Record<string, string>>({});
 	const updateNotesRef = useRef(updateNotes);
 	const transactionsRef = useRef(transactions);
@@ -124,11 +140,6 @@ export function TransactionsTable({
 
 	// Helper function to parse date and ensure correct local display
 	const parseTransactionDate = (dateValue: string | Date) => {
-		console.log("=== Date Debug ===");
-		console.log("Input dateValue:", dateValue);
-		console.log("Input type:", typeof dateValue);
-		console.log("Input toString():", dateValue.toString());
-
 		let year: number;
 		let month: number;
 		let day: number;
@@ -140,49 +151,22 @@ export function TransactionsTable({
 				year = Number.parseInt(dateMatch[1], 10);
 				month = Number.parseInt(dateMatch[2], 10) - 1; // Month is 0-indexed
 				day = Number.parseInt(dateMatch[3], 10);
-				console.log(
-					"Extracted from string - Year:",
-					year,
-					"Month:",
-					month,
-					"Day:",
-					day,
-				);
 			} else {
 				// Fallback to parsing as ISO
 				const date = parseISO(dateValue);
 				year = date.getFullYear();
 				month = date.getMonth();
 				day = date.getDate();
-				console.log(
-					"Parsed as ISO - Year:",
-					year,
-					"Month:",
-					month,
-					"Day:",
-					day,
-				);
 			}
 		} else {
 			// If it's a Date object, extract the components
 			year = dateValue.getFullYear();
 			month = dateValue.getMonth();
 			day = dateValue.getDate();
-			console.log(
-				"Extracted from Date object - Year:",
-				year,
-				"Month:",
-				month,
-				"Day:",
-				day,
-			);
 		}
 
 		// Create a new date using the local date constructor (this ensures local time)
 		const finalDate = new Date(year, month, day);
-		console.log("Final date object:", finalDate);
-		console.log("Final date formatted:", format(finalDate, "MMM d, yyyy"));
-		console.log("=== End Debug ===");
 
 		return finalDate;
 	};
@@ -312,6 +296,9 @@ export function TransactionsTable({
 												allowNull
 												disabled={isLoading}
 												transactionDetails={transaction.transactionDetails}
+												onEditMerchant={(merchantId) => {
+													setEditMerchantDialog({ open: true, merchantId });
+												}}
 											/>
 											<p className="text-xs text-muted-foreground truncate">
 												{transaction.transactionDetails}
@@ -342,6 +329,12 @@ export function TransactionsTable({
 											className="w-full min-w-[180px] sm:min-w-[200px]"
 											allowNull
 											disabled={isLoading}
+											onEditCategory={(categoryId) => {
+												setEditCategoryDialog({ open: true, categoryId });
+											}}
+											onCreateCategory={() => {
+												setCreateCategoryDialog(true);
+											}}
 										/>
 									)}
 								</div>
@@ -422,6 +415,39 @@ export function TransactionsTable({
 				onPageChange={onPageChange}
 				onPageSizeChange={onPageSizeChange}
 				isLoading={isLoading}
+			/>
+
+			{/* Edit Merchant Dialog */}
+			<EditMerchantDialog
+				open={editMerchantDialog.open}
+				onOpenChange={(open) =>
+					setEditMerchantDialog({
+						open,
+						merchantId: editMerchantDialog.merchantId,
+					})
+				}
+				merchantId={editMerchantDialog.merchantId}
+			/>
+
+			{/* Edit Category Dialog */}
+			<EditCategoryDialog
+				open={editCategoryDialog.open}
+				onOpenChange={(open) =>
+					setEditCategoryDialog({
+						open,
+						categoryId: editCategoryDialog.categoryId,
+					})
+				}
+				categoryId={editCategoryDialog.categoryId}
+			/>
+
+			{/* Create Category Dialog */}
+			<CreateCategoryDialog
+				open={createCategoryDialog}
+				onOpenChange={setCreateCategoryDialog}
+				onSuccess={(categoryId) => {
+					console.log("Category created:", categoryId);
+				}}
 			/>
 		</div>
 	);

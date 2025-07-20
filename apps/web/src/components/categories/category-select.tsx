@@ -1,6 +1,6 @@
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, EditIcon, PlusIcon, XIcon } from "lucide-react";
 import type { Category } from "../../../../server/src/routers";
 import { EntitySelect } from "../ui/entity-select";
 
@@ -12,6 +12,10 @@ interface CategorySelectProps {
 	className?: string;
 	allowNull?: boolean;
 	disabled?: boolean;
+	// New props for action buttons
+	onEditCategory?: (categoryId: string) => void;
+	onCreateCategory?: () => void;
+	showActionButtons?: boolean;
 }
 
 export const formatCategory = (category: Category) => {
@@ -42,6 +46,10 @@ export function CategorySelect({
 	className,
 	allowNull = false,
 	disabled = false,
+	// New props for action buttons
+	onEditCategory,
+	onCreateCategory,
+	showActionButtons = false,
 }: CategorySelectProps) {
 	const { data } = useQuery(orpc.categories.getUserCategories.queryOptions());
 
@@ -49,6 +57,37 @@ export function CategorySelect({
 	const filteredCategories = excludeCategoryId
 		? categories.filter((cat) => cat.id !== excludeCategoryId)
 		: categories;
+
+	// Build action buttons
+	const actionButtons = [];
+
+	if (onCreateCategory) {
+		actionButtons.push({
+			label: "Create New Category",
+			icon: <PlusIcon />,
+			onClick: onCreateCategory,
+			variant: "outline" as const,
+		});
+	}
+
+	// Edit Category button (only show if a category is selected)
+	if (value && onEditCategory) {
+		actionButtons.push({
+			label: "Edit Category",
+			icon: <EditIcon />,
+			onClick: () => onEditCategory(value),
+			variant: "outline" as const,
+		});
+	}
+
+	if (value && allowNull) {
+		actionButtons.push({
+			label: "Clear Category",
+			icon: <XIcon />,
+			onClick: () => onValueChange(null),
+			variant: "outline" as const,
+		});
+	}
 
 	return (
 		<EntitySelect
@@ -62,6 +101,8 @@ export function CategorySelect({
 			nullLabel="No category"
 			emptyLabel="No categories available"
 			disabled={disabled}
+			showActionButtons={showActionButtons || actionButtons.length > 0}
+			actionButtons={actionButtons}
 		/>
 	);
 }

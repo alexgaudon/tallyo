@@ -36,7 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function CreateCategoryForm({
 	callback,
 }: {
-	callback?: () => void;
+	callback?: (categoryId?: string) => void;
 }) {
 	const { data } = useQuery(orpc.categories.getUserCategories.queryOptions());
 
@@ -63,7 +63,7 @@ export function CreateCategoryForm({
 
 	async function onSubmit(values: FormValues) {
 		try {
-			await createCategory({
+			const result = await createCategory({
 				name: values.name,
 				...(values.parentCategoryId &&
 					values.parentCategoryId !== "none" && {
@@ -82,7 +82,7 @@ export function CreateCategoryForm({
 				queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
 			});
 
-			callback?.();
+			callback?.(result.category.id);
 
 			form.reset();
 		} catch (error) {
@@ -195,7 +195,9 @@ export function CreateCategoryForm({
 					/>
 				</div>
 
-				<Button type="submit">Create Category</Button>
+				<Button type="submit" className="w-full" variant="destructive">
+					Create Category
+				</Button>
 			</form>
 		</Form>
 	);

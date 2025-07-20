@@ -16,6 +16,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
 	amount: z
@@ -105,10 +107,63 @@ export function CreateTransactionForm({
 		}
 	}
 
+	// Tab style component for Income/Expense
+	const isIncome = form.watch("isIncome");
+
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
+				{/* Tab style Income/Expense picker at the top */}
+				<div className="flex mb-2">
+					<button
+						type="button"
+						className={cn(
+							"flex-1 py-2 rounded-full font-medium transition-colors border",
+							!isIncome
+								? "border-primary bg-muted"
+								: "border-transparent bg-transparent hover:bg-muted",
+						)}
+						onClick={() => form.setValue("isIncome", false)}
+						tabIndex={0}
+						aria-pressed={!isIncome}
+					>
+						Expense
+					</button>
+					<button
+						type="button"
+						className={cn(
+							"flex-1 py-2 rounded-full font-medium transition-colors border ml-2",
+							isIncome
+								? "border-primary bg-muted"
+								: "border-transparent bg-transparent hover:bg-muted",
+						)}
+						onClick={() => form.setValue("isIncome", true)}
+						tabIndex={0}
+						aria-pressed={isIncome}
+					>
+						Income
+					</button>
+				</div>
+
 				<div className="grid grid-cols-2 gap-4">
+					<FormField
+						control={form.control}
+						name="transactionDetails"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Transaction Details</FormLabel>
+								<FormControl>
+									<Input
+										placeholder="Enter transaction details"
+										{...field}
+										className="w-full"
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
 					<FormField
 						control={form.control}
 						name="amount"
@@ -123,41 +178,6 @@ export function CreateTransactionForm({
 										{...field}
 										className="w-full"
 									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="isIncome"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Type</FormLabel>
-								<FormControl>
-									<div className="flex gap-4">
-										<label className="flex items-center space-x-2 cursor-pointer">
-											<input
-												type="radio"
-												value="false"
-												checked={!field.value}
-												onChange={() => field.onChange(false)}
-												className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
-											/>
-											<span className="text-sm font-medium">Expense</span>
-										</label>
-										<label className="flex items-center space-x-2 cursor-pointer">
-											<input
-												type="radio"
-												value="true"
-												checked={field.value}
-												onChange={() => field.onChange(true)}
-												className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
-											/>
-											<span className="text-sm font-medium">Income</span>
-										</label>
-									</div>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -199,24 +219,6 @@ export function CreateTransactionForm({
 											/>
 										</PopoverContent>
 									</Popover>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="transactionDetails"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Transaction Details</FormLabel>
-								<FormControl>
-									<Input
-										placeholder="Enter transaction details"
-										{...field}
-										className="w-full"
-									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -271,7 +273,7 @@ export function CreateTransactionForm({
 						<FormItem>
 							<FormLabel>Notes (Optional)</FormLabel>
 							<FormControl>
-								<Input
+								<Textarea
 									placeholder="Add notes..."
 									{...field}
 									className="w-full"

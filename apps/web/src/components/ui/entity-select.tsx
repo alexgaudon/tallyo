@@ -30,6 +30,20 @@ interface Entity {
 		| { [key: string]: unknown };
 }
 
+interface ActionButton {
+	label: string;
+	icon?: ReactNode;
+	onClick: () => void;
+	variant?:
+		| "default"
+		| "destructive"
+		| "outline"
+		| "secondary"
+		| "ghost"
+		| "link";
+	disabled?: boolean;
+}
+
 interface EntitySelectProps<T extends Entity> {
 	value?: string | null;
 	onValueChange: (value: string | null) => void;
@@ -46,6 +60,9 @@ interface EntitySelectProps<T extends Entity> {
 	showCreateOption?: boolean;
 	createOptionLabel?: string;
 	onCreateClick?: () => void;
+	// New props for action buttons
+	actionButtons?: ActionButton[];
+	showActionButtons?: boolean;
 }
 
 export function EntitySelect<T extends Entity>({
@@ -64,6 +81,9 @@ export function EntitySelect<T extends Entity>({
 	showCreateOption = false,
 	createOptionLabel = "Create new...",
 	onCreateClick,
+	// New props for action buttons
+	actionButtons = [],
+	showActionButtons = false,
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const selectedEntity = value
@@ -95,68 +115,95 @@ export function EntitySelect<T extends Entity>({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-[200px] p-0">
-				<Command className="w-full">
-					<CommandInput
-						placeholder={searchPlaceholder}
-						className="h-9 text-sm"
-					/>
-					<CommandList>
-						<CommandEmpty className="py-2 text-sm">{emptyLabel}</CommandEmpty>
-						<CommandGroup>
-							{showCreateOption && onCreateClick && (
-								<CommandItem
-									value={createOptionLabel}
-									onSelect={() => {
-										onCreateClick();
-										setOpen(false);
-									}}
-									className="flex items-center gap-2 h-9 text-sm text-blue-600 hover:text-blue-700"
-								>
-									<PlusIcon className="h-3.5 w-3.5 shrink-0" />
-									<div className="flex-1 min-w-0">{createOptionLabel}</div>
-								</CommandItem>
-							)}
-							{allowNull && (
-								<CommandItem
-									value={nullLabel}
-									onSelect={() => {
-										onValueChange("__null__");
-										setOpen(false);
-									}}
-									className="flex items-center gap-2 h-9 text-sm"
-								>
-									<CheckIcon
-										className={cn(
-											"h-3.5 w-3.5 shrink-0",
-											value === null ? "opacity-100" : "opacity-0",
-										)}
-									/>
-									<div className="flex-1 min-w-0">{nullLabel}</div>
-								</CommandItem>
-							)}
+				<div className="flex flex-col">
+					{/* Top portion: Filterable combobox */}
+					<Command className="w-full">
+						<CommandInput
+							placeholder={searchPlaceholder}
+							className="h-9 text-sm"
+						/>
+						<CommandList>
+							<CommandEmpty className="py-2 text-sm">{emptyLabel}</CommandEmpty>
+							<CommandGroup>
+								{showCreateOption && onCreateClick && (
+									<CommandItem
+										value={createOptionLabel}
+										onSelect={() => {
+											onCreateClick();
+											setOpen(false);
+										}}
+										className="flex items-center gap-2 h-9 text-sm text-blue-600 hover:text-blue-700"
+									>
+										<PlusIcon className="h-3.5 w-3.5 shrink-0" />
+										<div className="flex-1 min-w-0">{createOptionLabel}</div>
+									</CommandItem>
+								)}
+								{allowNull && (
+									<CommandItem
+										value={nullLabel}
+										onSelect={() => {
+											onValueChange("__null__");
+											setOpen(false);
+										}}
+										className="flex items-center gap-2 h-9 text-sm"
+									>
+										<CheckIcon
+											className={cn(
+												"h-3.5 w-3.5 shrink-0",
+												value === null ? "opacity-100" : "opacity-0",
+											)}
+										/>
+										<div className="flex-1 min-w-0">{nullLabel}</div>
+									</CommandItem>
+								)}
 
-							{entities.map((entity) => (
-								<CommandItem
-									key={entity.id}
-									value={entity.name}
-									onSelect={() => {
-										onValueChange(entity.id);
+								{entities.map((entity) => (
+									<CommandItem
+										key={entity.id}
+										value={entity.name}
+										onSelect={() => {
+											onValueChange(entity.id);
+											setOpen(false);
+										}}
+										className="flex items-center gap-2 h-9 text-sm"
+									>
+										<CheckIcon
+											className={cn(
+												"h-3.5 w-3.5 shrink-0",
+												value === entity.id ? "opacity-100" : "opacity-0",
+											)}
+										/>
+										<div className="flex-1 min-w-0">{formatEntity(entity)}</div>
+									</CommandItem>
+								))}
+							</CommandGroup>
+						</CommandList>
+					</Command>
+
+					{/* Bottom portion: Action buttons */}
+					{showActionButtons && actionButtons.length > 0 && (
+						<div className="border-t p-2 space-y-1">
+							{actionButtons.map((action, index) => (
+								<Button
+									key={`${action.label}-${index}`}
+									variant={action.variant || "ghost"}
+									size="sm"
+									className="w-full justify-start h-8 text-xs"
+									onClick={() => {
+										action.onClick();
 										setOpen(false);
 									}}
-									className="flex items-center gap-2 h-9 text-sm"
+									disabled={action.disabled}
 								>
-									<CheckIcon
-										className={cn(
-											"h-3.5 w-3.5 shrink-0",
-											value === entity.id ? "opacity-100" : "opacity-0",
-										)}
-									/>
-									<div className="flex-1 min-w-0">{formatEntity(entity)}</div>
-								</CommandItem>
+									{action.icon && (
+										<span className="mr-2 h-3 w-3">{action.icon}</span>
+									)}
+									{action.label}
+								</Button>
 							))}
-						</CommandGroup>
-					</CommandList>
-				</Command>
+						</div>
+					)}
+				</div>
 			</PopoverContent>
 		</Popover>
 	);

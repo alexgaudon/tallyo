@@ -1,5 +1,6 @@
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
+import { EditIcon, PlusIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { EntitySelect } from "../ui/entity-select";
@@ -13,6 +14,9 @@ interface MerchantSelectProps {
 	allowNull?: boolean;
 	disabled?: boolean;
 	transactionDetails?: string;
+	// New props for action buttons
+	showActionButtons?: boolean;
+	onEditMerchant?: (merchantId: string) => void;
 }
 
 export function MerchantSelect({
@@ -23,6 +27,9 @@ export function MerchantSelect({
 	allowNull = false,
 	disabled = false,
 	transactionDetails,
+	// New props for action buttons
+	showActionButtons = false,
+	onEditMerchant,
 }: MerchantSelectProps) {
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const { data } = useQuery(orpc.merchants.getUserMerchants.queryOptions());
@@ -34,6 +41,37 @@ export function MerchantSelect({
 		// Automatically select the newly created merchant
 		onValueChange(merchantId);
 	};
+
+	// Build action buttons
+	const actionButtons = [];
+
+	// Create New Merchant button
+	actionButtons.push({
+		label: "Create New Merchant",
+		icon: <PlusIcon />,
+		onClick: () => setCreateDialogOpen(true),
+		variant: "outline" as const,
+	});
+
+	// Edit Merchant button (only show if a merchant is selected)
+	if (value && onEditMerchant) {
+		actionButtons.push({
+			label: "Edit Merchant",
+			icon: <EditIcon />,
+			onClick: () => onEditMerchant(value),
+			variant: "outline" as const,
+		});
+	}
+
+	// Clear Merchant button (only show if a merchant is selected and allowNull is true)
+	if (value && allowNull) {
+		actionButtons.push({
+			label: "Clear Merchant",
+			icon: <XIcon />,
+			onClick: () => onValueChange(null),
+			variant: "outline" as const,
+		});
+	}
 
 	return (
 		<>
@@ -47,9 +85,8 @@ export function MerchantSelect({
 				nullLabel="No merchant"
 				emptyLabel="No merchants available"
 				disabled={disabled}
-				showCreateOption={true}
-				createOptionLabel="Create new merchant..."
-				onCreateClick={() => setCreateDialogOpen(true)}
+				showActionButtons={showActionButtons || actionButtons.length > 0}
+				actionButtons={actionButtons}
 			/>
 			<CreateMerchantDialog
 				open={createDialogOpen}
