@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { account, category, merchant, transaction, user } from "@/db/schema";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { protectedProcedure } from "../lib/orpc";
 
 export const metaRouter = {
@@ -46,12 +46,23 @@ export const metaRouter = {
 			},
 		});
 
+		const unreviewedTransactionCount = await db
+			.select({ count: count() })
+			.from(transaction)
+			.where(
+				and(
+					eq(transaction.userId, context.session?.user?.id),
+					eq(transaction.reviewed, false),
+				),
+			);
+
 		return {
 			topFiveCategories,
 			topFiveMerchants,
 			userCreatedAt: userCreatedAt?.createdAt,
 			earliestTransactionDate:
 				earliestTransactionDate?.date ?? userCreatedAt?.createdAt,
+			unreviewedTransactionCount: unreviewedTransactionCount[0]?.count ?? 0,
 		};
 	}),
 };

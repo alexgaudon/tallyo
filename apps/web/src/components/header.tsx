@@ -141,11 +141,22 @@ export default function Header() {
 }
 
 function NavLinks({ asChild }: { asChild?: boolean }) {
+	const { data } = useSession();
+	const hasUnreviewedTransactions =
+		(data?.meta?.unreviewedTransactionCount ?? 0) > 0;
+	const unreviewedTransactionCount =
+		data?.meta?.unreviewedTransactionCount ?? 0;
 	const links = [
 		{ to: "/dashboard", label: "Dashboard", icon: <BlocksIcon /> },
 		{ to: "/merchants", label: "Merchants", icon: <StoreIcon /> },
 		{ to: "/categories", label: "Categories", icon: <FolderTreeIcon /> },
-		{ to: "/transactions", label: "Transactions", icon: <CreditCardIcon /> },
+		{
+			to: hasUnreviewedTransactions
+				? "/transactions?onlyUnreviewed=true"
+				: "/transactions",
+			label: `Transactions${hasUnreviewedTransactions ? ` (${unreviewedTransactionCount})` : ""}`,
+			icon: <CreditCardIcon />,
+		},
 	];
 
 	const linkElements = links.map((link) => (

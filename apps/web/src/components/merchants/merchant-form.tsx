@@ -28,7 +28,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface MerchantFormProps {
 	merchant?: MerchantWithKeywordsAndCategory;
-	callback?: () => void;
+	callback?: (merchantId?: string) => void;
 }
 
 export function MerchantForm({ merchant, callback }: MerchantFormProps) {
@@ -78,17 +78,20 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 				});
 
 				toast.success(result.message);
+				callback?.();
 			} else {
-				await createMerchant({
+				const result = await createMerchant({
 					name: values.name,
 					...(values.recommendedCategoryId && {
 						recommendedCategoryId: values.recommendedCategoryId,
 					}),
 					keywords: values.keywords,
 				});
+
+				toast.success("Merchant created successfully");
+				callback?.(result.merchant.id);
 			}
 
-			callback?.();
 			form.reset();
 		} catch (error) {
 			toast.error(

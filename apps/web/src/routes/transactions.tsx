@@ -301,9 +301,12 @@ function RouteComponent() {
 				}
 			},
 			onSettled: async () => {
-				await queryClient.invalidateQueries(
-					createTransactionQueryOptions(search),
-				);
+				await Promise.all([
+					queryClient.invalidateQueries(createTransactionQueryOptions(search)),
+					queryClient.invalidateQueries({
+						queryKey: ["session"],
+					}),
+				]);
 			},
 		}),
 	);

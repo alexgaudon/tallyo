@@ -1,4 +1,4 @@
-import { CategoryChart } from "@/components/dashboard/category-chart";
+import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { Stats } from "@/components/dashboard/stats";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
@@ -89,10 +89,10 @@ function RouteComponent() {
 						<Stats data={statsData} />
 					</div>
 
-					{/* Category Chart Section */}
+					{/* Category Breakdown Section */}
 					<div className="space-y-4">
 						<h2 className="text-lg font-semibold">Category Breakdown</h2>
-						<CategoryChart data={categoryData ?? []} />
+						<CategoryPieChart data={categoryData ?? []} />
 					</div>
 				</div>
 			</DelayedLoading>

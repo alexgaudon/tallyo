@@ -6,7 +6,7 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"ignoreUnknown": false,
+		"ignoreUnknown": true,
 		"ignore": [
 			".next",
 			"dist",
@@ -17,7 +17,19 @@
 			"routeTree.gen.ts",
 			"src-tauri",
 			".nuxt",
-			"public"
+			"public",
+			"node_modules",
+			".husky",
+			"*.lockb",
+			"*.md",
+			"*.yml",
+			"*.yaml",
+			"*.json",
+			"*.sh",
+			"*.gitignore",
+			"*.prettierignore",
+			"postgres-data",
+			"ops/*.json"
 		]
 	},
 	"formatter": {

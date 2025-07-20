@@ -13,7 +13,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
@@ -42,6 +42,10 @@ interface EntitySelectProps<T extends Entity> {
 	emptyLabel?: string;
 	disabled?: boolean;
 	searchPlaceholder?: string;
+	// New props for create option
+	showCreateOption?: boolean;
+	createOptionLabel?: string;
+	onCreateClick?: () => void;
 }
 
 export function EntitySelect<T extends Entity>({
@@ -56,6 +60,10 @@ export function EntitySelect<T extends Entity>({
 	emptyLabel = "No items available",
 	disabled = false,
 	searchPlaceholder = "Search...",
+	// New props for create option
+	showCreateOption = false,
+	createOptionLabel = "Create new...",
+	onCreateClick,
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const selectedEntity = value
@@ -95,6 +103,19 @@ export function EntitySelect<T extends Entity>({
 					<CommandList>
 						<CommandEmpty className="py-2 text-sm">{emptyLabel}</CommandEmpty>
 						<CommandGroup>
+							{showCreateOption && onCreateClick && (
+								<CommandItem
+									value={createOptionLabel}
+									onSelect={() => {
+										onCreateClick();
+										setOpen(false);
+									}}
+									className="flex items-center gap-2 h-9 text-sm text-blue-600 hover:text-blue-700"
+								>
+									<PlusIcon className="h-3.5 w-3.5 shrink-0" />
+									<div className="flex-1 min-w-0">{createOptionLabel}</div>
+								</CommandItem>
+							)}
 							{allowNull && (
 								<CommandItem
 									value={nullLabel}
@@ -113,6 +134,7 @@ export function EntitySelect<T extends Entity>({
 									<div className="flex-1 min-w-0">{nullLabel}</div>
 								</CommandItem>
 							)}
+
 							{entities.map((entity) => (
 								<CommandItem
 									key={entity.id}
