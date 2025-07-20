@@ -67,6 +67,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 	// Filter out income categories and prepare chart data
 	const chartData = sortedData
 		.filter((item) => !item.category.treatAsIncome)
+		.filter((item) => !item.category.hideFromInsights)
 		.map((item) => ({
 			name: formatCategoryText(item.category),
 			value: Math.abs(Number(item.amount)),
