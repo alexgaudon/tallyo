@@ -208,38 +208,8 @@ export const merchantsRouter = {
 					updatedCount = updatedResult.rowCount ?? 0;
 				}
 
-				// Also update category for transactions that already have this merchant assigned
-				if (input.recommendedCategoryId) {
-					const existingMerchantUpdateResult = await db
-						.update(transaction)
-						.set({
-							categoryId: input.recommendedCategoryId,
-							updatedAt: new Date(),
-						})
-						.where(
-							and(
-								eq(transaction.userId, context.session?.user?.id),
-								eq(transaction.merchantId, id),
-							),
-						);
-
-					const existingUpdatedCount =
-						existingMerchantUpdateResult.rowCount ?? 0;
-					if (existingUpdatedCount > 0) {
-						updatedCount += existingUpdatedCount;
-					}
-				}
-
-				const message =
-					updatedCount > 0
-						? `Merchant updated successfully. ${updatedCount} transactions updated.`
-						: "Merchant updated successfully.";
-
-				console.log(message);
-
 				return {
 					merchant: updatedMerchant[0],
-					message,
 				};
 			} catch (error) {
 				logger.error(`Error updating merchant ${input.id}:`, { error });

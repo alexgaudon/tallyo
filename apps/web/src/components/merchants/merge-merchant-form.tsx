@@ -129,7 +129,7 @@ export function MergeMerchantForm({
 									value={field.value}
 									onValueChange={field.onChange}
 									placeholder="Select merchant to merge into..."
-									className="w-full"
+									className="w-full min-w-fit"
 									entities={availableMerchants.map(({ id, name }) => ({
 										id,
 										name,

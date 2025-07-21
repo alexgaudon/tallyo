@@ -63,6 +63,8 @@ interface EntitySelectProps<T extends Entity> {
 	// New props for action buttons
 	actionButtons?: ActionButton[];
 	showActionButtons?: boolean;
+	// Popover width customization
+	popoverWidth?: string;
 }
 
 export function EntitySelect<T extends Entity>({
@@ -84,6 +86,8 @@ export function EntitySelect<T extends Entity>({
 	// New props for action buttons
 	actionButtons = [],
 	showActionButtons = false,
+	// New props for popover width
+	popoverWidth = "w-[300px]",
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const selectedEntity = value
@@ -114,7 +118,7 @@ export function EntitySelect<T extends Entity>({
 					<ChevronsUpDownIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-[200px] p-0">
+			<PopoverContent className={cn(popoverWidth, "p-0")}>
 				<div className="flex flex-col">
 					{/* Top portion: Filterable combobox */}
 					<Command className="w-full">
