@@ -33,33 +33,32 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 import { ModeToggle } from "./mode-toggle";
 
+const loadingContent = (
+	<>
+		<div className="hidden lg:flex lg:items-center lg:space-x-6">
+			<div className="flex space-x-2">
+				<ModeToggle />
+				<Skeleton className="h-8 w-[120px]" />
+			</div>
+		</div>
+		<div className="flex space-x-2 lg:hidden">
+			<ModeToggle />
+			<Skeleton className="h-8 w-8" />
+		</div>
+	</>
+);
+
 export default function Header() {
 	const [isOpen, setIsOpen] = React.useState(false);
 	const { data: session, isPending } = useSession();
 
 	const renderAuthContent = () => {
-		const loadingContent = (
-			<>
-				<div className="hidden lg:flex lg:items-center lg:space-x-6">
-					<div className="flex space-x-2">
-						<ModeToggle />
-						<Skeleton className="h-8 w-[120px]" />
-					</div>
-				</div>
-				<div className="flex space-x-2 lg:hidden">
-					<ModeToggle />
-					<Skeleton className="h-8 w-8" />
-				</div>
-			</>
-		);
-
 		const content = (
-			<div>
+			<div className="flex items-center">
 				<div className="hidden lg:flex lg:items-center lg:space-x-6">
 					{session?.data ? (
 						<>
-							<NavLinks />
-							<div className="flex space-x-2">
+							<div className="flex items-center space-x-2">
 								<ModeToggle />
 								<UserDropdown session={session.data} />
 							</div>
@@ -123,7 +122,7 @@ export default function Header() {
 
 	return (
 		<nav className="border-b">
-			<div className="flex items-center justify-between px-4 py-3 lg:px-8">
+			<div className="flex items-center px-4 py-3 lg:px-8">
 				<div className="flex items-center">
 					<Link to="/" className="flex items-center space-x-2">
 						<img
@@ -134,7 +133,10 @@ export default function Header() {
 						<span className="font-bold text-xl">Tallyo</span>
 					</Link>
 				</div>
-				{renderAuthContent()}
+				<div className="hidden lg:flex lg:items-center lg:space-x-6 ml-6">
+					{session?.data && <NavLinks />}
+				</div>
+				<div className="ml-auto">{renderAuthContent()}</div>
 			</div>
 		</nav>
 	);
