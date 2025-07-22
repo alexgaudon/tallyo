@@ -117,6 +117,7 @@ export const merchantsRouter = {
 
 				return {
 					merchant: newMerchant[0],
+					message: "Successfully created merchant",
 				};
 			} catch (error) {
 				logger.error(`Error creating merchant "${input.name}":`, { error });
@@ -210,6 +211,10 @@ export const merchantsRouter = {
 
 				return {
 					merchant: updatedMerchant[0],
+					message:
+						updatedCount > 0
+							? `Updated ${updatedCount} unreviewed transaction${updatedCount === 1 ? "" : "s"} with this merchant`
+							: "Merchant updated successfully",
 				};
 			} catch (error) {
 				logger.error(`Error updating merchant ${input.id}:`, { error });
@@ -247,6 +252,7 @@ export const merchantsRouter = {
 				);
 				return {
 					merchant: deletedMerchant[0],
+					message: "Successfully deleted merchant",
 				};
 			} catch (error) {
 				logger.error(`Error deleting merchant ${input.id}:`, { error });

@@ -95,7 +95,7 @@ export function CreateCategoryForm({
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-4">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-6">
 				<FormField
 					control={form.control}
 					name="name"
@@ -107,6 +107,7 @@ export function CreateCategoryForm({
 									placeholder="Enter category name"
 									{...field}
 									autoComplete="off"
+									className="w-full"
 								/>
 							</FormControl>
 							<FormMessage />
@@ -131,7 +132,7 @@ export function CreateCategoryForm({
 					)}
 				/>
 
-				<div className="grid grid-cols-3">
+				<div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4">
 					<FormField
 						control={form.control}
 						name="parentCategoryId"
@@ -143,7 +144,7 @@ export function CreateCategoryForm({
 									value={field.value ?? "none"}
 								>
 									<FormControl>
-										<SelectTrigger>
+										<SelectTrigger className="w-full">
 											<SelectValue placeholder="Select a parent category" />
 										</SelectTrigger>
 									</FormControl>
@@ -195,7 +196,7 @@ export function CreateCategoryForm({
 					/>
 				</div>
 
-				<Button type="submit" className="w-full" variant="destructive">
+				<Button type="submit" className="w-full">
 					Create Category
 				</Button>
 			</form>

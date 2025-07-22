@@ -39,8 +39,6 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
 	const [editOpen, setEditOpen] = useState(false);
 	const [mergeOpen, setMergeOpen] = useState(false);
 
-	console.log(merchant);
-
 	return (
 		<Card>
 			<CardContent className="p-4">

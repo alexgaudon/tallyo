@@ -15,6 +15,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Building2Icon, PlusIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchants")({
 	component: RouteComponent,
@@ -76,7 +77,8 @@ function RouteComponent() {
 	}, [merchants, searchQuery]);
 
 	async function handleDelete(id: string) {
-		await deleteMerchant({ id });
+		const result = await deleteMerchant({ id });
+		toast.success(result.message);
 	}
 
 	return (
