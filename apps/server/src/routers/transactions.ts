@@ -349,15 +349,6 @@ export const transactionsRouter = {
 						context.session?.user?.id,
 					);
 
-					// Handle keyword addition to new merchant
-					if (input.merchantId) {
-						await handleKeywordAddition(
-							currentTransaction,
-							input.merchantId,
-							context.session?.user?.id,
-						);
-					}
-
 					return { transaction: updatedTransaction };
 				},
 				"Error updating transaction merchant",
