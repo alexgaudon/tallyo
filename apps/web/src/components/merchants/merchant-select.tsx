@@ -82,7 +82,6 @@ export function MerchantSelect({
 				className={className}
 				allowNull={allowNull}
 				entities={entities}
-				nullLabel="No merchant"
 				emptyLabel="No merchants available"
 				disabled={disabled}
 				showActionButtons={showActionButtons || actionButtons.length > 0}

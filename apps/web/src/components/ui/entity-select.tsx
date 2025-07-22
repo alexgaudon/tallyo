@@ -52,7 +52,6 @@ interface EntitySelectProps<T extends Entity> {
 	allowNull?: boolean;
 	entities: T[];
 	formatEntity?: (entity: T) => ReactNode;
-	nullLabel?: string;
 	emptyLabel?: string;
 	disabled?: boolean;
 	searchPlaceholder?: string;
@@ -75,7 +74,6 @@ export function EntitySelect<T extends Entity>({
 	allowNull = false,
 	entities,
 	formatEntity = (entity) => entity.name,
-	nullLabel = "No item",
 	emptyLabel = "No items available",
 	disabled = false,
 	searchPlaceholder = "Search...",
@@ -109,11 +107,7 @@ export function EntitySelect<T extends Entity>({
 					disabled={disabled}
 				>
 					<div className="flex-1 min-w-0">
-						{value === "__null__" && allowNull
-							? nullLabel
-							: selectedEntity
-								? formatEntity(selectedEntity)
-								: placeholder}
+						{selectedEntity ? formatEntity(selectedEntity) : placeholder}
 					</div>
 					<ChevronsUpDownIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
 				</Button>
@@ -140,24 +134,6 @@ export function EntitySelect<T extends Entity>({
 									>
 										<PlusIcon className="h-3.5 w-3.5 shrink-0" />
 										<div className="flex-1 min-w-0">{createOptionLabel}</div>
-									</CommandItem>
-								)}
-								{allowNull && (
-									<CommandItem
-										value={nullLabel}
-										onSelect={() => {
-											onValueChange("__null__");
-											setOpen(false);
-										}}
-										className="flex items-center gap-2 h-9 text-sm"
-									>
-										<CheckIcon
-											className={cn(
-												"h-3.5 w-3.5 shrink-0",
-												value === null ? "opacity-100" : "opacity-0",
-											)}
-										/>
-										<div className="flex-1 min-w-0">{nullLabel}</div>
 									</CommandItem>
 								)}
 

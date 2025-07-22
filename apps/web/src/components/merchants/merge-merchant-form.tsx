@@ -134,7 +134,6 @@ export function MergeMerchantForm({
 										id,
 										name,
 									}))}
-									nullLabel="Select a merchant"
 									emptyLabel="No merchants available"
 								/>
 							</FormControl>

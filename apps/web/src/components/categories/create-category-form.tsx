@@ -8,19 +8,13 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Switch } from "../ui/switch";
+import { CategorySelect } from "./category-select";
 import { IconPicker } from "./icon-picker";
 
 const formSchema = z.object({
@@ -132,36 +126,26 @@ export function CreateCategoryForm({
 					)}
 				/>
 
-				<div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4">
-					<FormField
-						control={form.control}
-						name="parentCategoryId"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Parent Category (Optional)</FormLabel>
-								<Select
-									onValueChange={field.onChange}
-									value={field.value ?? "none"}
-								>
-									<FormControl>
-										<SelectTrigger className="w-full">
-											<SelectValue placeholder="Select a parent category" />
-										</SelectTrigger>
-									</FormControl>
-									<SelectContent>
-										<SelectItem value="none">None</SelectItem>
-										{parentCategories.map((category) => (
-											<SelectItem key={category.id} value={category.id}>
-												{category.name}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+				<FormField
+					control={form.control}
+					name="parentCategoryId"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Parent Category (Optional)</FormLabel>
+							<FormControl>
+								<CategorySelect
+									value={field.value === "none" ? null : field.value}
+									onValueChange={(value) => field.onChange(value ?? "none")}
+									placeholder="Select a parent category"
+									allowNull
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<FormField
 						control={form.control}
 						name="treatAsIncome"

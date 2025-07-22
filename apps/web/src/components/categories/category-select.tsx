@@ -98,7 +98,6 @@ export function CategorySelect({
 			allowNull={allowNull}
 			entities={filteredCategories}
 			formatEntity={formatCategory}
-			nullLabel="No category"
 			emptyLabel="No categories available"
 			disabled={disabled}
 			showActionButtons={showActionButtons || actionButtons.length > 0}
