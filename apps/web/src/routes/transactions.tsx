@@ -335,6 +335,20 @@ function RouteComponent() {
 		});
 	};
 
+	const handleCategoryClick = (categoryId: string) => {
+		navigate({
+			to: "/transactions",
+			search: { ...search, category: categoryId, page: 1 },
+		});
+	};
+
+	const handleMerchantClick = (merchantId: string) => {
+		navigate({
+			to: "/transactions",
+			search: { ...search, merchant: merchantId, page: 1 },
+		});
+	};
+
 	return (
 		<div className="w-dvw">
 			<div className="mx-auto p-6 space-y-6">
@@ -390,6 +404,8 @@ function RouteComponent() {
 					updateNotes={updateNotes}
 					toggleReviewed={toggleReviewed}
 					deleteTransaction={deleteTransaction}
+					onCategoryClick={handleCategoryClick}
+					onMerchantClick={handleMerchantClick}
 					isLoading={false}
 				/>
 			</div>

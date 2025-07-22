@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import { useState } from "react";
 import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -42,6 +43,8 @@ function getColorFromCategoryId(categoryId: string): string {
 
 export function CategoryPieChart({ data }: { data: CategoryData }) {
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
+	const { data: session } = useSession();
+	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
 
 	if (!data || data.length === 0) {
 		return (
@@ -91,7 +94,12 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 					<div className="space-y-1 text-xs">
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">Amount:</span>
-							<span className="font-medium">{formatCurrency(data.value)}</span>
+							<span className="font-medium">
+								{formatValueWithPrivacy(
+									formatCurrency(data.value),
+									isPrivacyMode,
+								)}
+							</span>
 						</div>
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">Percentage:</span>
@@ -167,7 +175,10 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 								</div>
 								<div className="text-right flex-shrink-0">
 									<span className="font-semibold text-sm">
-										{formatCurrency(item.value)}
+										{formatValueWithPrivacy(
+											formatCurrency(item.value),
+											isPrivacyMode,
+										)}
 									</span>
 								</div>
 							</div>

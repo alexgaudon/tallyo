@@ -1,4 +1,6 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSession } from "@/lib/auth-client";
+import { formatValueWithPrivacy } from "@/lib/utils";
 import {
 	CreditCardIcon,
 	FolderTreeIcon,
@@ -12,6 +14,9 @@ export function Stats({
 }: {
 	data: DashboardStats | undefined;
 }) {
+	const { data: session } = useSession();
+	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
+
 	if (!data) {
 		return (
 			<div className="flex flex-col items-center justify-center py-12 text-center">
@@ -82,7 +87,9 @@ export function Stats({
 								</CardTitle>
 							</div>
 							<div className="space-y-1">
-								<p className="text-2xl font-bold">{stat.value}</p>
+								<p className="text-2xl font-bold">
+									{formatValueWithPrivacy(stat.value, isPrivacyMode)}
+								</p>
 								<p className="text-sm text-muted-foreground">
 									{stat.description}
 								</p>

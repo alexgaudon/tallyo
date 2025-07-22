@@ -50,6 +50,8 @@ interface TransactionsTableProps {
 	updateNotes: (args: { id: string; notes: string }) => void;
 	toggleReviewed: (args: { id: string }) => void;
 	deleteTransaction: (args: { id: string }) => void;
+	onCategoryClick?: (categoryId: string) => void;
+	onMerchantClick?: (merchantId: string) => void;
 	isLoading?: boolean;
 }
 
@@ -63,6 +65,8 @@ export function TransactionsTable({
 	updateNotes,
 	toggleReviewed,
 	deleteTransaction,
+	onCategoryClick,
+	onMerchantClick,
 	isLoading = false,
 }: TransactionsTableProps) {
 	const { data: session } = useSession();
@@ -277,9 +281,24 @@ export function TransactionsTable({
 							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
-										<span className="text-muted-foreground truncate">
-											{transaction.merchant?.name ?? "No merchant"}
-										</span>
+										transaction.merchant ? (
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+												onClick={() => {
+													if (transaction.merchant) {
+														onMerchantClick?.(transaction.merchant.id);
+													}
+												}}
+											>
+												{transaction.merchant.name}
+											</Button>
+										) : (
+											<span className="text-muted-foreground truncate">
+												No merchant
+											</span>
+										)
 									) : (
 										<div className="flex flex-col justify-center w-full">
 											<MerchantSelect
@@ -310,11 +329,24 @@ export function TransactionsTable({
 							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
-										<span className="text-muted-foreground truncate">
-											{transaction.category
-												? formatCategory(transaction.category)
-												: "No category"}
-										</span>
+										transaction.category ? (
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+												onClick={() => {
+													if (transaction.category) {
+														onCategoryClick?.(transaction.category.id);
+													}
+												}}
+											>
+												{formatCategory(transaction.category)}
+											</Button>
+										) : (
+											<span className="text-muted-foreground truncate">
+												No category
+											</span>
+										)
 									) : (
 										<CategorySelect
 											value={transaction.category?.id}
