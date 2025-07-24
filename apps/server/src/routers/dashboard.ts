@@ -1,6 +1,17 @@
 import { db } from "@/db";
 import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
-import { and, asc, count, eq, gte, inArray, lte, not, sum } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	eq,
+	gte,
+	inArray,
+	lte,
+	not,
+	sql,
+	sum,
+} from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../lib/orpc";
 import { formatCurrency } from "../utils";
@@ -10,7 +21,107 @@ const dateRangeSchema = z.object({
 	to: z.date().optional(),
 });
 
+// Helper function to calculate standard deviation
+function calculateStandardDeviation(values: number[]): number {
+	if (values.length === 0) return 0;
+
+	const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+	const squaredDifferences = values.map((val) => (val - mean) ** 2);
+	const variance =
+		squaredDifferences.reduce((sum, val) => sum + val, 0) / values.length;
+
+	return Math.sqrt(variance);
+}
+
+// Helper function to calculate volatility
+function calculateVolatility(values: number[]): number {
+	if (values.length === 0) return 0;
+
+	// Treat all values as absolute for volatility
+	const absValues = values.map(Math.abs);
+	const mean = absValues.reduce((sum, val) => sum + val, 0) / absValues.length;
+	if (mean === 0) return 0;
+
+	const standardDeviation = calculateStandardDeviation(absValues);
+	return (standardDeviation / mean) * 100;
+}
+
 export const dashboardRouter = {
+	getAverages: protectedProcedure.handler(async ({ context }) => {
+		try {
+			// Get all income transactions grouped by month
+			const incomeData = await db
+				.select({
+					year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+					month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+					totalAmount: sum(transaction.amount),
+				})
+				.from(transaction)
+				.innerJoin(category, eq(transaction.categoryId, category.id))
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						eq(category.treatAsIncome, true),
+						eq(category.hideFromInsights, false),
+					),
+				)
+				.groupBy(
+					sql`EXTRACT(YEAR FROM ${transaction.date})`,
+					sql`EXTRACT(MONTH FROM ${transaction.date})`,
+				);
+
+			// Get all expense transactions grouped by month
+			const expenseData = await db
+				.select({
+					year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+					month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+					totalAmount: sum(transaction.amount),
+				})
+				.from(transaction)
+				.innerJoin(category, eq(transaction.categoryId, category.id))
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						eq(category.treatAsIncome, false),
+						eq(category.hideFromInsights, false),
+					),
+				)
+				.groupBy(
+					sql`EXTRACT(YEAR FROM ${transaction.date})`,
+					sql`EXTRACT(MONTH FROM ${transaction.date})`,
+				);
+
+			// Calculate average income
+			const incomeAmounts = incomeData.map((item) =>
+				Math.abs(Number(item.totalAmount)),
+			);
+			const averageIncome =
+				incomeAmounts.length > 0
+					? incomeAmounts.reduce((sum, val) => sum + val, 0) /
+						incomeAmounts.length
+					: 0;
+
+			// Calculate average expenses
+			const expenseAmounts = expenseData.map((item) =>
+				Math.abs(Number(item.totalAmount)),
+			);
+			const averageExpenses =
+				expenseAmounts.length > 0
+					? expenseAmounts.reduce((sum, val) => sum + val, 0) /
+						expenseAmounts.length
+					: 0;
+
+			return {
+				averageIncome: Math.round(averageIncome),
+				averageExpenses: Math.round(averageExpenses),
+			};
+		} catch (error) {
+			console.error("Error calculating averages:", error);
+			throw error;
+		}
+	}),
 	getMerchantStats: protectedProcedure
 		.input(dateRangeSchema.optional())
 		.handler(async ({ context, input }) => {

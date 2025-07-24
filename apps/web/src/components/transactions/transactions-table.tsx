@@ -7,6 +7,7 @@ import { EditCategoryDialog } from "@/components/categories/edit-category-dialog
 import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
+import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
 	Table,
@@ -23,7 +24,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
-import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Check, Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -71,7 +72,6 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
 	const { data: session } = useSession();
 	const isDevMode = session?.settings?.isDevMode ?? false;
-	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
 
 	const [localNotes, setLocalNotes] = useState<Record<string, string>>(() =>
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
@@ -392,17 +392,11 @@ export function TransactionsTable({
 								compact
 								className="text-right font-medium px-2 sm:px-4 h-10 align-middle"
 							>
-								<span
-									className={cn(
-										"transition-colors",
-										transaction.amount < 0 ? "text-red-600" : "text-green-600",
-									)}
-								>
-									{formatValueWithPrivacy(
-										formatCurrency(transaction.amount),
-										isPrivacyMode,
-									)}
-								</span>
+								<CurrencyAmount
+									amount={transaction.amount}
+									showColor
+									className="transition-colors"
+								/>
 							</TableCell>
 							<TableCell
 								compact

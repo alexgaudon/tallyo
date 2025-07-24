@@ -1,18 +1,27 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "@/lib/auth-client";
-import { formatValueWithPrivacy } from "@/lib/utils";
+import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import {
+	ActivityIcon,
+	BarChart3Icon,
 	CreditCardIcon,
 	FolderTreeIcon,
+	PiggyBankIcon,
 	StoreIcon,
 	TagIcon,
+	TrendingDownIcon,
+	TrendingUpIcon,
 } from "lucide-react";
 import type { DashboardStats } from "../../../../server/src/routers";
 
 export function Stats({
 	data,
+	averageIncome,
+	averageExpenses,
 }: {
 	data: DashboardStats | undefined;
+	averageIncome?: number;
+	averageExpenses?: number;
 }) {
 	const { data: session } = useSession();
 	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
@@ -34,10 +43,68 @@ export function Stats({
 
 	const stats = [
 		{
-			title: "Total Transactions",
+			title: "Transactions",
 			value: data.totalTransactions,
 			icon: CreditCardIcon,
 			description: "tracked transactions",
+		},
+
+		{
+			title: "Income",
+			value: data.totalIncome,
+			icon: ({ className }: { className: string }) => {
+				return <TrendingUpIcon className={cn(className, "text-green-500")} />;
+			},
+			description: "of income recorded",
+		},
+		{
+			title: "Expenses",
+			value: data.totalExpenses,
+			icon: ({ className }: { className: string }) => {
+				return <TrendingDownIcon className={cn(className, "text-red-500")} />;
+			},
+			description: "of expenses paid out",
+		},
+		{
+			title: "Savings Rate",
+			value: (() => {
+				// Convert formatted currency strings back to numbers (in cents)
+				const parseCurrencyString = (str: string | number): number => {
+					if (typeof str === "number") return str;
+					// Remove currency symbols, commas, and convert to cents
+					const cleanStr = str.replace(/[$,]/g, "");
+					return Math.round(Number.parseFloat(cleanStr) * 100);
+				};
+
+				const income = parseCurrencyString(data.totalIncome);
+				const expenses = parseCurrencyString(data.totalExpenses);
+
+				const savingsRate =
+					income > 0 ? Math.max(0, (income - expenses) / income) * 100 : 0;
+				return `${Math.round(savingsRate * 10) / 10}%`;
+			})(),
+			icon: ({ className }: { className: string }) => {
+				return <PiggyBankIcon className={cn(className, "text-pink-500")} />;
+			},
+			description: "of income saved",
+		},
+		{
+			title: "Average Income",
+			value:
+				averageIncome !== undefined ? formatCurrency(averageIncome) : "N/A",
+			icon: ({ className }: { className: string }) => {
+				return <ActivityIcon className={cn(className, "text-blue-500")} />;
+			},
+			description: "per month",
+		},
+		{
+			title: "Average Expenses",
+			value:
+				averageExpenses !== undefined ? formatCurrency(averageExpenses) : "N/A",
+			icon: ({ className }: { className: string }) => {
+				return <BarChart3Icon className={cn(className, "text-orange-500")} />;
+			},
+			description: "per month",
 		},
 		{
 			title: "Categories",
@@ -46,25 +113,13 @@ export function Stats({
 			description: "transaction categories",
 		},
 		{
-			title: "Total Expenses",
-			value: data.totalExpenses,
-			icon: CreditCardIcon,
-			description: "of expenses paid",
-		},
-		{
-			title: "Total Income",
-			value: data.totalIncome,
-			icon: CreditCardIcon,
-			description: "of income recorded",
-		},
-		{
 			title: "Merchants",
 			value: data.totalMerchants,
 			icon: StoreIcon,
 			description: "registered merchants",
 		},
 		{
-			title: "Merchant Keywords",
+			title: "Keywords",
 			value: data.totalMerchantKeywords,
 			icon: TagIcon,
 			description: "auto-matching keywords",
@@ -90,7 +145,7 @@ export function Stats({
 								</CardTitle>
 							</div>
 							<div className="space-y-1">
-								<p className="text-base font-bold">
+								<p className="text-base font-mono">
 									{formatValueWithPrivacy(stat.value, isPrivacyMode)}
 								</p>
 								<p className="text-xs text-muted-foreground">

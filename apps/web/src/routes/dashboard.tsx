@@ -37,6 +37,9 @@ export const Route = createFileRoute("/dashboard")({
 					input: defaultDateRange,
 				}),
 			),
+			context.queryClient.prefetchQuery(
+				orpc.dashboard.getAverages.queryOptions(),
+			),
 		]);
 	},
 });
@@ -71,6 +74,12 @@ function RouteComponent() {
 		}),
 	);
 
+	const { data: averagesData, isLoading: isVolatilityLoading } = useQuery(
+		orpc.dashboard.getAverages.queryOptions({
+			placeholderData: (previousData) => previousData,
+		}),
+	);
+
 	return (
 		<div className="min-h-screen bg-background">
 			{/* Header Section */}
@@ -99,7 +108,12 @@ function RouteComponent() {
 			</div>
 
 			<DelayedLoading
-				isLoading={isStatsLoading || isCategoryLoading || isMerchantLoading}
+				isLoading={
+					isStatsLoading ||
+					isCategoryLoading ||
+					isMerchantLoading ||
+					isVolatilityLoading
+				}
 			>
 				{/* Main Content */}
 				<div className="container mx-auto px-4 py-8">
@@ -108,7 +122,11 @@ function RouteComponent() {
 						<div className="flex flex-col flex-1">
 							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
 							<div className="flex-1">
-								<Stats data={statsData} />
+								<Stats
+									data={statsData}
+									averageIncome={averagesData?.averageIncome}
+									averageExpenses={averagesData?.averageExpenses}
+								/>
 							</div>
 						</div>
 						<div className="flex flex-col flex-1">

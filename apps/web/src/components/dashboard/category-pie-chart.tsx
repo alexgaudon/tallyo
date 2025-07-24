@@ -1,6 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useSession } from "@/lib/auth-client";
-import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { TooltipProps } from "recharts";
@@ -44,8 +43,6 @@ function getColorFromCategoryId(categoryId: string): string {
 
 export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
-	const { data: session } = useSession();
-	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
 	const navigate = useNavigate();
 
 	if (!data || data.length === 0) {
@@ -102,10 +99,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">Amount:</span>
 							<span className="font-medium">
-								{formatValueWithPrivacy(
-									formatCurrency(data.value),
-									isPrivacyMode,
-								)}
+								<CurrencyAmount amount={data.value} />
 							</span>
 						</div>
 						<div className="flex justify-between">
@@ -162,12 +156,12 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 										Total Spent
 									</div>
 									<div className="text-xl font-bold">
-										{formatValueWithPrivacy(
-											formatCurrency(
-												chartData.reduce((sum, item) => sum + item.value, 0),
-											),
-											isPrivacyMode,
-										)}
+										<CurrencyAmount
+											amount={chartData.reduce(
+												(sum, item) => sum + item.value,
+												0,
+											)}
+										/>
 									</div>
 								</div>
 							</div>
@@ -205,10 +199,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 								</div>
 								<div className="text-right flex-shrink-0 ml-2">
 									<span className="font-semibold text-sm">
-										{formatValueWithPrivacy(
-											formatCurrency(item.value),
-											isPrivacyMode,
-										)}
+										<CurrencyAmount amount={item.value} />
 									</span>
 								</div>
 							</button>
