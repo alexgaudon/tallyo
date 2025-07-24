@@ -23,7 +23,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
 import { Check, Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -71,6 +71,7 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
 	const { data: session } = useSession();
 	const isDevMode = session?.settings?.isDevMode ?? false;
+	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
 
 	const [localNotes, setLocalNotes] = useState<Record<string, string>>(() =>
 		Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
@@ -397,7 +398,10 @@ export function TransactionsTable({
 										transaction.amount < 0 ? "text-red-600" : "text-green-600",
 									)}
 								>
-									${Math.abs(transaction.amount / 100).toFixed(2)}
+									{formatValueWithPrivacy(
+										formatCurrency(transaction.amount),
+										isPrivacyMode,
+									)}
 								</span>
 							</TableCell>
 							<TableCell

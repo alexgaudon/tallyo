@@ -17,11 +17,17 @@ export function formatValueWithPrivacy(
 	isPrivacyMode: boolean,
 ) {
 	if (isPrivacyMode) {
-		// For privacy mode, show bullet points instead of actual values
-		// Count the number of characters in the value to determine bullet count
+		// Show dollar signs, periods, and commas as their true values; mask all other characters
 		const valueStr = String(value);
-		const bulletCount = Math.min(valueStr.length, 10); // Cap at 10 bullets
-		return "•".repeat(bulletCount);
+		let masked = "";
+		for (const char of valueStr) {
+			if (char === "$" || char === "." || char === ",") {
+				masked += char;
+			} else {
+				masked += "•";
+			}
+		}
+		return masked;
 	}
 	return value;
 }
