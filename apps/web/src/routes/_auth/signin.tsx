@@ -102,7 +102,7 @@ function RouteComponent() {
 							onClick={async () => {
 								await authClient.signIn.social({
 									provider: "discord",
-									callbackURL: "/",
+									callbackURL: from ?? "/",
 								});
 								createCategory({
 									name: "Transfer",
