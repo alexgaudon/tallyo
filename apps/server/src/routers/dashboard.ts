@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
-import { and, count, eq, gte, inArray, lte, sum } from "drizzle-orm";
+import { and, asc, count, eq, gte, inArray, lte, not, sum } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../lib/orpc";
 import { formatCurrency } from "../utils";
@@ -11,6 +11,54 @@ const dateRangeSchema = z.object({
 });
 
 export const dashboardRouter = {
+	getMerchantStats: protectedProcedure
+		.input(dateRangeSchema.optional())
+		.handler(async ({ context, input }) => {
+			const dateRange = input || {};
+			try {
+				const merchantStats = await db
+					.select({
+						merchantId: merchant.id,
+						merchantName: merchant.name,
+						totalAmount: sum(transaction.amount),
+						count: count(),
+					})
+					.from(transaction)
+					.innerJoin(merchant, eq(transaction.merchantId, merchant.id))
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.reviewed, true),
+							eq(category.hideFromInsights, false),
+							eq(transaction.userId, context.session.user.id),
+							not(eq(category.treatAsIncome, true)),
+							...(dateRange.from
+								? [
+										gte(
+											transaction.date,
+											dateRange.from.toISOString().split("T")[0],
+										),
+									]
+								: []),
+							...(dateRange.to
+								? [
+										lte(
+											transaction.date,
+											dateRange.to.toISOString().split("T")[0],
+										),
+									]
+								: []),
+						),
+					)
+					.groupBy(merchant.id, merchant.name, category.name)
+					.orderBy(asc(sum(transaction.amount)))
+					.limit(5);
+				return merchantStats;
+			} catch (error) {
+				console.error("Error fetching merchant stats:", error);
+				throw error;
+			}
+		}),
 	getCategoryData: protectedProcedure
 		.input(dateRangeSchema.optional())
 		.handler(async ({ context, input }) => {

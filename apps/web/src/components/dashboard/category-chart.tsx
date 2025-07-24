@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import type { CategoryData } from "../../../../server/src/routers";
+import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
-export function CategoryChart({ data }: { data: CategoryData }) {
+export function CategoryChart({ data }: { data: DashboardCategoryData }) {
 	if (!data || data.length === 0) {
 		return (
 			<Card>

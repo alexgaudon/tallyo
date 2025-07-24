@@ -25,9 +25,13 @@ export type DashboardStats = InferRouterOutputs<
 	typeof dashboardRouter
 >["getStatsCounts"]["stats"];
 
-export type CategoryData = InferRouterOutputs<
+export type DashboardCategoryData = InferRouterOutputs<
 	typeof dashboardRouter
 >["getCategoryData"];
+
+export type DashboardMerchantStats = InferRouterOutputs<
+	typeof dashboardRouter
+>["getMerchantStats"];
 
 export const appRouter = {
 	healthCheck: publicProcedure.handler(async () => {

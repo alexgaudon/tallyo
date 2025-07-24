@@ -1,4 +1,5 @@
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
+import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
@@ -30,6 +31,11 @@ export const Route = createFileRoute("/dashboard")({
 					input: defaultDateRange,
 				}),
 			),
+			context.queryClient.prefetchQuery(
+				orpc.dashboard.getMerchantStats.queryOptions({
+					input: defaultDateRange,
+				}),
+			),
 		]);
 	},
 });
@@ -50,6 +56,14 @@ function RouteComponent() {
 
 	const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
 		orpc.dashboard.getCategoryData.queryOptions({
+			placeholderData: (previousData) => previousData,
+			input: dateRange,
+			select: (data) => data,
+		}),
+	);
+
+	const { data: merchantData, isLoading: isMerchantLoading } = useQuery(
+		orpc.dashboard.getMerchantStats.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
 			select: (data) => data,
@@ -80,18 +94,26 @@ function RouteComponent() {
 				<DateRangePicker value={dateRange} onRangeChange={setDateRange} />
 			</div>
 
-			<DelayedLoading isLoading={isStatsLoading || isCategoryLoading}>
+			<DelayedLoading
+				isLoading={isStatsLoading || isCategoryLoading || isMerchantLoading}
+			>
 				{/* Main Content */}
 				<div className="container mx-auto px-4 py-8">
-					{/* Stats Section */}
-					<div className="mb-8">
-						<h2 className="text-lg font-semibold mb-4">Overview</h2>
-						<Stats data={statsData} />
+					{/* Stats and Merchants Section */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div className="mb-8">
+							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
+							<Stats data={statsData} />
+						</div>
+						<div className="space-y-4">
+							<h2 className="text-lg font-semibold mb-4">Top Merchants</h2>
+							<MerchantStats data={merchantData} />
+						</div>
 					</div>
 
 					{/* Category Breakdown Section */}
-					<div className="space-y-4">
-						<h2 className="text-lg font-semibold">Category Breakdown</h2>
+					<div className="space-y-4 mt-8">
+						<h2 className="text-lg font-semibold mb-4">Category Breakdown</h2>
 						<CategoryPieChart data={categoryData ?? []} />
 					</div>
 				</div>

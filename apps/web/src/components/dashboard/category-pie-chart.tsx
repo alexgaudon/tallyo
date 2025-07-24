@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSession } from "@/lib/auth-client";
 import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import type { CategoryData } from "../../../../server/src/routers";
+import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
 // Chart colors for different categories
@@ -42,7 +42,7 @@ function getColorFromCategoryId(categoryId: string): string {
 	return chartColors[hash % chartColors.length];
 }
 
-export function CategoryPieChart({ data }: { data: CategoryData }) {
+export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
 	const { data: session } = useSession();
 	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
@@ -51,9 +51,6 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 	if (!data || data.length === 0) {
 		return (
 			<Card>
-				<CardHeader>
-					<CardTitle>Category Breakdown</CardTitle>
-				</CardHeader>
 				<CardContent>
 					<div className="flex flex-col items-center justify-center py-8 text-center">
 						<p className="text-muted-foreground">
@@ -128,9 +125,6 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 
 	return (
 		<Card>
-			<CardHeader>
-				<CardTitle>Category Breakdown</CardTitle>
-			</CardHeader>
 			<CardContent>
 				<div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 					{/* Pie Chart */}
