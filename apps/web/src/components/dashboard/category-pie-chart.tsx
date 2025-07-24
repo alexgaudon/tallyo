@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from "@/lib/auth-client";
 import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -45,6 +46,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 	const [activeIndex, setActiveIndex] = useState<number | null>(null);
 	const { data: session } = useSession();
 	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
+	const navigate = useNavigate();
 
 	if (!data || data.length === 0) {
 		return (
@@ -76,7 +78,15 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 			value: Math.abs(Number(item.amount)),
 			fill: getColorFromCategoryId(item.category.id),
 			count: item.count,
+			categoryId: item.category.id,
 		}));
+
+	const handleCategoryClick = (categoryId: string) => {
+		navigate({
+			to: "/transactions",
+			search: { category: categoryId, page: 1 },
+		});
+	};
 
 	// Custom tooltip component
 	function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
@@ -140,6 +150,12 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 										activeIndex={activeIndex !== null ? [activeIndex] : []}
 										onMouseEnter={(_, index) => setActiveIndex(index)}
 										onMouseLeave={() => setActiveIndex(null)}
+										onClick={(data) => {
+											if (data?.categoryId) {
+												handleCategoryClick(data.categoryId);
+											}
+										}}
+										style={{ cursor: "pointer" }}
 									/>
 									<Tooltip content={<CustomTooltip />} />
 								</PieChart>
@@ -150,13 +166,16 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 					{/* Legend */}
 					<div className="grid grid-cols-2 gap-1.5">
 						{chartData.map((item, index) => (
-							<div
+							<button
 								key={item.name}
+								type="button"
 								className={`flex items-center justify-between p-1.5 rounded-md border ${
 									activeIndex === index
 										? "bg-accent border-accent-foreground/20"
 										: "bg-card hover:bg-accent/50"
-								}`}
+								} cursor-pointer transition-colors text-left`}
+								onClick={() => handleCategoryClick(item.categoryId)}
+								aria-label={`View transactions for ${item.name} category`}
 							>
 								<div className="flex items-center gap-2">
 									<div
@@ -181,7 +200,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 										)}
 									</span>
 								</div>
-							</div>
+							</button>
 						))}
 					</div>
 				</div>
