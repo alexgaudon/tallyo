@@ -173,26 +173,26 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 									activeIndex === index
 										? "bg-accent border-accent-foreground/20"
 										: "bg-card hover:bg-accent/50"
-								} cursor-pointer transition-colors text-left`}
+								} cursor-pointer transition-colors text-left min-w-0`}
 								onClick={() => handleCategoryClick(item.categoryId)}
 								aria-label={`View transactions for ${item.name} category`}
 							>
-								<div className="flex items-center gap-2">
+								<div className="flex items-center gap-2 min-w-0 flex-1">
 									<div
 										className="h-3 w-3 rounded-full flex-shrink-0"
 										style={{ backgroundColor: item.fill }}
 									/>
-									<div className="flex flex-col min-w-0">
+									<div className="flex flex-col min-w-0 flex-1">
 										<span className="font-medium text-xs truncate">
 											{item.name}
 										</span>
-										<span className="text-[10px] text-muted-foreground">
+										<span className="text-[10px] text-muted-foreground truncate">
 											{item.count} transaction
 											{item.count !== 1 ? "s" : ""}
 										</span>
 									</div>
 								</div>
-								<div className="text-right flex-shrink-0">
+								<div className="text-right flex-shrink-0 ml-2">
 									<span className="font-semibold text-sm">
 										{formatValueWithPrivacy(
 											formatCurrency(item.value),
