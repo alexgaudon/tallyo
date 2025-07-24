@@ -31,7 +31,7 @@ export function MerchantStats({
 				<div
 					key={merchant.merchantId}
 					className={cn(
-						"bg-card flex items-center justify-between p-4 hover:bg-muted/50 transition-colors flex-1",
+						"bg-card flex items-center justify-between p-3 hover:bg-muted/50 transition-colors flex-1",
 						{
 							"border-b": index !== data.length - 1,
 						},
@@ -49,7 +49,7 @@ export function MerchantStats({
 						</div>
 					</div>
 					<div className="text-right">
-						<p className="font-bold text-base">
+						<p className="font-bold text-sm">
 							{formatCurrency(Number(merchant.totalAmount))}
 						</p>
 					</div>

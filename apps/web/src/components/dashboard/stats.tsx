@@ -72,25 +72,28 @@ export function Stats({
 	];
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+		<div className="grid gap-3 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 h-full">
 			{stats.map((stat) => {
 				const Icon = stat.icon;
 				return (
-					<Card key={stat.title} className="hover:shadow-md transition-shadow">
-						<CardHeader className="space-y-2">
+					<Card
+						key={stat.title}
+						className="hover:shadow-md transition-shadow flex flex-col"
+					>
+						<CardHeader className="space-y-2 flex-1 flex flex-col justify-center">
 							<div className="flex items-center gap-2">
-								<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+								<div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
 									<Icon className="w-4 h-4 text-primary" />
 								</div>
-								<CardTitle className="text-lg font-semibold">
+								<CardTitle className="text-sm font-semibold">
 									{stat.title}
 								</CardTitle>
 							</div>
 							<div className="space-y-1">
-								<p className="text-2xl font-bold">
+								<p className="text-base font-bold">
 									{formatValueWithPrivacy(stat.value, isPrivacyMode)}
 								</p>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-xs text-muted-foreground">
 									{stat.description}
 								</p>
 							</div>
