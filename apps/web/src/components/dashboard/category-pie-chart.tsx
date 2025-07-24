@@ -132,9 +132,9 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 				<CardTitle>Category Breakdown</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+				<div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 					{/* Pie Chart */}
-					<div className="flex justify-center">
+					<div className="flex justify-center xl:col-span-1">
 						<div className="w-full max-w-[400px] h-[400px] min-h-[300px]">
 							<ResponsiveContainer width="100%" height="100%">
 								<PieChart>
@@ -164,7 +164,7 @@ export function CategoryPieChart({ data }: { data: CategoryData }) {
 					</div>
 
 					{/* Legend */}
-					<div className="grid grid-cols-2 gap-1.5">
+					<div className="xl:col-span-2 grid grid-cols-2 gap-1.5">
 						{chartData.map((item, index) => (
 							<button
 								key={item.name}
