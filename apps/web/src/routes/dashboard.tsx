@@ -101,13 +101,17 @@ function RouteComponent() {
 				<div className="container mx-auto px-4 py-8">
 					{/* Stats and Merchants Section */}
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<div className="mb-8">
+						<div className="flex flex-col">
 							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
-							<Stats data={statsData} />
+							<div className="flex-1">
+								<Stats data={statsData} />
+							</div>
 						</div>
-						<div className="space-y-4">
+						<div className="flex flex-col">
 							<h2 className="text-lg font-semibold mb-4">Top Merchants</h2>
-							<MerchantStats data={merchantData} />
+							<div className="flex-1">
+								<MerchantStats data={merchantData} />
+							</div>
 						</div>
 					</div>
 

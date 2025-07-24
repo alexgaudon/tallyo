@@ -26,11 +26,11 @@ export function MerchantStats({
 	}
 
 	return (
-		<div className="space-y-0 border rounded-lg overflow-hidden">
+		<div className="space-y-0 border rounded-lg overflow-hidden h-full flex flex-col">
 			{data.map((merchant, index) => (
 				<div
 					key={merchant.merchantId}
-					className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
+					className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors flex-1 ${
 						index !== data.length - 1 ? "border-b" : ""
 					}`}
 				>
