@@ -152,10 +152,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 							{/* Center text with total spent */}
 							<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
 								<div className="text-center">
-									<div className="text-sm text-muted-foreground font-medium">
+									<div className="text-xs sm:text-sm text-muted-foreground font-medium">
 										Total Spent
 									</div>
-									<div className="text-xl font-bold">
+									<div className="text-lg sm:text-xl font-bold">
 										<CurrencyAmount
 											amount={chartData.reduce(
 												(sum, item) => sum + item.value,
