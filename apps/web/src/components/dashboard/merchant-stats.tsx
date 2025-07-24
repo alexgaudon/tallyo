@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { StoreIcon } from "lucide-react";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 
@@ -30,9 +30,12 @@ export function MerchantStats({
 			{data.map((merchant, index) => (
 				<div
 					key={merchant.merchantId}
-					className={`flex items-center justify-between p-4 hover:bg-muted/50 transition-colors flex-1 ${
-						index !== data.length - 1 ? "border-b" : ""
-					}`}
+					className={cn(
+						"bg-card flex items-center justify-between p-4 hover:bg-muted/50 transition-colors flex-1",
+						{
+							"border-b": index !== data.length - 1,
+						},
+					)}
 				>
 					<div className="flex items-center gap-3">
 						<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
