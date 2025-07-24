@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
-import { queryClient } from "@/utils/orpc";
+import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import {
 	Link,
 	createFileRoute,
@@ -49,6 +50,10 @@ function RouteComponent() {
 		resolver: zodResolver(signInSchema),
 	});
 
+	const { mutateAsync: createCategory } = useMutation(
+		orpc.categories.createCategory.mutationOptions(),
+	);
+
 	const { from, scope } = Route.useSearch();
 
 	const navigate = useNavigate();
@@ -62,23 +67,12 @@ function RouteComponent() {
 			{
 				onSuccess: (ctx) => {
 					queryClient.invalidateQueries({ queryKey: ["session"] });
-					if (scope === "token") {
-						const authToken = ctx.response.headers.get("set-auth-token");
-						if (authToken && from === "/settings") {
-							navigate({
-								to: "/settings",
-								search: {
-									op: "afterTokenGenerate",
-								},
-							});
-						}
-					} else {
-						setTimeout(() => {
-							navigate({
-								to: from ?? "/",
-							});
-						}, 500);
-					}
+
+					setTimeout(() => {
+						navigate({
+							to: from ?? "/",
+						});
+					}, 500);
 				},
 				onError: (error) => {
 					toast.error(error.error.message);
@@ -109,6 +103,10 @@ function RouteComponent() {
 								await authClient.signIn.social({
 									provider: "discord",
 									callbackURL: "/",
+								});
+								createCategory({
+									name: "Transfer",
+									hideFromInsights: true,
 								});
 							}}
 						>

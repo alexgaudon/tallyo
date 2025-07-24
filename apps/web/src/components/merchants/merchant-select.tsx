@@ -91,6 +91,7 @@ export function MerchantSelect({
 				open={createDialogOpen}
 				onOpenChange={setCreateDialogOpen}
 				onSuccess={handleCreateSuccess}
+				initialKeyword={transactionDetails}
 			/>
 		</>
 	);

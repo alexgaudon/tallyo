@@ -306,8 +306,7 @@ export function TransactionsTable({
 												onValueChange={(merchantId) =>
 													updateMerchant({
 														id: transaction.id,
-														merchantId:
-															merchantId === "__null__" ? null : merchantId,
+														merchantId: merchantId,
 													})
 												}
 												placeholder="Select merchant"
@@ -353,8 +352,7 @@ export function TransactionsTable({
 											onValueChange={(categoryId) =>
 												updateCategory({
 													id: transaction.id,
-													categoryId:
-														categoryId === "__null__" ? null : categoryId,
+													categoryId: categoryId,
 												})
 											}
 											placeholder="Select category"

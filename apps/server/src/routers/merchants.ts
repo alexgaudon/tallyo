@@ -1,5 +1,5 @@
 import { merchant, merchantKeyword, transaction } from "@/db/schema";
-import { and, asc, eq, ilike, or } from "drizzle-orm";
+import { and, asc, eq, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -10,7 +10,7 @@ export async function getMerchantFromVendor(vendor: string, userId: string) {
 		const keyword = await db.query.merchantKeyword.findFirst({
 			where: and(
 				eq(merchantKeyword.userId, userId),
-				ilike(merchantKeyword.keyword, `%${vendor}%`),
+				eq(merchantKeyword.keyword, vendor),
 			),
 			with: {
 				merchant: {
@@ -178,7 +178,7 @@ export const merchantsRouter = {
 				// Update unreviewed transactions that match the keywords with the merchant and recommended category
 				if (keywords && keywords.length > 0) {
 					const keywordConditions = keywords.map((keyword) =>
-						ilike(transaction.transactionDetails, `%${keyword}%`),
+						eq(transaction.transactionDetails, keyword),
 					);
 
 					const updateData: {

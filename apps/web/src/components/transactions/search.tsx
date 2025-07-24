@@ -104,15 +104,14 @@ export function Search() {
 					<MerchantSelect
 						allowNull
 						onValueChange={(value) => {
-							if (value === "__null__") {
+							if (value === null) {
 								updateSearchParams({
 									merchant: undefined,
 									onlyWithoutMerchant: false,
 								});
 							} else {
-								const merchantValue: string = value as unknown as string;
 								updateSearchParams({
-									merchant: merchantValue,
+									merchant: value,
 									onlyWithoutMerchant: false,
 								});
 							}
@@ -123,7 +122,7 @@ export function Search() {
 					<CategorySelect
 						allowNull
 						onValueChange={(value) => {
-							if (value === "__null__") {
+							if (value === null) {
 								updateSearchParams({
 									category: undefined,
 								});
@@ -150,15 +149,14 @@ export function Search() {
 				<MerchantSelect
 					allowNull
 					onValueChange={(value) => {
-						if (value === "__null__") {
+						if (value === null) {
 							updateSearchParams({
 								merchant: undefined,
 								onlyWithoutMerchant: false,
 							});
 						} else {
-							const merchantValue: string = value as unknown as string;
 							updateSearchParams({
-								merchant: merchantValue,
+								merchant: value,
 								onlyWithoutMerchant: false,
 							});
 						}
@@ -169,7 +167,7 @@ export function Search() {
 				<CategorySelect
 					allowNull
 					onValueChange={(value) => {
-						if (value === "__null__") {
+						if (value === null) {
 							updateSearchParams({
 								category: undefined,
 							});

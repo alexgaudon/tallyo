@@ -97,11 +97,14 @@ const handleKeywordRemoval = async (
 
 	if (!currentMerchant) return;
 
-	const matchingKeyword = currentMerchant.keywords.find(
-		(keyword) => keyword.keyword === currentTransaction.transactionDetails,
+	// Look for keywords that match the transaction details (case-insensitive)
+	const matchingKeywords = currentMerchant.keywords.filter(
+		(keyword) =>
+			keyword.keyword.toLowerCase() ===
+			currentTransaction.transactionDetails.toLowerCase(),
 	);
 
-	if (matchingKeyword) {
+	for (const matchingKeyword of matchingKeywords) {
 		logger.info(
 			`Removing keyword "${matchingKeyword.keyword}" from merchant ${currentMerchant.name}`,
 			{ keyword: matchingKeyword.keyword, merchantId: currentMerchant.id },
@@ -348,6 +351,14 @@ export const transactionsRouter = {
 						"updating transaction merchant",
 						context.session?.user?.id,
 					);
+
+					if (input.merchantId) {
+						await handleKeywordAddition(
+							currentTransaction,
+							input.merchantId,
+							context.session?.user?.id,
+						);
+					}
 
 					return { transaction: updatedTransaction };
 				},

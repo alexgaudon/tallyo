@@ -11,12 +11,14 @@ interface CreateMerchantDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	onSuccess?: (merchantId: string) => void;
+	initialKeyword?: string;
 }
 
 export function CreateMerchantDialog({
 	open,
 	onOpenChange,
 	onSuccess,
+	initialKeyword,
 }: CreateMerchantDialogProps) {
 	const handleSuccess = (merchantId?: string) => {
 		onOpenChange(false);
@@ -34,7 +36,10 @@ export function CreateMerchantDialog({
 						Create a new merchant with optional keywords and category.
 					</DialogDescription>
 				</DialogHeader>
-				<MerchantForm callback={handleSuccess} />
+				<MerchantForm
+					callback={handleSuccess}
+					initialKeyword={initialKeyword}
+				/>
 			</DialogContent>
 		</Dialog>
 	);

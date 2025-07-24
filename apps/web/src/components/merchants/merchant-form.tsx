@@ -20,7 +20,7 @@ import { CategorySelect } from "../categories/category-select";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	recommendedCategoryId: z.string().optional(),
+	recommendedCategoryId: z.string().nullable().optional(),
 	keywords: z.array(z.string()),
 });
 
@@ -29,18 +29,25 @@ type FormValues = z.infer<typeof formSchema>;
 interface MerchantFormProps {
 	merchant?: MerchantWithKeywordsAndCategory;
 	callback?: (merchantId?: string) => void;
+	initialKeyword?: string;
 }
 
-export function MerchantForm({ merchant, callback }: MerchantFormProps) {
+export function MerchantForm({
+	merchant,
+	callback,
+	initialKeyword,
+}: MerchantFormProps) {
 	const form = useForm<FormValues>({
 		defaultValues: {
 			name: merchant?.name ?? "",
-			recommendedCategoryId: merchant?.recommendedCategoryId ?? undefined,
+			recommendedCategoryId: merchant?.recommendedCategoryId ?? null,
 			keywords: merchant?.keywords
 				? Array.isArray(merchant.keywords)
 					? merchant.keywords.map((k) => k.keyword)
 					: []
-				: [],
+				: initialKeyword
+					? [initialKeyword]
+					: [],
 		},
 		resolver: zodResolver(formSchema),
 	});
@@ -71,9 +78,10 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 				const result = await updateMerchant({
 					id: merchant.id,
 					name: values.name,
-					...(values.recommendedCategoryId && {
-						recommendedCategoryId: values.recommendedCategoryId,
-					}),
+					...(values.recommendedCategoryId &&
+						values.recommendedCategoryId !== null && {
+							recommendedCategoryId: values.recommendedCategoryId,
+						}),
 					keywords: values.keywords,
 				});
 
@@ -82,9 +90,10 @@ export function MerchantForm({ merchant, callback }: MerchantFormProps) {
 			} else {
 				const result = await createMerchant({
 					name: values.name,
-					...(values.recommendedCategoryId && {
-						recommendedCategoryId: values.recommendedCategoryId,
-					}),
+					...(values.recommendedCategoryId &&
+						values.recommendedCategoryId !== null && {
+							recommendedCategoryId: values.recommendedCategoryId,
+						}),
 					keywords: values.keywords,
 				});
 

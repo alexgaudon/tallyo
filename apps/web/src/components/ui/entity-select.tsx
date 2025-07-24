@@ -85,7 +85,7 @@ export function EntitySelect<T extends Entity>({
 	actionButtons = [],
 	showActionButtons = false,
 	// New props for popover width
-	popoverWidth = "w-[300px]",
+	popoverWidth = "w-[400px]",
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const selectedEntity = value
@@ -100,13 +100,13 @@ export function EntitySelect<T extends Entity>({
 					aria-haspopup="listbox"
 					aria-expanded={open}
 					className={cn(
-						"w-full max-w-[200px] h-9 justify-between gap-2 text-sm",
+						"w-full h-9 justify-between gap-2 text-sm",
 						!value && "text-muted-foreground",
 						className,
 					)}
 					disabled={disabled}
 				>
-					<div className="flex-1 min-w-0">
+					<div className="flex-1 min-w-0 truncate">
 						{selectedEntity ? formatEntity(selectedEntity) : placeholder}
 					</div>
 					<ChevronsUpDownIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
@@ -133,7 +133,9 @@ export function EntitySelect<T extends Entity>({
 										className="flex items-center gap-2 h-9 text-sm text-blue-600 hover:text-blue-700"
 									>
 										<PlusIcon className="h-3.5 w-3.5 shrink-0" />
-										<div className="flex-1 min-w-0">{createOptionLabel}</div>
+										<div className="flex-1 min-w-0 break-words">
+											{createOptionLabel}
+										</div>
 									</CommandItem>
 								)}
 
@@ -153,7 +155,9 @@ export function EntitySelect<T extends Entity>({
 												value === entity.id ? "opacity-100" : "opacity-0",
 											)}
 										/>
-										<div className="flex-1 min-w-0">{formatEntity(entity)}</div>
+										<div className="flex-1 min-w-0 break-words">
+											{formatEntity(entity)}
+										</div>
 									</CommandItem>
 								))}
 							</CommandGroup>

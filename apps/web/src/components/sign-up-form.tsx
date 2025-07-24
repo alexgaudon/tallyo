@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/auth-client";
-import { queryClient } from "@/utils/orpc";
+import { orpc, queryClient } from "@/utils/orpc";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod/v4";
@@ -18,6 +19,9 @@ export default function SignUpForm({
 }) {
 	const navigate = useNavigate();
 	const { isPending } = authClient.useSession();
+	const { mutateAsync: createCategory } = useMutation(
+		orpc.categories.createCategory.mutationOptions(),
+	);
 
 	const form = useForm({
 		defaultValues: {
@@ -35,10 +39,20 @@ export default function SignUpForm({
 				{
 					onSuccess: () => {
 						queryClient.invalidateQueries({ queryKey: ["session"] });
-						toast.success("Sign up successful");
-						navigate({
-							to: from ?? "/dashboard",
-						});
+						createCategory({
+							name: "Transfer",
+							hideFromInsights: true,
+						})
+							.then(() => {
+								console.log("created category");
+								toast.success("Sign up successful");
+								navigate({
+									to: from ?? "/dashboard",
+								});
+							})
+							.catch((error) => {
+								toast.error(error.error.message);
+							});
 					},
 					onError: (error) => {
 						toast.error(error.error.message);
