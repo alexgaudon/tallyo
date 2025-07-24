@@ -127,37 +127,35 @@ export function Stats({
 	];
 
 	return (
-		<div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 h-full">
-			{stats
-				.filter((stat) => !stat.hidden)
-				.map((stat) => {
-					const Icon = stat.icon;
-					return (
-						<Card
-							key={stat.title}
-							className="hover:shadow-md transition-shadow flex flex-col"
-						>
-							<CardHeader className="space-y-2 flex-1 flex flex-col justify-center p-3 sm:p-4">
-								<div className="flex items-center gap-2">
-									<div className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary/10">
-										<Icon className="w-3 h-3 text-primary" />
-									</div>
-									<CardTitle className="text-xs sm:text-sm font-semibold">
-										{stat.title}
-									</CardTitle>
+		<div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-3 h-full">
+			{stats.map((stat) => {
+				const Icon = stat.icon;
+				return (
+					<Card
+						key={stat.title}
+						className="hover:shadow-md transition-shadow flex flex-col"
+					>
+						<CardHeader className="space-y-2 flex-1 flex flex-col justify-center p-3">
+							<div className="flex items-center gap-2">
+								<div className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary/10">
+									<Icon className="w-3 h-3 text-primary" />
 								</div>
-								<div className="space-y-1">
-									<p className="text-sm sm:text-base font-mono">
-										{formatValueWithPrivacy(stat.value, isPrivacyMode)}
-									</p>
-									<p className="text-xs text-muted-foreground">
-										{stat.description}
-									</p>
-								</div>
-							</CardHeader>
-						</Card>
-					);
-				})}
+								<CardTitle className="text-xs font-semibold">
+									{stat.title}
+								</CardTitle>
+							</div>
+							<div className="space-y-1">
+								<p className="text-sm font-mono">
+									{formatValueWithPrivacy(stat.value, isPrivacyMode)}
+								</p>
+								<p className="text-xs text-muted-foreground">
+									{stat.description}
+								</p>
+							</div>
+						</CardHeader>
+					</Card>
+				);
+			})}
 		</div>
 	);
 }
