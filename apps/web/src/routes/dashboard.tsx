@@ -3,6 +3,7 @@ import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
+import { PrivacyModeToggle } from "@/components/settings/privacy-mode-toggle";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
@@ -86,6 +87,9 @@ function RouteComponent() {
 									Overview of your financial activity
 								</p>
 							</div>
+						</div>
+						<div className="flex items-center gap-2">
+							<PrivacyModeToggle />
 						</div>
 					</div>
 				</div>

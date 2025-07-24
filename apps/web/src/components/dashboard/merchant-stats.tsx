@@ -1,4 +1,5 @@
-import { cn, formatCurrency } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import { StoreIcon } from "lucide-react";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 
@@ -7,6 +8,9 @@ export function MerchantStats({
 }: {
 	data: DashboardMerchantStats | undefined;
 }) {
+	const { data: session } = useSession();
+	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
+
 	if (!data || data.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-12 text-center">
@@ -50,7 +54,10 @@ export function MerchantStats({
 					</div>
 					<div className="text-right">
 						<p className="font-bold text-sm">
-							{formatCurrency(Number(merchant.totalAmount))}
+							{formatValueWithPrivacy(
+								formatCurrency(Number(merchant.totalAmount)),
+								isPrivacyMode,
+							)}
 						</p>
 					</div>
 				</div>

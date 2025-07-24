@@ -129,7 +129,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 				<div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 					{/* Pie Chart */}
 					<div className="flex justify-center xl:col-span-1">
-						<div className="w-full max-w-[400px] h-[400px] min-h-[300px]">
+						<div className="w-full max-w-[400px] h-[400px] min-h-[300px] relative">
 							<ResponsiveContainer width="100%" height="100%">
 								<PieChart>
 									<Pie
@@ -139,7 +139,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 										cx="50%"
 										cy="50%"
 										outerRadius="80%"
-										innerRadius="20%"
+										innerRadius="35%"
 										fill="#8884d8"
 										activeIndex={activeIndex !== null ? [activeIndex] : []}
 										onMouseEnter={(_, index) => setActiveIndex(index)}
@@ -154,6 +154,23 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 									<Tooltip content={<CustomTooltip />} />
 								</PieChart>
 							</ResponsiveContainer>
+
+							{/* Center text with total spent */}
+							<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+								<div className="text-center">
+									<div className="text-sm text-muted-foreground font-medium">
+										Total Spent
+									</div>
+									<div className="text-xl font-bold">
+										{formatValueWithPrivacy(
+											formatCurrency(
+												chartData.reduce((sum, item) => sum + item.value, 0),
+											),
+											isPrivacyMode,
+										)}
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
