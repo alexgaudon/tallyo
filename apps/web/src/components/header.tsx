@@ -251,7 +251,9 @@ function UserDropdown({
 							fetchOptions: {
 								onSuccess: () => {
 									queryClient.invalidateQueries({ queryKey: ["session"] });
-									navigate({ to: "/" });
+									setTimeout(() => {
+										navigate({ to: "/" });
+									}, 500);
 								},
 							},
 						});
