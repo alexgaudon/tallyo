@@ -144,42 +144,6 @@ function HomeComponent() {
 				</div>
 			</section>
 
-			{/* Features Section */}
-			<section className="container mx-auto px-4 py-20">
-				<div className="text-center mb-16">
-					<h2 className="text-3xl md:text-4xl font-bold mb-4">
-						Powerful Features for Financial Mastery
-					</h2>
-					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-						Everything you need to take control of your finances, from
-						transaction tracking to advanced analytics.
-					</p>
-				</div>
-
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-					{features.map((feature) => (
-						<Card
-							key={feature.title}
-							className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-						>
-							<CardHeader>
-								<div
-									className={`w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}
-								>
-									{feature.icon}
-								</div>
-								<CardTitle className="text-xl">{feature.title}</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<CardDescription className="text-base leading-relaxed">
-									{feature.description}
-								</CardDescription>
-							</CardContent>
-						</Card>
-					))}
-				</div>
-			</section>
-
 			{/* Dashboard Preview Section */}
 			<section className="container mx-auto px-4 py-20">
 				<div className="text-center mb-16">
@@ -204,16 +168,16 @@ function HomeComponent() {
 							<Stats
 								data={{
 									stats: {
-										totalTransactions: 100,
-										totalIncome: 5215 * 100,
-										totalExpenses: 3180 * 100,
+										totalTransactions: 48,
+										totalIncome: 329500,
+										totalExpenses: 179581,
 										totalCategories: 10,
-										totalMerchants: 10,
-										totalMerchantKeywords: 10,
+										totalMerchants: 8,
+										totalMerchantKeywords: 23,
 									},
 									averages: {
-										averageIncome: 5215 * 100,
-										averageExpenses: 3180 * 100,
+										averageIncome: 329500,
+										averageExpenses: 179581,
 									},
 								}}
 							/>
@@ -230,6 +194,22 @@ function HomeComponent() {
 						<CardContent>
 							<CategoryPieChart
 								data={[
+									{
+										amount: "-85075",
+										count: 15,
+										category: {
+											id: "cat-0",
+											name: "Housing",
+											userId: "user-1",
+											parentCategoryId: null,
+											icon: "💰",
+											treatAsIncome: false,
+											hideFromInsights: false,
+											createdAt: new Date("2024-01-01"),
+											updatedAt: new Date("2024-01-01"),
+											parentCategory: null,
+										},
+									},
 									{
 										amount: "-12500.75",
 										count: 15,
@@ -311,11 +291,11 @@ function HomeComponent() {
 										},
 									},
 									{
-										amount: "-31200.00",
+										amount: "-12500.00",
 										count: 3,
 										category: {
 											id: "cat-6",
-											name: "Healthcare",
+											name: "Health & Fitness",
 											userId: "user-1",
 											parentCategoryId: null,
 											icon: "🏥",
@@ -330,6 +310,42 @@ function HomeComponent() {
 							/>
 						</CardContent>
 					</Card>
+				</div>
+			</section>
+
+			{/* Features Section */}
+			<section className="container mx-auto px-4 py-20">
+				<div className="text-center mb-16">
+					<h2 className="text-3xl md:text-4xl font-bold mb-4">
+						Powerful Features for Financial Mastery
+					</h2>
+					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+						Everything you need to take control of your finances, from
+						transaction tracking to advanced analytics.
+					</p>
+				</div>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					{features.map((feature) => (
+						<Card
+							key={feature.title}
+							className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+						>
+							<CardHeader>
+								<div
+									className={`w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}
+								>
+									{feature.icon}
+								</div>
+								<CardTitle className="text-xl">{feature.title}</CardTitle>
+							</CardHeader>
+							<CardContent>
+								<CardDescription className="text-base leading-relaxed">
+									{feature.description}
+								</CardDescription>
+							</CardContent>
+						</Card>
+					))}
 				</div>
 			</section>
 
