@@ -147,98 +147,49 @@ app.post("/api/transactions", async (c) => {
 
 		const { transactions } = validationResult.data;
 
-		// Import the transaction creation logic
+		console.log("Transaction Count:", transactions.length);
 		const { getMerchantFromVendor } = await import("./routers/merchants");
 		const { transaction } = await import("./db/schema");
 		const { db } = await import("./db");
 
-		const createdTransactions = [];
-		const errors = [];
+		for (const newTransaction of transactions) {
+			console.log(newTransaction);
+			const merchant = await getMerchantFromVendor(
+				newTransaction.transactionDetails,
+				userId,
+			);
 
-		// Process each transaction
-		for (const transactionData of transactions) {
+			const newTransactionData = {
+				...newTransaction,
+				merchantId: merchant?.id,
+				categoryId: merchant?.recommendedCategoryId,
+				userId: userId,
+				date: new Date(newTransaction.date).toISOString().split("T")[0],
+			};
+
 			try {
-				// Validate date
-				const date = new Date(transactionData.date);
-				if (Number.isNaN(date.getTime())) {
-					errors.push({
-						transaction: transactionData,
-						error: "Invalid date format",
-					});
-					continue;
-				}
-
-				// Get merchant from vendor name
-				const merchantRecord = await getMerchantFromVendor(
-					transactionData.transactionDetails,
-					userId,
-				);
-
-				// Create the transaction
-				const newTransaction = await db
+				const res = await db
 					.insert(transaction)
-					.values({
-						userId: userId,
-						amount: transactionData.amount,
-						date: date.toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
-						transactionDetails: transactionData.transactionDetails,
-						merchantId: transactionData.merchantId || merchantRecord?.id,
-						categoryId:
-							transactionData.categoryId ||
-							merchantRecord?.recommendedCategoryId,
-						notes: transactionData.notes,
-						externalId: transactionData.externalId,
-					})
-					.returning();
+					.values(newTransactionData)
+					.onConflictDoNothing();
 
-				if (!newTransaction || newTransaction.length === 0) {
-					errors.push({
-						transaction: transactionData,
-						error: "Failed to create transaction",
-					});
-					continue;
-				}
+				console.log(newTransactionData);
 
-				// Fetch the created transaction with relations
-				const { eq } = await import("drizzle-orm");
-				const createdTransaction = await db.query.transaction.findFirst({
-					where: eq(transaction.id, newTransaction[0].id),
-					with: {
-						merchant: true,
-						category: {
-							with: {
-								parentCategory: true,
-							},
-						},
+				console.log(res);
+			} catch (error) {
+				console.error(error);
+				logger.error("Error inserting transaction", {
+					error,
+					metadata: {
+						transaction: newTransactionData,
 					},
 				});
-
-				createdTransactions.push(createdTransaction);
-
-				logger.info(`Transaction created successfully for user ${userId}`, {
-					transactionId: newTransaction[0].id,
-					amount: transactionData.amount,
-				});
-			} catch (error) {
-				errors.push({
-					transaction: transactionData,
-					error: error instanceof Error ? error.message : "Unknown error",
-				});
-
-				console.error(error);
 			}
 		}
 
-		// Return results
-		const response = {
-			success: createdTransactions.length > 0,
-			created: createdTransactions,
-			errors: errors.length > 0 ? errors : undefined,
-		};
-
-		const statusCode = createdTransactions.length > 0 ? 201 : 400;
-
-		return c.json(response, statusCode);
+		return c.json({
+			message: "Transactions received",
+		});
 	} catch (error) {
 		logger.error("API transaction creation failed", {
 			error,
