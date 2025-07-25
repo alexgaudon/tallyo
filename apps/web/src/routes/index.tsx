@@ -95,6 +95,13 @@ function HomeComponent() {
 				"RESTful API for seamless integration with your existing financial tools and automated transaction imports.",
 			color: "text-yellow-600",
 		},
+		{
+			icon: <TrendingUp className="h-6 w-6" />,
+			title: "Savings Rate Tracking",
+			description:
+				"Monitor your savings rate over time and visualize your progress toward financial goals with clear, actionable insights.",
+			color: "text-teal-600",
+		},
 	];
 
 	return (

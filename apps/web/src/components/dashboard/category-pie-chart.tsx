@@ -93,7 +93,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 			const percentage = ((data.value / total) * 100).toFixed(1);
 
 			return (
-				<div className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2">
+				<div
+					className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2"
+					style={{ zIndex: 9999, position: "relative" }}
+				>
 					<div className="font-semibold text-sm">{data.name}</div>
 					<div className="space-y-1 text-xs">
 						<div className="flex justify-between">
@@ -120,10 +123,16 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 	return (
 		<Card>
 			<CardContent>
-				<div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+				<div
+					className="grid grid-cols-1 xl:grid-cols-3 gap-4"
+					style={{ position: "relative" }}
+				>
 					{/* Pie Chart */}
 					<div className="flex justify-center xl:col-span-1">
-						<div className="w-full max-w-[400px] h-[400px] min-h-[300px] relative">
+						<div
+							className="w-full max-w-[400px] h-[400px] min-h-[300px] relative"
+							style={{ position: "relative", zIndex: 1 }}
+						>
 							<ResponsiveContainer width="100%" height="100%">
 								<PieChart>
 									<Pie
@@ -150,7 +159,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 							</ResponsiveContainer>
 
 							{/* Center text with total spent */}
-							<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+							<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
 								<div className="text-center">
 									<div className="text-xs text-muted-foreground font-medium">
 										Total Spent
