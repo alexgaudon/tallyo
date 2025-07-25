@@ -1,6 +1,5 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { useSession } from "@/lib/auth-client";
-import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
 	ActivityIcon,
 	BarChart3Icon,
@@ -13,19 +12,14 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import type { DashboardStats } from "../../../../server/src/routers";
+import { CurrencyAmount } from "../ui/currency-amount";
+import { StatDisplay } from "../ui/stat-display";
 
 export function Stats({
 	data,
-	averageIncome,
-	averageExpenses,
 }: {
 	data: DashboardStats | undefined;
-	averageIncome?: number;
-	averageExpenses?: number;
 }) {
-	const { data: session } = useSession();
-	const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
-
 	if (!data) {
 		return (
 			<div className="flex flex-col items-center justify-center py-12 text-center">
@@ -44,13 +38,13 @@ export function Stats({
 	const stats = [
 		{
 			title: "Transactions",
-			value: data.totalTransactions,
+			display: <StatDisplay animate value={data.stats.totalTransactions} />,
 			icon: CreditCardIcon,
 			description: "tracked transactions",
 		},
 		{
 			title: "Income",
-			value: data.totalIncome,
+			display: <CurrencyAmount animate amount={data.stats.totalIncome} />,
 			icon: ({ className }: { className: string }) => {
 				return <TrendingUpIcon className={cn(className, "text-green-500")} />;
 			},
@@ -58,7 +52,7 @@ export function Stats({
 		},
 		{
 			title: "Expenses",
-			value: data.totalExpenses,
+			display: <CurrencyAmount animate amount={data.stats.totalExpenses} />,
 			icon: ({ className }: { className: string }) => {
 				return <TrendingDownIcon className={cn(className, "text-red-500")} />;
 			},
@@ -66,21 +60,20 @@ export function Stats({
 		},
 		{
 			title: "Savings Rate",
-			value: (() => {
-				// Convert formatted currency strings back to numbers (in cents)
-				const parseCurrencyString = (str: string | number): number => {
-					if (typeof str === "number") return str;
-					// Remove currency symbols, commas, and convert to cents
-					const cleanStr = str.replace(/[$,]/g, "");
-					return Math.round(Number.parseFloat(cleanStr) * 100);
-				};
-
-				const income = parseCurrencyString(data.totalIncome);
-				const expenses = parseCurrencyString(data.totalExpenses);
-
+			display: (() => {
+				const income = Math.abs(data.stats.totalIncome);
+				const expenses = Math.abs(data.stats.totalExpenses);
 				const savingsRate =
-					income > 0 ? Math.max(0, (income - expenses) / income) * 100 : 0;
-				return `${Math.round(savingsRate * 10) / 10}%`;
+					income + expenses === 0 ? 0 : (income - expenses) / income;
+
+				const displaySavingsRate = savingsRate > 0 ? savingsRate : 0;
+
+				return (
+					<div className="flex items-center gap-1">
+						<StatDisplay animate value={Math.round(displaySavingsRate * 100)} />
+						<span className="text-xs text-muted-foreground">%</span>
+					</div>
+				);
 			})(),
 			icon: ({ className }: { className: string }) => {
 				return <PiggyBankIcon className={cn(className, "text-pink-500")} />;
@@ -89,8 +82,7 @@ export function Stats({
 		},
 		{
 			title: "Average Income",
-			value:
-				averageIncome !== undefined ? formatCurrency(averageIncome) : "N/A",
+			display: <CurrencyAmount animate amount={data.averages.averageIncome} />,
 			icon: ({ className }: { className: string }) => {
 				return <ActivityIcon className={cn(className, "text-blue-500")} />;
 			},
@@ -98,8 +90,9 @@ export function Stats({
 		},
 		{
 			title: "Average Expenses",
-			value:
-				averageExpenses !== undefined ? formatCurrency(averageExpenses) : "N/A",
+			display: (
+				<CurrencyAmount animate amount={data.averages.averageExpenses} />
+			),
 			icon: ({ className }: { className: string }) => {
 				return <BarChart3Icon className={cn(className, "text-orange-500")} />;
 			},
@@ -107,19 +100,19 @@ export function Stats({
 		},
 		{
 			title: "Categories",
-			value: data.totalCategories,
+			display: <StatDisplay animate value={data.stats.totalCategories} />,
 			icon: FolderTreeIcon,
 			description: "transaction categories",
 		},
 		{
 			title: "Merchants",
-			value: data.totalMerchants,
+			display: <StatDisplay animate value={data.stats.totalMerchants} />,
 			icon: StoreIcon,
 			description: "registered merchants",
 		},
 		{
 			title: "Keywords",
-			value: data.totalMerchantKeywords,
+			display: <StatDisplay animate value={data.stats.totalMerchantKeywords} />,
 			icon: TagIcon,
 			description: "auto-matching keywords",
 			hidden: true,
@@ -145,9 +138,7 @@ export function Stats({
 								</CardTitle>
 							</div>
 							<div className="space-y-1">
-								<p className="text-sm font-mono">
-									{formatValueWithPrivacy(stat.value, isPrivacyMode)}
-								</p>
+								{stat.display}
 								<p className="text-xs text-muted-foreground">
 									{stat.description}
 								</p>

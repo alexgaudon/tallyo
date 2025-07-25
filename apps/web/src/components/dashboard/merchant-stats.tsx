@@ -51,7 +51,7 @@ export function MerchantStats({
 					</div>
 					<div className="text-right">
 						<p className="font-bold text-sm">
-							<CurrencyAmount amount={Number(merchant.totalAmount)} />
+							<CurrencyAmount animate amount={Number(merchant.totalAmount)} />
 						</p>
 					</div>
 				</div>

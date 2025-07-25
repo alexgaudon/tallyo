@@ -196,15 +196,19 @@ function HomeComponent() {
 						<CardContent className="space-y-4">
 							<Stats
 								data={{
-									totalTransactions: 100,
-									totalIncome: "$5,215.53",
-									totalExpenses: "$3,188.90",
-									totalCategories: 10,
-									totalMerchants: 10,
-									totalMerchantKeywords: 10,
+									stats: {
+										totalTransactions: 100,
+										totalIncome: 5215 * 100,
+										totalExpenses: 3180 * 100,
+										totalCategories: 10,
+										totalMerchants: 10,
+										totalMerchantKeywords: 10,
+									},
+									averages: {
+										averageIncome: 5215 * 100,
+										averageExpenses: 3180 * 100,
+									},
 								}}
-								averageIncome={5215 * 100}
-								averageExpenses={3180 * 100}
 							/>
 						</CardContent>
 					</Card>

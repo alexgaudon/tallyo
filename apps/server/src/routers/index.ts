@@ -23,7 +23,7 @@ export type Transaction = InferRouterOutputs<
 
 export type DashboardStats = InferRouterOutputs<
 	typeof dashboardRouter
->["getStatsCounts"]["stats"];
+>["getStatsCounts"];
 
 export type DashboardCategoryData = InferRouterOutputs<
 	typeof dashboardRouter

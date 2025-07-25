@@ -1,6 +1,7 @@
 import { useSession } from "@/lib/auth-client";
 import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 interface CurrencyAmountProps {
 	/**
@@ -27,6 +28,14 @@ interface CurrencyAmountProps {
 	 * Override privacy mode setting (useful for testing or specific use cases)
 	 */
 	forcePrivacyMode?: boolean;
+	/**
+	 * Whether to animate the value on first render
+	 */
+	animate?: boolean;
+	/**
+	 * Duration of the animation in milliseconds
+	 */
+	animationDuration?: number;
 }
 
 /**
@@ -37,6 +46,7 @@ interface CurrencyAmountProps {
  * <CurrencyAmount amount={1500} /> // Shows "$15.00" or "••••••" in privacy mode
  * <CurrencyAmount amount={-2500} showColor /> // Shows "-$25.00" in red
  * <CurrencyAmount amount={1000} className="text-lg font-bold" />
+ * <CurrencyAmount amount={1000} animate /> // Animates from 0 to $10.00
  * ```
  */
 export function CurrencyAmount({
@@ -46,20 +56,58 @@ export function CurrencyAmount({
 	showColor = false,
 	as,
 	forcePrivacyMode,
+	animate = false,
+	animationDuration = 1000,
 }: CurrencyAmountProps) {
 	const { data: session } = useSession();
 	const isPrivacyMode =
 		forcePrivacyMode ?? session?.settings?.isPrivacyMode ?? false;
 
-	const formattedAmount = formatCurrency(amount, currency);
+	const [animatedAmount, setAnimatedAmount] = useState(animate ? 0 : amount);
+	const [isAnimating, setIsAnimating] = useState(animate);
+
+	useEffect(() => {
+		if (!animate) {
+			setAnimatedAmount(amount);
+			return;
+		}
+
+		setIsAnimating(true);
+		setAnimatedAmount(0);
+
+		const startTime = Date.now();
+		const targetAmount = amount;
+
+		const animateValue = () => {
+			const elapsed = Date.now() - startTime;
+			const progress = Math.min(elapsed / animationDuration, 1);
+
+			// Easing function for smooth animation
+			const easeOutQuart = 1 - (1 - progress) ** 16;
+			const currentAmount = Math.round(targetAmount * easeOutQuart);
+
+			setAnimatedAmount(currentAmount);
+
+			if (progress < 1) {
+				requestAnimationFrame(animateValue);
+			} else {
+				setIsAnimating(false);
+			}
+		};
+
+		requestAnimationFrame(animateValue);
+	}, [amount, animate, animationDuration]);
+
+	const formattedAmount = formatCurrency(animatedAmount, currency);
 	const displayValue = formatValueWithPrivacy(formattedAmount, isPrivacyMode);
 
 	const content = (
 		<span
 			className={cn(
 				"font-mono",
-				showColor && amount < 0 && "text-red-600",
-				showColor && amount > 0 && "text-green-600",
+				showColor && animatedAmount < 0 && "text-red-600",
+				showColor && animatedAmount > 0 && "text-green-600",
+				isAnimating && "transition-all duration-75 ease-out",
 				className,
 			)}
 		>

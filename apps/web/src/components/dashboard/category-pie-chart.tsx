@@ -157,6 +157,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 									</div>
 									<div className="text-base font-bold">
 										<CurrencyAmount
+											animate
 											amount={chartData.reduce(
 												(sum, item) => sum + item.value,
 												0,
@@ -199,7 +200,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 								</div>
 								<div className="text-right flex-shrink-0 ml-2">
 									<span className="font-semibold text-sm">
-										<CurrencyAmount amount={item.value} />
+										<CurrencyAmount animate amount={item.value} />
 									</span>
 								</div>
 							</button>

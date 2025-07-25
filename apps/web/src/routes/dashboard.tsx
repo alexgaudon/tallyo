@@ -37,9 +37,6 @@ export const Route = createFileRoute("/dashboard")({
 					input: defaultDateRange,
 				}),
 			),
-			context.queryClient.prefetchQuery(
-				orpc.dashboard.getAverages.queryOptions(),
-			),
 		]);
 	},
 });
@@ -54,7 +51,6 @@ function RouteComponent() {
 		orpc.dashboard.getStatsCounts.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
-			select: (data) => data.stats,
 		}),
 	);
 
@@ -62,7 +58,6 @@ function RouteComponent() {
 		orpc.dashboard.getCategoryData.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
-			select: (data) => data,
 		}),
 	);
 
@@ -70,13 +65,6 @@ function RouteComponent() {
 		orpc.dashboard.getMerchantStats.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
-			select: (data) => data,
-		}),
-	);
-
-	const { data: averagesData, isLoading: isVolatilityLoading } = useQuery(
-		orpc.dashboard.getAverages.queryOptions({
-			placeholderData: (previousData) => previousData,
 		}),
 	);
 
@@ -108,12 +96,7 @@ function RouteComponent() {
 			</div>
 
 			<DelayedLoading
-				isLoading={
-					isStatsLoading ||
-					isCategoryLoading ||
-					isMerchantLoading ||
-					isVolatilityLoading
-				}
+				isLoading={isStatsLoading || isCategoryLoading || isMerchantLoading}
 			>
 				{/* Main Content */}
 				<div className="container mx-auto px-4 py-8">
@@ -122,11 +105,7 @@ function RouteComponent() {
 						<div className="flex flex-col flex-1">
 							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
 							<div className="flex-1">
-								<Stats
-									data={statsData}
-									averageIncome={averagesData?.averageIncome}
-									averageExpenses={averagesData?.averageExpenses}
-								/>
+								<Stats data={statsData} />
 							</div>
 						</div>
 						<div className="flex flex-col flex-1">
