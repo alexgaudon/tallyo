@@ -1,5 +1,6 @@
 import { useSession } from "@/lib/auth-client";
 import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+import { DollarSignIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
@@ -105,12 +106,16 @@ export function CurrencyAmount({
 		<span
 			className={cn(
 				"font-mono",
+				"flex items-center",
 				showColor && animatedAmount < 0 && "text-red-600",
 				showColor && animatedAmount > 0 && "text-green-600",
 				isAnimating && "transition-all duration-75 ease-out",
 				className,
 			)}
 		>
+			<span className="text-muted-foreground">
+				<DollarSignIcon className="w-4 h-4" />
+			</span>
 			{displayValue}
 		</span>
 	);
