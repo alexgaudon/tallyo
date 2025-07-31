@@ -85,7 +85,7 @@ export const dashboardRouter = {
 								: []),
 						),
 					)
-					.groupBy(merchant.id, merchant.name, category.name)
+					.groupBy(merchant.id, merchant.name)
 					.orderBy(asc(sum(transaction.amount)))
 					.limit(5);
 				return merchantStats;

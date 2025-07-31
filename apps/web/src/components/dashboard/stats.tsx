@@ -1,8 +1,7 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { differenceInDays } from "date-fns";
 import {
-	ActivityIcon,
-	BarChart3Icon,
 	CreditCardIcon,
 	FolderTreeIcon,
 	PiggyBankIcon,
@@ -11,14 +10,17 @@ import {
 	TrendingDownIcon,
 	TrendingUpIcon,
 } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 import type { DashboardStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
 
 export function Stats({
 	data,
+	dateRange,
 }: {
 	data: DashboardStats | undefined;
+	dateRange?: DateRange;
 }) {
 	if (!data) {
 		return (
@@ -44,19 +46,99 @@ export function Stats({
 		},
 		{
 			title: "Income",
-			display: <CurrencyAmount animate amount={data.stats.totalIncome} />,
+			display: (() => {
+				const current = Math.abs(data.stats.totalIncome);
+				const average = Math.abs(data.averages.averageIncome);
+				const isHigher = current > average;
+				const isLower = current < average;
+				const isEqual = current === average;
+
+				// Only show comparison if date range is 1 month or less
+				const showComparison =
+					dateRange?.from &&
+					dateRange?.to &&
+					differenceInDays(dateRange.to, dateRange.from) <= 31;
+
+				return (
+					<div className="space-y-0.5">
+						<CurrencyAmount animate amount={data.stats.totalIncome} />
+						{showComparison && (
+							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+								<span
+									className={cn(
+										"font-medium",
+										isHigher && "text-green-600",
+										isLower && "text-red-600",
+										isEqual && "text-muted-foreground",
+									)}
+								>
+									{isHigher ? "↗" : isLower ? "↘" : "→"}
+								</span>
+								<CurrencyAmount amount={data.averages.averageIncome} />
+								<span>/month</span>
+							</div>
+						)}
+					</div>
+				);
+			})(),
 			icon: ({ className }: { className: string }) => {
 				return <TrendingUpIcon className={cn(className, "text-green-500")} />;
 			},
-			description: "of income recorded",
+			description: (() => {
+				const showComparison =
+					dateRange?.from &&
+					dateRange?.to &&
+					differenceInDays(dateRange.to, dateRange.from) <= 31;
+				return showComparison ? "vs monthly average" : "total income";
+			})(),
 		},
 		{
 			title: "Expenses",
-			display: <CurrencyAmount animate amount={data.stats.totalExpenses} />,
+			display: (() => {
+				const current = Math.abs(data.stats.totalExpenses);
+				const average = Math.abs(data.averages.averageExpenses);
+				const isHigher = current > average;
+				const isLower = current < average;
+				const isEqual = current === average;
+
+				// Only show comparison if date range is 1 month or less
+				const showComparison =
+					dateRange?.from &&
+					dateRange?.to &&
+					differenceInDays(dateRange.to, dateRange.from) <= 31;
+
+				return (
+					<div className="space-y-0.5">
+						<CurrencyAmount animate amount={data.stats.totalExpenses} />
+						{showComparison && (
+							<div className="flex items-center gap-1 text-xs text-muted-foreground">
+								<span
+									className={cn(
+										"font-medium",
+										isHigher && "text-red-600",
+										isLower && "text-green-600",
+										isEqual && "text-muted-foreground",
+									)}
+								>
+									{isHigher ? "↗" : isLower ? "↘" : "→"}
+								</span>
+								<CurrencyAmount amount={data.averages.averageExpenses} />
+								<span>/month</span>
+							</div>
+						)}
+					</div>
+				);
+			})(),
 			icon: ({ className }: { className: string }) => {
 				return <TrendingDownIcon className={cn(className, "text-red-500")} />;
 			},
-			description: "of expenses paid out",
+			description: (() => {
+				const showComparison =
+					dateRange?.from &&
+					dateRange?.to &&
+					differenceInDays(dateRange.to, dateRange.from) <= 31;
+				return showComparison ? "vs monthly average" : "total expenses";
+			})(),
 		},
 		{
 			title: "Savings Rate",
@@ -81,24 +163,6 @@ export function Stats({
 			description: "of income saved",
 		},
 		{
-			title: "Average Income",
-			display: <CurrencyAmount animate amount={data.averages.averageIncome} />,
-			icon: ({ className }: { className: string }) => {
-				return <ActivityIcon className={cn(className, "text-blue-500")} />;
-			},
-			description: "per month",
-		},
-		{
-			title: "Average Expenses",
-			display: (
-				<CurrencyAmount animate amount={data.averages.averageExpenses} />
-			),
-			icon: ({ className }: { className: string }) => {
-				return <BarChart3Icon className={cn(className, "text-orange-500")} />;
-			},
-			description: "per month",
-		},
-		{
 			title: "Categories",
 			display: <StatDisplay animate value={data.stats.totalCategories} />,
 			icon: FolderTreeIcon,
@@ -120,7 +184,7 @@ export function Stats({
 	];
 
 	return (
-		<div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-3 h-full">
+		<div className="grid gap-2 grid-cols-2 xl:grid-cols-3 h-full">
 			{stats.map((stat) => {
 				const Icon = stat.icon;
 				return (

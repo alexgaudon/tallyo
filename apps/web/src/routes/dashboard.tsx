@@ -105,7 +105,7 @@ function RouteComponent() {
 						<div className="flex flex-col flex-1">
 							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
 							<div className="flex-1">
-								<Stats data={statsData} />
+								<Stats data={statsData} dateRange={dateRange} />
 							</div>
 						</div>
 						<div className="flex flex-col flex-1">
