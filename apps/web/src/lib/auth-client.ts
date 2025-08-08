@@ -1,8 +1,8 @@
-import { orpc } from "@/utils/orpc";
 import { ORPCError } from "@orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createAuthClient } from "better-auth/react";
+import { orpc } from "@/utils/orpc";
 
 export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
 	{

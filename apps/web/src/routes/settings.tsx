@@ -1,3 +1,8 @@
+import { useMutation } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
-import { useMutation } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { z } from "zod";
 
 export const Route = createFileRoute("/settings")({
 	component: RouteComponent,
@@ -34,7 +34,6 @@ export const Route = createFileRoute("/settings")({
 
 function RouteComponent() {
 	const { data: session } = useSession();
-	const { op } = Route.useSearch();
 
 	const [authToken, setAuthToken] = useState<string | null>(null);
 
@@ -156,8 +155,6 @@ function RouteComponent() {
 		}),
 	);
 
-	const navigate = useNavigate();
-
 	const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
 	return (
@@ -227,7 +224,7 @@ function RouteComponent() {
 											await orpc.settings.deleteAuthToken.call();
 											setAuthToken(null);
 											toast.success("API token deleted successfully");
-										} catch (error) {
+										} catch (_error) {
 											toast.error("Failed to delete API token");
 										}
 									}}

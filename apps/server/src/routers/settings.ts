@@ -1,6 +1,6 @@
-import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "@/db";
 import { settings } from "../db/schema/app";
 import { createOrUpdateAuthToken, deleteAuthToken } from "../lib/auth-token";
 import { protectedProcedure } from "../lib/orpc";

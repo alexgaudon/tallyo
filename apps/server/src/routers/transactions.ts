@@ -1,4 +1,3 @@
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import {
 	and,
 	desc,
@@ -12,6 +11,7 @@ import {
 	sql,
 } from "drizzle-orm";
 import { z } from "zod";
+import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
@@ -72,7 +72,7 @@ const validateTransactionOwnership = async (
 const updateTransactionField = async (
 	transactionId: string,
 	updates: Record<string, unknown>,
-	errorContext: string,
+	_errorContext: string,
 	userId: string,
 ) => {
 	const updatedTransaction = await db
@@ -97,7 +97,7 @@ const updateTransactionField = async (
 const handleKeywordRemoval = async (
 	currentTransaction: { transactionDetails: string },
 	currentMerchantId: string,
-	transactionId: string,
+	_transactionId: string,
 ) => {
 	if (!currentMerchantId) return;
 

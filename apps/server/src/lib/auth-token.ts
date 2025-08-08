@@ -77,7 +77,7 @@ export async function validateAuthToken(token: string): Promise<string | null> {
 				if (isValid) {
 					return tokenRecord.userId;
 				}
-			} catch (verifyError) {
+			} catch (_verifyError) {
 				// Continue to next token if verification fails
 			}
 		}

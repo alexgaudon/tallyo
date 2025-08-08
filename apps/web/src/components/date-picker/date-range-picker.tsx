@@ -1,12 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
 import {
 	addDays,
 	endOfMonth,
@@ -20,6 +11,15 @@ import {
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 const presets = [
 	{

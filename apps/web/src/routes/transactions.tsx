@@ -1,3 +1,12 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
+import { CreditCardIcon, Plus } from "lucide-react";
+import { useState } from "react";
+import { z } from "zod";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { Search } from "@/components/transactions/search";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
@@ -12,15 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	createFileRoute,
-	useNavigate,
-	useSearch,
-} from "@tanstack/react-router";
-import { CreditCardIcon, Plus } from "lucide-react";
-import { useState } from "react";
-import { z } from "zod";
 import type {
 	Category,
 	MerchantWithKeywordsAndCategory,
@@ -149,7 +149,7 @@ function RouteComponent() {
 				// Return a context object with the snapshotted value
 				return { previousData };
 			},
-			onError: (err, variables, context) => {
+			onError: (_err, _variables, context) => {
 				// If the mutation fails, use the context returned from onMutate to roll back
 				if (context?.previousData) {
 					queryClient.setQueryData(
@@ -210,7 +210,7 @@ function RouteComponent() {
 
 				return { previousData };
 			},
-			onError: (err, variables, context) => {
+			onError: (_err, _variables, context) => {
 				if (context?.previousData) {
 					queryClient.setQueryData(
 						createTransactionQueryOptions(search).queryKey,
@@ -250,7 +250,7 @@ function RouteComponent() {
 
 				return { previousData };
 			},
-			onError: (err, variables, context) => {
+			onError: (_err, _variables, context) => {
 				if (context?.previousData) {
 					queryClient.setQueryData(
 						createTransactionQueryOptions(search).queryKey,
@@ -292,7 +292,7 @@ function RouteComponent() {
 
 				return { previousData };
 			},
-			onError: (err, variables, context) => {
+			onError: (_err, _variables, context) => {
 				if (context?.previousData) {
 					queryClient.setQueryData(
 						createTransactionQueryOptions(search).queryKey,

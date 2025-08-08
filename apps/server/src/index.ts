@@ -16,7 +16,7 @@ const app = new Hono();
 // app.use(honoLogger());
 
 if (process.env.NODE_ENV === "development") {
-	app.use(async (c, next) => {
+	app.use(async (_c, next) => {
 		const delay = Math.floor(Math.random() * 40);
 		await new Promise((resolve) => setTimeout(resolve, delay));
 		await next();

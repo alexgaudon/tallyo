@@ -1,7 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import type { orpc } from "@/utils/orpc";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import {
@@ -12,6 +8,10 @@ import {
 	XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import type { orpc } from "@/utils/orpc";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -52,7 +52,8 @@ export function CategoryCard({
 }: CategoryCardProps) {
 	const [editOpen, setEditOpen] = useState(false);
 	const Icon = category.icon
-		? (LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
+		? // biome-ignore lint: dynamic icon access is required for user-selected icons
+			(LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
 		: FolderIcon;
 
 	return (

@@ -1,9 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 

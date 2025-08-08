@@ -1,5 +1,3 @@
-import { db } from "@/db";
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import {
 	and,
 	asc,
@@ -13,6 +11,8 @@ import {
 	sum,
 } from "drizzle-orm";
 import { z } from "zod";
+import { db } from "@/db";
+import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 const dateRangeSchema = z.object({
@@ -33,7 +33,7 @@ function calculateStandardDeviation(values: number[]): number {
 }
 
 // Helper function to calculate volatility
-function calculateVolatility(values: number[]): number {
+function _calculateVolatility(values: number[]): number {
 	if (values.length === 0) return 0;
 
 	// Treat all values as absolute for volatility

@@ -1,3 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -9,10 +13,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { orpc, queryClient } from "@/utils/orpc";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Switch } from "../ui/switch";
 import { CategorySelect } from "./category-select";
 import { IconPicker } from "./icon-picker";
@@ -84,7 +84,7 @@ export function CreateCategoryForm({
 		}
 	}
 
-	const parentCategories =
+	const _parentCategories =
 		data?.categories.filter((cat) => !cat.parentCategory) ?? [];
 
 	return (

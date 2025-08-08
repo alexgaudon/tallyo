@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	BarChart3Icon,
@@ -12,8 +11,8 @@ import {
 	StoreIcon,
 } from "lucide-react";
 import * as React from "react";
-
 import { DelayedLoading } from "@/components/delayed-loading";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -58,12 +57,10 @@ export default function Header() {
 			<div className="flex items-center">
 				<div className="hidden lg:flex lg:items-center lg:space-x-6">
 					{session?.data ? (
-						<>
-							<div className="flex items-center space-x-2">
-								<ModeToggle />
-								<UserDropdown session={session.data} />
-							</div>
-						</>
+						<div className="flex items-center space-x-2">
+							<ModeToggle />
+							<UserDropdown session={session.data} />
+						</div>
 					) : (
 						<>
 							<ModeToggle />
@@ -94,18 +91,16 @@ export default function Header() {
 										<UserDropdown session={session.data} inSheet />
 									</>
 								) : (
-									<>
-										<SheetClose asChild>
-											<Button
-												asChild
-												className="mx-auto w-fit"
-												size="lg"
-												type="button"
-											>
-												<Link to="/signin">Sign in</Link>
-											</Button>
-										</SheetClose>
-									</>
+									<SheetClose asChild>
+										<Button
+											asChild
+											className="mx-auto w-fit"
+											size="lg"
+											type="button"
+										>
+											<Link to="/signin">Sign in</Link>
+										</Button>
+									</SheetClose>
 								)}
 							</div>
 						</SheetContent>

@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
 	GitMergeIcon,
 	PencilIcon,
@@ -8,6 +6,8 @@ import {
 	XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import {
 	AlertDialog,

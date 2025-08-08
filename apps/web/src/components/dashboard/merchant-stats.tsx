@@ -1,6 +1,6 @@
-import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { StoreIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 

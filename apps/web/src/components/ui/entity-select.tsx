@@ -1,3 +1,6 @@
+import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -13,9 +16,6 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { useState } from "react";
 
 interface Entity {
 	id: string;
@@ -49,7 +49,6 @@ interface EntitySelectProps<T extends Entity> {
 	onValueChange: (value: string | null) => void;
 	placeholder?: string;
 	className?: string;
-	allowNull?: boolean;
 	entities: T[];
 	formatEntity?: (entity: T) => ReactNode;
 	emptyLabel?: string;
@@ -71,7 +70,6 @@ export function EntitySelect<T extends Entity>({
 	onValueChange,
 	placeholder = "Select an item",
 	className,
-	allowNull = false,
 	entities,
 	formatEntity = (entity) => entity.name,
 	emptyLabel = "No items available",

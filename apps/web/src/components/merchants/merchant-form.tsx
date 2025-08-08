@@ -1,3 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { type SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -10,11 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { KeywordPills } from "@/components/ui/keyword-pills";
 import { orpc, queryClient } from "@/utils/orpc";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { type SubmitHandler, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { CategorySelect } from "../categories/category-select";
 

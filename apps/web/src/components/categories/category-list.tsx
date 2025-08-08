@@ -1,3 +1,5 @@
+import { FolderIcon, SearchIcon, XIcon } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,11 +10,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { FolderIcon, SearchIcon, XIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { CategoryCard } from "./category-card";
-
 import type { Category } from "../../../../server/src/routers";
+import { CategoryCard } from "./category-card";
 
 interface CategoryListProps {
 	categories: Category[];

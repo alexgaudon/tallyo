@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { useSession } from "@/lib/auth-client";
-import { orpc, queryClient } from "@/utils/orpc";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/auth-client";
+import { orpc, queryClient } from "@/utils/orpc";
 
 export function PrivacyModeToggle() {
 	const { data: session } = useSession();

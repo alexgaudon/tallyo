@@ -1,3 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { CreditCardIcon } from "lucide-react";
+import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
@@ -6,12 +12,6 @@ import { DelayedLoading } from "@/components/delayed-loading";
 import { PrivacyModeToggle } from "@/components/settings/privacy-mode-toggle";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { endOfMonth, startOfMonth } from "date-fns";
-import { CreditCardIcon } from "lucide-react";
-import { useState } from "react";
-import type { DateRange } from "react-day-picker";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,

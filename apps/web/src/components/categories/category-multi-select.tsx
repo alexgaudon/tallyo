@@ -1,6 +1,6 @@
-import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, EditIcon, PlusIcon } from "lucide-react";
+import { orpc } from "@/utils/orpc";
 import type { Category } from "../../../../server/src/routers";
 import { MultiEntitySelect } from "../ui/multi-entity-select";
 

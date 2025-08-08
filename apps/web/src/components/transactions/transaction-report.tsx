@@ -1,3 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { useCallback, useMemo, useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { CategoryMultiSelect } from "@/components/categories/category-multi-select";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import Loader from "@/components/loader";
@@ -9,10 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
-import { endOfMonth, startOfMonth } from "date-fns";
-import { useCallback, useMemo, useState } from "react";
-import type { DateRange } from "react-day-picker";
 
 interface TransactionReportFilters {
 	dateFrom?: Date;
@@ -46,8 +46,8 @@ export function TransactionReport() {
 				? Math.round(filters.amountMax * 100)
 				: undefined;
 
-		let apiAmountMin: number | undefined = undefined;
-		let apiAmountMax: number | undefined = undefined;
+		let apiAmountMin: number | undefined;
+		let apiAmountMax: number | undefined;
 
 		if (filters.includeIncome) {
 			// When including income, pass through as-is (server compares raw values)

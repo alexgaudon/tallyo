@@ -1,6 +1,6 @@
+import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { account, category, merchant, transaction, user } from "@/db/schema";
-import { and, asc, count, desc, eq } from "drizzle-orm";
 import { protectedProcedure } from "../lib/orpc";
 
 export const metaRouter = {
@@ -46,7 +46,7 @@ export const metaRouter = {
 			},
 		});
 
-		const transferCategoryId = await db.query.category.findFirst({
+		const _transferCategoryId = await db.query.category.findFirst({
 			where: and(
 				eq(category.userId, context.session?.user?.id),
 				eq(category.hideFromInsights, true),

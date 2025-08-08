@@ -1,6 +1,6 @@
-import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import { and, asc, eq, or } from "drizzle-orm";
 import { z } from "zod";
+import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
@@ -319,7 +319,7 @@ export const merchantsRouter = {
 				}
 
 				// Get existing keywords from both merchants
-				const sourceKeywords = sourceMerchant.keywords.map((k) =>
+				const _sourceKeywords = sourceMerchant.keywords.map((k) =>
 					k.keyword.toLowerCase(),
 				);
 				const targetKeywords = targetMerchant.keywords.map((k) =>

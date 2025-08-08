@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { StoreIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { MerchantCard } from "./merchant-card";
 

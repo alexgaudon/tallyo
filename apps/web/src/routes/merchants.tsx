@@ -1,3 +1,8 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { Building2Icon, PlusIcon, SearchIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { CreateMerchantForm } from "@/components/merchants/create-merchant-form";
 import { MerchantList } from "@/components/merchants/merchant-list";
 import { Button } from "@/components/ui/button";
@@ -11,11 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { Building2Icon, PlusIcon, SearchIcon } from "lucide-react";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchants")({
 	component: RouteComponent,

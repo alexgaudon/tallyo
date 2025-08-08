@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { orpc } from "@/utils/orpc";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { orpc } from "@/utils/orpc";
 
 export function ConfirmPassword({
 	onConfirm,
@@ -12,7 +12,7 @@ export function ConfirmPassword({
 }) {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (_e: React.FormEvent) => {
 		setIsLoading(true);
 
 		try {
@@ -21,7 +21,7 @@ export function ConfirmPassword({
 			// Pass the generated token to the parent component
 			onConfirm(tokenRes.token);
 			setIsLoading(false);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("An unexpected error occurred");
 			setIsLoading(false);
 		}

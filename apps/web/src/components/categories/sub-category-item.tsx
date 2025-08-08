@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import type { LucideIcon } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import {
@@ -9,6 +8,7 @@ import {
 	XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import type { Category } from "../../../../server/src/routers";
 import {
 	AlertDialog,
@@ -37,8 +37,10 @@ interface SubCategoryItemProps {
 
 export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
 	const [editOpen, setEditOpen] = useState(false);
+
 	const Icon = category.icon
-		? (LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
+		? // biome-ignore lint: dynamic icon access is required for user-selected icons
+			(LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
 		: FolderIcon;
 
 	return (

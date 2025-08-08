@@ -1,8 +1,8 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { BarChart3Icon } from "lucide-react";
 import { TransactionReport } from "@/components/transactions/transaction-report";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
-import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3Icon } from "lucide-react";
 
 export const Route = createFileRoute("/reports")({
 	component: RouteComponent,

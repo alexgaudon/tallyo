@@ -1,3 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -16,10 +20,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { orpc, queryClient } from "@/utils/orpc";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import type { Category } from "../../../../server/src/routers";
 import { Switch } from "../ui/switch";
 import { IconPicker } from "./icon-picker";

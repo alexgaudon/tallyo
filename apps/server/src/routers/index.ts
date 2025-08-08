@@ -1,3 +1,4 @@
+import type { InferRouterOutputs } from "@orpc/server";
 import { healthCheck } from "../db";
 import { protectedProcedure, publicProcedure } from "../lib/orpc";
 import { categoriesRouter } from "./categories";
@@ -6,8 +7,6 @@ import { merchantsRouter } from "./merchants";
 import { metaRouter } from "./meta";
 import { settingsRouter } from "./settings";
 import { transactionsRouter } from "./transactions";
-
-import type { InferRouterOutputs } from "@orpc/server";
 
 export type Category = InferRouterOutputs<
 	typeof categoriesRouter
@@ -38,7 +37,7 @@ export const appRouter = {
 		try {
 			await healthCheck();
 			return "OK";
-		} catch (error) {
+		} catch (_error) {
 			throw new Error("DB Not OK");
 		}
 	}),

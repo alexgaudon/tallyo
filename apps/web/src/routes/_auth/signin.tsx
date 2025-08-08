@@ -1,13 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
-import { orpc, queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import {
-	Link,
 	createFileRoute,
+	Link,
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
@@ -16,6 +11,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { orpc, queryClient } from "@/utils/orpc";
 
 const signInSchema = z.object({
 	email: z.string().email("Please enter a valid email address"),
@@ -54,7 +54,7 @@ function RouteComponent() {
 		orpc.categories.createCategory.mutationOptions(),
 	);
 
-	const { from, scope } = Route.useSearch();
+	const { from } = Route.useSearch();
 
 	const navigate = useNavigate();
 
@@ -65,7 +65,7 @@ function RouteComponent() {
 				password: data.password,
 			},
 			{
-				onSuccess: (ctx) => {
+				onSuccess: (_ctx) => {
 					queryClient.invalidateQueries({ queryKey: ["session"] });
 
 					setTimeout(() => {

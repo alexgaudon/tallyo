@@ -1,3 +1,7 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { FolderTreeIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { CategoryList } from "@/components/categories/category-list";
 import { CreateCategoryForm } from "@/components/categories/create-category-form";
 import { Button } from "@/components/ui/button";
@@ -10,10 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { FolderTreeIcon, PlusIcon } from "lucide-react";
-import { useState } from "react";
 
 export const Route = createFileRoute("/categories")({
 	component: RouteComponent,

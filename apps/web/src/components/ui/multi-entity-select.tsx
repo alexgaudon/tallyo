@@ -1,3 +1,6 @@
+import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +17,6 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { CheckIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { useState } from "react";
 
 interface Entity {
 	id: string;

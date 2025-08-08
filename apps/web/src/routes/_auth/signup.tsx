@@ -1,12 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
-import { queryClient } from "@/utils/orpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	Link,
 	createFileRoute,
+	Link,
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
@@ -15,6 +10,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 
 const signInSchema = z
 	.object({

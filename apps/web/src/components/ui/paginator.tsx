@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -7,8 +9,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { orpc } from "@/utils/orpc";
-import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export interface PaginationInfo {
 	total: number;

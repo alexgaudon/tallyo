@@ -1,5 +1,3 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { differenceInDays } from "date-fns";
 import {
 	CreditCardIcon,
@@ -11,6 +9,8 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { DashboardStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";

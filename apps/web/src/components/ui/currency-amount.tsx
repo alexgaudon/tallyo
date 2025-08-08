@@ -1,8 +1,8 @@
-import { useSession } from "@/lib/auth-client";
-import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import { DollarSignIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 
 interface CurrencyAmountProps {
 	/**

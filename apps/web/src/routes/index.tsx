@@ -1,16 +1,5 @@
-import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
-import { Stats } from "@/components/dashboard/stats";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
 	BarChart3,
 	Calendar,
@@ -23,6 +12,17 @@ import {
 	Upload,
 	Zap,
 } from "lucide-react";
+import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
+import { Stats } from "@/components/dashboard/stats";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/")({
 	component: HomeComponent,
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-	const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+	const _healthCheck = useQuery(orpc.healthCheck.queryOptions());
 
 	const features = [
 		{

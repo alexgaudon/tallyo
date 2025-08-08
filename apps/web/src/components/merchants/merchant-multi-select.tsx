@@ -1,7 +1,7 @@
-import { orpc } from "@/utils/orpc";
 import { useQuery } from "@tanstack/react-query";
 import { EditIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { orpc } from "@/utils/orpc";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { MultiEntitySelect } from "../ui/multi-entity-select";
 import { CreateMerchantDialog } from "./create-merchant-dialog";

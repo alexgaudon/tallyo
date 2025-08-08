@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
 	Dialog,
 	DialogContent,
@@ -6,7 +7,6 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { orpc } from "@/utils/orpc";
-import { useQuery } from "@tanstack/react-query";
 import { MerchantForm } from "./merchant-form";
 
 interface EditMerchantDialogProps {

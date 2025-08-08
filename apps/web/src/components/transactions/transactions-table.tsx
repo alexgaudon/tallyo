@@ -1,3 +1,6 @@
+import { format, parseISO } from "date-fns";
+import { Check, Trash } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
 	CategorySelect,
 	formatCategory,
@@ -25,9 +28,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
-import { Check, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import type { Transaction } from "../../../../server/src/routers/index";
 import {
 	AlertDialog,
