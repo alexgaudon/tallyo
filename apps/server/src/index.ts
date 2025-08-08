@@ -139,7 +139,7 @@ app.post("/api/transactions", async (c) => {
 			return c.json(
 				{
 					error: "Invalid request format",
-					details: validationResult.error.errors,
+					details: validationResult.error.issues,
 				},
 				400,
 			);
