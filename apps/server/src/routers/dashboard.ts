@@ -99,6 +99,10 @@ export const dashboardRouter = {
 		.handler(async ({ context, input }) => {
 			const dateRange = input || {};
 
+			// Calculate the date 12 months ago from the current date
+			const twelveMonthsAgo = new Date();
+			twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
 			const categoryData = await db
 				.select({
 					amount: sum(transaction.amount),
@@ -151,6 +155,56 @@ export const dashboardRouter = {
 					category.updatedAt,
 				);
 
+			// Get 12-month averages for each category
+			const categoryAverages = await db
+				.select({
+					categoryId: transaction.categoryId,
+					year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+					month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+					monthlyTotal: sum(transaction.amount),
+				})
+				.from(transaction)
+				.innerJoin(category, eq(transaction.categoryId, category.id))
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						gte(transaction.date, twelveMonthsAgo.toISOString().split("T")[0]),
+					),
+				)
+				.groupBy(
+					transaction.categoryId,
+					sql`EXTRACT(YEAR FROM ${transaction.date})`,
+					sql`EXTRACT(MONTH FROM ${transaction.date})`,
+				);
+
+			// Calculate averages for each category
+			const categoryAverageMap = new Map<
+				string,
+				{ total: number; count: number }
+			>();
+
+			for (const item of categoryAverages) {
+				if (!item.categoryId) continue;
+
+				const existing = categoryAverageMap.get(item.categoryId) || {
+					total: 0,
+					count: 0,
+				};
+				existing.total += Math.abs(Number(item.monthlyTotal));
+				existing.count += 1;
+				categoryAverageMap.set(item.categoryId, existing);
+			}
+
+			// Convert totals to averages
+			const finalAverages = new Map<string, number>();
+			for (const [categoryId, data] of categoryAverageMap.entries()) {
+				finalAverages.set(
+					categoryId,
+					data.count > 0 ? data.total / data.count : 0,
+				);
+			}
+
 			// Fetch parent categories for categories that have them
 			const parentCategoryIds = categoryData
 				.map((item) => item.category.parentCategoryId)
@@ -184,10 +238,11 @@ export const dashboardRouter = {
 				parentCategories.map((parent) => [parent.id, parent]),
 			);
 
-			// Transform the data to include parent category information
+			// Transform the data to include parent category information and 12-month average
 			const transformedData = categoryData.map((item) => ({
 				amount: item.amount,
 				count: item.count,
+				average12Months: finalAverages.get(item.category.id) || 0,
 				category: {
 					...item.category,
 					parentCategory: item.category.parentCategoryId

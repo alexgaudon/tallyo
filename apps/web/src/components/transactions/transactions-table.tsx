@@ -393,7 +393,6 @@ export function TransactionsTable({
 								className="text-right font-medium px-2 sm:px-4 h-10 align-middle"
 							>
 								<CurrencyAmount
-									animate
 									amount={transaction.amount}
 									showColor
 									className="transition-colors"

@@ -73,6 +73,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 			fill: getColorFromCategoryId(item.category.id),
 			count: item.count,
 			categoryId: item.category.id,
+			average12Months: item.average12Months || 0,
 		}));
 
 	const handleCategoryClick = (categoryId: string) => {
@@ -112,6 +113,12 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 						<div className="flex justify-between">
 							<span className="text-muted-foreground">Transactions:</span>
 							<span className="font-medium">{data.count}</span>
+						</div>
+						<div className="flex justify-between">
+							<span className="text-muted-foreground">12-Month Avg:</span>
+							<span className="font-medium">
+								<CurrencyAmount amount={data.average12Months} />
+							</span>
 						</div>
 					</div>
 				</div>
@@ -179,7 +186,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 					</div>
 
 					{/* Legend */}
-					<div className="xl:col-span-2 grid grid-cols-2 gap-1.5">
+					<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
 						{chartData.map((item, index) => (
 							<button
 								key={item.name}
@@ -201,9 +208,16 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 										<span className="font-medium text-xs truncate">
 											{item.name}
 										</span>
-										<span className="text-[10px] text-muted-foreground truncate">
+										<span className="text-muted-foreground truncate text-xs">
 											{item.count} transaction
 											{item.count !== 1 ? "s" : ""}
+										</span>
+										<span className="text-xs text-muted-foreground truncate flex">
+											Avg:{" "}
+											<CurrencyAmount
+												className="text-xs"
+												amount={item.average12Months}
+											/>
 										</span>
 									</div>
 								</div>

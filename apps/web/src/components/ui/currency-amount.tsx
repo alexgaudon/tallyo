@@ -114,7 +114,7 @@ export function CurrencyAmount({
 			)}
 		>
 			<span className="text-muted-foreground">
-				<DollarSignIcon className="w-4 h-4" />
+				<DollarSignIcon className="w-3 h-3" />
 			</span>
 			{displayValue}
 		</span>
