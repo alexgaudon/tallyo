@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
+	BarChart3Icon,
 	BlocksIcon,
 	ChevronDown,
 	CreditCardIcon,
@@ -159,6 +160,7 @@ function NavLinks({ asChild }: { asChild?: boolean }) {
 			label: `Transactions${hasUnreviewedTransactions ? ` (${unreviewedTransactionCount})` : ""}`,
 			icon: <CreditCardIcon />,
 		},
+		{ to: "/reports", label: "Reports", icon: <BarChart3Icon /> },
 	];
 
 	const linkElements = links.map((link) => (

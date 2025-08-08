@@ -1,5 +1,16 @@
-import { merchant, merchantKeyword, transaction } from "@/db/schema";
-import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
+import {
+	and,
+	desc,
+	eq,
+	gte,
+	ilike,
+	inArray,
+	isNull,
+	lte,
+	or,
+	sql,
+} from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { logger } from "../lib/logger";
@@ -424,5 +435,134 @@ export const transactionsRouter = {
 
 				return { success: true };
 			}, "Error deleting transaction");
+		}),
+
+	getTransactionReport: protectedProcedure
+		.input(
+			z.object({
+				dateFrom: z.date().optional(),
+				dateTo: z.date().optional(),
+				categoryIds: z.array(z.string()).optional(),
+				merchantIds: z.array(z.string()).optional(),
+				amountMin: z.number().optional(),
+				amountMax: z.number().optional(),
+				reviewed: z.boolean().optional(),
+				includeIncome: z.boolean().default(false),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			return withErrorHandling(
+				async () => {
+					const conditions = [
+						eq(transaction.userId, context.session?.user?.id),
+					];
+
+					// Date range filters
+					if (input.dateFrom) {
+						conditions.push(
+							gte(transaction.date, input.dateFrom.toISOString().split("T")[0]),
+						);
+					}
+					if (input.dateTo) {
+						conditions.push(
+							lte(transaction.date, input.dateTo.toISOString().split("T")[0]),
+						);
+					}
+
+					if (input.categoryIds && input.categoryIds.length > 0) {
+						conditions.push(inArray(transaction.categoryId, input.categoryIds));
+					}
+
+					// Merchant filters
+					if (input.merchantIds && input.merchantIds.length > 0) {
+						conditions.push(inArray(transaction.merchantId, input.merchantIds));
+					}
+
+					// Amount range filters
+					if (input.amountMin !== undefined) {
+						conditions.push(gte(transaction.amount, input.amountMin));
+					}
+					if (input.amountMax !== undefined) {
+						conditions.push(lte(transaction.amount, input.amountMax));
+					}
+
+					// Reviewed status filter
+					if (input.reviewed !== undefined) {
+						conditions.push(eq(transaction.reviewed, input.reviewed));
+					}
+
+					// Income/expense filter
+					if (!input.includeIncome) {
+						// Join with category to filter out income transactions
+						const expenseTransactions = await db
+							.select({
+								id: transaction.id,
+								amount: transaction.amount,
+								date: transaction.date,
+								transactionDetails: transaction.transactionDetails,
+								notes: transaction.notes,
+								reviewed: transaction.reviewed,
+								merchantId: transaction.merchantId,
+								categoryId: transaction.categoryId,
+							})
+							.from(transaction)
+							.innerJoin(category, eq(transaction.categoryId, category.id))
+							.where(
+								and(
+									...conditions,
+									eq(category.treatAsIncome, false),
+									eq(category.hideFromInsights, false),
+								),
+							);
+
+						const totalAmount = expenseTransactions.reduce(
+							(sum, t) => sum + Math.abs(Number(t.amount)),
+							0,
+						);
+						const totalCount = expenseTransactions.length;
+
+						return {
+							transactions: expenseTransactions,
+							summary: {
+								totalCount,
+								totalAmount,
+								averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
+							},
+						};
+					}
+
+					// Include all transactions (both income and expenses)
+					const allTransactions = await db
+						.select({
+							id: transaction.id,
+							amount: transaction.amount,
+							date: transaction.date,
+							transactionDetails: transaction.transactionDetails,
+							notes: transaction.notes,
+							reviewed: transaction.reviewed,
+							merchantId: transaction.merchantId,
+							categoryId: transaction.categoryId,
+						})
+						.from(transaction)
+						.where(and(...conditions));
+
+					const totalAmount = allTransactions.reduce(
+						(sum, t) => sum + Number(t.amount),
+						0,
+					);
+					const totalCount = allTransactions.length;
+
+					return {
+						transactions: allTransactions,
+						summary: {
+							totalCount,
+							totalAmount,
+							averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
+						},
+					};
+				},
+				"Error generating transaction report",
+				context.session?.user?.id,
+			);
 		}),
 };

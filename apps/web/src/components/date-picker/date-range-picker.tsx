@@ -106,10 +106,6 @@ export default function DateRangePicker({
 		}
 	}, [value]);
 
-	React.useEffect(() => {
-		onRangeChange?.(date);
-	}, [date, onRangeChange]);
-
 	return (
 		<div className={cn("grid gap-2", className)}>
 			<Popover>
@@ -144,7 +140,10 @@ export default function DateRangePicker({
 							mode="range"
 							defaultMonth={date?.from}
 							selected={date}
-							onSelect={setDate}
+							onSelect={(newDate) => {
+								setDate(newDate);
+								onRangeChange?.(newDate);
+							}}
 							numberOfMonths={1}
 						/>
 						<div className="p-3 border-b">
@@ -161,7 +160,10 @@ export default function DateRangePicker({
 											variant="outline"
 											size="sm"
 											className="text-xs"
-											onClick={() => setDate(value)}
+											onClick={() => {
+												setDate(value);
+												onRangeChange?.(value);
+											}}
 										>
 											{preset.label}
 										</Button>

@@ -4,9 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { redirect } from "@tanstack/react-router";
 import { createAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-	baseURL: window.location.origin,
-});
+export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
+	{
+		baseURL: window.location.origin,
+	},
+);
 
 export const useSessionFetch = async () => {
 	const session = await authClient.getSession();

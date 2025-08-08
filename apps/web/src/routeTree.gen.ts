@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as TransactionsImport } from './routes/transactions'
 import { Route as SettingsImport } from './routes/settings'
+import { Route as ReportsImport } from './routes/reports'
 import { Route as MerchantsImport } from './routes/merchants'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as CategoriesImport } from './routes/categories'
@@ -31,6 +32,12 @@ const TransactionsRoute = TransactionsImport.update({
 const SettingsRoute = SettingsImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ReportsRoute = ReportsImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -102,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerchantsImport
       parentRoute: typeof rootRoute
     }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsImport
+      parentRoute: typeof rootRoute
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -140,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/signin': typeof AuthSigninRoute
@@ -151,6 +166,7 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/signin': typeof AuthSigninRoute
@@ -163,6 +179,7 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/transactions': typeof TransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
@@ -176,6 +193,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/reports'
     | '/settings'
     | '/transactions'
     | '/signin'
@@ -186,6 +204,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/reports'
     | '/settings'
     | '/transactions'
     | '/signin'
@@ -196,6 +215,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/reports'
     | '/settings'
     | '/transactions'
     | '/_auth/signin'
@@ -208,6 +228,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   MerchantsRoute: typeof MerchantsRoute
+  ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TransactionsRoute: typeof TransactionsRoute
   AuthSigninRoute: typeof AuthSigninRoute
@@ -219,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   MerchantsRoute: MerchantsRoute,
+  ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TransactionsRoute: TransactionsRoute,
   AuthSigninRoute: AuthSigninRoute,
@@ -239,6 +261,7 @@ export const routeTree = rootRoute
         "/categories",
         "/dashboard",
         "/merchants",
+        "/reports",
         "/settings",
         "/transactions",
         "/_auth/signin",
@@ -256,6 +279,9 @@ export const routeTree = rootRoute
     },
     "/merchants": {
       "filePath": "merchants.tsx"
+    },
+    "/reports": {
+      "filePath": "reports.tsx"
     },
     "/settings": {
       "filePath": "settings.tsx"

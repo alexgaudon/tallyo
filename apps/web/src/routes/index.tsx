@@ -196,6 +196,7 @@ function HomeComponent() {
 								data={[
 									{
 										amount: "-85075",
+										average12Months: -85075,
 										count: 15,
 										category: {
 											id: "cat-0",
@@ -212,6 +213,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-12500.75",
+										average12Months: -12500.75,
 										count: 15,
 										category: {
 											id: "cat-1",
@@ -228,6 +230,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-8500.50",
+										average12Months: -8500.5,
 										count: 8,
 										category: {
 											id: "cat-2",
@@ -244,6 +247,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-13504.25",
+										average12Months: -13504.25,
 										count: 12,
 										category: {
 											id: "cat-3",
@@ -260,6 +264,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-12500.00",
+										average12Months: -12500.0,
 										count: 6,
 										category: {
 											id: "cat-4",
@@ -276,6 +281,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-35000.00",
+										average12Months: -35000.0,
 										count: 4,
 										category: {
 											id: "cat-5",
@@ -292,6 +298,7 @@ function HomeComponent() {
 									},
 									{
 										amount: "-12500.00",
+										average12Months: -12500.0,
 										count: 3,
 										category: {
 											id: "cat-6",
