@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useNavigate } from "@tanstack/react-router";
 import { StoreIcon } from "lucide-react";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
@@ -8,6 +9,8 @@ export function MerchantStats({
 }: {
 	data: DashboardMerchantStats | undefined;
 }) {
+	const navigate = useNavigate();
+
 	if (!data || data.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-12 text-center">
@@ -26,17 +29,27 @@ export function MerchantStats({
 		);
 	}
 
+	const handleMerchantClick = (merchantId: string) => {
+		navigate({
+			to: "/transactions",
+			search: { merchant: merchantId, page: 1 },
+		});
+	};
+
 	return (
 		<div className="space-y-0 border rounded-lg overflow-hidden h-full flex flex-col">
 			{data.map((merchant, index) => (
-				<div
+				<button
 					key={merchant.merchantId}
+					type="button"
 					className={cn(
-						"bg-card flex items-center justify-between p-3 hover:bg-muted/50 transition-colors flex-1",
+						"bg-card flex items-center justify-between p-3 hover:bg-muted/50 transition-colors flex-1 cursor-pointer w-full text-left",
 						{
 							"border-b": index !== data.length - 1,
 						},
 					)}
+					onClick={() => handleMerchantClick(merchant.merchantId)}
+					aria-label={`View transactions for ${merchant.merchantName}`}
 				>
 					<div className="flex items-center gap-3">
 						<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
@@ -54,7 +67,7 @@ export function MerchantStats({
 							<CurrencyAmount animate amount={Number(merchant.totalAmount)} />
 						</p>
 					</div>
-				</div>
+				</button>
 			))}
 		</div>
 	);
