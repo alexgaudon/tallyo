@@ -31,7 +31,7 @@
 		"turbo": "^2.5.5"
 	},
 	"lint-staged": {
-		"*": "bun run format"
+		"*": "bun run check"
 	},
 	"packageManager": "bun@1.1.38"
 }
