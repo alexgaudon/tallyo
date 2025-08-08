@@ -2,9 +2,9 @@ name: Build Docker Image
 
 on:
   push:
-    branches: [ main, rewrite ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, rewrite ]
+    branches: [ main ]
 
 jobs:
   build-docker:
@@ -30,6 +30,6 @@ jobs:
         context: .
         file: ./apps/server/Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/tallyo:beta
+        tags: ghcr.io/${{ github.repository_owner }}/tallyo:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max 
