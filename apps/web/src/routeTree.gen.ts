@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MerchantsRouteImport } from './routes/merchants'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CategoriesRouteImport } from './routes/categories'
@@ -24,6 +26,11 @@ const TransactionsRoute = TransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -32,6 +39,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantsRoute = MerchantsRouteImport.update({
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/transactions': typeof TransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/signup': typeof AuthSignupRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/transactions': typeof TransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/signup': typeof AuthSignupRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/merchants': typeof MerchantsRoute
+  '/privacy': typeof PrivacyRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/transactions': typeof TransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
   '/_auth/signup': typeof AuthSignupRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/privacy'
     | '/reports'
     | '/settings'
+    | '/terms'
     | '/transactions'
     | '/signin'
     | '/signup'
@@ -117,8 +137,10 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/privacy'
     | '/reports'
     | '/settings'
+    | '/terms'
     | '/transactions'
     | '/signin'
     | '/signup'
@@ -128,8 +150,10 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/merchants'
+    | '/privacy'
     | '/reports'
     | '/settings'
+    | '/terms'
     | '/transactions'
     | '/_auth/signin'
     | '/_auth/signup'
@@ -140,8 +164,10 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   MerchantsRoute: typeof MerchantsRoute
+  PrivacyRoute: typeof PrivacyRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   TransactionsRoute: typeof TransactionsRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
@@ -156,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TransactionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -168,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchants': {
@@ -220,8 +260,10 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   MerchantsRoute: MerchantsRoute,
+  PrivacyRoute: PrivacyRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   TransactionsRoute: TransactionsRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,

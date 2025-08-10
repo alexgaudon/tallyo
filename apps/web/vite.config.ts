@@ -6,6 +6,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [tailwindcss(), TanStackRouterVite({}), react()],
+	define: {
+		"import.meta.env.VITE_BUILD_TIME": JSON.stringify(new Date().toISOString()),
+	},
 	base: process.env.NODE_ENV === "production" ? "/" : "/",
 	server: {
 		host: true,

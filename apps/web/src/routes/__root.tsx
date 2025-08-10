@@ -13,6 +13,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -70,7 +71,7 @@ function RootComponent() {
 			<HeadContent />
 			<ORPCContext.Provider value={orpcUtils}>
 				<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-					<div className="grid h-svh grid-rows-[auto_1fr]">
+					<div className="flex flex-col min-h-svh">
 						{location.pathname.startsWith("/sign") ? (
 							<div className="h-16 mt-8 ml-8">
 								<Link to="/">
@@ -80,7 +81,10 @@ function RootComponent() {
 						) : (
 							<Header />
 						)}
-						<Outlet />
+						<main className="flex-1">
+							<Outlet />
+						</main>
+						<Footer />
 					</div>
 					<Toaster richColors />
 				</ThemeProvider>
