@@ -521,12 +521,42 @@ export const transactionsRouter = {
 						);
 						const totalCount = expenseTransactions.length;
 
+						// Calculate monthly average if exactly one category and/or one merchant is selected
+						let monthlyAverage: number | undefined;
+						const hasExactlyOneCategory = input.categoryIds?.length === 1;
+						const hasExactlyOneMerchant = input.merchantIds?.length === 1;
+						const shouldCalculateMonthlyAverage =
+							hasExactlyOneCategory || hasExactlyOneMerchant;
+
+						if (
+							shouldCalculateMonthlyAverage &&
+							expenseTransactions.length > 0
+						) {
+							// Get the date range for monthly calculation
+							const dates = expenseTransactions.map((t) => new Date(t.date));
+							const minDate = new Date(
+								Math.min(...dates.map((d) => d.getTime())),
+							);
+							const maxDate = new Date(
+								Math.max(...dates.map((d) => d.getTime())),
+							);
+
+							// Calculate number of months in the range
+							const monthsDiff =
+								(maxDate.getFullYear() - minDate.getFullYear()) * 12 +
+								(maxDate.getMonth() - minDate.getMonth()) +
+								1;
+
+							monthlyAverage = totalAmount / monthsDiff;
+						}
+
 						return {
 							transactions: expenseTransactions,
 							summary: {
 								totalCount,
 								totalAmount,
 								averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
+								monthlyAverage,
 							},
 						};
 					}
@@ -552,12 +582,39 @@ export const transactionsRouter = {
 					);
 					const totalCount = allTransactions.length;
 
+					// Calculate monthly average if exactly one category and/or one merchant is selected
+					let monthlyAverage: number | undefined;
+					const hasExactlyOneCategory = input.categoryIds?.length === 1;
+					const hasExactlyOneMerchant = input.merchantIds?.length === 1;
+					const shouldCalculateMonthlyAverage =
+						hasExactlyOneCategory || hasExactlyOneMerchant;
+
+					if (shouldCalculateMonthlyAverage && allTransactions.length > 0) {
+						// Get the date range for monthly calculation
+						const dates = allTransactions.map((t) => new Date(t.date));
+						const minDate = new Date(
+							Math.min(...dates.map((d) => d.getTime())),
+						);
+						const maxDate = new Date(
+							Math.max(...dates.map((d) => d.getTime())),
+						);
+
+						// Calculate number of months in the range
+						const monthsDiff =
+							(maxDate.getFullYear() - minDate.getFullYear()) * 12 +
+							(maxDate.getMonth() - minDate.getMonth()) +
+							1;
+
+						monthlyAverage = totalAmount / monthsDiff;
+					}
+
 					return {
 						transactions: allTransactions,
 						summary: {
 							totalCount,
 							totalAmount,
 							averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
+							monthlyAverage,
 						},
 					};
 				},

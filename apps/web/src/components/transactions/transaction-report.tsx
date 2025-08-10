@@ -318,6 +318,19 @@ export function TransactionReport() {
 									Average Amount
 								</div>
 							</div>
+							{reportData.summary.monthlyAverage !== undefined && (
+								<div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-lg p-6 shadow-sm border">
+									<div className="text-3xl font-extrabold text-primary mb-1">
+										<CurrencyAmount
+											amount={reportData.summary.monthlyAverage}
+											animate
+										/>
+									</div>
+									<div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+										Monthly Average
+									</div>
+								</div>
+							)}
 						</div>
 					</CardContent>
 				</Card>
