@@ -17,6 +17,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useSessionFetch } from "@/lib/auth-client";
 import { link, ORPCContext, type orpc } from "@/utils/orpc";
 import type { appRouter } from "../../../server/src/routers";
@@ -66,6 +67,8 @@ function RootComponent() {
 	const location = useLocation();
 	console.log(location);
 
+	useKeyboardShortcuts();
+
 	return (
 		<>
 			<HeadContent />
@@ -89,8 +92,12 @@ function RootComponent() {
 					<Toaster richColors />
 				</ThemeProvider>
 			</ORPCContext.Provider>
-			<TanStackRouterDevtools position="bottom-left" />
-			<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+			{import.meta.env.DEV && (
+				<>
+					<TanStackRouterDevtools position="bottom-left" />
+					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+				</>
+			)}
 		</>
 	);
 }

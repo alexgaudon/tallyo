@@ -32,17 +32,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authClient, useSession } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 import { ModeToggle } from "./mode-toggle";
+import { DeveloperModeToggle } from "./settings/developer-mode-toggle";
 
 const loadingContent = (
 	<>
 		<div className="hidden lg:flex lg:items-center lg:space-x-6">
 			<div className="flex space-x-2">
 				<ModeToggle />
+				<DeveloperModeToggle />
 				<Skeleton className="h-8 w-[120px]" />
 			</div>
 		</div>
 		<div className="flex space-x-2 lg:hidden">
 			<ModeToggle />
+			<DeveloperModeToggle />
 			<Skeleton className="h-8 w-8" />
 		</div>
 	</>
@@ -59,11 +62,13 @@ export default function Header() {
 					{session?.data ? (
 						<div className="flex items-center space-x-2">
 							<ModeToggle />
+							<DeveloperModeToggle />
 							<UserDropdown session={session.data} />
 						</div>
 					) : (
 						<>
 							<ModeToggle />
+							<DeveloperModeToggle />
 							<Button asChild className="w-fit" size="lg" type="button">
 								<Link to="/signin">Sign in</Link>
 							</Button>
@@ -72,6 +77,7 @@ export default function Header() {
 				</div>
 				<div className="flex space-x-2 lg:hidden">
 					<ModeToggle />
+					<DeveloperModeToggle />
 					<Sheet onOpenChange={setIsOpen} open={isOpen}>
 						<SheetTrigger asChild>
 							<Button className="lg:hidden" size="icon" variant="ghost">
