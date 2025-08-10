@@ -3,6 +3,7 @@ import {
 	endOfMonth,
 	endOfYear,
 	format,
+	startOfDay,
 	startOfMonth,
 	startOfYear,
 	subMonths,
@@ -25,57 +26,57 @@ const presets = [
 	{
 		label: "Last 7 days",
 		value: () => ({
-			from: addDays(new Date(), -7),
-			to: new Date(),
+			from: startOfDay(addDays(new Date(), -7)),
+			to: startOfDay(new Date()),
 		}),
 	},
 	{
 		label: "Last 14 days",
 		value: () => ({
-			from: addDays(new Date(), -14),
-			to: new Date(),
+			from: startOfDay(addDays(new Date(), -14)),
+			to: startOfDay(new Date()),
 		}),
 	},
 	{
 		label: "Last 30 days",
 		value: () => ({
-			from: addDays(new Date(), -30),
-			to: new Date(),
+			from: startOfDay(addDays(new Date(), -30)),
+			to: startOfDay(new Date()),
 		}),
 	},
 	{
 		label: "This month",
 		value: () => ({
-			from: startOfMonth(new Date()),
-			to: endOfMonth(new Date()),
+			from: startOfDay(startOfMonth(new Date())),
+			to: startOfDay(endOfMonth(new Date())),
 		}),
 	},
 	{
 		label: "Last month",
 		value: () => ({
-			from: startOfMonth(subMonths(new Date(), 1)),
-			to: endOfMonth(subMonths(new Date(), 1)),
+			from: startOfDay(startOfMonth(subMonths(new Date(), 1))),
+			to: startOfDay(endOfMonth(subMonths(new Date(), 1))),
 		}),
 	},
 	{
 		label: "This year",
 		value: () => ({
-			from: startOfYear(new Date()),
-			to: endOfYear(new Date()),
+			from: startOfDay(startOfYear(new Date())),
+			to: startOfDay(endOfYear(new Date())),
 		}),
 	},
 	{
 		label: "Last year",
 		value: () => ({
-			from: startOfYear(subYears(new Date(), 1)),
-			to: endOfYear(subYears(new Date(), 1)),
+			from: startOfDay(startOfYear(subYears(new Date(), 1))),
+			to: startOfDay(endOfYear(subYears(new Date(), 1))),
 		}),
 	},
 	{
 		label: "All time",
 		value: () => ({
 			from: undefined,
-			to: new Date(),
+			to: startOfDay(new Date()),
 		}),
 	},
 ];
@@ -91,8 +92,8 @@ export default function DateRangePicker({
 }) {
 	const [date, setDate] = React.useState<DateRange | undefined>(
 		value || {
-			from: startOfMonth(new Date()),
-			to: endOfMonth(new Date()),
+			from: startOfDay(startOfMonth(new Date())),
+			to: startOfDay(endOfMonth(new Date())),
 		},
 	);
 
@@ -105,6 +106,14 @@ export default function DateRangePicker({
 			setDate(value);
 		}
 	}, [value]);
+
+	// Helper function to ensure dates are timezone-safe
+	const normalizeDate = (date: Date | undefined) => {
+		if (!date) return undefined;
+		// Create a new date object with the same year, month, and day
+		// but at midnight in the local timezone to avoid timezone shifts
+		return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+	};
 
 	return (
 		<div className={cn("grid gap-2", className)}>
@@ -141,8 +150,15 @@ export default function DateRangePicker({
 							defaultMonth={date?.from}
 							selected={date}
 							onSelect={(newDate) => {
-								setDate(newDate);
-								onRangeChange?.(newDate);
+								// Normalize dates to avoid timezone issues
+								const normalizedDate = newDate
+									? {
+											from: normalizeDate(newDate.from),
+											to: normalizeDate(newDate.to),
+										}
+									: undefined;
+								setDate(normalizedDate);
+								onRangeChange?.(normalizedDate);
 							}}
 							numberOfMonths={1}
 						/>
@@ -151,8 +167,8 @@ export default function DateRangePicker({
 								{presets.map((preset) => {
 									const value = preset.value();
 									if (preset.label === "All time" && earliestTransactionDate) {
-										value.from = new Date(earliestTransactionDate);
-										value.to = new Date();
+										value.from = startOfDay(new Date(earliestTransactionDate));
+										value.to = startOfDay(new Date());
 									}
 									return (
 										<Button
