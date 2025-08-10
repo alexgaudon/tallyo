@@ -29,10 +29,12 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { authClient, useSession } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 import { ModeToggle } from "./mode-toggle";
 import { DeveloperModeToggle } from "./settings/developer-mode-toggle";
+import { PrivacyModeToggle } from "./settings/privacy-mode-toggle";
 
 const loadingContent = (
 	<>
@@ -40,12 +42,14 @@ const loadingContent = (
 			<div className="flex space-x-2">
 				<ModeToggle />
 				<DeveloperModeToggle />
+				<PrivacyModeToggle />
 				<Skeleton className="h-8 w-[120px]" />
 			</div>
 		</div>
 		<div className="flex space-x-2 lg:hidden">
 			<ModeToggle />
 			<DeveloperModeToggle />
+			<PrivacyModeToggle />
 			<Skeleton className="h-8 w-8" />
 		</div>
 	</>
@@ -63,12 +67,14 @@ export default function Header() {
 						<div className="flex items-center space-x-2">
 							<ModeToggle />
 							<DeveloperModeToggle />
+							<PrivacyModeToggle />
 							<UserDropdown session={session.data} />
 						</div>
 					) : (
 						<>
 							<ModeToggle />
 							<DeveloperModeToggle />
+							<PrivacyModeToggle />
 							<Button asChild className="w-fit" size="lg" type="button">
 								<Link to="/signin">Sign in</Link>
 							</Button>
@@ -78,6 +84,7 @@ export default function Header() {
 				<div className="flex space-x-2 lg:hidden">
 					<ModeToggle />
 					<DeveloperModeToggle />
+					<PrivacyModeToggle />
 					<Sheet onOpenChange={setIsOpen} open={isOpen}>
 						<SheetTrigger asChild>
 							<Button className="lg:hidden" size="icon" variant="ghost">
@@ -123,24 +130,26 @@ export default function Header() {
 	};
 
 	return (
-		<nav className="border-b">
-			<div className="flex items-center px-4 py-3 lg:px-8">
-				<div className="flex items-center">
-					<Link to="/" className="flex items-center space-x-2">
-						<img
-							src="/favicon.ico"
-							alt="Tallyo logo"
-							className="h-8 w-8 rounded-lg"
-						/>
-						<span className="font-bold text-xl">Tallyo</span>
-					</Link>
+		<TooltipProvider>
+			<nav className="border-b">
+				<div className="flex items-center px-4 py-3 lg:px-8">
+					<div className="flex items-center">
+						<Link to="/" className="flex items-center space-x-2">
+							<img
+								src="/favicon.ico"
+								alt="Tallyo logo"
+								className="h-8 w-8 rounded-lg"
+							/>
+							<span className="font-bold text-xl">Tallyo</span>
+						</Link>
+					</div>
+					<div className="hidden lg:flex lg:items-center lg:space-x-6 ml-6">
+						{session?.data && <NavLinks />}
+					</div>
+					<div className="ml-auto">{renderAuthContent()}</div>
 				</div>
-				<div className="hidden lg:flex lg:items-center lg:space-x-6 ml-6">
-					{session?.data && <NavLinks />}
-				</div>
-				<div className="ml-auto">{renderAuthContent()}</div>
-			</div>
-		</nav>
+			</nav>
+		</TooltipProvider>
 	);
 }
 
