@@ -2,6 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { Code, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 
@@ -107,17 +112,28 @@ export function DeveloperModeToggle() {
 	};
 
 	return (
-		<Button
-			variant="outline"
-			size="icon"
-			onClick={handleDeveloperModeToggle}
-			disabled={isPending}
-			title={isDevMode ? "Disable developer mode" : "Enable developer mode"}
-		>
-			{isDevMode ? <Code className="h-4 w-4" /> : <Code2 className="h-4 w-4" />}
-			<span className="sr-only">
-				{isDevMode ? "Disable developer mode" : "Enable developer mode"}
-			</span>
-		</Button>
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={handleDeveloperModeToggle}
+					disabled={isPending}
+				>
+					{isDevMode ? (
+						<Code className="h-4 w-4" />
+					) : (
+						<Code2 className="h-4 w-4" />
+					)}
+					<span className="sr-only">
+						{isDevMode ? "Disable developer mode" : "Enable developer mode"}
+					</span>
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent>
+				<p>{isDevMode ? "Disable developer mode" : "Enable developer mode"}</p>
+				<p className="text-xs text-muted-foreground">Ctrl+Shift+D</p>
+			</TooltipContent>
+		</Tooltip>
 	);
 }

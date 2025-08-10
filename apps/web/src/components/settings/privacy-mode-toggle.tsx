@@ -2,6 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 
@@ -117,21 +122,28 @@ export function PrivacyModeToggle() {
 	};
 
 	return (
-		<Button
-			variant="outline"
-			size="icon"
-			onClick={handlePrivacyModeToggle}
-			disabled={isPending}
-			title={isPrivacyMode ? "Disable privacy mode" : "Enable privacy mode"}
-		>
-			{isPrivacyMode ? (
-				<EyeOff className="h-4 w-4" />
-			) : (
-				<Eye className="h-4 w-4" />
-			)}
-			<span className="sr-only">
-				{isPrivacyMode ? "Disable privacy mode" : "Enable privacy mode"}
-			</span>
-		</Button>
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={handlePrivacyModeToggle}
+					disabled={isPending}
+				>
+					{isPrivacyMode ? (
+						<EyeOff className="h-4 w-4" />
+					) : (
+						<Eye className="h-4 w-4" />
+					)}
+					<span className="sr-only">
+						{isPrivacyMode ? "Disable privacy mode" : "Enable privacy mode"}
+					</span>
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent>
+				<p>{isPrivacyMode ? "Disable privacy mode" : "Enable privacy mode"}</p>
+				<p className="text-xs text-muted-foreground">Ctrl+Shift+P</p>
+			</TooltipContent>
+		</Tooltip>
 	);
 }
