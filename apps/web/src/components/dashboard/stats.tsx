@@ -75,7 +75,7 @@ export function Stats({
 									{isHigher ? "↗" : isLower ? "↘" : "→"}
 								</span>
 								<CurrencyAmount amount={data.averages.averageIncome} />
-								<span>/month</span>
+								<span>avg at this point</span>
 							</div>
 						)}
 					</div>
@@ -89,7 +89,7 @@ export function Stats({
 					dateRange?.from &&
 					dateRange?.to &&
 					differenceInDays(dateRange.to, dateRange.from) <= 31;
-				return showComparison ? "vs monthly average" : "total income";
+				return showComparison ? "vs avg at this point" : "total income";
 			})(),
 		},
 		{
@@ -123,7 +123,7 @@ export function Stats({
 									{isHigher ? "↗" : isLower ? "↘" : "→"}
 								</span>
 								<CurrencyAmount amount={data.averages.averageExpenses} />
-								<span>/month</span>
+								<span>avg at this point</span>
 							</div>
 						)}
 					</div>
@@ -137,7 +137,7 @@ export function Stats({
 					dateRange?.from &&
 					dateRange?.to &&
 					differenceInDays(dateRange.to, dateRange.from) <= 31;
-				return showComparison ? "vs monthly average" : "total expenses";
+				return showComparison ? "vs avg at this point" : "total expenses";
 			})(),
 		},
 		{

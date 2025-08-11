@@ -258,6 +258,105 @@ export const dashboardRouter = {
 		.handler(async ({ context, input }) => {
 			const dateRange = input || {};
 
+			// Calculate same-day-of-month averages if we have a date range
+			let sameDayIncomeAverage = 0;
+			let sameDayExpenseAverage = 0;
+
+			if (dateRange.from && dateRange.to) {
+				const currentDay = dateRange.to.getDate();
+
+				// Get historical data for the same day of month across previous months
+				const historicalIncomeData = await db
+					.select({
+						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+						month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+						day: sql<number>`EXTRACT(DAY FROM ${transaction.date})`,
+						totalAmount: sum(transaction.amount),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(transaction.reviewed, true),
+							eq(category.treatAsIncome, true),
+							eq(category.hideFromInsights, false),
+							sql`EXTRACT(DAY FROM ${transaction.date}) <= ${currentDay}`,
+							// Exclude current month to avoid bias
+							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${dateRange.to.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${dateRange.to.getMonth() + 1})`,
+						),
+					)
+					.groupBy(
+						sql`EXTRACT(YEAR FROM ${transaction.date})`,
+						sql`EXTRACT(MONTH FROM ${transaction.date})`,
+						sql`EXTRACT(DAY FROM ${transaction.date})`,
+					);
+
+				const historicalExpenseData = await db
+					.select({
+						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+						month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+						day: sql<number>`EXTRACT(DAY FROM ${transaction.date})`,
+						totalAmount: sum(transaction.amount),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(transaction.reviewed, true),
+							eq(category.treatAsIncome, false),
+							eq(category.hideFromInsights, false),
+							sql`EXTRACT(DAY FROM ${transaction.date}) <= ${currentDay}`,
+							// Exclude current month to avoid bias
+							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${dateRange.to.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${dateRange.to.getMonth() + 1})`,
+						),
+					)
+					.groupBy(
+						sql`EXTRACT(YEAR FROM ${transaction.date})`,
+						sql`EXTRACT(MONTH FROM ${transaction.date})`,
+						sql`EXTRACT(DAY FROM ${transaction.date})`,
+					);
+
+				// Group by month and sum up to the current day
+				const monthlyIncomeMap = new Map<string, number>();
+				const monthlyExpenseMap = new Map<string, number>();
+
+				for (const item of historicalIncomeData) {
+					const monthKey = `${item.year}-${item.month}`;
+					const existing = monthlyIncomeMap.get(monthKey) || 0;
+					monthlyIncomeMap.set(
+						monthKey,
+						existing + Math.abs(Number(item.totalAmount)),
+					);
+				}
+
+				for (const item of historicalExpenseData) {
+					const monthKey = `${item.year}-${item.month}`;
+					const existing = monthlyExpenseMap.get(monthKey) || 0;
+					monthlyExpenseMap.set(
+						monthKey,
+						existing + Math.abs(Number(item.totalAmount)),
+					);
+				}
+
+				// Calculate averages
+				const incomeValues = Array.from(monthlyIncomeMap.values());
+				const expenseValues = Array.from(monthlyExpenseMap.values());
+
+				sameDayIncomeAverage =
+					incomeValues.length > 0
+						? incomeValues.reduce((sum, val) => sum + val, 0) /
+							incomeValues.length
+						: 0;
+
+				sameDayExpenseAverage =
+					expenseValues.length > 0
+						? expenseValues.reduce((sum, val) => sum + val, 0) /
+							expenseValues.length
+						: 0;
+			}
+
 			const [
 				transactionCount,
 				categoryCount,
@@ -416,7 +515,7 @@ export const dashboardRouter = {
 					),
 			]);
 
-			// Calculate averages
+			// Calculate monthly averages (fallback for when no date range is provided)
 			const incomeAmounts =
 				incomeData.status === "fulfilled"
 					? incomeData.value.map((item) => Math.abs(Number(item.totalAmount)))
@@ -465,8 +564,14 @@ export const dashboardRouter = {
 							: 0,
 				},
 				averages: {
-					averageIncome: averageIncome,
-					averageExpenses: averageExpenses,
+					averageIncome:
+						dateRange.from && dateRange.to
+							? sameDayIncomeAverage
+							: averageIncome,
+					averageExpenses:
+						dateRange.from && dateRange.to
+							? sameDayExpenseAverage
+							: averageExpenses,
 				},
 			};
 		}),

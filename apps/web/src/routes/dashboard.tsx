@@ -45,7 +45,7 @@ function RouteComponent() {
 	const { data: session } = useSession();
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
 		from: startOfMonth(new Date()),
-		to: endOfMonth(new Date()),
+		to: new Date(),
 	});
 
 	const { data: statsData, isLoading: isStatsLoading } = useQuery(
