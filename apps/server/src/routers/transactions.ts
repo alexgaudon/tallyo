@@ -622,4 +622,113 @@ export const transactionsRouter = {
 				context.session?.user?.id,
 			);
 		}),
+
+	splitTransaction: protectedProcedure
+		.input(
+			z.object({
+				id: z.string(),
+				months: z.number().min(2).max(60),
+			}),
+		)
+		.handler(async ({ input, context }) => {
+			return withErrorHandling(
+				async () => {
+					// Validate transaction ownership
+					const originalTransaction = await validateTransactionOwnership(
+						input.id,
+						context.session?.user?.id,
+					);
+
+					// Check if transaction is already part of a split
+					if (originalTransaction.splitGroupId) {
+						throw new Error("Transaction is already part of a split");
+					}
+
+					// Validate that merchant and category are assigned
+					if (!originalTransaction.merchantId) {
+						throw new Error(
+							"Transaction must have a merchant assigned before splitting",
+						);
+					}
+
+					if (!originalTransaction.categoryId) {
+						throw new Error(
+							"Transaction must have a category assigned before splitting",
+						);
+					}
+
+					// Calculate split amounts with accurate division
+					const totalAmount = Math.abs(originalTransaction.amount);
+					const baseAmount = Math.floor(totalAmount / input.months);
+					const remainder = totalAmount % input.months;
+
+					// Create split amounts array - distribute remainder across first transactions
+					const splitAmounts: number[] = [];
+					for (let i = 0; i < input.months; i++) {
+						const amount = baseAmount + (i < remainder ? 1 : 0);
+						// Preserve the sign of the original amount
+						splitAmounts.push(
+							originalTransaction.amount < 0 ? -amount : amount,
+						);
+					}
+
+					// Generate split group ID
+					const splitGroupId = Bun.randomUUIDv7();
+
+					// Get the original transaction date
+					const originalDate = new Date(originalTransaction.date);
+
+					// Create split transactions
+					const splitTransactions = [];
+					for (let i = 0; i < input.months; i++) {
+						// Calculate date for this split (first of each month)
+						const splitDate = new Date(
+							originalDate.getFullYear(),
+							originalDate.getMonth() + i,
+							1,
+						);
+
+						const splitTransaction = {
+							userId: originalTransaction.userId,
+							merchantId: originalTransaction.merchantId,
+							categoryId: originalTransaction.categoryId,
+							amount: splitAmounts[i],
+							date: splitDate.toISOString().split("T")[0],
+							transactionDetails: `${originalTransaction.transactionDetails} (Split ${i + 1}/${input.months})`,
+							notes: originalTransaction.notes,
+							reviewed: false, // Split transactions need to be reviewed again
+							splitGroupId,
+							splitIndex: i + 1,
+							splitTotal: input.months,
+							originalAmount: originalTransaction.amount,
+						};
+
+						splitTransactions.push(splitTransaction);
+					}
+
+					// Insert all split transactions
+					const createdTransactions = await db
+						.insert(transaction)
+						.values(splitTransactions)
+						.returning();
+
+					// Delete the original transaction
+					await db.delete(transaction).where(eq(transaction.id, input.id));
+
+					// Return the created split transactions with relations
+					const splitTransactionsWithRelations = await Promise.all(
+						createdTransactions.map(
+							async (t) => await getTransactionWithRelations(t.id),
+						),
+					);
+
+					return {
+						splitTransactions: splitTransactionsWithRelations,
+						splitGroupId,
+					};
+				},
+				"Error splitting transaction",
+				context.session?.user?.id,
+			);
+		}),
 };

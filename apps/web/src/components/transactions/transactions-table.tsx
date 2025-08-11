@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { Check, Trash } from "lucide-react";
+import { Check, Split, Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
 	CategorySelect,
@@ -40,6 +40,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { SplitTransactionDialog } from "./split-transaction-dialog";
 
 interface TransactionsTableProps {
 	transactions: Transaction[];
@@ -51,6 +52,7 @@ interface TransactionsTableProps {
 	updateNotes: (args: { id: string; notes: string }) => void;
 	toggleReviewed: (args: { id: string }) => void;
 	deleteTransaction: (args: { id: string }) => void;
+	splitTransaction: (args: { id: string; months: number }) => void;
 	onCategoryClick?: (categoryId: string) => void;
 	onMerchantClick?: (merchantId: string) => void;
 	isLoading?: boolean;
@@ -66,6 +68,7 @@ export function TransactionsTable({
 	updateNotes,
 	toggleReviewed,
 	deleteTransaction,
+	splitTransaction,
 	onCategoryClick,
 	onMerchantClick,
 	isLoading = false,
@@ -89,6 +92,17 @@ export function TransactionsTable({
 	}>({ open: false, categoryId: "" });
 
 	const [createCategoryDialog, setCreateCategoryDialog] = useState(false);
+
+	const [splitTransactionDialog, setSplitTransactionDialog] = useState<{
+		open: boolean;
+		transaction: {
+			id: string;
+			amount: number;
+			transactionDetails: string;
+			merchant: { id: string; name: string } | null;
+			category: { id: string; name: string } | null;
+		} | null;
+	}>({ open: false, transaction: null });
 
 	const unsavedChanges = useRef<Record<string, string>>({});
 	const updateNotesRef = useRef(updateNotes);
@@ -250,7 +264,7 @@ export function TransactionsTable({
 						<TableHead compact className="w-[80px] px-2 sm:px-4 text-center">
 							Reviewed
 						</TableHead>
-						<TableHead compact className="w-[80px] px-2 sm:px-4 text-center">
+						<TableHead compact className="w-[120px] px-2 sm:px-4 text-center">
 							Actions
 						</TableHead>
 					</TableRow>
@@ -408,31 +422,63 @@ export function TransactionsTable({
 								compact
 								className="text-center px-2 sm:px-4 h-10 align-middle"
 							>
-								<AlertDialog>
-									<AlertDialogTrigger asChild>
-										<Button variant="ghost" size="icon">
-											<Trash className="h-4 w-4" />
-										</Button>
-									</AlertDialogTrigger>
-									<AlertDialogContent>
-										<AlertDialogHeader>
-											<AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-										</AlertDialogHeader>
-										<AlertDialogDescription>
-											Are you sure you want to delete this transaction?
-										</AlertDialogDescription>
-										<AlertDialogFooter>
-											<AlertDialogCancel>Cancel</AlertDialogCancel>
-											<AlertDialogAction
-												onClick={() =>
-													deleteTransaction({ id: transaction.id })
-												}
-											>
-												Delete
-											</AlertDialogAction>
-										</AlertDialogFooter>
-									</AlertDialogContent>
-								</AlertDialog>
+								<div className="flex items-center justify-center gap-1">
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={() =>
+														setSplitTransactionDialog({
+															open: true,
+															transaction: {
+																id: transaction.id,
+																amount: transaction.amount,
+																transactionDetails:
+																	transaction.transactionDetails,
+																merchant: transaction.merchant,
+																category: transaction.category,
+															},
+														})
+													}
+													disabled={isLoading}
+												>
+													<Split className="h-4 w-4" />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>
+												<p>Split transaction across months</p>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+
+									<AlertDialog>
+										<AlertDialogTrigger asChild>
+											<Button variant="ghost" size="icon">
+												<Trash className="h-4 w-4" />
+											</Button>
+										</AlertDialogTrigger>
+										<AlertDialogContent>
+											<AlertDialogHeader>
+												<AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+											</AlertDialogHeader>
+											<AlertDialogDescription>
+												Are you sure you want to delete this transaction?
+											</AlertDialogDescription>
+											<AlertDialogFooter>
+												<AlertDialogCancel>Cancel</AlertDialogCancel>
+												<AlertDialogAction
+													onClick={() =>
+														deleteTransaction({ id: transaction.id })
+													}
+												>
+													Delete
+												</AlertDialogAction>
+											</AlertDialogFooter>
+										</AlertDialogContent>
+									</AlertDialog>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}
@@ -476,6 +522,23 @@ export function TransactionsTable({
 				onSuccess={(categoryId) => {
 					console.log("Category created:", categoryId);
 				}}
+			/>
+
+			{/* Split Transaction Dialog */}
+			<SplitTransactionDialog
+				open={splitTransactionDialog.open}
+				onOpenChange={(open) =>
+					setSplitTransactionDialog({
+						open,
+						transaction: splitTransactionDialog.transaction,
+					})
+				}
+				transaction={splitTransactionDialog.transaction}
+				onSplit={(transactionId, months) => {
+					splitTransaction({ id: transactionId, months });
+					setSplitTransactionDialog({ open: false, transaction: null });
+				}}
+				isLoading={isLoading}
 			/>
 		</div>
 	);

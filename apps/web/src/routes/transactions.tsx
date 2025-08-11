@@ -321,6 +321,16 @@ function RouteComponent() {
 		}),
 	);
 
+	const { mutateAsync: splitTransaction } = useMutation(
+		orpc.transactions.splitTransaction.mutationOptions({
+			onSuccess: () => {
+				queryClient.invalidateQueries({
+					queryKey: createTransactionQueryOptions(search).queryKey,
+				});
+			},
+		}),
+	);
+
 	const handlePageChange = (page: number) => {
 		navigate({
 			to: "/transactions",
@@ -404,6 +414,7 @@ function RouteComponent() {
 					updateNotes={updateNotes}
 					toggleReviewed={toggleReviewed}
 					deleteTransaction={deleteTransaction}
+					splitTransaction={splitTransaction}
 					onCategoryClick={handleCategoryClick}
 					onMerchantClick={handleMerchantClick}
 					isLoading={false}
