@@ -7,9 +7,10 @@ import type { DateRange } from "react-day-picker";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
+import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
-import { ensureSession } from "@/lib/auth-client";
+import { ensureSession, useSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/dashboard")({
@@ -41,6 +42,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function RouteComponent() {
+	const { data: session } = useSession();
 	const [dateRange, setDateRange] = useState<DateRange | undefined>({
 		from: startOfMonth(new Date()),
 		to: endOfMonth(new Date()),
@@ -96,6 +98,13 @@ function RouteComponent() {
 			>
 				{/* Main Content */}
 				<div className="container mx-auto px-4 py-8">
+					{/* Unreviewed Transactions Banner */}
+					<UnreviewedTransactionsBanner
+						count={session?.meta?.unreviewedTransactionCount ?? 0}
+					/>
+					{(session?.meta?.unreviewedTransactionCount ?? 0) > 0 && (
+						<div className="mb-6" />
+					)}
 					{/* Stats and Merchants Section */}
 					<div className="flex flex-col md:flex-row gap-6">
 						<div className="flex flex-col flex-1">
