@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { startOfMonth } from "date-fns";
 import { CreditCardIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -17,27 +17,34 @@ export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
 	beforeLoad: async ({ context }) => {
 		ensureSession(context.isAuthenticated, "/dashboard");
+	},
+	loader: async ({ context }) => {
 		const defaultDateRange = {
 			from: startOfMonth(new Date()),
-			to: endOfMonth(new Date()),
+			to: new Date(),
 		};
-		await Promise.all([
-			context.queryClient.prefetchQuery(
+		const [statsData, categoryData, merchantData] = await Promise.all([
+			context.queryClient.ensureQueryData(
 				orpc.dashboard.getStatsCounts.queryOptions({
 					input: defaultDateRange,
 				}),
 			),
-			context.queryClient.prefetchQuery(
+			context.queryClient.ensureQueryData(
 				orpc.dashboard.getCategoryData.queryOptions({
 					input: defaultDateRange,
 				}),
 			),
-			context.queryClient.prefetchQuery(
+			context.queryClient.ensureQueryData(
 				orpc.dashboard.getMerchantStats.queryOptions({
 					input: defaultDateRange,
 				}),
 			),
 		]);
+		return {
+			statsData,
+			categoryData,
+			merchantData,
+		};
 	},
 });
 
@@ -48,10 +55,13 @@ function RouteComponent() {
 		to: new Date(),
 	});
 
+	const loaderData = Route.useLoaderData();
+
 	const { data: statsData, isLoading: isStatsLoading } = useQuery(
 		orpc.dashboard.getStatsCounts.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
+			initialData: loaderData.statsData,
 		}),
 	);
 
@@ -59,6 +69,7 @@ function RouteComponent() {
 		orpc.dashboard.getCategoryData.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
+			initialData: loaderData.categoryData,
 		}),
 	);
 
@@ -66,6 +77,7 @@ function RouteComponent() {
 		orpc.dashboard.getMerchantStats.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRange,
+			initialData: loaderData.merchantData,
 		}),
 	);
 

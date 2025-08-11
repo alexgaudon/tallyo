@@ -42,12 +42,18 @@ export function StatDisplay({
 	animate = false,
 	animationDuration = 1000,
 }: StatDisplayProps) {
-	const [displayValue, setDisplayValue] = useState(animate ? "" : value);
-	const [isAnimating, setIsAnimating] = useState(animate);
+	const [displayValue, setDisplayValue] = useState(value);
+	const [isAnimating, setIsAnimating] = useState(false);
 
 	useEffect(() => {
 		if (!animate) {
 			setDisplayValue(value);
+			return;
+		}
+
+		// Only animate when the value changes, not on first render
+		const prevValue = displayValue;
+		if (prevValue === value) {
 			return;
 		}
 
@@ -66,10 +72,10 @@ export function StatDisplay({
 		}
 
 		setIsAnimating(true);
-		setDisplayValue("");
 
 		const startTime = Date.now();
 		const targetValue = valueStr;
+		const startValue = String(prevValue);
 
 		const animateValue = () => {
 			const elapsed = Date.now() - startTime;
@@ -78,12 +84,19 @@ export function StatDisplay({
 			// Easing function for smooth animation
 			const easeOutQuart = 1 - (1 - progress) ** 16;
 
-			// Extract numeric value for animation
-			const numericValue = Number.parseFloat(
+			// Extract numeric values for animation
+			const startNumeric = Number.parseFloat(
+				startValue.replace(/[^\d.-]/g, ""),
+			);
+			const targetNumeric = Number.parseFloat(
 				targetValue.replace(/[^\d.-]/g, ""),
 			);
-			if (!Number.isNaN(numericValue)) {
-				const currentNumeric = Math.round(numericValue * easeOutQuart);
+
+			if (!Number.isNaN(startNumeric) && !Number.isNaN(targetNumeric)) {
+				const difference = targetNumeric - startNumeric;
+				const currentNumeric = Math.round(
+					startNumeric + difference * easeOutQuart,
+				);
 				// Preserve formatting (commas, decimals, currency symbol, etc.)
 				const formatted = targetValue.replace(
 					/[\d.-]+/,
@@ -103,7 +116,7 @@ export function StatDisplay({
 		};
 
 		requestAnimationFrame(animateValue);
-	}, [value, animate, animationDuration]);
+	}, [value, animate, animationDuration, displayValue]);
 
 	const content = (
 		<span

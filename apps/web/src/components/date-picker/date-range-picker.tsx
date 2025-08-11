@@ -48,7 +48,7 @@ const presets = [
 		label: "This month",
 		value: () => ({
 			from: startOfDay(startOfMonth(new Date())),
-			to: startOfDay(endOfMonth(new Date())),
+			to: new Date(),
 		}),
 	},
 	{

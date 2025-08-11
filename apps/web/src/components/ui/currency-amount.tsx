@@ -64,8 +64,8 @@ export function CurrencyAmount({
 	const isPrivacyMode =
 		forcePrivacyMode ?? session?.settings?.isPrivacyMode ?? false;
 
-	const [animatedAmount, setAnimatedAmount] = useState(animate ? 0 : amount);
-	const [isAnimating, setIsAnimating] = useState(animate);
+	const [animatedAmount, setAnimatedAmount] = useState(amount);
+	const [isAnimating, setIsAnimating] = useState(false);
 
 	useEffect(() => {
 		if (!animate) {
@@ -73,11 +73,18 @@ export function CurrencyAmount({
 			return;
 		}
 
+		// Only animate when the amount changes, not on first render
+		const prevAmount = animatedAmount;
+		if (prevAmount === amount) {
+			return;
+		}
+
 		setIsAnimating(true);
-		setAnimatedAmount(0);
 
 		const startTime = Date.now();
+		const startAmount = prevAmount;
 		const targetAmount = amount;
+		const difference = targetAmount - startAmount;
 
 		const animateValue = () => {
 			const elapsed = Date.now() - startTime;
@@ -85,7 +92,7 @@ export function CurrencyAmount({
 
 			// Easing function for smooth animation
 			const easeOutQuart = 1 - (1 - progress) ** 16;
-			const currentAmount = Math.round(targetAmount * easeOutQuart);
+			const currentAmount = Math.round(startAmount + difference * easeOutQuart);
 
 			setAnimatedAmount(currentAmount);
 
@@ -97,7 +104,7 @@ export function CurrencyAmount({
 		};
 
 		requestAnimationFrame(animateValue);
-	}, [amount, animate, animationDuration]);
+	}, [amount, animate, animationDuration, animatedAmount]);
 
 	const formattedAmount = formatCurrency(animatedAmount, currency);
 	const displayValue = formatValueWithPrivacy(formattedAmount, isPrivacyMode);
