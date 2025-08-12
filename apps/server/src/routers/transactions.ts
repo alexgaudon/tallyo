@@ -245,6 +245,12 @@ export const transactionsRouter = {
 				async () => {
 					const conditions = [];
 
+					// Filter out transactions more than 10 days in the future
+					const tenDaysFromNow = new Date();
+					tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 30);
+					const maxDate = tenDaysFromNow.toISOString().split("T")[0];
+					conditions.push(lte(transaction.date, maxDate));
+
 					if (input.category)
 						conditions.push(eq(transaction.categoryId, input.category));
 					if (input.merchant)
@@ -464,6 +470,12 @@ export const transactionsRouter = {
 					const conditions = [
 						eq(transaction.userId, context.session?.user?.id),
 					];
+
+					// Filter out transactions more than 10 days in the future
+					const tenDaysFromNow = new Date();
+					tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
+					const maxDate = tenDaysFromNow.toISOString().split("T")[0];
+					conditions.push(lte(transaction.date, maxDate));
 
 					// Date range filters
 					if (input.dateFrom) {

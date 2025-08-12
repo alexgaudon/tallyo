@@ -12,6 +12,12 @@ import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
@@ -29,6 +35,21 @@ interface TransactionReportFilters {
 export function TransactionReport() {
 	const defaultDateFrom = startOfMonth(new Date());
 	const defaultDateTo = endOfMonth(new Date());
+
+	// Helper function to check if transaction is upcoming (1-10 days in future)
+	const isUpcomingTransaction = (dateValue: string) => {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const transactionDate = parseISO(dateValue);
+		transactionDate.setHours(0, 0, 0, 0);
+
+		const daysDifference =
+			Math.floor(
+				(transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+			) + 1;
+		return daysDifference >= 1 && daysDifference <= 10;
+	};
 
 	const [filters, setFilters] = useState<TransactionReportFilters>({
 		includeIncome: false,
@@ -362,9 +383,20 @@ export function TransactionReport() {
 										<div className="font-medium">
 											{transaction.transactionDetails}
 										</div>
-										<div className="text-sm text-muted-foreground">
-											{/* {new Date(transaction.date).toLocaleDateString()} */}
+										<div className="text-sm text-muted-foreground flex items-center gap-2">
 											{format(parseISO(transaction.date), "MMM d, yyyy")}
+											{isUpcomingTransaction(transaction.date) && (
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger asChild>
+															<div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+														</TooltipTrigger>
+														<TooltipContent>
+															<p>Upcoming transaction</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											)}
 										</div>
 									</div>
 									<div className="text-right">

@@ -158,6 +158,21 @@ export function TransactionsTable({
 	};
 
 	// Helper function to parse date and ensure correct local display
+	// Helper function to check if transaction is upcoming (1-10 days in future)
+	const isUpcomingTransaction = (dateValue: string | Date) => {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const transactionDate = parseTransactionDate(dateValue);
+		transactionDate.setHours(0, 0, 0, 0);
+
+		const daysDifference =
+			Math.floor(
+				(transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+			) + 1;
+		return daysDifference >= 1 && daysDifference <= 30;
+	};
+
 	const parseTransactionDate = (dateValue: string | Date) => {
 		let year: number;
 		let month: number;
@@ -291,7 +306,24 @@ export function TransactionsTable({
 								compact
 								className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle"
 							>
-								{format(parseTransactionDate(transaction.date), "MMM d, yyyy")}
+								<div className="flex items-center gap-2">
+									{format(
+										parseTransactionDate(transaction.date),
+										"MMM d, yyyy",
+									)}
+									{isUpcomingTransaction(transaction.date) && (
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>Upcoming transaction</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									)}
+								</div>
 							</TableCell>
 							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
