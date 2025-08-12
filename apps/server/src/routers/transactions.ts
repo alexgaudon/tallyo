@@ -181,7 +181,9 @@ export const transactionsRouter = {
 		.input(
 			z.object({
 				amount: z.number().int(),
-				date: z.date(),
+				date: z
+					.string()
+					.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 				transactionDetails: z
 					.string()
 					.min(1, "Transaction details are required"),
@@ -203,7 +205,7 @@ export const transactionsRouter = {
 						.values({
 							userId: context.session?.user?.id,
 							amount: input.amount,
-							date: input.date.toISOString().split("T")[0],
+							date: input.date,
 							transactionDetails: input.transactionDetails,
 							merchantId: input.merchantId || merchantRecord?.id,
 							categoryId:
@@ -440,8 +442,14 @@ export const transactionsRouter = {
 	getTransactionReport: protectedProcedure
 		.input(
 			z.object({
-				dateFrom: z.date().optional(),
-				dateTo: z.date().optional(),
+				dateFrom: z
+					.string()
+					.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+					.optional(),
+				dateTo: z
+					.string()
+					.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+					.optional(),
 				categoryIds: z.array(z.string()).optional(),
 				merchantIds: z.array(z.string()).optional(),
 				amountMin: z.number().optional(),
@@ -459,14 +467,10 @@ export const transactionsRouter = {
 
 					// Date range filters
 					if (input.dateFrom) {
-						conditions.push(
-							gte(transaction.date, input.dateFrom.toISOString().split("T")[0]),
-						);
+						conditions.push(gte(transaction.date, input.dateFrom));
 					}
 					if (input.dateTo) {
-						conditions.push(
-							lte(transaction.date, input.dateTo.toISOString().split("T")[0]),
-						);
+						conditions.push(lte(transaction.date, input.dateTo));
 					}
 
 					if (input.categoryIds && input.categoryIds.length > 0) {

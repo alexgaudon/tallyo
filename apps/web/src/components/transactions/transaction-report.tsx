@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { CategoryMultiSelect } from "@/components/categories/category-multi-select";
@@ -12,6 +12,7 @@ import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
 interface TransactionReportFilters {
@@ -70,9 +71,15 @@ export function TransactionReport() {
 			}
 		}
 
+		const dateRange =
+			filters.dateFrom && filters.dateTo
+				? { from: filters.dateFrom, to: filters.dateTo }
+				: undefined;
+		const apiDates = dateRangeToApiFormat(dateRange);
+
 		return {
-			dateFrom: filters.dateFrom,
-			dateTo: filters.dateTo,
+			dateFrom: apiDates.from,
+			dateTo: apiDates.to,
 			categoryIds: filters.categoryIds,
 			merchantIds: filters.merchantIds,
 			amountMin: apiAmountMin,
@@ -356,7 +363,8 @@ export function TransactionReport() {
 											{transaction.transactionDetails}
 										</div>
 										<div className="text-sm text-muted-foreground">
-											{new Date(transaction.date).toLocaleDateString()}
+											{/* {new Date(transaction.date).toLocaleDateString()} */}
+											{format(parseISO(transaction.date), "MMM d, yyyy")}
 										</div>
 									</div>
 									<div className="text-right">

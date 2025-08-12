@@ -1,4 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -32,4 +34,12 @@ export function formatValueWithPrivacy(
 		return masked;
 	}
 	return value;
+}
+
+// Helper function to convert DateRange to API format
+export function dateRangeToApiFormat(dateRange: DateRange | undefined) {
+	return {
+		from: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
+		to: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+	};
 }

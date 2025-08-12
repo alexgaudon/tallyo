@@ -16,8 +16,14 @@ import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 const dateRangeSchema = z.object({
-	from: z.date().optional(),
-	to: z.date().optional(),
+	from: z
+		.string()
+		.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+		.optional(),
+	to: z
+		.string()
+		.regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
+		.optional(),
 });
 
 // Helper function to calculate standard deviation
@@ -68,21 +74,9 @@ export const dashboardRouter = {
 							eq(transaction.userId, context.session.user.id),
 							not(eq(category.treatAsIncome, true)),
 							...(dateRange.from
-								? [
-										gte(
-											transaction.date,
-											dateRange.from.toISOString().split("T")[0],
-										),
-									]
+								? [gte(transaction.date, dateRange.from)]
 								: []),
-							...(dateRange.to
-								? [
-										lte(
-											transaction.date,
-											dateRange.to.toISOString().split("T")[0],
-										),
-									]
-								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					)
 					.groupBy(merchant.id, merchant.name)
@@ -125,22 +119,8 @@ export const dashboardRouter = {
 					and(
 						eq(transaction.userId, context.session.user.id),
 						eq(transaction.reviewed, true),
-						...(dateRange.from
-							? [
-									gte(
-										transaction.date,
-										dateRange.from.toISOString().split("T")[0],
-									),
-								]
-							: []),
-						...(dateRange.to
-							? [
-									lte(
-										transaction.date,
-										dateRange.to.toISOString().split("T")[0],
-									),
-								]
-							: []),
+						...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+						...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 					),
 				)
 				.groupBy(
@@ -263,7 +243,8 @@ export const dashboardRouter = {
 			let sameDayExpenseAverage = 0;
 
 			if (dateRange.from && dateRange.to) {
-				const currentDay = dateRange.to.getDate();
+				const toDate = new Date(dateRange.to);
+				const currentDay = toDate.getDate();
 
 				// Get historical data for the same day of month across previous months
 				const historicalIncomeData = await db
@@ -283,7 +264,7 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							sql`EXTRACT(DAY FROM ${transaction.date}) <= ${currentDay}`,
 							// Exclude current month to avoid bias
-							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${dateRange.to.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${dateRange.to.getMonth() + 1})`,
+							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${toDate.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${toDate.getMonth() + 1})`,
 						),
 					)
 					.groupBy(
@@ -309,7 +290,7 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							sql`EXTRACT(DAY FROM ${transaction.date}) <= ${currentDay}`,
 							// Exclude current month to avoid bias
-							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${dateRange.to.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${dateRange.to.getMonth() + 1})`,
+							sql`NOT (EXTRACT(YEAR FROM ${transaction.date}) = ${toDate.getFullYear()} AND EXTRACT(MONTH FROM ${transaction.date}) = ${toDate.getMonth() + 1})`,
 						),
 					)
 					.groupBy(
@@ -376,21 +357,9 @@ export const dashboardRouter = {
 						and(
 							eq(transaction.userId, context.session.user.id),
 							...(dateRange.from
-								? [
-										gte(
-											transaction.date,
-											dateRange.from.toISOString().split("T")[0],
-										),
-									]
+								? [gte(transaction.date, dateRange.from)]
 								: []),
-							...(dateRange.to
-								? [
-										lte(
-											transaction.date,
-											dateRange.to.toISOString().split("T")[0],
-										),
-									]
-								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					),
 				db
@@ -424,21 +393,9 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							eq(transaction.reviewed, true),
 							...(dateRange.from
-								? [
-										gte(
-											transaction.date,
-											dateRange.from.toISOString().split("T")[0],
-										),
-									]
+								? [gte(transaction.date, dateRange.from)]
 								: []),
-							...(dateRange.to
-								? [
-										lte(
-											transaction.date,
-											dateRange.to.toISOString().split("T")[0],
-										),
-									]
-								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					),
 				db
@@ -454,21 +411,9 @@ export const dashboardRouter = {
 							eq(category.hideFromInsights, false),
 							eq(transaction.reviewed, true),
 							...(dateRange.from
-								? [
-										gte(
-											transaction.date,
-											dateRange.from.toISOString().split("T")[0],
-										),
-									]
+								? [gte(transaction.date, dateRange.from)]
 								: []),
-							...(dateRange.to
-								? [
-										lte(
-											transaction.date,
-											dateRange.to.toISOString().split("T")[0],
-										),
-									]
-								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					),
 				// Get all income transactions grouped by month for averages

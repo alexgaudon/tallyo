@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { account, category, merchant, transaction, user } from "@/db/schema";
@@ -46,7 +47,7 @@ export const metaRouter = {
 			},
 		});
 
-		const _transferCategoryId = await db.query.category.findFirst({
+		const transferCategoryId = await db.query.category.findFirst({
 			where: and(
 				eq(category.userId, context.session?.user?.id),
 				eq(category.hideFromInsights, true),
@@ -68,8 +69,9 @@ export const metaRouter = {
 			topFiveCategories,
 			topFiveMerchants,
 			userCreatedAt: userCreatedAt?.createdAt,
+			transferCategoryId: transferCategoryId?.id ?? null,
 			earliestTransactionDate:
-				earliestTransactionDate?.date ?? userCreatedAt?.createdAt,
+				earliestTransactionDate?.date ?? format(new Date(), "yyyy-MM-dd"),
 			unreviewedTransactionCount: unreviewedTransactionCount[0]?.count ?? 0,
 		};
 	}),

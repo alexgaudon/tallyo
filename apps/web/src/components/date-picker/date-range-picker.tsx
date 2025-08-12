@@ -115,6 +115,13 @@ export default function DateRangePicker({
 		return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 	};
 
+	// Helper function to create dates from date strings without timezone issues
+	const createLocalDate = (dateString: string) => {
+		const [year, month, day] = dateString.split("-").map(Number);
+		// month is 0-indexed in Date constructor, so subtract 1
+		return new Date(year, month - 1, day);
+	};
+
 	return (
 		<div className={cn("grid gap-2", className)}>
 			<Popover>
@@ -167,7 +174,7 @@ export default function DateRangePicker({
 								{presets.map((preset) => {
 									const value = preset.value();
 									if (preset.label === "All time" && earliestTransactionDate) {
-										value.from = startOfDay(new Date(earliestTransactionDate));
+										value.from = createLocalDate(earliestTransactionDate);
 										value.to = startOfDay(new Date());
 									}
 									return (

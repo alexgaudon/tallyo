@@ -11,6 +11,7 @@ import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { ensureSession, useSession } from "@/lib/auth-client";
+import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/dashboard")({
@@ -26,17 +27,17 @@ export const Route = createFileRoute("/dashboard")({
 		const [statsData, categoryData, merchantData] = await Promise.all([
 			context.queryClient.ensureQueryData(
 				orpc.dashboard.getStatsCounts.queryOptions({
-					input: defaultDateRange,
+					input: dateRangeToApiFormat(defaultDateRange),
 				}),
 			),
 			context.queryClient.ensureQueryData(
 				orpc.dashboard.getCategoryData.queryOptions({
-					input: defaultDateRange,
+					input: dateRangeToApiFormat(defaultDateRange),
 				}),
 			),
 			context.queryClient.ensureQueryData(
 				orpc.dashboard.getMerchantStats.queryOptions({
-					input: defaultDateRange,
+					input: dateRangeToApiFormat(defaultDateRange),
 				}),
 			),
 		]);
@@ -60,7 +61,7 @@ function RouteComponent() {
 	const { data: statsData, isLoading: isStatsLoading } = useQuery(
 		orpc.dashboard.getStatsCounts.queryOptions({
 			placeholderData: (previousData) => previousData,
-			input: dateRange,
+			input: dateRangeToApiFormat(dateRange),
 			initialData: loaderData.statsData,
 		}),
 	);
@@ -68,7 +69,7 @@ function RouteComponent() {
 	const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
 		orpc.dashboard.getCategoryData.queryOptions({
 			placeholderData: (previousData) => previousData,
-			input: dateRange,
+			input: dateRangeToApiFormat(dateRange),
 			initialData: loaderData.categoryData,
 		}),
 	);
@@ -76,7 +77,7 @@ function RouteComponent() {
 	const { data: merchantData, isLoading: isMerchantLoading } = useQuery(
 		orpc.dashboard.getMerchantStats.queryOptions({
 			placeholderData: (previousData) => previousData,
-			input: dateRange,
+			input: dateRangeToApiFormat(dateRange),
 			initialData: loaderData.merchantData,
 		}),
 	);

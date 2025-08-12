@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -76,7 +76,7 @@ export function CreateTransactionForm({ callback }: { callback?: () => void }) {
 
 			await createTransaction({
 				amount: finalAmount,
-				date: new Date(values.date),
+				date: values.date,
 				transactionDetails: values.transactionDetails,
 				...(values.merchantId && { merchantId: values.merchantId }),
 				...(values.categoryId && { categoryId: values.categoryId }),
@@ -196,7 +196,7 @@ export function CreateTransactionForm({ callback }: { callback?: () => void }) {
 												className="w-full justify-between font-normal"
 											>
 												{field.value
-													? format(new Date(field.value), "PPP")
+													? format(parseISO(field.value), "PPP")
 													: "Select date"}
 												<CalendarIcon className="h-4 w-4" />
 											</Button>
@@ -205,7 +205,7 @@ export function CreateTransactionForm({ callback }: { callback?: () => void }) {
 											<Calendar
 												mode="single"
 												selected={
-													field.value ? new Date(field.value) : undefined
+													field.value ? parseISO(field.value) : undefined
 												}
 												onSelect={(date) => {
 													field.onChange(
