@@ -238,10 +238,6 @@ export const dashboardRouter = {
 		.handler(async ({ context, input }) => {
 			const dateRange = input || {};
 
-			// Calculate same-day-of-month averages if we have a date range
-			let sameDayIncomeAverage = 0;
-			let sameDayExpenseAverage = 0;
-
 			if (dateRange.from && dateRange.to) {
 				const toDate = new Date(dateRange.to);
 				const currentDay = toDate.getDate();
@@ -320,22 +316,6 @@ export const dashboardRouter = {
 						existing + Math.abs(Number(item.totalAmount)),
 					);
 				}
-
-				// Calculate averages
-				const incomeValues = Array.from(monthlyIncomeMap.values());
-				const expenseValues = Array.from(monthlyExpenseMap.values());
-
-				sameDayIncomeAverage =
-					incomeValues.length > 0
-						? incomeValues.reduce((sum, val) => sum + val, 0) /
-							incomeValues.length
-						: 0;
-
-				sameDayExpenseAverage =
-					expenseValues.length > 0
-						? expenseValues.reduce((sum, val) => sum + val, 0) /
-							expenseValues.length
-						: 0;
 			}
 
 			const [
@@ -507,16 +487,6 @@ export const dashboardRouter = {
 						incomeCount.status === "fulfilled" && incomeCount.value[0].amount
 							? Number(incomeCount.value[0].amount)
 							: 0,
-				},
-				averages: {
-					averageIncome:
-						dateRange.from && dateRange.to
-							? sameDayIncomeAverage
-							: averageIncome,
-					averageExpenses:
-						dateRange.from && dateRange.to
-							? sameDayExpenseAverage
-							: averageExpenses,
 				},
 			};
 		}),

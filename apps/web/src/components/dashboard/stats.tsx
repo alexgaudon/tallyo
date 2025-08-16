@@ -1,4 +1,3 @@
-import { differenceInDays } from "date-fns";
 import {
 	CreditCardIcon,
 	FolderTreeIcon,
@@ -46,99 +45,27 @@ export function Stats({
 		},
 		{
 			title: "Income",
-			display: (() => {
-				const current = Math.abs(data.stats.totalIncome);
-				const average = Math.abs(data.averages.averageIncome);
-				const isHigher = current > average;
-				const isLower = current < average;
-				const isEqual = current === average;
-
-				// Only show comparison if date range is 1 month or less
-				const showComparison =
-					dateRange?.from &&
-					dateRange?.to &&
-					differenceInDays(dateRange.to, dateRange.from) <= 31;
-
-				return (
-					<div className="space-y-0.5">
-						<CurrencyAmount animate amount={data.stats.totalIncome} />
-						{showComparison && (
-							<div className="flex items-center gap-1 text-xs text-muted-foreground">
-								<span
-									className={cn(
-										"font-medium",
-										isHigher && "text-green-600",
-										isLower && "text-red-600",
-										isEqual && "text-muted-foreground",
-									)}
-								>
-									{isHigher ? "↗" : isLower ? "↘" : "→"}
-								</span>
-								<CurrencyAmount amount={data.averages.averageIncome} />
-								<span>avg at this point</span>
-							</div>
-						)}
-					</div>
-				);
-			})(),
+			display: (
+				<div className="space-y-0.5">
+					<CurrencyAmount animate amount={data.stats.totalIncome} />
+				</div>
+			),
 			icon: ({ className }: { className: string }) => {
 				return <TrendingUpIcon className={cn(className, "text-green-500")} />;
 			},
-			description: (() => {
-				const showComparison =
-					dateRange?.from &&
-					dateRange?.to &&
-					differenceInDays(dateRange.to, dateRange.from) <= 31;
-				return showComparison ? "vs avg at this point" : "total income";
-			})(),
+			description: "total income",
 		},
 		{
 			title: "Expenses",
-			display: (() => {
-				const current = Math.abs(data.stats.totalExpenses);
-				const average = Math.abs(data.averages.averageExpenses);
-				const isHigher = current > average;
-				const isLower = current < average;
-				const isEqual = current === average;
-
-				// Only show comparison if date range is 1 month or less
-				const showComparison =
-					dateRange?.from &&
-					dateRange?.to &&
-					differenceInDays(dateRange.to, dateRange.from) <= 31;
-
-				return (
-					<div className="space-y-0.5">
-						<CurrencyAmount animate amount={data.stats.totalExpenses} />
-						{showComparison && (
-							<div className="flex items-center gap-1 text-xs text-muted-foreground">
-								<span
-									className={cn(
-										"font-medium",
-										isHigher && "text-red-600",
-										isLower && "text-green-600",
-										isEqual && "text-muted-foreground",
-									)}
-								>
-									{isHigher ? "↗" : isLower ? "↘" : "→"}
-								</span>
-								<CurrencyAmount amount={data.averages.averageExpenses} />
-								<span>avg at this point</span>
-							</div>
-						)}
-					</div>
-				);
-			})(),
+			display: (
+				<div className="space-y-0.5">
+					<CurrencyAmount animate amount={data.stats.totalExpenses} />
+				</div>
+			),
 			icon: ({ className }: { className: string }) => {
 				return <TrendingDownIcon className={cn(className, "text-red-500")} />;
 			},
-			description: (() => {
-				const showComparison =
-					dateRange?.from &&
-					dateRange?.to &&
-					differenceInDays(dateRange.to, dateRange.from) <= 31;
-				return showComparison ? "vs avg at this point" : "total expenses";
-			})(),
+			description: "total expenses",
 		},
 		{
 			title: "Savings Rate",
