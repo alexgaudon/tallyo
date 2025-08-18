@@ -1,5 +1,5 @@
-import { format } from "date-fns";
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { addDays, format } from "date-fns";
+import { and, asc, count, desc, eq, lte } from "drizzle-orm";
 import { db } from "@/db";
 import { account, category, merchant, transaction, user } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
@@ -62,6 +62,7 @@ export const metaRouter = {
 				and(
 					eq(transaction.userId, context.session?.user?.id),
 					eq(transaction.reviewed, false),
+					lte(transaction.date, format(addDays(new Date(), 30), "yyyy-MM-dd")),
 				),
 			);
 
