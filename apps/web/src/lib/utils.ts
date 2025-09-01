@@ -8,12 +8,20 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency = "USD") {
-	return new Intl.NumberFormat("en-US", {
+	const isNegative = amount < 0;
+	const absoluteAmount = Math.abs(amount);
+
+	const formatted = new Intl.NumberFormat("en-US", {
 		style: "currency",
 		currency,
-	})
-		.format(Math.abs(amount) / 100)
-		.replaceAll("$", "");
+	}).format(absoluteAmount / 100);
+
+	// If negative, move the dollar sign after the negative sign
+	if (isNegative) {
+		return formatted.replace("$", "-$");
+	}
+
+	return formatted;
 }
 
 export function formatValueWithPrivacy(

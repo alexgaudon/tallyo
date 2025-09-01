@@ -509,8 +509,8 @@ export const transactionsRouter = {
 
 					// Income/expense filter
 					if (!input.includeIncome) {
-						// Join with category to filter out income transactions
-						const expenseTransactions = await db
+						// Get transactions with expense categories
+						const categorizedExpenseTransactions = await db
 							.select({
 								id: transaction.id,
 								amount: transaction.amount,
@@ -531,8 +531,29 @@ export const transactionsRouter = {
 								),
 							);
 
+						// Get transactions without categories (assume they are expenses)
+						const uncategorizedTransactions = await db
+							.select({
+								id: transaction.id,
+								amount: transaction.amount,
+								date: transaction.date,
+								transactionDetails: transaction.transactionDetails,
+								notes: transaction.notes,
+								reviewed: transaction.reviewed,
+								merchantId: transaction.merchantId,
+								categoryId: transaction.categoryId,
+							})
+							.from(transaction)
+							.where(and(...conditions, isNull(transaction.categoryId)));
+
+						// Combine both sets of transactions
+						const expenseTransactions = [
+							...categorizedExpenseTransactions,
+							...uncategorizedTransactions,
+						];
+
 						const totalAmount = expenseTransactions.reduce(
-							(sum, t) => sum + Math.abs(Number(t.amount)),
+							(sum, t) => sum + Number(t.amount),
 							0,
 						);
 						const totalCount = expenseTransactions.length;

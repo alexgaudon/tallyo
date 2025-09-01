@@ -1,4 +1,3 @@
-import { DollarSignIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
@@ -120,9 +119,6 @@ export function CurrencyAmount({
 				className,
 			)}
 		>
-			<span className="text-muted-foreground">
-				<DollarSignIcon className="w-3 h-3" />
-			</span>
 			{displayValue}
 		</span>
 	);

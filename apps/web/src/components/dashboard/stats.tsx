@@ -59,7 +59,7 @@ export function Stats({
 			title: "Expenses",
 			display: (
 				<div className="space-y-0.5">
-					<CurrencyAmount animate amount={data.stats.totalExpenses} />
+					<CurrencyAmount animate amount={Math.abs(data.stats.totalExpenses)} />
 				</div>
 			),
 			icon: ({ className }: { className: string }) => {
