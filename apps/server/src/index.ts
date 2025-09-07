@@ -152,6 +152,8 @@ app.post("/api/transactions", async (c) => {
 		const { transaction } = await import("./db/schema");
 		const { db } = await import("./db");
 
+		let addedCount = 0;
+
 		for (const newTransaction of transactions) {
 			console.log(newTransaction);
 			const merchant = await getMerchantFromVendor(
@@ -176,6 +178,7 @@ app.post("/api/transactions", async (c) => {
 				console.log(newTransactionData);
 
 				console.log(res);
+				addedCount++;
 			} catch (error) {
 				console.error(error);
 				logger.error("Error inserting transaction", {
@@ -189,6 +192,7 @@ app.post("/api/transactions", async (c) => {
 
 		return c.json({
 			message: "Transactions received",
+			count: addedCount,
 		});
 	} catch (error) {
 		logger.error("API transaction creation failed", {
