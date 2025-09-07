@@ -152,43 +152,32 @@ app.post("/api/transactions", async (c) => {
 		const { transaction } = await import("./db/schema");
 		const { db } = await import("./db");
 
-		let addedCount = 0;
+		// Prepare all transaction data
+		const transactionData = await Promise.all(
+			transactions.map(async (newTransaction) => {
+				const merchant = await getMerchantFromVendor(
+					newTransaction.transactionDetails,
+					userId,
+				);
 
-		for (const newTransaction of transactions) {
-			console.log(newTransaction);
-			const merchant = await getMerchantFromVendor(
-				newTransaction.transactionDetails,
-				userId,
-			);
+				return {
+					...newTransaction,
+					merchantId: merchant?.id,
+					categoryId: merchant?.recommendedCategoryId,
+					userId: userId,
+					date: new Date(newTransaction.date).toISOString().split("T")[0],
+				};
+			}),
+		);
 
-			const newTransactionData = {
-				...newTransaction,
-				merchantId: merchant?.id,
-				categoryId: merchant?.recommendedCategoryId,
-				userId: userId,
-				date: new Date(newTransaction.date).toISOString().split("T")[0],
-			};
+		// Single bulk insert
+		const insertedTransactions = await db
+			.insert(transaction)
+			.values(transactionData)
+			.onConflictDoNothing()
+			.returning();
 
-			try {
-				const res = await db
-					.insert(transaction)
-					.values(newTransactionData)
-					.onConflictDoNothing();
-
-				console.log(newTransactionData);
-
-				console.log(res);
-				addedCount++;
-			} catch (error) {
-				console.error(error);
-				logger.error("Error inserting transaction", {
-					error,
-					metadata: {
-						transaction: newTransactionData,
-					},
-				});
-			}
-		}
+		const addedCount = insertedTransactions.length;
 
 		return c.json({
 			message: "Transactions received",
