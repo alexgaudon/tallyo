@@ -7,7 +7,7 @@ import {
 	useNavigate,
 } from "@tanstack/react-router";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -41,6 +41,9 @@ export const Route = createFileRoute("/_auth/signin")({
 
 function RouteComponent() {
 	const [showPassword, setShowPassword] = useState(false);
+
+	const emailId = useId();
+	const passwordId = useId();
 
 	const {
 		register,
@@ -144,7 +147,7 @@ function RouteComponent() {
 								<div className="relative">
 									<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
-										id="email"
+										id={emailId}
 										type="email"
 										placeholder="Enter your email"
 										className="pl-10"
@@ -163,7 +166,7 @@ function RouteComponent() {
 								<div className="relative">
 									<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
-										id="password"
+										id={passwordId}
 										type={showPassword ? "text" : "password"}
 										placeholder="Enter your password"
 										className="pl-10 pr-10"

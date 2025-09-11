@@ -11,6 +11,7 @@ import {
 } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import * as React from "react";
+import { useId } from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -90,6 +91,7 @@ export default function DateRangePicker({
 	onRangeChange?: (date: DateRange | undefined) => void;
 	value?: DateRange | undefined;
 }) {
+	const dateId = useId();
 	const [date, setDate] = React.useState<DateRange | undefined>(
 		value || {
 			from: startOfDay(startOfMonth(new Date())),
@@ -127,7 +129,7 @@ export default function DateRangePicker({
 			<Popover>
 				<PopoverTrigger asChild>
 					<Button
-						id="date"
+						id={dateId}
 						variant="outline"
 						className={cn(
 							"w-full sm:w-[300px] justify-start text-left font-normal",

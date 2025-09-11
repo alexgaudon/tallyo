@@ -325,8 +325,6 @@ export const dashboardRouter = {
 				merchantKeywordCount,
 				expenseCount,
 				incomeCount,
-				incomeData,
-				expenseData,
 			] = await Promise.allSettled([
 				db
 					.select({
@@ -439,27 +437,6 @@ export const dashboardRouter = {
 						sql`EXTRACT(MONTH FROM ${transaction.date})`,
 					),
 			]);
-
-			// Calculate monthly averages (fallback for when no date range is provided)
-			const incomeAmounts =
-				incomeData.status === "fulfilled"
-					? incomeData.value.map((item) => Math.abs(Number(item.totalAmount)))
-					: [];
-			const averageIncome =
-				incomeAmounts.length > 0
-					? incomeAmounts.reduce((sum, val) => sum + val, 0) /
-						incomeAmounts.length
-					: 0;
-
-			const expenseAmounts =
-				expenseData.status === "fulfilled"
-					? expenseData.value.map((item) => Math.abs(Number(item.totalAmount)))
-					: [];
-			const averageExpenses =
-				expenseAmounts.length > 0
-					? expenseAmounts.reduce((sum, val) => sum + val, 0) /
-						expenseAmounts.length
-					: 0;
 
 			return {
 				stats: {

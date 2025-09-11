@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import {
@@ -40,6 +40,8 @@ export function SplitTransactionDialog({
 	isLoading = false,
 }: SplitTransactionDialogProps) {
 	const [months, setMonths] = useState(3);
+
+	const monthsId = useId();
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -92,9 +94,9 @@ export function SplitTransactionDialog({
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="months">Number of Months</Label>
+						<Label htmlFor={monthsId}>Number of Months</Label>
 						<Input
-							id="months"
+							id={monthsId}
 							type="number"
 							min="2"
 							max="60"

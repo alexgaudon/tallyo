@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import type { TooltipProps } from "recharts";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
@@ -39,6 +38,62 @@ function hashString(str: string): number {
 function getColorFromCategoryId(categoryId: string): string {
 	const hash = hashString(categoryId);
 	return chartColors[hash % chartColors.length];
+}
+
+function CustomTooltip(props: {
+	active?: boolean;
+	payload?: Array<{
+		payload: {
+			name: string;
+			value: number;
+			count: number;
+			average12Months: number;
+		};
+	}>;
+	chartData: Array<{ value: number }>;
+}) {
+	const { active, payload } = props;
+
+	if (active && payload && payload.length) {
+		const data = payload[0].payload;
+		const total = props.chartData.reduce(
+			(sum: number, item: { value: number }) => sum + item.value,
+			0,
+		);
+		const percentage = ((data.value / total) * 100).toFixed(1);
+
+		return (
+			<div
+				className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2"
+				style={{ zIndex: 9999, position: "relative" }}
+			>
+				<div className="font-semibold text-sm">{data.name}</div>
+				<div className="space-y-1 text-xs">
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">Amount:</span>
+						<span className="font-medium">
+							<CurrencyAmount amount={data.value} />
+						</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">Percentage:</span>
+						<span className="font-medium">{percentage}%</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">Transactions:</span>
+						<span className="font-medium">{data.count}</span>
+					</div>
+					<div className="flex justify-between">
+						<span className="text-muted-foreground">12-Month Avg:</span>
+						<span className="font-medium">
+							<CurrencyAmount amount={data.average12Months} />
+						</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
+	return null;
 }
 
 export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
@@ -83,50 +138,6 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 		});
 	};
 
-	// Custom tooltip component
-	function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
-		if (active && payload && payload.length) {
-			const data = payload[0].payload;
-			const total = chartData.reduce(
-				(sum: number, item: { value: number }) => sum + item.value,
-				0,
-			);
-			const percentage = ((data.value / total) * 100).toFixed(1);
-
-			return (
-				<div
-					className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2"
-					style={{ zIndex: 9999, position: "relative" }}
-				>
-					<div className="font-semibold text-sm">{data.name}</div>
-					<div className="space-y-1 text-xs">
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Amount:</span>
-							<span className="font-medium">
-								<CurrencyAmount amount={data.value} />
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Percentage:</span>
-							<span className="font-medium">{percentage}%</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Transactions:</span>
-							<span className="font-medium">{data.count}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">12-Month Avg:</span>
-							<span className="font-medium">
-								<CurrencyAmount amount={data.average12Months} />
-							</span>
-						</div>
-					</div>
-				</div>
-			);
-		}
-		return null;
-	}
-
 	return (
 		<Card>
 			<CardContent>
@@ -151,7 +162,6 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 										outerRadius="80%"
 										innerRadius="35%"
 										fill="#8884d8"
-										activeIndex={activeIndex !== null ? [activeIndex] : []}
 										onMouseEnter={(_, index) => setActiveIndex(index)}
 										onMouseLeave={() => setActiveIndex(null)}
 										onClick={(data) => {
@@ -159,9 +169,14 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 												handleCategoryClick(data.categoryId);
 											}
 										}}
+										// Removed invalid activeShape prop for Pie, as recharts Pie does not support activeShape here.
 										style={{ cursor: "pointer" }}
 									/>
-									<Tooltip content={<CustomTooltip />} />
+									<Tooltip
+										content={(props) => (
+											<CustomTooltip {...props} chartData={chartData} />
+										)}
+									/>
 								</PieChart>
 							</ResponsiveContainer>
 

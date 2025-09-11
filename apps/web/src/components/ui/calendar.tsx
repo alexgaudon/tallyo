@@ -50,6 +50,96 @@ export type CalendarProps = DayPickerProps & {
 
 type NavView = "days" | "years";
 
+function Chevron({
+	orientation,
+	...props
+}: {
+	orientation?: "left" | "right" | "up" | "down";
+	className?: string;
+	size?: number;
+	disabled?: boolean;
+}) {
+	const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
+	return <Icon className="h-4 w-4" {...props} />;
+}
+
+function CalendarNavComponent({ className }: { className?: string }) {
+	const {
+		displayYears,
+		navView,
+		setDisplayYears,
+		startMonth,
+		endMonth,
+		onPrevClick,
+		onNextClick,
+	} = React.useContext(CalendarContext);
+	return (
+		<Nav
+			className={className}
+			displayYears={displayYears}
+			navView={navView}
+			setDisplayYears={setDisplayYears}
+			startMonth={startMonth}
+			endMonth={endMonth}
+			onPrevClick={onPrevClick}
+			onNextClick={onNextClick}
+		/>
+	);
+}
+
+function CalendarCaptionLabelComponent(
+	props: React.HTMLAttributes<HTMLSpanElement>,
+) {
+	const { showYearSwitcher, navView, setNavView, displayYears } =
+		React.useContext(CalendarContext);
+	return (
+		<CaptionLabel
+			showYearSwitcher={showYearSwitcher}
+			navView={navView}
+			setNavView={setNavView}
+			displayYears={displayYears}
+			{...props}
+		/>
+	);
+}
+
+function CalendarMonthGridComponent(
+	props: React.TableHTMLAttributes<HTMLTableElement>,
+) {
+	const { displayYears, startMonth, endMonth, navView, setNavView } =
+		React.useContext(CalendarContext);
+	return (
+		<MonthGrid
+			displayYears={displayYears}
+			startMonth={startMonth}
+			endMonth={endMonth}
+			navView={navView}
+			setNavView={setNavView}
+			{...props}
+		/>
+	);
+}
+
+// Context to pass props to components
+const CalendarContext = React.createContext<{
+	displayYears: { from: number; to: number };
+	navView: NavView;
+	setDisplayYears: React.Dispatch<
+		React.SetStateAction<{ from: number; to: number }>
+	>;
+	startMonth?: Date;
+	endMonth?: Date;
+	onPrevClick?: (date: Date) => void;
+	onNextClick?: (date: Date) => void;
+	showYearSwitcher?: boolean;
+	setNavView: React.Dispatch<React.SetStateAction<NavView>>;
+}>({
+	displayYears: { from: 0, to: 0 },
+	navView: "days",
+	setDisplayYears: () => {},
+	setNavView: () => {},
+});
+
 /**
  * A custom calendar component built on top of react-day-picker.
  * @param props The props for the calendar.
@@ -82,6 +172,18 @@ function Calendar({
 	const { onNextClick, onPrevClick, startMonth, endMonth } = props;
 
 	const columnsDisplayed = navView === "years" ? 1 : numberOfMonths;
+
+	const contextValue = {
+		displayYears,
+		navView,
+		setDisplayYears,
+		startMonth,
+		endMonth,
+		onPrevClick,
+		onNextClick,
+		showYearSwitcher,
+		setNavView,
+	};
 
 	const _monthsClassName = cn("relative flex", props.monthsClassName);
 	const _monthCaptionClassName = cn(
@@ -164,80 +266,48 @@ function Calendar({
 	const _hiddenClassName = cn("invisible flex-1", props.hiddenClassName);
 
 	return (
-		<DayPicker
-			showOutsideDays={showOutsideDays}
-			className={cn("p-3", className)}
-			style={{
-				width: `${248.8 * (columnsDisplayed ?? 1)}px`,
-			}}
-			classNames={{
-				months: _monthsClassName,
-				month_caption: _monthCaptionClassName,
-				weekdays: _weekdaysClassName,
-				weekday: _weekdayClassName,
-				month: _monthClassName,
-				caption: _captionClassName,
-				caption_label: _captionLabelClassName,
-				button_next: _buttonNextClassName,
-				button_previous: _buttonPreviousClassName,
-				nav: _navClassName,
-				month_grid: _monthGridClassName,
-				week: _weekClassName,
-				day: _dayClassName,
-				day_button: _dayButtonClassName,
-				range_start: _rangeStartClassName,
-				range_middle: _rangeMiddleClassName,
-				range_end: _rangeEndClassName,
-				selected: _selectedClassName,
-				today: _todayClassName,
-				outside: _outsideClassName,
-				disabled: _disabledClassName,
-				hidden: _hiddenClassName,
-			}}
-			components={{
-				Chevron: ({ orientation }) => {
-					const Icon = orientation === "left" ? ChevronLeft : ChevronRight;
-					return <Icon className="h-4 w-4" />;
-				},
-				Nav: ({ className }) => (
-					<Nav
-						className={className}
-						displayYears={displayYears}
-						navView={navView}
-						setDisplayYears={setDisplayYears}
-						startMonth={startMonth}
-						endMonth={endMonth}
-						onPrevClick={onPrevClick}
-						onNextClick={onNextClick}
-					/>
-				),
-				CaptionLabel: (props) => (
-					<CaptionLabel
-						showYearSwitcher={showYearSwitcher}
-						navView={navView}
-						setNavView={setNavView}
-						displayYears={displayYears}
-						{...props}
-					/>
-				),
-				MonthGrid: ({ className, children, ...props }) => (
-					<MonthGrid
-						className={className}
-						displayYears={displayYears}
-						startMonth={startMonth}
-						endMonth={endMonth}
-						navView={navView}
-						setNavView={setNavView}
-						{...props}
-					>
-						{children}
-					</MonthGrid>
-				),
-				...components,
-			}}
-			numberOfMonths={columnsDisplayed}
-			{...props}
-		/>
+		<CalendarContext.Provider value={contextValue}>
+			<DayPicker
+				showOutsideDays={showOutsideDays}
+				className={cn("p-3", className)}
+				style={{
+					width: `${248.8 * (columnsDisplayed ?? 1)}px`,
+				}}
+				classNames={{
+					months: _monthsClassName,
+					month_caption: _monthCaptionClassName,
+					weekdays: _weekdaysClassName,
+					weekday: _weekdayClassName,
+					month: _monthClassName,
+					caption: _captionClassName,
+					caption_label: _captionLabelClassName,
+					button_next: _buttonNextClassName,
+					button_previous: _buttonPreviousClassName,
+					nav: _navClassName,
+					month_grid: _monthGridClassName,
+					week: _weekClassName,
+					day: _dayClassName,
+					day_button: _dayButtonClassName,
+					range_start: _rangeStartClassName,
+					range_middle: _rangeMiddleClassName,
+					range_end: _rangeEndClassName,
+					selected: _selectedClassName,
+					today: _todayClassName,
+					outside: _outsideClassName,
+					disabled: _disabledClassName,
+					hidden: _hiddenClassName,
+				}}
+				components={{
+					Chevron,
+					Nav: CalendarNavComponent,
+					CaptionLabel: CalendarCaptionLabelComponent,
+					MonthGrid: CalendarMonthGridComponent,
+					...components,
+				}}
+				numberOfMonths={columnsDisplayed}
+				{...props}
+			/>
+		</CalendarContext.Provider>
 	);
 }
 Calendar.displayName = "Calendar";
@@ -432,7 +502,7 @@ function MonthGrid({
 	...props
 }: {
 	className?: string;
-	children: React.ReactNode;
+	children?: React.ReactNode;
 	displayYears: { from: number; to: number };
 	startMonth?: Date;
 	endMonth?: Date;

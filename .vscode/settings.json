@@ -1,4 +1,3 @@
 {
-	"biome.executablePath": "./node_modules/.bin/biome",
-	"source.organizeImports.biome": "explicit"
+  "css.customData": [".vscode/tailwind.json"]
 }

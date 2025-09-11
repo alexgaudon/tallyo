@@ -7,20 +7,13 @@ import {
 	TrendingDownIcon,
 	TrendingUpIcon,
 } from "lucide-react";
-import type { DateRange } from "react-day-picker";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { DashboardStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
 
-export function Stats({
-	data,
-	dateRange,
-}: {
-	data: DashboardStats | undefined;
-	dateRange?: DateRange;
-}) {
+export function Stats({ data }: { data: DashboardStats | undefined }) {
 	if (!data) {
 		return (
 			<div className="flex flex-col items-center justify-center py-12 text-center">

@@ -157,9 +157,9 @@ body {
 
 /* Ensure Recharts tooltips appear above all other elements */
 .recharts-tooltip-wrapper {
-	z-index: 99999 !important;
+	z-index: 99999;
 }
 
 .recharts-default-tooltip {
-	z-index: 99999 !important;
+	z-index: 99999;
 }

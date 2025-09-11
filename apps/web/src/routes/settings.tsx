@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
@@ -34,6 +34,9 @@ export const Route = createFileRoute("/settings")({
 
 function RouteComponent() {
 	const { data: session } = useSession();
+
+	const devModeId = useId();
+	const privacyModeId = useId();
 
 	const [authToken, setAuthToken] = useState<string | null>(null);
 
@@ -256,7 +259,7 @@ function RouteComponent() {
 					<CardContent>
 						<div className="flex items-center space-x-2">
 							<Switch
-								id="dev-mode"
+								id={devModeId}
 								checked={session?.settings?.isDevMode ?? false}
 								disabled={isPending}
 								onCheckedChange={() => {
@@ -266,7 +269,7 @@ function RouteComponent() {
 									});
 								}}
 							/>
-							<Label htmlFor="dev-mode">Enable developer mode</Label>
+							<Label htmlFor={devModeId}>Enable developer mode</Label>
 						</div>
 					</CardContent>
 				</Card>
@@ -284,7 +287,7 @@ function RouteComponent() {
 					<CardContent>
 						<div className="flex items-center space-x-2">
 							<Switch
-								id="privacy-mode"
+								id={privacyModeId}
 								checked={session?.settings?.isPrivacyMode ?? false}
 								disabled={isPending}
 								onCheckedChange={() => {
@@ -294,7 +297,7 @@ function RouteComponent() {
 									});
 								}}
 							/>
-							<Label htmlFor="privacy-mode">Enable privacy mode</Label>
+							<Label htmlFor={privacyModeId}>Enable privacy mode</Label>
 						</div>
 					</CardContent>
 				</Card>

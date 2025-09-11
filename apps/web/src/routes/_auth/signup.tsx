@@ -6,7 +6,7 @@ import {
 	useNavigate,
 } from "@tanstack/react-router";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -44,6 +44,13 @@ export const Route = createFileRoute("/_auth/signup")({
 
 function RouteComponent() {
 	const [showPassword, setShowPassword] = useState(false);
+
+	const nameId = useId();
+	const emailId = useId();
+
+	const _usernameId = useId();
+	const passwordId = useId();
+	const passwordConfirmId = useId();
 
 	const {
 		register,
@@ -100,9 +107,9 @@ function RouteComponent() {
 					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 						<div className="space-y-4">
 							<div className="space-y-2">
-								<Label htmlFor="name">Name</Label>
+								<Label htmlFor={nameId}>Name</Label>
 								<Input
-									id="name"
+									id={nameId}
 									type="text"
 									placeholder="Enter your name"
 									className="pl-10"
@@ -115,7 +122,7 @@ function RouteComponent() {
 								<div className="relative">
 									<Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
-										id="email"
+										id={emailId}
 										type="email"
 										placeholder="Enter your email"
 										className="pl-10"
@@ -134,7 +141,7 @@ function RouteComponent() {
 								<div className="relative">
 									<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
-										id="password"
+										id={passwordId}
 										type={showPassword ? "text" : "password"}
 										placeholder="Enter your password"
 										className="pl-10 pr-10"
@@ -166,7 +173,7 @@ function RouteComponent() {
 								<div className="relative">
 									<Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Input
-										id="confirmPassword"
+										id={passwordConfirmId}
 										type={showPassword ? "text" : "password"}
 										placeholder="Confirm your password"
 										className="pl-10 pr-10"

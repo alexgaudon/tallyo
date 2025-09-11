@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { CategoryMultiSelect } from "@/components/categories/category-multi-select";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
@@ -35,6 +35,9 @@ interface TransactionReportFilters {
 export function TransactionReport() {
 	const defaultDateFrom = startOfMonth(new Date());
 	const defaultDateTo = endOfMonth(new Date());
+
+	const includeIncomeId = useId();
+	const reviewedId = useId();
 
 	// Helper function to check if transaction is upcoming (1-10 days in future)
 	const isUpcomingTransaction = (dateValue: string) => {
@@ -268,21 +271,21 @@ export function TransactionReport() {
 					{/* Reviewed Status */}
 					<div className="flex items-center space-x-2">
 						<Switch
-							id="reviewed"
+							id={reviewedId}
 							checked={filters.reviewed || false}
 							onCheckedChange={handleReviewedChange}
 						/>
-						<Label htmlFor="reviewed">Only reviewed transactions</Label>
+						<Label htmlFor={reviewedId}>Only reviewed transactions</Label>
 					</div>
 
 					{/* Include Income */}
 					<div className="flex items-center space-x-2">
 						<Switch
-							id="includeIncome"
+							id={includeIncomeId}
 							checked={filters.includeIncome || false}
 							onCheckedChange={handleIncludeIncomeChange}
 						/>
-						<Label htmlFor="includeIncome">Include income transactions</Label>
+						<Label htmlFor={includeIncomeId}>Include income transactions</Label>
 					</div>
 				</CardContent>
 			</Card>
