@@ -227,13 +227,6 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 											{item.count} transaction
 											{item.count !== 1 ? "s" : ""}
 										</span>
-										<span className="text-xs text-muted-foreground truncate flex">
-											Avg:{" "}
-											<CurrencyAmount
-												className="text-xs"
-												amount={item.average12Months}
-											/>
-										</span>
 									</div>
 								</div>
 								<div className="text-right flex-shrink-0 ml-2">

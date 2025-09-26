@@ -325,6 +325,8 @@ export const dashboardRouter = {
 				merchantKeywordCount,
 				expenseCount,
 				incomeCount,
+				expenseTransactionCount,
+				incomeTransactionCount,
 			] = await Promise.allSettled([
 				db
 					.select({
@@ -394,6 +396,44 @@ export const dashboardRouter = {
 							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					),
+				// Count expense transactions
+				db
+					.select({
+						count: count(),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(category.treatAsIncome, false),
+							eq(category.hideFromInsights, false),
+							eq(transaction.reviewed, true),
+							...(dateRange.from
+								? [gte(transaction.date, dateRange.from)]
+								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+						),
+					),
+				// Count income transactions
+				db
+					.select({
+						count: count(),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(category.treatAsIncome, true),
+							eq(category.hideFromInsights, false),
+							eq(transaction.reviewed, true),
+							...(dateRange.from
+								? [gte(transaction.date, dateRange.from)]
+								: []),
+							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+						),
+					),
 				// Get all income transactions grouped by month for averages
 				db
 					.select({
@@ -438,7 +478,7 @@ export const dashboardRouter = {
 					),
 			]);
 
-			return {
+			const result = {
 				stats: {
 					totalTransactions:
 						transactionCount.status === "fulfilled"
@@ -464,7 +504,17 @@ export const dashboardRouter = {
 						incomeCount.status === "fulfilled" && incomeCount.value[0].amount
 							? Number(incomeCount.value[0].amount)
 							: 0,
+					totalIncomeTransactions:
+						incomeTransactionCount.status === "fulfilled"
+							? incomeTransactionCount.value[0].count
+							: 0,
+					totalExpenseTransactions:
+						expenseTransactionCount.status === "fulfilled"
+							? expenseTransactionCount.value[0].count
+							: 0,
 				},
 			};
+
+			return result;
 		}),
 };
