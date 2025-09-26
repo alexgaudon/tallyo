@@ -1,5 +1,6 @@
 import {
 	addDays,
+	addMonths,
 	endOfMonth,
 	endOfYear,
 	format,
@@ -9,7 +10,7 @@ import {
 	subMonths,
 	subYears,
 } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 import { useId } from "react";
 import type { DateRange } from "react-day-picker";
@@ -109,6 +110,25 @@ export default function DateRangePicker({
 		}
 	}, [value]);
 
+	// Month navigation functions
+	const navigateMonth = (direction: "prev" | "next") => {
+		if (!date?.from) return;
+
+		const currentMonth = date.from;
+		const newMonth =
+			direction === "prev"
+				? subMonths(currentMonth, 1)
+				: addMonths(currentMonth, 1);
+
+		const newDateRange: DateRange = {
+			from: startOfDay(startOfMonth(newMonth)),
+			to: startOfDay(endOfMonth(newMonth)),
+		};
+
+		setDate(newDateRange);
+		onRangeChange?.(newDateRange);
+	};
+
 	// Helper function to ensure dates are timezone-safe
 	const normalizeDate = (date: Date | undefined) => {
 		if (!date) return undefined;
@@ -125,29 +145,46 @@ export default function DateRangePicker({
 	};
 
 	return (
-		<div className={cn("grid gap-2", className)}>
+		<div
+			className={cn(
+				"flex items-center gap-1 sm:gap-2 w-full sm:max-w-[25%]",
+				className,
+			)}
+		>
 			<Popover>
 				<PopoverTrigger asChild>
 					<Button
 						id={dateId}
 						variant="outline"
 						className={cn(
-							"w-full sm:w-[300px] justify-start text-left font-normal",
+							"flex-1 justify-start text-left font-normal text-xs sm:text-sm h-8 sm:h-10",
 							!date && "text-muted-foreground",
 						)}
 					>
-						<CalendarIcon className="mr-2 h-4 w-4" />
+						<CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
 						{date?.from ? (
 							date.to ? (
 								<>
-									{format(date.from, "LLL dd, y")} -{" "}
-									{format(date.to, "LLL dd, y")}
+									<span className="hidden sm:inline">
+										{format(date.from, "LLL dd, y")} -{" "}
+										{format(date.to, "LLL dd, y")}
+									</span>
+									<span className="sm:hidden">
+										{format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
+									</span>
 								</>
 							) : (
-								format(date.from, "LLL dd, y")
+								<>
+									<span className="hidden sm:inline">
+										{format(date.from, "LLL dd, y")}
+									</span>
+									<span className="sm:hidden">
+										{format(date.from, "MMM dd")}
+									</span>
+								</>
 							)
 						) : (
-							<span>Pick a date</span>
+							<span className="text-xs sm:text-sm">Pick a date</span>
 						)}
 					</Button>
 				</PopoverTrigger>
@@ -199,6 +236,28 @@ export default function DateRangePicker({
 					</div>
 				</PopoverContent>
 			</Popover>
+
+			{/* Month Navigation Arrows */}
+			<div className="flex gap-0.5 sm:gap-1">
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+					onClick={() => navigateMonth("prev")}
+					disabled={!date?.from}
+				>
+					<ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+					onClick={() => navigateMonth("next")}
+					disabled={!date?.from}
+				>
+					<ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+				</Button>
+			</div>
 		</div>
 	);
 }
