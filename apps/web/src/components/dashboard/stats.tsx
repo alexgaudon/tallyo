@@ -1,25 +1,16 @@
 import {
-	ChevronDownIcon,
-	ChevronRightIcon,
 	CreditCardIcon,
 	PiggyBankIcon,
 	TrendingDownIcon,
 	TrendingUpIcon,
 } from "lucide-react";
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import type { DashboardStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
 
 export function Stats({ data }: { data: DashboardStats | undefined }) {
-	const [incomeExpanded, setIncomeExpanded] = useState(false);
-	const [expensesExpanded, setExpensesExpanded] = useState(false);
+	console.log("Stats data:", data?.stats);
 
 	if (!data) {
 		return (
@@ -47,103 +38,24 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 					<StatDisplay animate value={data.stats.totalTransactions} />
 				</div>
 			</Card>
-			<Collapsible open={incomeExpanded} onOpenChange={setIncomeExpanded}>
-				<Card className="p-2">
-					<CollapsibleTrigger className="w-full">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<TrendingUpIcon className="w-3 h-3 text-green-500" />
-								<span className="text-sm font-medium">Total Income</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<CurrencyAmount animate amount={data.stats.totalIncome} />
-								{incomeExpanded ? (
-									<ChevronDownIcon className="w-3 h-3 text-muted-foreground" />
-								) : (
-									<ChevronRightIcon className="w-3 h-3 text-muted-foreground" />
-								)}
-							</div>
-						</div>
-					</CollapsibleTrigger>
-					<CollapsibleContent className="mt-3">
-						<div className="space-y-2 pl-5 border-l-2 border-green-100">
-							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">
-									Average per transaction
-								</span>
-								<CurrencyAmount
-									animate
-									amount={
-										data.stats.totalIncome /
-										Math.max(data.stats.totalTransactions, 1)
-									}
-								/>
-							</div>
-							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">
-									Income transactions
-								</span>
-								<StatDisplay
-									animate
-									value={data.stats.totalIncomeTransactions ?? 0}
-								/>
-							</div>
-						</div>
-					</CollapsibleContent>
-				</Card>
-			</Collapsible>
-			<Collapsible open={expensesExpanded} onOpenChange={setExpensesExpanded}>
-				<Card className="p-2">
-					<CollapsibleTrigger className="w-full">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<TrendingDownIcon className="w-3 h-3 text-red-500" />
-								<span className="text-sm font-medium">Total Expenses</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<CurrencyAmount
-									animate
-									amount={Math.abs(data.stats.totalExpenses)}
-								/>
-								{expensesExpanded ? (
-									<ChevronDownIcon className="w-3 h-3 text-muted-foreground" />
-								) : (
-									<ChevronRightIcon className="w-3 h-3 text-muted-foreground" />
-								)}
-							</div>
-						</div>
-					</CollapsibleTrigger>
-					<CollapsibleContent className="mt-3">
-						<div className="space-y-2 pl-5 border-l-2 border-red-100">
-							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">
-									Average per transaction
-								</span>
-								<CurrencyAmount
-									animate
-									amount={
-										Math.abs(data.stats.totalExpenses) /
-										Math.max(data.stats.totalTransactions, 1)
-									}
-								/>
-							</div>
-							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">
-									Expense transactions
-								</span>
-								<StatDisplay
-									animate
-									value={data.stats.totalExpenseTransactions ?? 0}
-								/>
-							</div>
-							<div className="flex items-center justify-between text-xs">
-								<span className="text-muted-foreground">Categories used</span>
-								<StatDisplay animate value={data.stats.totalCategories} />
-							</div>
-						</div>
-					</CollapsibleContent>
-				</Card>
-			</Collapsible>
+			<Card className="p-2">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<TrendingUpIcon className="w-3 h-3 text-green-500" />
+						<span className="text-sm font-medium">Total Income</span>
+					</div>
+					<CurrencyAmount animate amount={data.stats.totalIncome} />
+				</div>
+			</Card>
+			<Card className="p-2">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<TrendingDownIcon className="w-3 h-3 text-red-500" />
+						<span className="text-sm font-medium">Total Expenses</span>
+					</div>
+					<CurrencyAmount animate amount={Math.abs(data.stats.totalExpenses)} />
+				</div>
+			</Card>
 			<Card className="p-2">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">

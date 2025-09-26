@@ -327,6 +327,10 @@ export const dashboardRouter = {
 				incomeCount,
 				expenseTransactionCount,
 				incomeTransactionCount,
+				avgIncomeAmountsPerMonth,
+				avgExpenseAmountsPerMonth,
+				avgIncomeTransactionsPerMonth,
+				avgExpenseTransactionsPerMonth,
 			] = await Promise.allSettled([
 				db
 					.select({
@@ -434,7 +438,7 @@ export const dashboardRouter = {
 							...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
 						),
 					),
-				// Get all income transactions grouped by month for averages
+				// Get all income amounts grouped by month for averages
 				db
 					.select({
 						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
@@ -455,7 +459,7 @@ export const dashboardRouter = {
 						sql`EXTRACT(YEAR FROM ${transaction.date})`,
 						sql`EXTRACT(MONTH FROM ${transaction.date})`,
 					),
-				// Get all expense transactions grouped by month for averages
+				// Get all expense amounts grouped by month for averages
 				db
 					.select({
 						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
@@ -476,7 +480,227 @@ export const dashboardRouter = {
 						sql`EXTRACT(YEAR FROM ${transaction.date})`,
 						sql`EXTRACT(MONTH FROM ${transaction.date})`,
 					),
+				// Calculate average income transactions per month (all time)
+				db
+					.select({
+						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+						month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+						count: count(),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(category.treatAsIncome, true),
+							eq(category.hideFromInsights, false),
+							eq(transaction.reviewed, true),
+						),
+					)
+					.groupBy(
+						sql`EXTRACT(YEAR FROM ${transaction.date})`,
+						sql`EXTRACT(MONTH FROM ${transaction.date})`,
+					),
+				// Calculate average expense transactions per month (all time)
+				db
+					.select({
+						year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+						month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+						count: count(),
+					})
+					.from(transaction)
+					.innerJoin(category, eq(transaction.categoryId, category.id))
+					.where(
+						and(
+							eq(transaction.userId, context.session.user.id),
+							eq(category.treatAsIncome, false),
+							eq(category.hideFromInsights, false),
+							eq(transaction.reviewed, true),
+						),
+					)
+					.groupBy(
+						sql`EXTRACT(YEAR FROM ${transaction.date})`,
+						sql`EXTRACT(MONTH FROM ${transaction.date})`,
+					),
 			]);
+
+			// Calculate average monthly amounts and transaction counts
+			let avgIncomeAmountPerMonth = 0;
+			let avgExpenseAmountPerMonth = 0;
+			let avgIncomeTransactions = 0;
+			let avgExpenseTransactions = 0;
+
+			// Calculate average income amount per month
+			if (
+				avgIncomeAmountsPerMonth.status === "fulfilled" &&
+				avgIncomeAmountsPerMonth.value.length > 0
+			) {
+				const totalIncomeAmount = avgIncomeAmountsPerMonth.value.reduce(
+					(sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
+					0,
+				);
+				const monthCount = avgIncomeAmountsPerMonth.value.length;
+				avgIncomeAmountPerMonth = totalIncomeAmount / monthCount;
+				console.log(
+					`Income: ${totalIncomeAmount} total amount across ${monthCount} months = ${avgIncomeAmountPerMonth} avg amount per month`,
+				);
+			} else {
+				// Fallback: estimate based on total income and rough month count
+				const totalIncomeAmount =
+					incomeCount.status === "fulfilled" && incomeCount.value[0].amount
+						? Math.abs(Number(incomeCount.value[0].amount))
+						: 0;
+				if (totalIncomeAmount > 0) {
+					// Rough estimate: assume data spans about 6 months
+					avgIncomeAmountPerMonth = totalIncomeAmount / 6;
+					console.log(
+						`Income fallback: ${totalIncomeAmount} total amount / 6 months = ${avgIncomeAmountPerMonth} avg amount per month`,
+					);
+				}
+			}
+
+			// Calculate average expense amount per month
+			if (
+				avgExpenseAmountsPerMonth.status === "fulfilled" &&
+				avgExpenseAmountsPerMonth.value.length > 0
+			) {
+				const totalExpenseAmount = avgExpenseAmountsPerMonth.value.reduce(
+					(sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
+					0,
+				);
+				const monthCount = avgExpenseAmountsPerMonth.value.length;
+				avgExpenseAmountPerMonth = totalExpenseAmount / monthCount;
+				console.log(
+					`Expense: ${totalExpenseAmount} total amount across ${monthCount} months = ${avgExpenseAmountPerMonth} avg amount per month`,
+				);
+			} else {
+				// Fallback: estimate based on total expenses and rough month count
+				const totalExpenseAmount =
+					expenseCount.status === "fulfilled" && expenseCount.value[0].amount
+						? Math.abs(Number(expenseCount.value[0].amount))
+						: 0;
+				if (totalExpenseAmount > 0) {
+					// Rough estimate: assume data spans about 6 months
+					avgExpenseAmountPerMonth = totalExpenseAmount / 6;
+					console.log(
+						`Expense fallback: ${totalExpenseAmount} total amount / 6 months = ${avgExpenseAmountPerMonth} avg amount per month`,
+					);
+				}
+			}
+
+			// Calculate average income transaction count per month
+			if (
+				avgIncomeTransactionsPerMonth.status === "fulfilled" &&
+				avgIncomeTransactionsPerMonth.value.length > 0
+			) {
+				const totalIncomeTransactions =
+					avgIncomeTransactionsPerMonth.value.reduce(
+						(sum, month) => sum + (month.count || 0),
+						0,
+					);
+				const monthCount = avgIncomeTransactionsPerMonth.value.length;
+				avgIncomeTransactions = Math.round(
+					totalIncomeTransactions / monthCount,
+				);
+				console.log(
+					`Income: ${totalIncomeTransactions} transactions across ${monthCount} months = ${avgIncomeTransactions} avg transactions per month`,
+				);
+			} else {
+				// Fallback: estimate based on total transactions and rough month count
+				const totalIncomeCount =
+					incomeTransactionCount.status === "fulfilled"
+						? incomeTransactionCount.value[0].count
+						: 0;
+				if (totalIncomeCount > 0) {
+					// Rough estimate: assume data spans about 6 months
+					avgIncomeTransactions = Math.round(totalIncomeCount / 6);
+					console.log(
+						`Income fallback: ${totalIncomeCount} transactions / 6 months = ${avgIncomeTransactions} avg transactions per month`,
+					);
+				}
+			}
+
+			// Calculate average expense amount and transaction count per month
+			if (
+				avgExpenseTransactionsPerMonth.status === "fulfilled" &&
+				avgExpenseTransactionsPerMonth.value.length > 0
+			) {
+				const totalExpenseTransactions =
+					avgExpenseTransactionsPerMonth.value.reduce(
+						(sum, month) => sum + (month.count || 0),
+						0,
+					);
+				const monthCount = avgExpenseTransactionsPerMonth.value.length;
+				avgExpenseTransactions = Math.round(
+					totalExpenseTransactions / monthCount,
+				);
+				console.log(
+					`Expense: ${totalExpenseTransactions} transactions across ${monthCount} months = ${avgExpenseTransactions} avg transactions per month`,
+				);
+			} else {
+				// Fallback: estimate based on total transactions and rough month count
+				const totalExpenseCount =
+					expenseTransactionCount.status === "fulfilled"
+						? expenseTransactionCount.value[0].count
+						: 0;
+				if (totalExpenseCount > 0) {
+					// Rough estimate: assume data spans about 6 months
+					avgExpenseTransactions = Math.round(totalExpenseCount / 6);
+					console.log(
+						`Expense fallback: ${totalExpenseCount} transactions / 6 months = ${avgExpenseTransactions} avg transactions per month`,
+					);
+				}
+			}
+
+			console.log("Average calculations:", {
+				avgIncomeAmountsPerMonth:
+					avgIncomeAmountsPerMonth.status === "fulfilled"
+						? avgIncomeAmountsPerMonth.value
+						: "failed",
+				avgExpenseAmountsPerMonth:
+					avgExpenseAmountsPerMonth.status === "fulfilled"
+						? avgExpenseAmountsPerMonth.value
+						: "failed",
+				avgIncomeTransactionsPerMonth:
+					avgIncomeTransactionsPerMonth.status === "fulfilled"
+						? avgIncomeTransactionsPerMonth.value
+						: "failed",
+				avgExpenseTransactionsPerMonth:
+					avgExpenseTransactionsPerMonth.status === "fulfilled"
+						? avgExpenseTransactionsPerMonth.value
+						: "failed",
+				avgIncomeAmountPerMonth,
+				avgExpenseAmountPerMonth,
+				avgIncomeTransactions,
+				avgExpenseTransactions,
+				incomeAmountDataLength:
+					avgIncomeAmountsPerMonth.status === "fulfilled"
+						? avgIncomeAmountsPerMonth.value.length
+						: 0,
+				expenseAmountDataLength:
+					avgExpenseAmountsPerMonth.status === "fulfilled"
+						? avgExpenseAmountsPerMonth.value.length
+						: 0,
+				incomeTransactionDataLength:
+					avgIncomeTransactionsPerMonth.status === "fulfilled"
+						? avgIncomeTransactionsPerMonth.value.length
+						: 0,
+				expenseTransactionDataLength:
+					avgExpenseTransactionsPerMonth.status === "fulfilled"
+						? avgExpenseTransactionsPerMonth.value.length
+						: 0,
+				dateRange: dateRange,
+				userId: context.session.user.id,
+			});
+
+			// Calculate period length for normalization
+			let periodLengthInDays = 30; // Default to 30 days if no date range
+			if (dateRange.from && dateRange.to) {
+				const fromDate = new Date(dateRange.from);
+				const toDate = new Date(dateRange.to);
+				const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
+				periodLengthInDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+			}
 
 			const result = {
 				stats: {
@@ -512,6 +736,11 @@ export const dashboardRouter = {
 						expenseTransactionCount.status === "fulfilled"
 							? expenseTransactionCount.value[0].count
 							: 0,
+					avgIncomeTransactionsPerMonth: avgIncomeTransactions,
+					avgExpenseTransactionsPerMonth: avgExpenseTransactions,
+					avgIncomeAmountPerMonth: avgIncomeAmountPerMonth,
+					avgExpenseAmountPerMonth: avgExpenseAmountPerMonth,
+					periodLengthInDays: periodLengthInDays,
 				},
 			};
 
