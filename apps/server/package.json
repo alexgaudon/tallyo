@@ -15,21 +15,21 @@
 		"db:seed": "bun run src/db/seed.ts"
 	},
 	"dependencies": {
-		"@orpc/client": "^1.7.11",
-		"@orpc/server": "^1.7.11",
-		"better-auth": "^1.3.4",
-		"dotenv": "^17.2.1",
-		"drizzle-orm": "^0.44.4",
-		"hono": "^4.9.0",
+		"@orpc/client": "^1.9.1",
+		"@orpc/server": "^1.9.1",
+		"better-auth": "^1.3.18",
+		"dotenv": "^17.2.2",
+		"drizzle-orm": "^0.44.5",
+		"hono": "^4.9.9",
 		"pg": "^8.16.3",
 		"winston": "^3.17.0",
-		"zod": "^4.0.15"
+		"zod": "^4.1.11"
 	},
 	"devDependencies": {
 		"tsc-alias": "^1.8.16",
 		"typescript": "^5.9.2",
-		"@types/bun": "^1.2.19",
-		"drizzle-kit": "^0.31.4",
+		"@types/bun": "^1.2.22",
+		"drizzle-kit": "^0.31.5",
 		"@types/pg": "^8.15.5"
 	}
 }
