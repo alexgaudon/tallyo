@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import { StoreIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 
@@ -37,35 +36,34 @@ export function MerchantStats({
 	};
 
 	return (
-		<div className="space-y-0 border rounded-lg overflow-hidden h-full flex flex-col">
-			{data.map((merchant, index) => (
+		<div className="space-y-3">
+			{data.map((merchant, _index) => (
 				<button
 					key={merchant.merchantId}
 					type="button"
-					className={cn(
-						"bg-card flex items-center justify-between p-3 hover:bg-muted/50 transition-colors flex-1 cursor-pointer w-full text-left",
-						{
-							"border-b": index !== data.length - 1,
-						},
-					)}
+					className="bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-4 transition-all duration-200 cursor-pointer w-full text-left group"
 					onClick={() => handleMerchantClick(merchant.merchantId)}
 					aria-label={`View transactions for ${merchant.merchantName}`}
 				>
-					<div className="flex items-center gap-3">
-						<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-							<StoreIcon className="w-4 h-4 text-primary" />
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-4">
+							<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+								<StoreIcon className="w-5 h-5 text-white" />
+							</div>
+							<div>
+								<p className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+									{merchant.merchantName}
+								</p>
+								<p className="text-xs text-slate-600 dark:text-slate-400">
+									{merchant.count} transaction{merchant.count !== 1 ? "s" : ""}
+								</p>
+							</div>
 						</div>
-						<div>
-							<p className="font-semibold text-sm">{merchant.merchantName}</p>
-							<p className="text-xs text-muted-foreground">
-								{merchant.count} transaction{merchant.count !== 1 ? "s" : ""}
+						<div className="text-right">
+							<p className="font-bold text-lg text-slate-900 dark:text-white">
+								<CurrencyAmount animate amount={Number(merchant.totalAmount)} />
 							</p>
 						</div>
-					</div>
-					<div className="text-right">
-						<p className="font-bold text-sm">
-							<CurrencyAmount animate amount={Number(merchant.totalAmount)} />
-						</p>
 					</div>
 				</button>
 			))}

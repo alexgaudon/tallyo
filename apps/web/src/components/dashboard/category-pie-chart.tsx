@@ -139,106 +139,98 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 	};
 
 	return (
-		<Card>
-			<CardContent>
+		<div
+			className="grid grid-cols-1 xl:grid-cols-3 gap-6"
+			style={{ position: "relative" }}
+		>
+			{/* Pie Chart */}
+			<div className="flex justify-center xl:col-span-1">
 				<div
-					className="grid grid-cols-1 xl:grid-cols-3 gap-4"
-					style={{ position: "relative" }}
+					className="w-full max-w-[400px] h-[400px] min-h-[300px] relative"
+					style={{ position: "relative", zIndex: 1 }}
 				>
-					{/* Pie Chart */}
-					<div className="flex justify-center xl:col-span-1">
-						<div
-							className="w-full max-w-[400px] h-[400px] min-h-[300px] relative"
-							style={{ position: "relative", zIndex: 1 }}
-						>
-							<ResponsiveContainer width="100%" height="100%">
-								<PieChart>
-									<Pie
-										data={chartData}
-										dataKey="value"
-										nameKey="name"
-										cx="50%"
-										cy="50%"
-										outerRadius="80%"
-										innerRadius="35%"
-										fill="#8884d8"
-										onMouseEnter={(_, index) => setActiveIndex(index)}
-										onMouseLeave={() => setActiveIndex(null)}
-										onClick={(data) => {
-											if (data?.categoryId) {
-												handleCategoryClick(data.categoryId);
-											}
-										}}
-										// Removed invalid activeShape prop for Pie, as recharts Pie does not support activeShape here.
-										style={{ cursor: "pointer" }}
-									/>
-									<Tooltip
-										content={(props) => (
-											<CustomTooltip {...props} chartData={chartData} />
-										)}
-									/>
-								</PieChart>
-							</ResponsiveContainer>
+					<ResponsiveContainer width="100%" height="100%">
+						<PieChart>
+							<Pie
+								data={chartData}
+								dataKey="value"
+								nameKey="name"
+								cx="50%"
+								cy="50%"
+								outerRadius="80%"
+								innerRadius="35%"
+								fill="#8884d8"
+								onMouseEnter={(_, index) => setActiveIndex(index)}
+								onMouseLeave={() => setActiveIndex(null)}
+								onClick={(data) => {
+									if (data?.categoryId) {
+										handleCategoryClick(data.categoryId);
+									}
+								}}
+								// Removed invalid activeShape prop for Pie, as recharts Pie does not support activeShape here.
+								style={{ cursor: "pointer" }}
+							/>
+							<Tooltip
+								content={(props) => (
+									<CustomTooltip {...props} chartData={chartData} />
+								)}
+							/>
+						</PieChart>
+					</ResponsiveContainer>
 
-							{/* Center text with total spent */}
-							<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-								<div className="text-center">
-									<div className="text-xs text-muted-foreground font-medium">
-										Total Spent
-									</div>
-									<div className="text-base font-bold">
-										<CurrencyAmount
-											animate
-											amount={chartData.reduce(
-												(sum, item) => sum + item.value,
-												0,
-											)}
-										/>
-									</div>
-								</div>
+					{/* Center text with total spent */}
+					<div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+						<div className="text-center">
+							<div className="text-xs text-muted-foreground font-medium">
+								Total Spent
+							</div>
+							<div className="text-base font-bold">
+								<CurrencyAmount
+									animate
+									amount={chartData.reduce((sum, item) => sum + item.value, 0)}
+								/>
 							</div>
 						</div>
 					</div>
-
-					{/* Legend */}
-					<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
-						{chartData.map((item, index) => (
-							<button
-								key={item.name}
-								type="button"
-								className={`flex items-center justify-between p-1.5 rounded-md border ${
-									activeIndex === index
-										? "bg-accent border-accent-foreground/20"
-										: "bg-card hover:bg-accent/50"
-								} cursor-pointer transition-colors text-left min-w-0`}
-								onClick={() => handleCategoryClick(item.categoryId)}
-								aria-label={`View transactions for ${item.name} category`}
-							>
-								<div className="flex items-center gap-2 min-w-0 flex-1">
-									<div
-										className="h-3 w-3 rounded-full flex-shrink-0"
-										style={{ backgroundColor: item.fill }}
-									/>
-									<div className="flex flex-col min-w-0 flex-1">
-										<span className="font-medium text-xs truncate">
-											{item.name}
-										</span>
-										<span className="text-muted-foreground truncate text-xs">
-											{item.count} transaction
-											{item.count !== 1 ? "s" : ""}
-										</span>
-									</div>
-								</div>
-								<div className="text-right flex-shrink-0 ml-2">
-									<span className="font-semibold text-sm">
-										<CurrencyAmount animate amount={item.value} />
-									</span>
-								</div>
-							</button>
-						))}
-					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+
+			{/* Legend */}
+			<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+				{chartData.map((item, index) => (
+					<button
+						key={item.name}
+						type="button"
+						className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+							activeIndex === index
+								? "bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-600 shadow-sm"
+								: "bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 border-slate-200/50 dark:border-slate-700/50"
+						} cursor-pointer text-left min-w-0`}
+						onClick={() => handleCategoryClick(item.categoryId)}
+						aria-label={`View transactions for ${item.name} category`}
+					>
+						<div className="flex items-center gap-3 min-w-0 flex-1">
+							<div
+								className="h-4 w-4 rounded-full flex-shrink-0 shadow-sm"
+								style={{ backgroundColor: item.fill }}
+							/>
+							<div className="flex flex-col min-w-0 flex-1">
+								<span className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+									{item.name}
+								</span>
+								<span className="text-slate-600 dark:text-slate-400 text-xs">
+									{item.count} transaction{item.count !== 1 ? "s" : ""}
+								</span>
+							</div>
+						</div>
+						<div className="text-right flex-shrink-0 ml-3">
+							<span className="font-bold text-slate-900 dark:text-white">
+								<CurrencyAmount animate amount={item.value} />
+							</span>
+						</div>
+					</button>
+				))}
+			</div>
+		</div>
 	);
 }
