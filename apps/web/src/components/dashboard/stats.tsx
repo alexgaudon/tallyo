@@ -97,6 +97,8 @@ export function Stats({
 										className="flex items-center justify-between text-xs"
 									>
 										<span className="text-muted-foreground">
+											{cat.category.parentCategory?.name &&
+												`${cat.category.parentCategory?.name} -> `}
 											{cat.category.name}
 										</span>
 										<CurrencyAmount amount={Number(cat.amount)} />
@@ -141,6 +143,8 @@ export function Stats({
 										className="flex items-center justify-between text-xs"
 									>
 										<span className="text-muted-foreground">
+											{cat.category.parentCategory?.name &&
+												`${cat.category.parentCategory?.name} -> `}
 											{cat.category.name}
 										</span>
 										<CurrencyAmount amount={Math.abs(Number(cat.amount))} />
