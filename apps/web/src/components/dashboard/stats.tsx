@@ -27,8 +27,6 @@ export function Stats({
 	data: DashboardStats | undefined;
 	categoryData: DashboardCategoryData | undefined;
 }) {
-	console.log("Stats data:", data?.stats);
-
 	const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
 	const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
 

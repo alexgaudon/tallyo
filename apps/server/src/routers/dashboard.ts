@@ -541,9 +541,6 @@ export const dashboardRouter = {
 				);
 				const monthCount = avgIncomeAmountsPerMonth.value.length;
 				avgIncomeAmountPerMonth = totalIncomeAmount / monthCount;
-				console.log(
-					`Income: ${totalIncomeAmount} total amount across ${monthCount} months = ${avgIncomeAmountPerMonth} avg amount per month`,
-				);
 			} else {
 				// Fallback: estimate based on total income and rough month count
 				const totalIncomeAmount =
@@ -553,9 +550,6 @@ export const dashboardRouter = {
 				if (totalIncomeAmount > 0) {
 					// Rough estimate: assume data spans about 6 months
 					avgIncomeAmountPerMonth = totalIncomeAmount / 6;
-					console.log(
-						`Income fallback: ${totalIncomeAmount} total amount / 6 months = ${avgIncomeAmountPerMonth} avg amount per month`,
-					);
 				}
 			}
 
@@ -570,9 +564,6 @@ export const dashboardRouter = {
 				);
 				const monthCount = avgExpenseAmountsPerMonth.value.length;
 				avgExpenseAmountPerMonth = totalExpenseAmount / monthCount;
-				console.log(
-					`Expense: ${totalExpenseAmount} total amount across ${monthCount} months = ${avgExpenseAmountPerMonth} avg amount per month`,
-				);
 			} else {
 				// Fallback: estimate based on total expenses and rough month count
 				const totalExpenseAmount =
@@ -582,9 +573,6 @@ export const dashboardRouter = {
 				if (totalExpenseAmount > 0) {
 					// Rough estimate: assume data spans about 6 months
 					avgExpenseAmountPerMonth = totalExpenseAmount / 6;
-					console.log(
-						`Expense fallback: ${totalExpenseAmount} total amount / 6 months = ${avgExpenseAmountPerMonth} avg amount per month`,
-					);
 				}
 			}
 
@@ -602,9 +590,6 @@ export const dashboardRouter = {
 				avgIncomeTransactions = Math.round(
 					totalIncomeTransactions / monthCount,
 				);
-				console.log(
-					`Income: ${totalIncomeTransactions} transactions across ${monthCount} months = ${avgIncomeTransactions} avg transactions per month`,
-				);
 			} else {
 				// Fallback: estimate based on total transactions and rough month count
 				const totalIncomeCount =
@@ -614,9 +599,6 @@ export const dashboardRouter = {
 				if (totalIncomeCount > 0) {
 					// Rough estimate: assume data spans about 6 months
 					avgIncomeTransactions = Math.round(totalIncomeCount / 6);
-					console.log(
-						`Income fallback: ${totalIncomeCount} transactions / 6 months = ${avgIncomeTransactions} avg transactions per month`,
-					);
 				}
 			}
 
@@ -634,9 +616,6 @@ export const dashboardRouter = {
 				avgExpenseTransactions = Math.round(
 					totalExpenseTransactions / monthCount,
 				);
-				console.log(
-					`Expense: ${totalExpenseTransactions} transactions across ${monthCount} months = ${avgExpenseTransactions} avg transactions per month`,
-				);
 			} else {
 				// Fallback: estimate based on total transactions and rough month count
 				const totalExpenseCount =
@@ -646,52 +625,8 @@ export const dashboardRouter = {
 				if (totalExpenseCount > 0) {
 					// Rough estimate: assume data spans about 6 months
 					avgExpenseTransactions = Math.round(totalExpenseCount / 6);
-					console.log(
-						`Expense fallback: ${totalExpenseCount} transactions / 6 months = ${avgExpenseTransactions} avg transactions per month`,
-					);
 				}
 			}
-
-			console.log("Average calculations:", {
-				avgIncomeAmountsPerMonth:
-					avgIncomeAmountsPerMonth.status === "fulfilled"
-						? avgIncomeAmountsPerMonth.value
-						: "failed",
-				avgExpenseAmountsPerMonth:
-					avgExpenseAmountsPerMonth.status === "fulfilled"
-						? avgExpenseAmountsPerMonth.value
-						: "failed",
-				avgIncomeTransactionsPerMonth:
-					avgIncomeTransactionsPerMonth.status === "fulfilled"
-						? avgIncomeTransactionsPerMonth.value
-						: "failed",
-				avgExpenseTransactionsPerMonth:
-					avgExpenseTransactionsPerMonth.status === "fulfilled"
-						? avgExpenseTransactionsPerMonth.value
-						: "failed",
-				avgIncomeAmountPerMonth,
-				avgExpenseAmountPerMonth,
-				avgIncomeTransactions,
-				avgExpenseTransactions,
-				incomeAmountDataLength:
-					avgIncomeAmountsPerMonth.status === "fulfilled"
-						? avgIncomeAmountsPerMonth.value.length
-						: 0,
-				expenseAmountDataLength:
-					avgExpenseAmountsPerMonth.status === "fulfilled"
-						? avgExpenseAmountsPerMonth.value.length
-						: 0,
-				incomeTransactionDataLength:
-					avgIncomeTransactionsPerMonth.status === "fulfilled"
-						? avgIncomeTransactionsPerMonth.value.length
-						: 0,
-				expenseTransactionDataLength:
-					avgExpenseTransactionsPerMonth.status === "fulfilled"
-						? avgExpenseTransactionsPerMonth.value.length
-						: 0,
-				dateRange: dateRange,
-				userId: context.session.user.id,
-			});
 
 			// Calculate period length for normalization
 			let periodLengthInDays = 30; // Default to 30 days if no date range
