@@ -206,7 +206,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 							<button
 								key={item.name}
 								type="button"
-								className={`flex items-center justify-between p-1.5 rounded-md border ${
+								className={`flex items-center justify-between p-1.5 ${
 									activeIndex === index
 										? "bg-accent border-accent-foreground/20"
 										: "bg-card hover:bg-accent/50"
@@ -220,12 +220,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 										style={{ backgroundColor: item.fill }}
 									/>
 									<div className="flex flex-col min-w-0 flex-1">
-										<span className="font-medium text-xs truncate">
+										<span className="font-medium text-sm truncate">
 											{item.name}
-										</span>
-										<span className="text-muted-foreground truncate text-xs">
-											{item.count} transaction
-											{item.count !== 1 ? "s" : ""}
 										</span>
 									</div>
 								</div>
