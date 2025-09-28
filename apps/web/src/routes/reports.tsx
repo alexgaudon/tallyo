@@ -1,10 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3Icon } from "lucide-react";
+import { z } from "zod";
 import { TransactionReport } from "@/components/transactions/transaction-report";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
+const searchSchema = z.object({
+	dateFrom: z.string().optional(),
+	dateTo: z.string().optional(),
+	categoryIds: z.array(z.string()).optional(),
+	merchantIds: z.array(z.string()).optional(),
+	amountMin: z.coerce.number().optional(),
+	amountMax: z.coerce.number().optional(),
+	reviewed: z.boolean().optional(),
+	includeIncome: z.boolean().optional(),
+});
+
 export const Route = createFileRoute("/reports")({
+	validateSearch: searchSchema,
 	component: RouteComponent,
 	beforeLoad: async ({ context }) => {
 		ensureSession(context.isAuthenticated, "/reports");

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { useCallback, useId, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -33,6 +34,9 @@ interface TransactionReportFilters {
 }
 
 export function TransactionReport() {
+	const navigate = useNavigate();
+	const search = useSearch({ from: "/reports" });
+
 	const defaultDateFrom = startOfMonth(new Date());
 	const defaultDateTo = endOfMonth(new Date());
 
@@ -54,11 +58,16 @@ export function TransactionReport() {
 		return daysDifference >= 1 && daysDifference <= 10;
 	};
 
-	const [filters, setFilters] = useState<TransactionReportFilters>({
-		includeIncome: false,
-		dateFrom: defaultDateFrom,
-		dateTo: defaultDateTo,
-	});
+	const [filters, setFilters] = useState<TransactionReportFilters>(() => ({
+		includeIncome: search.includeIncome ?? false,
+		dateFrom: search.dateFrom ? parseISO(search.dateFrom) : defaultDateFrom,
+		dateTo: search.dateTo ? parseISO(search.dateTo) : defaultDateTo,
+		categoryIds: search.categoryIds,
+		merchantIds: search.merchantIds,
+		amountMin: search.amountMin,
+		amountMax: search.amountMax,
+		reviewed: search.reviewed,
+	}));
 
 	const queryInput = useMemo(() => {
 		// Convert UI dollars to cents
@@ -126,58 +135,131 @@ export function TransactionReport() {
 
 	const handleDateRangeChange = useCallback(
 		(dateRange: DateRange | undefined) => {
-			setFilters((prev) => ({
-				...prev,
+			const newFilters = {
 				dateFrom: dateRange?.from,
 				dateTo: dateRange?.to,
+			};
+			setFilters((prev) => ({
+				...prev,
+				...newFilters,
 			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					dateFrom: dateRange?.from?.toISOString(),
+					dateTo: dateRange?.to?.toISOString(),
+				}),
+			});
 		},
-		[],
+		[navigate],
 	);
 
-	const handleCategoryChange = useCallback((categoryIds: string[]) => {
-		setFilters((prev) => ({
-			...prev,
-			categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
-		}));
-	}, []);
+	const handleCategoryChange = useCallback(
+		(categoryIds: string[]) => {
+			const newCategoryIds = categoryIds.length > 0 ? categoryIds : undefined;
+			setFilters((prev) => ({
+				...prev,
+				categoryIds: newCategoryIds,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					categoryIds: newCategoryIds,
+				}),
+			});
+		},
+		[navigate],
+	);
 
-	const handleMerchantChange = useCallback((merchantIds: string[]) => {
-		setFilters((prev) => ({
-			...prev,
-			merchantIds: merchantIds.length > 0 ? merchantIds : undefined,
-		}));
-	}, []);
+	const handleMerchantChange = useCallback(
+		(merchantIds: string[]) => {
+			const newMerchantIds = merchantIds.length > 0 ? merchantIds : undefined;
+			setFilters((prev) => ({
+				...prev,
+				merchantIds: newMerchantIds,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					merchantIds: newMerchantIds,
+				}),
+			});
+		},
+		[navigate],
+	);
 
-	const handleAmountMinChange = useCallback((value: string) => {
-		const numValue = value ? Number.parseFloat(value) : undefined;
-		setFilters((prev) => ({
-			...prev,
-			amountMin: numValue,
-		}));
-	}, []);
+	const handleAmountMinChange = useCallback(
+		(value: string) => {
+			const numValue = value ? Number.parseFloat(value) : undefined;
+			setFilters((prev) => ({
+				...prev,
+				amountMin: numValue,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					amountMin: numValue,
+				}),
+			});
+		},
+		[navigate],
+	);
 
-	const handleAmountMaxChange = useCallback((value: string) => {
-		const numValue = value ? Number.parseFloat(value) : undefined;
-		setFilters((prev) => ({
-			...prev,
-			amountMax: numValue,
-		}));
-	}, []);
+	const handleAmountMaxChange = useCallback(
+		(value: string) => {
+			const numValue = value ? Number.parseFloat(value) : undefined;
+			setFilters((prev) => ({
+				...prev,
+				amountMax: numValue,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					amountMax: numValue,
+				}),
+			});
+		},
+		[navigate],
+	);
 
-	const handleReviewedChange = useCallback((checked: boolean) => {
-		setFilters((prev) => ({
-			...prev,
-			reviewed: checked,
-		}));
-	}, []);
+	const handleReviewedChange = useCallback(
+		(checked: boolean) => {
+			setFilters((prev) => ({
+				...prev,
+				reviewed: checked,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					reviewed: checked,
+				}),
+			});
+		},
+		[navigate],
+	);
 
-	const handleIncludeIncomeChange = useCallback((checked: boolean) => {
-		setFilters((prev) => ({
-			...prev,
-			includeIncome: checked,
-		}));
-	}, []);
+	const handleIncludeIncomeChange = useCallback(
+		(checked: boolean) => {
+			setFilters((prev) => ({
+				...prev,
+				includeIncome: checked,
+			}));
+			navigate({
+				to: "/reports",
+				search: (prev) => ({
+					...prev,
+					includeIncome: checked,
+				}),
+			});
+		},
+		[navigate],
+	);
 
 	const dateRangeValue = useMemo(
 		() => ({
@@ -188,7 +270,7 @@ export function TransactionReport() {
 	);
 
 	const handleResetFilters = useCallback(() => {
-		setFilters({
+		const resetFilters = {
 			includeIncome: false,
 			dateFrom: defaultDateFrom,
 			dateTo: defaultDateTo,
@@ -197,8 +279,13 @@ export function TransactionReport() {
 			amountMin: undefined,
 			amountMax: undefined,
 			reviewed: undefined,
+		};
+		setFilters(resetFilters);
+		navigate({
+			to: "/reports",
+			search: {},
 		});
-	}, [defaultDateFrom, defaultDateTo]);
+	}, [defaultDateFrom, defaultDateTo, navigate]);
 
 	return (
 		<div className="space-y-6">
