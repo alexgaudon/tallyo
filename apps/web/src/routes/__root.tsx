@@ -65,7 +65,6 @@ function RootComponent() {
 	const [orpcUtils] = useState(() => createORPCReactQueryUtils(client));
 
 	const location = useLocation();
-	console.log(location);
 
 	useKeyboardShortcuts();
 
