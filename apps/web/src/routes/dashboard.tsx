@@ -1,9 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { startOfMonth } from "date-fns";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
+import { format, parseISO, startOfMonth } from "date-fns";
 import { CreditCardIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
+import { z } from "zod";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
@@ -14,55 +19,87 @@ import { ensureSession, useSession } from "@/lib/auth-client";
 import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
+const searchSchema = z.object({
+	from: z.string().optional(),
+	to: z.string().optional(),
+});
+
+type SearchParams = z.infer<typeof searchSchema>;
+
 export const Route = createFileRoute("/dashboard")({
+	validateSearch: searchSchema,
 	component: RouteComponent,
-	beforeLoad: async ({ context }) => {
+	beforeLoad: async ({ context, search }) => {
 		ensureSession(context.isAuthenticated, "/dashboard");
-	},
-	loader: async ({ context }) => {
+
 		const defaultDateRange = {
 			from: startOfMonth(new Date()),
 			to: new Date(),
 		};
-		const [statsData, categoryData, merchantData] = await Promise.all([
-			context.queryClient.ensureQueryData(
+		const dateRange =
+			search.from && search.to
+				? {
+						from: parseISO(search.from),
+						to: parseISO(search.to),
+					}
+				: defaultDateRange;
+
+		await Promise.all([
+			context.queryClient.prefetchQuery(
 				orpc.dashboard.getStatsCounts.queryOptions({
-					input: dateRangeToApiFormat(defaultDateRange),
+					input: dateRangeToApiFormat(dateRange),
 				}),
 			),
-			context.queryClient.ensureQueryData(
+			context.queryClient.prefetchQuery(
 				orpc.dashboard.getCategoryData.queryOptions({
-					input: dateRangeToApiFormat(defaultDateRange),
+					input: dateRangeToApiFormat(dateRange),
 				}),
 			),
-			context.queryClient.ensureQueryData(
+			context.queryClient.prefetchQuery(
 				orpc.dashboard.getMerchantStats.queryOptions({
-					input: dateRangeToApiFormat(defaultDateRange),
+					input: dateRangeToApiFormat(dateRange),
 				}),
 			),
 		]);
-		return {
-			statsData,
-			categoryData,
-			merchantData,
-		};
 	},
 });
 
 function RouteComponent() {
 	const { data: session } = useSession();
-	const [dateRange, setDateRange] = useState<DateRange | undefined>({
-		from: startOfMonth(new Date()),
-		to: new Date(),
-	});
+	const navigate = useNavigate();
+	const search = useSearch({ from: "/dashboard" });
 
-	const loaderData = Route.useLoaderData();
+	const dateRange = useMemo((): DateRange | undefined => {
+		if (search.from && search.to) {
+			return {
+				from: parseISO(search.from),
+				to: parseISO(search.to),
+			};
+		}
+		return {
+			from: startOfMonth(new Date()),
+			to: new Date(),
+		};
+	}, [search.from, search.to]);
+
+	const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
+		navigate({
+			to: "/dashboard",
+			search: {
+				from: newDateRange?.from
+					? format(newDateRange.from, "yyyy-MM-dd")
+					: undefined,
+				to: newDateRange?.to
+					? format(newDateRange.to, "yyyy-MM-dd")
+					: undefined,
+			} as SearchParams,
+		});
+	};
 
 	const { data: statsData, isLoading: isStatsLoading } = useQuery(
 		orpc.dashboard.getStatsCounts.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRangeToApiFormat(dateRange),
-			initialData: loaderData.statsData,
 		}),
 	);
 
@@ -70,7 +107,6 @@ function RouteComponent() {
 		orpc.dashboard.getCategoryData.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRangeToApiFormat(dateRange),
-			initialData: loaderData.categoryData,
 		}),
 	);
 
@@ -78,7 +114,6 @@ function RouteComponent() {
 		orpc.dashboard.getMerchantStats.queryOptions({
 			placeholderData: (previousData) => previousData,
 			input: dateRangeToApiFormat(dateRange),
-			initialData: loaderData.merchantData,
 		}),
 	);
 
@@ -103,7 +138,10 @@ function RouteComponent() {
 				</div>
 			</div>
 			<div className="flex mx-auto justify-center mt-4">
-				<DateRangePicker value={dateRange} onRangeChange={setDateRange} />
+				<DateRangePicker
+					value={dateRange}
+					onRangeChange={handleDateRangeChange}
+				/>
 			</div>
 
 			<DelayedLoading

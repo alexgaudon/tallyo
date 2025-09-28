@@ -1,6 +1,5 @@
 import {
 	and,
-	asc,
 	desc,
 	eq,
 	gte,
