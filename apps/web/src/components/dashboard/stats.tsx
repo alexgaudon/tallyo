@@ -163,6 +163,42 @@ export function Stats({
 			<Card className="p-2">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
+						{(() => {
+							const income = Number(data.stats.totalIncome) || 0;
+							const expenses = Number(data.stats.totalExpenses) || 0;
+							const netIncome = income + expenses;
+							return netIncome >= 0 ? (
+								<TrendingUpIcon className="w-3 h-3 text-green-500" />
+							) : (
+								<TrendingDownIcon className="w-3 h-3 text-red-500" />
+							);
+						})()}
+						<span className="text-sm font-medium">Net Income</span>
+					</div>
+					<div className="flex items-center gap-1">
+						<CurrencyAmount
+							animate
+							amount={(() => {
+								const income = Number(data.stats.totalIncome) || 0;
+								const expenses = Number(data.stats.totalExpenses) || 0;
+								// Net income should be income minus expenses, but expenses are negative
+								// so we add them to income to get the correct net
+								return income + expenses;
+							})()}
+							className={(() => {
+								const income = Number(data.stats.totalIncome) || 0;
+								const expenses = Number(data.stats.totalExpenses) || 0;
+								const netIncome = income + expenses;
+								return netIncome >= 0 ? "text-green-600" : "text-red-600";
+							})()}
+						/>
+					</div>
+				</div>
+			</Card>
+
+			<Card className="p-2">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
 						<PiggyBankIcon className="w-3 h-3 text-pink-500" />
 						<span className="text-sm font-medium">Savings Rate</span>
 					</div>
