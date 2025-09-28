@@ -69,6 +69,15 @@ function RouteComponent() {
 	const navigate = useNavigate();
 	const search = useSearch({ from: "/dashboard" });
 
+	const now = new Date();
+	const hour = now.getHours();
+	let greeting = "Good evening 🌙";
+	if (hour < 12) {
+		greeting = "Good morning 👋";
+	} else if (hour < 17) {
+		greeting = "Good afternoon 🌞";
+	}
+
 	const dateRange = useMemo((): DateRange | undefined => {
 		if (search.from && search.to) {
 			return {
@@ -128,9 +137,11 @@ function RouteComponent() {
 								<CreditCardIcon className="h-5 w-5 text-primary" />
 							</div>
 							<div>
-								<h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+								<h1 className="text-2xl font-bold tracking-tight">
+									{greeting}
+								</h1>
 								<p className="text-sm text-muted-foreground">
-									Overview of your financial activity
+									Here's your financial overview
 								</p>
 							</div>
 						</div>
