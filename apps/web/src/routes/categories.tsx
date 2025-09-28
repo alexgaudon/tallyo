@@ -160,7 +160,7 @@ function RouteComponent() {
 							value={filterType}
 							onValueChange={(value: FilterType) => setFilterType(value)}
 						>
-							<SelectTrigger className="w-full h-12">
+							<SelectTrigger className="w-full h-12 min-h-[3rem]">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
