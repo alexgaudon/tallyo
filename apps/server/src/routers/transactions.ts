@@ -1,5 +1,6 @@
 import {
 	and,
+	asc,
 	desc,
 	eq,
 	gte,
@@ -550,7 +551,7 @@ export const transactionsRouter = {
 						const expenseTransactions = [
 							...categorizedExpenseTransactions,
 							...uncategorizedTransactions,
-						];
+						].sort((a, b) => b.date.localeCompare(a.date));
 
 						const totalAmount = expenseTransactions.reduce(
 							(sum, t) => sum + Number(t.amount),
@@ -611,7 +612,8 @@ export const transactionsRouter = {
 							categoryId: transaction.categoryId,
 						})
 						.from(transaction)
-						.where(and(...conditions));
+						.where(and(...conditions))
+						.orderBy(desc(transaction.date));
 
 					const totalAmount = allTransactions.reduce(
 						(sum, t) => sum + Number(t.amount),
