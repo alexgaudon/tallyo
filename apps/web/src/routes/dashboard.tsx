@@ -127,17 +127,17 @@ function RouteComponent() {
 	);
 
 	return (
-		<div className="min-h-screen bg-background">
-			{/* Header Section */}
-			<div className="border-b bg-card">
+		<div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+			{/* Hero Section */}
+			<div className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
 				<div className="container mx-auto px-4 py-6">
-					<div className="flex items-center justify-between">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<div className="flex items-center gap-3">
-							<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-								<CreditCardIcon className="h-5 w-5 text-primary" />
+							<div className="flex items-center justify-center w-16 h-16 rounded-lg bg-primary/10">
+								<CreditCardIcon className="h-8 w-8 text-primary" />
 							</div>
 							<div>
-								<h1 className="text-2xl font-bold tracking-tight">
+								<h1 className="text-2xl sm:text-4xl font-bold tracking-tight">
 									{greeting}
 								</h1>
 								<p className="text-sm text-muted-foreground">
@@ -145,47 +145,51 @@ function RouteComponent() {
 								</p>
 							</div>
 						</div>
+						<div className="flex justify-center sm:justify-end w-full sm:w-auto">
+							<div className="w-full max-w-xs sm:max-w-none">
+								<DateRangePicker
+									value={dateRange}
+									onRangeChange={handleDateRangeChange}
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div className="flex mx-auto justify-center mt-4">
-				<DateRangePicker
-					value={dateRange}
-					onRangeChange={handleDateRangeChange}
-				/>
 			</div>
 
 			<DelayedLoading
 				isLoading={isStatsLoading || isCategoryLoading || isMerchantLoading}
 			>
 				{/* Main Content */}
-				<div className="container mx-auto px-4 py-8">
+				<div className="container mx-auto px-4 py-8 space-y-8">
 					{/* Unreviewed Transactions Banner */}
 					<UnreviewedTransactionsBanner
 						count={session?.meta?.unreviewedTransactionCount ?? 0}
 					/>
-					{(session?.meta?.unreviewedTransactionCount ?? 0) > 0 && (
-						<div className="mb-6" />
-					)}
 					{/* Stats and Merchants Section */}
-					<div className="flex flex-col md:flex-row gap-6">
-						<div className="flex flex-col flex-1">
-							<h2 className="text-lg font-semibold mb-4">Overview Stats</h2>
-							<div className="flex-1">
-								<Stats data={statsData} categoryData={categoryData} />
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+						<div>
+							<div className="flex items-center gap-3 mb-4">
+								<div className="w-2 h-8 bg-blue-500 rounded-full"></div>
+								<h2 className="text-lg font-semibold">Overview Stats</h2>
 							</div>
+							<Stats data={statsData} categoryData={categoryData} />
 						</div>
-						<div className="flex flex-col flex-1">
-							<h2 className="text-lg font-semibold mb-4">Top Merchants</h2>
-							<div className="flex-1">
-								<MerchantStats data={merchantData} />
+						<div>
+							<div className="flex items-center gap-3 mb-4">
+								<div className="w-2 h-8 bg-green-500 rounded-full"></div>
+								<h2 className="text-lg font-semibold">Top Merchants</h2>
 							</div>
+							<MerchantStats data={merchantData} />
 						</div>
 					</div>
 
 					{/* Category Breakdown Section */}
-					<div className="space-y-4 mt-8">
-						<h2 className="text-lg font-semibold mb-4">Category Breakdown</h2>
+					<div>
+						<div className="flex items-center gap-3 mb-4">
+							<div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+							<h2 className="text-lg font-semibold">Category Breakdown</h2>
+						</div>
 						<CategoryPieChart data={categoryData ?? []} />
 					</div>
 				</div>

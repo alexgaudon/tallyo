@@ -25,10 +25,12 @@ export function MerchantList({
 	if (!merchants.length) {
 		return (
 			<Card>
-				<CardContent className="flex flex-col items-center justify-center p-8 text-center">
-					<StoreIcon className="mb-2 h-12 w-12 text-muted-foreground" />
-					<h3 className="mb-1 text-lg font-semibold">No merchants yet</h3>
-					<p className="text-sm text-muted-foreground">
+				<CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
+					<StoreIcon className="mb-3 h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
+					<h3 className="mb-2 text-base sm:text-lg font-semibold">
+						No merchants yet
+					</h3>
+					<p className="text-sm text-muted-foreground px-4">
 						Add your first merchant to get started
 					</p>
 				</CardContent>

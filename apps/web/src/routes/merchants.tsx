@@ -82,49 +82,68 @@ function RouteComponent() {
 	}
 
 	return (
-		<div className="container mx-auto max-w-4xl p-6 space-y-6">
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<Building2Icon className="h-6 w-6" />
-					<h1 className="text-2xl font-bold">Merchants</h1>
+		<div className="container mx-auto max-w-4xl p-3 sm:p-6 space-y-4 sm:space-y-6">
+			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div className="flex items-center gap-3">
+						<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+							<Building2Icon className="h-6 w-6 text-primary" />
+						</div>
+						<div>
+							<h1 className="text-2xl font-bold">Merchants</h1>
+							<p className="text-sm text-muted-foreground">
+								Manage your merchants and their categories
+							</p>
+						</div>
+					</div>
+					<div className="flex justify-center sm:justify-end">
+						<Dialog open={open} onOpenChange={setOpen}>
+							<DialogTrigger asChild>
+								<Button
+									variant="outline"
+									size="lg"
+									className="shadow w-full sm:w-auto"
+								>
+									<PlusIcon className="h-4 w-4 mr-2" />
+									<span className="hidden sm:inline">New Merchant</span>
+									<span className="sm:hidden">New</span>
+								</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle className="flex items-center gap-2 text-lg">
+										<PlusIcon className="h-4 w-4" />
+										New Merchant
+									</DialogTitle>
+								</DialogHeader>
+								<CreateMerchantForm callback={() => setOpen(false)} />
+							</DialogContent>
+						</Dialog>
+					</div>
 				</div>
-				<Dialog open={open} onOpenChange={setOpen}>
-					<DialogTrigger asChild>
-						<Button variant="outline">
-							<PlusIcon className="h-4 w-4 mr-2" />
-							<span className="hidden sm:inline">New Merchant</span>
-							<span className="sm:hidden">New</span>
-						</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle className="flex items-center gap-2 text-lg">
-								<PlusIcon className="h-4 w-4" />
-								New Merchant
-							</DialogTitle>
-						</DialogHeader>
-						<CreateMerchantForm callback={() => setOpen(false)} />
-					</DialogContent>
-				</Dialog>
 			</div>
 
 			{/* Search Bar */}
-			<div className="relative">
-				<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-				<Input
-					placeholder="Search merchants by name, keywords, or category..."
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
-					className="pl-10"
-				/>
+			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+				<div className="relative">
+					<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Search merchants by name, keywords, or category..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="pl-10 h-12 text-sm placeholder:text-sm"
+					/>
+				</div>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-[1fr,300px]">
-				<MerchantList
-					merchants={filteredMerchants}
-					isLoading={isLoading}
-					onDelete={handleDelete}
-				/>
+			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+				<div className="w-full">
+					<MerchantList
+						merchants={filteredMerchants}
+						isLoading={isLoading}
+						onDelete={handleDelete}
+					/>
+				</div>
 			</div>
 		</div>
 	);

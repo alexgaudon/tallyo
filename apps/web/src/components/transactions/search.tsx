@@ -99,8 +99,8 @@ export function Search() {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
-				{/* Second row: Merchant and Category selects */}
-				<div className="flex gap-2 w-full">
+				{/* Second row: Merchant select */}
+				<div className="w-full">
 					<MerchantSelect
 						allowNull
 						onValueChange={(value) => {
@@ -117,8 +117,11 @@ export function Search() {
 							}
 						}}
 						value={params.merchant ?? null}
-						className="flex-1"
+						className="w-full"
 					/>
+				</div>
+				{/* Third row: Category select */}
+				<div className="w-full">
 					<CategorySelect
 						allowNull
 						onValueChange={(value) => {
@@ -133,7 +136,7 @@ export function Search() {
 							}
 						}}
 						value={params.category ?? null}
-						className="flex-1"
+						className="w-full"
 					/>
 				</div>
 			</div>

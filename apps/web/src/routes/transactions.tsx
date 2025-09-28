@@ -360,65 +360,85 @@ function RouteComponent() {
 	};
 
 	return (
-		<div className="w-dvw">
-			<div className="mx-auto p-6 space-y-6">
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<CreditCardIcon className="h-6 w-6" />
-						<h1 className="text-2xl font-bold">Transactions</h1>
-					</div>
-					<Dialog
-						open={isCreateFormOpen}
-						onOpenChange={(open) => {
-							setIsCreateFormOpen(open);
-						}}
-					>
-						<DialogTrigger asChild>
-							<Button variant="outline">
-								<Plus className="h-4 w-4 mr-2" />
-								<span className="hidden sm:inline">New Transaction</span>
-								<span className="sm:hidden">New</span>
-							</Button>
-						</DialogTrigger>
-						<DialogContent className="sm:max-w-[600px]">
-							<DialogHeader>
-								<DialogTitle>Create New Transaction</DialogTitle>
-								<DialogDescription>
-									Add a new transaction to your records.
-								</DialogDescription>
-							</DialogHeader>
-							<CreateTransactionForm
-								callback={() => {
-									queryClient.invalidateQueries({
-										queryKey: createTransactionQueryOptions(search).queryKey,
-									});
-									setIsCreateFormOpen(false);
+		<div className="min-h-screen">
+			<div className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-6">
+				<div className="bg-card rounded-xl border shadow-sm p-6">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+						<div className="flex items-center gap-3">
+							<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+								<CreditCardIcon className="h-6 w-6 text-primary" />
+							</div>
+							<div>
+								<h1 className="text-2xl font-bold">Transactions</h1>
+								<p className="text-sm text-muted-foreground">
+									Manage and review your transactions
+								</p>
+							</div>
+						</div>
+						<div className="flex justify-center sm:justify-end">
+							<Dialog
+								open={isCreateFormOpen}
+								onOpenChange={(open) => {
+									setIsCreateFormOpen(open);
 								}}
-							/>
-						</DialogContent>
-					</Dialog>
+							>
+								<DialogTrigger asChild>
+									<Button
+										variant="outline"
+										size="lg"
+										className="shadow w-full sm:w-auto"
+									>
+										<Plus className="h-4 w-4 mr-2" />
+										<span className="hidden sm:inline">New Transaction</span>
+										<span className="sm:hidden">New</span>
+									</Button>
+								</DialogTrigger>
+								<DialogContent className="sm:max-w-[600px]">
+									<DialogHeader>
+										<DialogTitle>Create New Transaction</DialogTitle>
+										<DialogDescription>
+											Add a new transaction to your records.
+										</DialogDescription>
+									</DialogHeader>
+									<CreateTransactionForm
+										callback={() => {
+											queryClient.invalidateQueries({
+												queryKey:
+													createTransactionQueryOptions(search).queryKey,
+											});
+											setIsCreateFormOpen(false);
+										}}
+									/>
+								</DialogContent>
+							</Dialog>
+						</div>
+					</div>
 				</div>
-				<Search />
-				<TransactionsTable
-					transactions={transactionsData?.transactions ?? []}
-					pagination={{
-						total: transactionsData?.pagination.total ?? 0,
-						page: transactionsData?.pagination.page ?? 1,
-						pageSize: transactionsData?.pagination.pageSize ?? 25,
-						totalPages: transactionsData?.pagination.totalPages ?? 1,
-					}}
-					onPageChange={handlePageChange}
-					onPageSizeChange={handlePageSizeChange}
-					updateCategory={updateCategory}
-					updateMerchant={updateMerchant}
-					updateNotes={updateNotes}
-					toggleReviewed={toggleReviewed}
-					deleteTransaction={deleteTransaction}
-					splitTransaction={splitTransaction}
-					onCategoryClick={handleCategoryClick}
-					onMerchantClick={handleMerchantClick}
-					isLoading={false}
-				/>
+				<div className="bg-card rounded-xl border shadow-sm p-6">
+					<Search />
+				</div>
+				<div className="bg-card rounded-xl border shadow-sm p-6 overflow-hidden">
+					<TransactionsTable
+						transactions={transactionsData?.transactions ?? []}
+						pagination={{
+							total: transactionsData?.pagination.total ?? 0,
+							page: transactionsData?.pagination.page ?? 1,
+							pageSize: transactionsData?.pagination.pageSize ?? 25,
+							totalPages: transactionsData?.pagination.totalPages ?? 1,
+						}}
+						onPageChange={handlePageChange}
+						onPageSizeChange={handlePageSizeChange}
+						updateCategory={updateCategory}
+						updateMerchant={updateMerchant}
+						updateNotes={updateNotes}
+						toggleReviewed={toggleReviewed}
+						deleteTransaction={deleteTransaction}
+						splitTransaction={splitTransaction}
+						onCategoryClick={handleCategoryClick}
+						onMerchantClick={handleMerchantClick}
+						isLoading={false}
+					/>
+				</div>
 			</div>
 		</div>
 	);
