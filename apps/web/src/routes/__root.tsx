@@ -70,8 +70,6 @@ function RootComponent() {
 
 	const { data: session } = useSession();
 
-	session?.settings?.isDevMode;
-
 	useKeyboardShortcuts();
 
 	return (
