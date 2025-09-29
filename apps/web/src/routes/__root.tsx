@@ -100,7 +100,7 @@ function RootComponent() {
 					</SidebarProvider>
 				</ThemeProvider>
 			</ORPCContext.Provider>
-			{session?.settings?.isDevMode && (
+			{session?.settings?.isDevMode && import.meta.env.DEV && (
 				<>
 					<ReactQueryDevtools position="bottom" buttonPosition="top-right" />
 					<TanStackRouterDevtools position="bottom-right" />
