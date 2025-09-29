@@ -131,6 +131,9 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 			average12Months: item.average12Months || 0,
 		}));
 
+	// Calculate total for percentage calculations
+	const totalAmount = chartData.reduce((sum, item) => sum + item.value, 0);
+
 	const handleCategoryClick = (categoryId: string) => {
 		navigate({
 			to: "/transactions",
@@ -202,36 +205,39 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
 					{/* Legend */}
 					<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
-						{chartData.map((item, index) => (
-							<button
-								key={item.name}
-								type="button"
-								className={`flex items-center justify-between p-1.5 ${
-									activeIndex === index
-										? "bg-accent border-accent-foreground/20"
-										: "bg-card hover:bg-accent/50"
-								} cursor-pointer transition-colors text-left min-w-0`}
-								onClick={() => handleCategoryClick(item.categoryId)}
-								aria-label={`View transactions for ${item.name} category`}
-							>
-								<div className="flex items-center gap-2 min-w-0 flex-1">
+						{chartData.map((item, index) => {
+							const percentage =
+								totalAmount > 0
+									? ((item.value / totalAmount) * 100).toFixed(1)
+									: "0.0";
+							return (
+								<button
+									key={item.name}
+									type="button"
+									className={`flex items-start gap-2 p-2 ${
+										activeIndex === index
+											? "bg-accent border-accent-foreground/20"
+											: "bg-card hover:bg-accent/50"
+									} cursor-pointer transition-colors text-left min-w-0`}
+									onClick={() => handleCategoryClick(item.categoryId)}
+									aria-label={`View transactions for ${item.name} category`}
+								>
 									<div
-										className="h-3 w-3 rounded-full flex-shrink-0"
+										className="h-3 w-3 rounded-full flex-shrink-0 mt-0.5"
 										style={{ backgroundColor: item.fill }}
 									/>
 									<div className="flex flex-col min-w-0 flex-1">
-										<span className="font-medium text-sm truncate">
+										<span className="font-medium text-sm truncate mb-1">
 											{item.name}
 										</span>
+										<span className="text-xs text-muted-foreground">
+											<CurrencyAmount animate amount={item.value} /> (
+											{percentage}%)
+										</span>
 									</div>
-								</div>
-								<div className="text-right flex-shrink-0 ml-2">
-									<span className="font-semibold text-sm">
-										<CurrencyAmount animate amount={item.value} />
-									</span>
-								</div>
-							</button>
-						))}
+								</button>
+							);
+						})}
 					</div>
 				</div>
 			</CardContent>
