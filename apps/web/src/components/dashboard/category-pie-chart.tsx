@@ -204,7 +204,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 					</div>
 
 					{/* Legend */}
-					<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-1.5">
+					<div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-1.5">
 						{chartData.map((item, index) => {
 							const percentage =
 								totalAmount > 0
