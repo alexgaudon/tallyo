@@ -1,13 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import * as React from "react";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { Button } from "@/components/ui/button";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { authClient, useSession } from "@/lib/auth-client";
-import { queryClient } from "@/utils/orpc";
+import { useSession } from "@/lib/auth-client";
 import { ModeToggle } from "./mode-toggle";
 import { DeveloperModeToggle } from "./settings/developer-mode-toggle";
 import { PrivacyModeToggle } from "./settings/privacy-mode-toggle";

@@ -30,7 +30,8 @@
 			"!**/*.gitignore",
 			"!**/*.prettierignore",
 			"!**/postgres-data",
-			"!**/ops/**/*.json"
+			"!**/ops/**/*.json",
+			"!**/components/ui"
 		]
 	},
 	"formatter": {

@@ -36,13 +36,12 @@ export function AppSidebar() {
 	const { data: session } = useSession();
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { isMobile, setOpen, setOpenMobile, state } = useSidebar();
+	const { isMobile, setOpenMobile } = useSidebar();
 
 	const handleNavigation = () => {
 		if (isMobile) {
 			setOpenMobile(false);
 		}
-		// On desktop, don't collapse - just navigate
 	};
 
 	const hasUnreviewedTransactions =
