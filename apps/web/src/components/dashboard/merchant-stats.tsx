@@ -37,7 +37,7 @@ export function MerchantStats({
 	};
 
 	return (
-		<div className="space-y-0 border rounded-lg overflow-hidden h-full flex flex-col">
+		<div className="space-y-0 border rounded-lg overflow-hidden flex flex-col">
 			{data.map((merchant, index) => (
 				<button
 					key={merchant.merchantId}

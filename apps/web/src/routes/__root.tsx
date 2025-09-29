@@ -13,12 +13,14 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { useSessionFetch } from "@/lib/auth-client";
+import { useSession, useSessionFetch } from "@/lib/auth-client";
 import { link, ORPCContext, type orpc } from "@/utils/orpc";
 import type { appRouter } from "../../../server/src/routers";
 import "../index.css";
@@ -66,6 +68,10 @@ function RootComponent() {
 
 	const location = useLocation();
 
+	const { data: session } = useSession();
+
+	session?.settings?.isDevMode;
+
 	useKeyboardShortcuts();
 
 	return (
@@ -73,28 +79,33 @@ function RootComponent() {
 			<HeadContent />
 			<ORPCContext.Provider value={orpcUtils}>
 				<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-					<div className="flex flex-col min-h-svh">
-						{location.pathname.startsWith("/sign") ? (
-							<div className="h-16 mt-8 ml-8">
-								<Link to="/">
-									<ArrowLeft className="h-4 w-4" />
-								</Link>
+					<SidebarProvider>
+						{session && <AppSidebar />}
+						<SidebarInset>
+							<div className="flex flex-col min-h-svh">
+								{location.pathname.startsWith("/sign") ? (
+									<div className="h-16 mt-8 ml-8">
+										<Link to="/">
+											<ArrowLeft className="h-4 w-4" />
+										</Link>
+									</div>
+								) : !session && location.pathname === "/" ? null : (
+									<Header />
+								)}
+								<main className="flex-1">
+									<Outlet />
+								</main>
+								<Footer />
 							</div>
-						) : (
-							<Header />
-						)}
-						<main className="flex-1">
-							<Outlet />
-						</main>
-						<Footer />
-					</div>
-					<Toaster richColors />
+							<Toaster richColors />
+						</SidebarInset>
+					</SidebarProvider>
 				</ThemeProvider>
 			</ORPCContext.Provider>
-			{import.meta.env.DEV && (
+			{session?.settings?.isDevMode && (
 				<>
-					<TanStackRouterDevtools position="bottom-left" />
-					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+					<ReactQueryDevtools position="bottom" buttonPosition="top-right" />
+					<TanStackRouterDevtools position="bottom-right" />
 				</>
 			)}
 		</>
