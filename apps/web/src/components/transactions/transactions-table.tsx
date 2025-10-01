@@ -170,7 +170,7 @@ export function TransactionsTable({
 			Math.floor(
 				(transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
 			) + 1;
-		return daysDifference >= 1 && daysDifference <= 30;
+		return daysDifference >= 2 && daysDifference <= 30;
 	};
 
 	const parseTransactionDate = (dateValue: string | Date) => {
@@ -252,34 +252,23 @@ export function TransactionsTable({
 		<div>
 			<Table>
 				<TableHeader>
-					<TableRow compact className="hover:bg-muted/50">
+					<TableRow className="hover:bg-muted/50">
 						{isDevMode && (
-							<TableHead compact className="w-[80px] px-2 sm:px-4">
-								ID
-							</TableHead>
+							<TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
 						)}
-						<TableHead compact className="w-[100px] px-2 sm:px-4">
-							Date
-						</TableHead>
-						<TableHead compact className="min-w-fit px-2 sm:px-4">
-							Merchant
-						</TableHead>
-						<TableHead
-							compact
-							className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4"
-						>
+						<TableHead className="w-[100px] px-2 sm:px-4">Date</TableHead>
+						<TableHead className="min-w-fit px-2 sm:px-4">Merchant</TableHead>
+						<TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4">
 							Category
 						</TableHead>
-						<TableHead compact className="px-2 sm:px-4 min-w-[200px]">
-							Notes
-						</TableHead>
-						<TableHead compact className="w-[100px] px-2 sm:px-4 text-right">
+						<TableHead className="px-2 sm:px-4 min-w-[200px]">Notes</TableHead>
+						<TableHead className="w-[100px] px-2 sm:px-4 text-right">
 							Amount
 						</TableHead>
-						<TableHead compact className="w-[80px] px-2 sm:px-4 text-center">
+						<TableHead className="w-[80px] px-2 sm:px-4 text-center">
 							Reviewed
 						</TableHead>
-						<TableHead compact className="w-[120px] px-2 sm:px-4 text-center">
+						<TableHead className="w-[120px] px-2 sm:px-4 text-center">
 							Actions
 						</TableHead>
 					</TableRow>
@@ -288,24 +277,17 @@ export function TransactionsTable({
 					{transactions.map((transaction) => (
 						<TableRow
 							key={transaction.id}
-							compact
 							className={cn(
 								"hover:bg-muted/50 transition-colors",
 								isLoading && "opacity-50",
 							)}
 						>
 							{isDevMode && (
-								<TableCell
-									compact
-									className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle"
-								>
+								<TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
 									{transaction.id}
 								</TableCell>
 							)}
-							<TableCell
-								compact
-								className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle"
-							>
+							<TableCell className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center gap-2">
 									{format(
 										parseTransactionDate(transaction.date),
@@ -325,7 +307,7 @@ export function TransactionsTable({
 									)}
 								</div>
 							</TableCell>
-							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
 										transaction.merchant ? (
@@ -372,7 +354,7 @@ export function TransactionsTable({
 									)}
 								</div>
 							</TableCell>
-							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell className="px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center h-full">
 									{transaction.reviewed ? (
 										transaction.category ? (
@@ -416,7 +398,7 @@ export function TransactionsTable({
 									)}
 								</div>
 							</TableCell>
-							<TableCell compact className="px-2 sm:px-4 h-10 align-middle">
+							<TableCell className="px-2 sm:px-4 h-10 align-middle">
 								<input
 									type="text"
 									value={localNotes[transaction.id] ?? ""}
@@ -434,26 +416,17 @@ export function TransactionsTable({
 									disabled={isLoading}
 								/>
 							</TableCell>
-							<TableCell
-								compact
-								className="text-right font-medium px-2 sm:px-4 h-10 align-middle"
-							>
+							<TableCell className="text-right font-medium px-2 sm:px-4 h-10 align-middle">
 								<CurrencyAmount
 									amount={transaction.amount}
 									showColor
 									className="transition-colors"
 								/>
 							</TableCell>
-							<TableCell
-								compact
-								className="text-center px-2 sm:px-4 h-10 align-middle"
-							>
+							<TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
 								{renderReviewButton(transaction)}
 							</TableCell>
-							<TableCell
-								compact
-								className="text-center px-2 sm:px-4 h-10 align-middle"
-							>
+							<TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
 								<div className="flex items-center justify-center gap-1">
 									<TooltipProvider>
 										<Tooltip>
