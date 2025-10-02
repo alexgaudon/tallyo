@@ -102,8 +102,8 @@ function RouteComponent() {
 	}
 
 	return (
-		<div className="container mx-auto max-w-4xl p-3 sm:p-6 space-y-4 sm:space-y-6">
-			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+		<div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
+			<div className="bg-card rounded-xl border shadow-sm p-6">
 				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 					<div className="flex items-center gap-3">
 						<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
@@ -144,7 +144,7 @@ function RouteComponent() {
 			</div>
 
 			{/* Search Bar */}
-			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+			<div className="bg-card rounded-xl border shadow-sm p-6">
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-center">
 					<div className="relative flex-1">
 						<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -173,7 +173,7 @@ function RouteComponent() {
 				</div>
 			</div>
 
-			<div className="bg-card rounded-xl border shadow-sm p-3 sm:p-6">
+			<div className="bg-card rounded-xl border shadow-sm p-6">
 				<div className="grid gap-6 lg:grid-cols-[1fr,320px]">
 					<CategoryList
 						categories={filteredCategories}

@@ -34,28 +34,22 @@ export const Route = createFileRoute("/reports")({
 
 function RouteComponent() {
 	return (
-		<div className="min-h-screen bg-background">
-			{/* Header Section */}
-			<div className="border-b bg-card">
-				<div className="container mx-auto px-4 py-6">
-					<div className="flex items-center gap-3">
-						<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-							<BarChart3Icon className="h-5 w-5 text-primary" />
-						</div>
-						<div>
-							<h1 className="text-2xl font-bold tracking-tight">
-								Transaction Reports
-							</h1>
-							<p className="text-sm text-muted-foreground">
-								Generate detailed reports on your transactions
-							</p>
-						</div>
+		<div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
+			<div className="bg-card rounded-xl border shadow-sm p-6">
+				<div className="flex items-center gap-3">
+					<div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+						<BarChart3Icon className="h-6 w-6 text-primary" />
+					</div>
+					<div>
+						<h1 className="text-2xl font-bold">Transaction Reports</h1>
+						<p className="text-sm text-muted-foreground">
+							Generate detailed reports on your transactions
+						</p>
 					</div>
 				</div>
 			</div>
 
-			{/* Main Content */}
-			<div className="container mx-auto px-4 py-8">
+			<div className="bg-card rounded-xl border shadow-sm p-6">
 				<TransactionReport />
 			</div>
 		</div>
