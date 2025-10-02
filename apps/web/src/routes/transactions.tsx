@@ -361,7 +361,7 @@ function RouteComponent() {
 
 	return (
 		<div className="min-h-screen">
-			<div className="container mx-auto max-w-7xl p-4 sm:p-6 space-y-6">
+			<div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
 				<div className="bg-card rounded-xl border shadow-sm p-6">
 					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 						<div className="flex items-center gap-3">
@@ -417,7 +417,7 @@ function RouteComponent() {
 				<div className="bg-card rounded-xl border shadow-sm p-6">
 					<Search />
 				</div>
-				<div className="bg-card rounded-xl border shadow-sm p-6 overflow-hidden">
+				<div className="bg-card rounded-xl border shadow-sm p-6 overflow-x-auto">
 					<TransactionsTable
 						transactions={transactionsData?.transactions ?? []}
 						pagination={{
