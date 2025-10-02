@@ -256,6 +256,7 @@ export function TransactionsTable({
 						{isDevMode && (
 							<TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
 						)}
+
 						<TableHead className="w-[100px] px-2 sm:px-4">Date</TableHead>
 						<TableHead className="min-w-fit px-2 sm:px-4">Merchant</TableHead>
 						<TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4">
@@ -265,6 +266,11 @@ export function TransactionsTable({
 						<TableHead className="w-[100px] px-2 sm:px-4 text-right">
 							Amount
 						</TableHead>
+						{isDevMode && (
+							<TableHead className="w-[100px] px-2 sm:px-4">
+								External ID
+							</TableHead>
+						)}
 						<TableHead className="w-[80px] px-2 sm:px-4 text-center">
 							Reviewed
 						</TableHead>
@@ -423,6 +429,25 @@ export function TransactionsTable({
 									className="transition-colors"
 								/>
 							</TableCell>
+							{isDevMode && (
+								<TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+									{transaction.externalId &&
+									transaction.externalId.length > 30 ? (
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<span>{transaction.externalId.slice(0, 30)}…</span>
+												</TooltipTrigger>
+												<TooltipContent>
+													<span>{transaction.externalId}</span>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
+									) : (
+										transaction.externalId
+									)}
+								</TableCell>
+							)}
 							<TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
 								{renderReviewButton(transaction)}
 							</TableCell>
