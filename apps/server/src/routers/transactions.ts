@@ -716,6 +716,9 @@ export const transactionsRouter = {
 					// Get the original transaction date
 					const originalDate = new Date(originalTransaction.date);
 
+					// Delete the original transaction
+					await db.delete(transaction).where(eq(transaction.id, input.id));
+
 					// Create split transactions
 					const splitTransactions = [];
 					for (let i = 0; i < input.months; i++) {
@@ -750,9 +753,6 @@ export const transactionsRouter = {
 						.insert(transaction)
 						.values(splitTransactions)
 						.returning();
-
-					// Delete the original transaction
-					await db.delete(transaction).where(eq(transaction.id, input.id));
 
 					// Return the created split transactions with relations
 					const splitTransactionsWithRelations = await Promise.all(
