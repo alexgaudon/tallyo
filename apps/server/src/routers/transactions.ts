@@ -734,6 +734,7 @@ export const transactionsRouter = {
 							date: splitDate.toISOString().split("T")[0],
 							transactionDetails: `${originalTransaction.transactionDetails} (Split ${i + 1}/${input.months})`,
 							notes: originalTransaction.notes,
+							externalId: i === 0 ? originalTransaction.externalId : null, // First split retains original external ID
 							reviewed: false, // Split transactions need to be reviewed again
 							splitGroupId,
 							splitIndex: i + 1,
