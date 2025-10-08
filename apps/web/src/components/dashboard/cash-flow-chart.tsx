@@ -78,10 +78,51 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
 		);
 	}
 
+	// If only one data point, show text instead of chart
+	if (data.length === 1) {
+		const item = data[0];
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Cash Flow</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
+						<div className="text-lg font-semibold">
+							{format(parseISO(`${item.month}-01`), "MMMM yyyy")}
+						</div>
+						<div className="grid grid-cols-3 gap-6 w-full max-w-md">
+							<div className="text-center">
+								<div className="text-sm text-muted-foreground">Income</div>
+								<div className="text-lg font-semibold text-green-600">
+									<CurrencyAmount amount={item.income} />
+								</div>
+							</div>
+							<div className="text-center">
+								<div className="text-sm text-muted-foreground">Expenses</div>
+								<div className="text-lg font-semibold text-red-600">
+									<CurrencyAmount amount={item.expenses} />
+								</div>
+							</div>
+							<div className="text-center">
+								<div className="text-sm text-muted-foreground">Net</div>
+								<div
+									className={`text-lg font-semibold ${item.net >= 0 ? "text-green-600" : "text-red-600"}`}
+								>
+									<CurrencyAmount amount={item.net} />
+								</div>
+							</div>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	// Transform data for the chart
 	const chartData = data.map((item) => ({
 		...item,
-		monthLabel: format(parseISO(item.month + "-01"), "MMM, yyyy"),
+		monthLabel: format(parseISO(`${item.month}-01`), "MMM, yyyy"),
 	}));
 
 	return (
@@ -137,20 +178,22 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
 						</LineChart>
 					</ResponsiveContainer>
 				</div>
-				<div className="flex justify-center gap-6 mt-4 text-sm">
-					<div className="flex items-center gap-2">
-						<div className="w-3 h-3 rounded-full bg-green-500" />
-						<span>Income</span>
+				{data.length > 1 && (
+					<div className="flex justify-center gap-6 mt-4 text-sm">
+						<div className="flex items-center gap-2">
+							<div className="w-3 h-3 rounded-full bg-green-500" />
+							<span>Income</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="w-3 h-3 rounded-full bg-red-500" />
+							<span>Expenses</span>
+						</div>
+						<div className="flex items-center gap-2">
+							<div className="w-3 h-0.5 bg-blue-500" />
+							<span>Net</span>
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<div className="w-3 h-3 rounded-full bg-red-500" />
-						<span>Expenses</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<div className="w-3 h-0.5 bg-blue-500" />
-						<span>Net</span>
-					</div>
-				</div>
+				)}
 			</CardContent>
 		</Card>
 	);

@@ -62,7 +62,9 @@ export const Route = createFileRoute("/dashboard")({
 				}),
 			),
 			context.queryClient.prefetchQuery(
-				orpc.dashboard.getCashFlowData.queryOptions(),
+				orpc.dashboard.getCashFlowData.queryOptions({
+					input: dateRangeToApiFormat(dateRange),
+				}),
 			),
 		]);
 	},
@@ -131,7 +133,9 @@ function RouteComponent() {
 	);
 
 	const { data: cashFlowData, isLoading: isCashFlowLoading } = useQuery(
-		orpc.dashboard.getCashFlowData.queryOptions(),
+		orpc.dashboard.getCashFlowData.queryOptions({
+			input: dateRangeToApiFormat(dateRange),
+		}),
 	);
 
 	return (
