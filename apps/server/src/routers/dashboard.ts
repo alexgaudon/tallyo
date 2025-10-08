@@ -8,6 +8,7 @@ import {
 	isNull,
 	lte,
 	not,
+	or,
 	sql,
 	sum,
 } from "drizzle-orm";
@@ -691,7 +692,9 @@ export const dashboardRouter = {
 			const incomeData = await db
 				.select({
 					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-					totalAmount: sum(transaction.amount),
+					totalAmount: sum(
+						sql<number>`CASE WHEN ${transaction.splitGroupId} IS NOT NULL THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+					),
 				})
 				.from(transaction)
 				.innerJoin(category, eq(transaction.categoryId, category.id))
@@ -702,6 +705,7 @@ export const dashboardRouter = {
 						eq(category.treatAsIncome, true),
 						eq(category.hideFromInsights, false),
 						lte(transaction.date, today), // Exclude future dates
+						or(isNull(transaction.splitGroupId), eq(transaction.splitIndex, 1)),
 					),
 				)
 				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
@@ -710,7 +714,9 @@ export const dashboardRouter = {
 			const expenseData = await db
 				.select({
 					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-					totalAmount: sum(transaction.amount),
+					totalAmount: sum(
+						sql<number>`CASE WHEN ${transaction.splitGroupId} IS NOT NULL THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+					),
 				})
 				.from(transaction)
 				.innerJoin(category, eq(transaction.categoryId, category.id))
@@ -721,6 +727,7 @@ export const dashboardRouter = {
 						eq(category.treatAsIncome, false),
 						eq(category.hideFromInsights, false),
 						lte(transaction.date, today), // Exclude future dates
+						or(isNull(transaction.splitGroupId), eq(transaction.splitIndex, 1)),
 					),
 				)
 				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
@@ -729,7 +736,9 @@ export const dashboardRouter = {
 			const uncategorizedData = await db
 				.select({
 					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-					totalAmount: sum(transaction.amount),
+					totalAmount: sum(
+						sql<number>`CASE WHEN ${transaction.splitGroupId} IS NOT NULL THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+					),
 				})
 				.from(transaction)
 				.where(
@@ -738,6 +747,7 @@ export const dashboardRouter = {
 						eq(transaction.reviewed, true),
 						isNull(transaction.categoryId),
 						lte(transaction.date, today), // Exclude future dates
+						or(isNull(transaction.splitGroupId), eq(transaction.splitIndex, 1)),
 					),
 				)
 				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
