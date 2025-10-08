@@ -5,9 +5,11 @@ import {
 	eq,
 	gte,
 	inArray,
+	isNotNull,
 	isNull,
 	lte,
 	not,
+	type SQL,
 	sql,
 	sum,
 } from "drizzle-orm";
@@ -690,117 +692,105 @@ export const dashboardRouter = {
 				const fromDate = dateRange.from || null;
 				const toDate = dateRange.to || new Date().toISOString().split("T")[0];
 
-				// Get monthly income totals (transactions with income categories)
-				const incomeData = await db
-					.select({
-						monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-						totalAmount: sum(transaction.amount),
-					})
-					.from(transaction)
-					.innerJoin(category, eq(transaction.categoryId, category.id))
-					.where(
-						and(
-							eq(transaction.userId, context.session.user.id),
-							eq(transaction.reviewed, true),
-							eq(category.treatAsIncome, true),
-							eq(category.hideFromInsights, false),
-							lte(transaction.date, toDate), // Filter by date range
-							fromDate ? gte(transaction.date, fromDate) : undefined,
-						),
-					)
-					.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+				// Helper to run a grouped sum query
+				const getMonthlySum = async (whereClause: SQL<unknown> | undefined) =>
+					whereClause
+						? await db
+								.select({
+									monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+									totalAmount: sum(transaction.amount),
+								})
+								.from(transaction)
+								.where(whereClause)
+								.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`)
+						: [];
 
-				// Get monthly expense totals (transactions with expense categories)
-				const expenseData = await db
-					.select({
-						monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-						totalAmount: sum(transaction.amount),
-					})
-					.from(transaction)
-					.innerJoin(category, eq(transaction.categoryId, category.id))
-					.where(
-						and(
-							eq(transaction.userId, context.session.user.id),
-							eq(transaction.reviewed, true),
-							eq(category.treatAsIncome, false),
-							eq(category.hideFromInsights, false),
-							lte(transaction.date, toDate), // Filter by date range
-							fromDate ? gte(transaction.date, fromDate) : undefined,
-						),
-					)
-					.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+				const userId = context.session.user.id;
 
-				// Also get uncategorized transactions (treat as expenses)
-				const uncategorizedData = await db
-					.select({
-						monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-						totalAmount: sum(transaction.amount),
-					})
-					.from(transaction)
-					.where(
-						and(
-							eq(transaction.userId, context.session.user.id),
-							eq(transaction.reviewed, true),
-							isNull(transaction.categoryId),
-							lte(transaction.date, toDate), // Filter by date range
-							fromDate ? gte(transaction.date, fromDate) : undefined,
-						),
-					)
-					.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+				const incomeWhere = and(
+					eq(transaction.userId, userId),
+					eq(transaction.reviewed, true),
+					lte(transaction.date, toDate),
+					...(fromDate ? [gte(transaction.date, fromDate)] : []),
+					isNotNull(transaction.categoryId),
+					eq(category.treatAsIncome, true),
+					eq(category.hideFromInsights, false),
+				);
 
-				// Combine all data
+				const expenseWhere = and(
+					eq(transaction.userId, userId),
+					eq(transaction.reviewed, true),
+					lte(transaction.date, toDate),
+					...(fromDate ? [gte(transaction.date, fromDate)] : []),
+					isNotNull(transaction.categoryId),
+					eq(category.treatAsIncome, false),
+					eq(category.hideFromInsights, false),
+				);
+
+				const uncategorizedWhere = and(
+					eq(transaction.userId, userId),
+					eq(transaction.reviewed, true),
+					lte(transaction.date, toDate),
+					...(fromDate ? [gte(transaction.date, fromDate)] : []),
+					isNull(transaction.categoryId),
+				);
+
+				// Run queries
+				const [incomeData, expenseData, uncategorizedData] = await Promise.all([
+					db
+						.select({
+							monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+							totalAmount: sum(transaction.amount),
+						})
+						.from(transaction)
+						.innerJoin(category, eq(transaction.categoryId, category.id))
+						.where(incomeWhere)
+						.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`),
+					db
+						.select({
+							monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+							totalAmount: sum(transaction.amount),
+						})
+						.from(transaction)
+						.innerJoin(category, eq(transaction.categoryId, category.id))
+						.where(expenseWhere)
+						.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`),
+					getMonthlySum(uncategorizedWhere),
+				]);
+
+				// Merge all data into a single map
 				const monthlyMap = new Map<
 					string,
 					{ income: number; expenses: number }
 				>();
 
-				// Process income data
-				for (const row of incomeData) {
-					const monthKey = row.monthKey;
-					const amount = Math.abs(Number(row.totalAmount) || 0); // Income is always positive
-
-					if (!monthlyMap.has(monthKey)) {
-						monthlyMap.set(monthKey, { income: 0, expenses: 0 });
+				const addToMap = (
+					rows: Array<{ monthKey: string; totalAmount: unknown }>,
+					type: "income" | "expenses",
+				): void => {
+					for (const row of rows) {
+						const { monthKey } = row;
+						const amount = Number(row.totalAmount) || 0;
+						if (!monthlyMap.has(monthKey)) {
+							monthlyMap.set(monthKey, { income: 0, expenses: 0 });
+						}
+						// For income, keep sign; for expenses, always positive
+						const entry = monthlyMap.get(monthKey);
+						if (!entry) continue;
+						if (type === "income") {
+							entry.income += amount;
+						} else {
+							entry.expenses += Math.abs(amount);
+						}
 					}
+				};
 
-					const monthData = monthlyMap.get(monthKey);
-					if (monthData) {
-						monthData.income += amount;
-					}
-				}
+				addToMap(incomeData, "income");
+				addToMap(expenseData, "expenses");
+				addToMap(uncategorizedData, "expenses");
 
-				// Process expense data
-				for (const row of expenseData) {
-					const monthKey = row.monthKey;
-					const amount = Math.abs(Number(row.totalAmount) || 0); // Expenses are always positive
-
-					if (!monthlyMap.has(monthKey)) {
-						monthlyMap.set(monthKey, { income: 0, expenses: 0 });
-					}
-
-					const monthData = monthlyMap.get(monthKey);
-					if (monthData) {
-						monthData.expenses += amount;
-					}
-				}
-
-				// Process uncategorized data (treat as expenses)
-				for (const row of uncategorizedData) {
-					const monthKey = row.monthKey;
-					const amount = Math.abs(Number(row.totalAmount) || 0); // Expenses are always positive
-
-					if (!monthlyMap.has(monthKey)) {
-						monthlyMap.set(monthKey, { income: 0, expenses: 0 });
-					}
-
-					const monthData = monthlyMap.get(monthKey);
-					if (monthData) {
-						monthData.expenses += amount;
-					}
-				}
-
-				// Convert to array and sort by month ascending (oldest first, current month on the right)
-				const cashFlowData = Array.from(monthlyMap.entries())
+				// Format and sort result
+				return Array.from(monthlyMap.entries())
 					.map(([month, data]) => ({
 						month,
 						income: data.income,
@@ -808,8 +798,6 @@ export const dashboardRouter = {
 						net: data.income - data.expenses,
 					}))
 					.sort((a, b) => a.month.localeCompare(b.month));
-
-				return cashFlowData;
 			} catch (error) {
 				console.error("Error fetching cash flow data:", error);
 				throw error;
