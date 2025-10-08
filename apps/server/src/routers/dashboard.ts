@@ -5,6 +5,7 @@ import {
 	eq,
 	gte,
 	inArray,
+	isNull,
 	lte,
 	not,
 	sql,
@@ -681,4 +682,131 @@ export const dashboardRouter = {
 
 			return result;
 		}),
+	getCashFlowData: protectedProcedure.handler(async ({ context }) => {
+		try {
+			// Get today's date in YYYY-MM-DD format
+			const today = new Date().toISOString().split("T")[0];
+
+			// Get monthly income totals (transactions with income categories)
+			const incomeData = await db
+				.select({
+					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+					totalAmount: sum(transaction.amount),
+				})
+				.from(transaction)
+				.innerJoin(category, eq(transaction.categoryId, category.id))
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						eq(category.treatAsIncome, true),
+						eq(category.hideFromInsights, false),
+						lte(transaction.date, today), // Exclude future dates
+					),
+				)
+				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+
+			// Get monthly expense totals (transactions with expense categories)
+			const expenseData = await db
+				.select({
+					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+					totalAmount: sum(transaction.amount),
+				})
+				.from(transaction)
+				.innerJoin(category, eq(transaction.categoryId, category.id))
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						eq(category.treatAsIncome, false),
+						eq(category.hideFromInsights, false),
+						lte(transaction.date, today), // Exclude future dates
+					),
+				)
+				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+
+			// Also get uncategorized transactions (treat as expenses)
+			const uncategorizedData = await db
+				.select({
+					monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
+					totalAmount: sum(transaction.amount),
+				})
+				.from(transaction)
+				.where(
+					and(
+						eq(transaction.userId, context.session.user.id),
+						eq(transaction.reviewed, true),
+						isNull(transaction.categoryId),
+						lte(transaction.date, today), // Exclude future dates
+					),
+				)
+				.groupBy(sql`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`);
+
+			// Combine all data
+			const monthlyMap = new Map<
+				string,
+				{ income: number; expenses: number }
+			>();
+
+			// Process income data
+			for (const row of incomeData) {
+				const monthKey = row.monthKey;
+				const amount = Math.abs(Number(row.totalAmount) || 0); // Income is always positive
+
+				if (!monthlyMap.has(monthKey)) {
+					monthlyMap.set(monthKey, { income: 0, expenses: 0 });
+				}
+
+				const monthData = monthlyMap.get(monthKey);
+				if (monthData) {
+					monthData.income += amount;
+				}
+			}
+
+			// Process expense data
+			for (const row of expenseData) {
+				const monthKey = row.monthKey;
+				const amount = Math.abs(Number(row.totalAmount) || 0); // Expenses are always positive
+
+				if (!monthlyMap.has(monthKey)) {
+					monthlyMap.set(monthKey, { income: 0, expenses: 0 });
+				}
+
+				const monthData = monthlyMap.get(monthKey);
+				if (monthData) {
+					monthData.expenses += amount;
+				}
+			}
+
+			// Process uncategorized data (treat as expenses)
+			for (const row of uncategorizedData) {
+				const monthKey = row.monthKey;
+				const amount = Math.abs(Number(row.totalAmount) || 0); // Expenses are always positive
+
+				if (!monthlyMap.has(monthKey)) {
+					monthlyMap.set(monthKey, { income: 0, expenses: 0 });
+				}
+
+				const monthData = monthlyMap.get(monthKey);
+				if (monthData) {
+					monthData.expenses += amount;
+				}
+			}
+
+			// Convert to array and sort by month ascending (oldest first, current month on the right)
+			const cashFlowData = Array.from(monthlyMap.entries())
+				.map(([month, data]) => ({
+					month,
+					income: data.income,
+					expenses: data.expenses,
+					net: data.income - data.expenses,
+				}))
+				.sort((a, b) => a.month.localeCompare(b.month));
+
+			return cashFlowData;
+		} catch (error) {
+			console.error("Error fetching cash flow data:", error);
+			throw error;
+		}
+	}),
 };

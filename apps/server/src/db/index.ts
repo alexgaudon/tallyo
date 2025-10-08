@@ -316,7 +316,7 @@ export async function seed() {
 			},
 		];
 
-		categoryData.forEach((catData, catIndex) => {
+		categoryData.forEach((catData, _catIndex) => {
 			catData.details.forEach((detail, i) => {
 				const date = new Date(
 					now.getFullYear(),

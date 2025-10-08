@@ -9,6 +9,7 @@ import { CreditCardIcon } from "lucide-react";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
+import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
@@ -59,6 +60,9 @@ export const Route = createFileRoute("/dashboard")({
 				orpc.dashboard.getMerchantStats.queryOptions({
 					input: dateRangeToApiFormat(dateRange),
 				}),
+			),
+			context.queryClient.prefetchQuery(
+				orpc.dashboard.getCashFlowData.queryOptions(),
 			),
 		]);
 	},
@@ -126,6 +130,10 @@ function RouteComponent() {
 		}),
 	);
 
+	const { data: cashFlowData, isLoading: isCashFlowLoading } = useQuery(
+		orpc.dashboard.getCashFlowData.queryOptions(),
+	);
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
 			{/* Hero Section */}
@@ -158,7 +166,12 @@ function RouteComponent() {
 			</div>
 
 			<DelayedLoading
-				isLoading={isStatsLoading || isCategoryLoading || isMerchantLoading}
+				isLoading={
+					isStatsLoading ||
+					isCategoryLoading ||
+					isMerchantLoading ||
+					isCashFlowLoading
+				}
 			>
 				{/* Main Content */}
 				<div className="container mx-auto px-4 py-8 space-y-8">
@@ -191,6 +204,15 @@ function RouteComponent() {
 							<h2 className="text-lg font-semibold">Category Breakdown</h2>
 						</div>
 						<CategoryPieChart data={categoryData ?? []} />
+					</div>
+
+					{/* Cash Flow Section */}
+					<div>
+						<div className="flex items-center gap-3 mb-4">
+							<div className="w-2 h-8 bg-orange-500 rounded-full"></div>
+							<h2 className="text-lg font-semibold">Cash Flow</h2>
+						</div>
+						<CashFlowChart data={cashFlowData ?? []} />
 					</div>
 				</div>
 			</DelayedLoading>
