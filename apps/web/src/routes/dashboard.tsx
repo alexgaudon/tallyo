@@ -190,7 +190,11 @@ function RouteComponent() {
 								<div className="w-2 h-8 bg-blue-500 rounded-full"></div>
 								<h2 className="text-lg font-semibold">Overview Stats</h2>
 							</div>
-							<Stats data={statsData} categoryData={categoryData} />
+							<Stats
+								data={statsData}
+								categoryData={categoryData}
+								cashFlowData={cashFlowData}
+							/>
 						</div>
 						<div>
 							<div className="flex items-center gap-3 mb-4">

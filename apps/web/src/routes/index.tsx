@@ -321,6 +321,7 @@ function HomeComponent() {
 										},
 									},
 								]}
+								cashFlowData={[]}
 							/>
 						</CardContent>
 					</Card>

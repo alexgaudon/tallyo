@@ -42,14 +42,7 @@ function getColorFromCategoryId(categoryId: string): string {
 
 function CustomTooltip(props: {
 	active?: boolean;
-	payload?: Array<{
-		payload: {
-			name: string;
-			value: number;
-			count: number;
-			average12Months: number;
-		};
-	}>;
+	payload?: any[];
 	chartData: Array<{ value: number }>;
 }) {
 	const { active, payload } = props;

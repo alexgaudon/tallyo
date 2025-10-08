@@ -14,6 +14,7 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type {
+	DashboardCashFlowData,
 	DashboardCategoryData,
 	DashboardStats,
 } from "../../../../server/src/routers";
@@ -23,9 +24,11 @@ import { StatDisplay } from "../ui/stat-display";
 export function Stats({
 	data,
 	categoryData,
+	cashFlowData,
 }: {
 	data: DashboardStats | undefined;
 	categoryData: DashboardCategoryData | undefined;
+	cashFlowData: DashboardCashFlowData | undefined;
 }) {
 	const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
 	const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
@@ -218,6 +221,27 @@ export function Stats({
 					</div>
 				</div>
 			</Card>
+
+			{/* Single Month Cash Flow */}
+			{cashFlowData && cashFlowData.length === 1 && (
+				<Card className="p-2">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<TrendingUpIcon className="w-3 h-3 text-orange-500" />
+							<span className="text-sm font-medium">Cash Flow</span>
+						</div>
+						<div className="flex items-center gap-1">
+							<CurrencyAmount
+								animate
+								amount={cashFlowData[0].net}
+								className={
+									cashFlowData[0].net >= 0 ? "text-green-600" : "text-red-600"
+								}
+							/>
+						</div>
+					</div>
+				</Card>
+			)}
 		</div>
 	);
 }

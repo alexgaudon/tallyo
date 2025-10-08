@@ -95,7 +95,6 @@ export function CategorySelect({
 			onValueChange={onValueChange}
 			placeholder={placeholder}
 			className={className}
-			allowNull={allowNull}
 			entities={filteredCategories}
 			formatEntity={formatCategory}
 			emptyLabel="No categories available"

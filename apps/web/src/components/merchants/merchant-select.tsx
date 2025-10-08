@@ -80,7 +80,6 @@ export function MerchantSelect({
 				onValueChange={onValueChange}
 				placeholder={transactionDetails ?? placeholder}
 				className={className}
-				allowNull={allowNull}
 				entities={entities}
 				emptyLabel="No merchants available"
 				disabled={disabled}
