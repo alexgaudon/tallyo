@@ -66,11 +66,6 @@ export const Route = createFileRoute("/dashboard")({
 					input: dateRangeToApiFormat(dateRange),
 				}),
 			),
-			context.queryClient.prefetchQuery(
-				orpc.dashboard.rangeCashflow.queryOptions({
-					input: dateRangeToApiFormat(dateRange),
-				}),
-			),
 		]);
 	},
 });
@@ -143,13 +138,6 @@ function RouteComponent() {
 		}),
 	);
 
-	const { data: rangeCashFlowData, isLoading: isRangeCashFlowLoading } =
-		useQuery(
-			orpc.dashboard.rangeCashflow.queryOptions({
-				input: dateRangeToApiFormat(dateRange),
-			}),
-		);
-
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
 			{/* Hero Section */}
@@ -186,8 +174,7 @@ function RouteComponent() {
 					isStatsLoading ||
 					isCategoryLoading ||
 					isMerchantLoading ||
-					isCashFlowLoading ||
-					isRangeCashFlowLoading
+					isCashFlowLoading
 				}
 			>
 				{/* Main Content */}
@@ -206,7 +193,7 @@ function RouteComponent() {
 							<Stats
 								data={statsData}
 								categoryData={categoryData}
-								cashFlowData={rangeCashFlowData ?? []}
+								cashFlowData={cashFlowData}
 							/>
 						</div>
 						<div>

@@ -15,9 +15,16 @@ import {
 } from "@/components/ui/collapsible";
 import type {
 	DashboardCategoryData,
-	DashboardRangeCashFlowData,
 	DashboardStats,
 } from "../../../../server/src/routers";
+
+type DashboardCashFlowData = Array<{
+	month: string;
+	income: number;
+	expenses: number;
+	net: number;
+}>;
+
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
 
@@ -28,7 +35,7 @@ export function Stats({
 }: {
 	data: DashboardStats | undefined;
 	categoryData: DashboardCategoryData | undefined;
-	cashFlowData: DashboardRangeCashFlowData | undefined;
+	cashFlowData: DashboardCashFlowData | undefined;
 }) {
 	const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
 	const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
@@ -223,29 +230,27 @@ export function Stats({
 			</Card>
 
 			{/* Range Cash Flow */}
-			{cashFlowData &&
-				"income" in cashFlowData &&
-				"expenses" in cashFlowData &&
-				"net" in cashFlowData &&
-				"dateRange" in cashFlowData && (
-					<Card className="p-2">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<TrendingUpIcon className="w-3 h-3 text-orange-500" />
-								<span className="text-sm font-medium">Cash Flow</span>
-							</div>
-							<div className="flex items-center gap-1">
-								<CurrencyAmount
-									animate
-									amount={cashFlowData.net}
-									className={
-										cashFlowData.net >= 0 ? "text-green-600" : "text-red-600"
-									}
-								/>
-							</div>
+			{cashFlowData && cashFlowData.length > 0 && (
+				<Card className="p-2">
+					<div className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<TrendingUpIcon className="w-3 h-3 text-orange-500" />
+							<span className="text-sm font-medium">Cash Flow</span>
 						</div>
-					</Card>
-				)}
+						<div className="flex items-center gap-1">
+							<CurrencyAmount
+								animate
+								amount={cashFlowData.reduce((sum, item) => sum + item.net, 0)}
+								className={
+									cashFlowData.reduce((sum, item) => sum + item.net, 0) >= 0
+										? "text-green-600"
+										: "text-red-600"
+								}
+							/>
+						</div>
+					</div>
+				</Card>
+			)}
 		</div>
 	);
 }
