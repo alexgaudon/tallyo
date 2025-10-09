@@ -66,6 +66,11 @@ export const Route = createFileRoute("/dashboard")({
 					input: dateRangeToApiFormat(dateRange),
 				}),
 			),
+			context.queryClient.prefetchQuery(
+				orpc.dashboard.rangeCashflow.queryOptions({
+					input: dateRangeToApiFormat(dateRange),
+				}),
+			),
 		]);
 	},
 });
@@ -138,6 +143,13 @@ function RouteComponent() {
 		}),
 	);
 
+	const { data: rangeCashFlowData, isLoading: isRangeCashFlowLoading } =
+		useQuery(
+			orpc.dashboard.rangeCashflow.queryOptions({
+				input: dateRangeToApiFormat(dateRange),
+			}),
+		);
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
 			{/* Hero Section */}
@@ -174,7 +186,8 @@ function RouteComponent() {
 					isStatsLoading ||
 					isCategoryLoading ||
 					isMerchantLoading ||
-					isCashFlowLoading
+					isCashFlowLoading ||
+					isRangeCashFlowLoading
 				}
 			>
 				{/* Main Content */}
@@ -193,7 +206,7 @@ function RouteComponent() {
 							<Stats
 								data={statsData}
 								categoryData={categoryData}
-								cashFlowData={cashFlowData}
+								cashFlowData={rangeCashFlowData ?? []}
 							/>
 						</div>
 						<div>
@@ -214,14 +227,18 @@ function RouteComponent() {
 						<CategoryPieChart data={categoryData ?? []} />
 					</div>
 
-					{/* Cash Flow Section */}
-					<div>
-						<div className="flex items-center gap-3 mb-4">
-							<div className="w-2 h-8 bg-orange-500 rounded-full"></div>
-							<h2 className="text-lg font-semibold">Cash Flow</h2>
-						</div>
-						<CashFlowChart data={cashFlowData ?? []} />
-					</div>
+					{cashFlowData && cashFlowData.length >= 2 && (
+						<>
+							{/* Cash Flow Section */}
+							<div>
+								<div className="flex items-center gap-3 mb-4">
+									<div className="w-2 h-8 bg-orange-500 rounded-full"></div>
+									<h2 className="text-lg font-semibold">Cash Flow</h2>
+								</div>
+								<CashFlowChart data={cashFlowData ?? []} />
+							</div>
+						</>
+					)}
 				</div>
 			</DelayedLoading>
 		</div>

@@ -816,4 +816,100 @@ export const dashboardRouter = {
 				throw error;
 			}
 		}),
+	rangeCashflow: protectedProcedure
+		.input(dateRangeSchema.optional())
+		.handler(async ({ context, input }) => {
+			try {
+				const dateRange = input || {};
+				const fromDate = dateRange.from || null;
+				const toDate = dateRange.to || new Date().toISOString().split("T")[0];
+
+				const userId = context.session.user.id;
+
+				// Base where conditions for all queries
+				const baseWhere = and(
+					eq(transaction.userId, userId),
+					eq(transaction.reviewed, true),
+					...(fromDate ? [gte(transaction.date, fromDate)] : []),
+					...(toDate ? [lte(transaction.date, toDate)] : []),
+					// Only include original split transactions (splitIndex === 1) or non-split transactions
+					or(isNull(transaction.splitIndex), eq(transaction.splitIndex, 1)),
+				);
+
+				// Income query
+				const incomeWhere = and(
+					baseWhere,
+					isNotNull(transaction.categoryId),
+					eq(category.treatAsIncome, true),
+					eq(category.hideFromInsights, false),
+				);
+
+				// Expense query
+				const expenseWhere = and(
+					baseWhere,
+					isNotNull(transaction.categoryId),
+					eq(category.treatAsIncome, false),
+					eq(category.hideFromInsights, false),
+				);
+
+				// Uncategorized query
+				const uncategorizedWhere = and(
+					baseWhere,
+					isNull(transaction.categoryId),
+				);
+
+				// Run all queries in parallel
+				const [incomeResult, expenseResult, uncategorizedResult] =
+					await Promise.all([
+						db
+							.select({
+								totalAmount: sum(
+									sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+								),
+							})
+							.from(transaction)
+							.innerJoin(category, eq(transaction.categoryId, category.id))
+							.where(incomeWhere),
+						db
+							.select({
+								totalAmount: sum(
+									sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+								),
+							})
+							.from(transaction)
+							.innerJoin(category, eq(transaction.categoryId, category.id))
+							.where(expenseWhere),
+						db
+							.select({
+								totalAmount: sum(
+									sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
+								),
+							})
+							.from(transaction)
+							.where(uncategorizedWhere),
+					]);
+
+				// Extract amounts
+				const income = Number(incomeResult[0]?.totalAmount) || 0;
+				const expenses = Math.abs(Number(expenseResult[0]?.totalAmount) || 0);
+				const uncategorized = Math.abs(
+					Number(uncategorizedResult[0]?.totalAmount) || 0,
+				);
+				const totalExpenses = expenses + uncategorized;
+				const net = income - totalExpenses;
+
+				return {
+					income,
+					expenses: totalExpenses,
+					net,
+					dateRange: {
+						from: fromDate,
+						to: toDate,
+					},
+				};
+			} catch (error) {
+				console.error("Error fetching range cash flow data:", error);
+				throw error;
+			}
+		}),
 };

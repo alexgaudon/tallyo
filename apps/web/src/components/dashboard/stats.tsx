@@ -14,8 +14,8 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type {
-	DashboardCashFlowData,
 	DashboardCategoryData,
+	DashboardRangeCashFlowData,
 	DashboardStats,
 } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
@@ -28,7 +28,7 @@ export function Stats({
 }: {
 	data: DashboardStats | undefined;
 	categoryData: DashboardCategoryData | undefined;
-	cashFlowData: DashboardCashFlowData | undefined;
+	cashFlowData: DashboardRangeCashFlowData | undefined;
 }) {
 	const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
 	const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
@@ -222,26 +222,30 @@ export function Stats({
 				</div>
 			</Card>
 
-			{/* Single Month Cash Flow */}
-			{cashFlowData && cashFlowData.length === 1 && (
-				<Card className="p-2">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-2">
-							<TrendingUpIcon className="w-3 h-3 text-orange-500" />
-							<span className="text-sm font-medium">Cash Flow</span>
+			{/* Range Cash Flow */}
+			{cashFlowData &&
+				"income" in cashFlowData &&
+				"expenses" in cashFlowData &&
+				"net" in cashFlowData &&
+				"dateRange" in cashFlowData && (
+					<Card className="p-2">
+						<div className="flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<TrendingUpIcon className="w-3 h-3 text-orange-500" />
+								<span className="text-sm font-medium">Cash Flow</span>
+							</div>
+							<div className="flex items-center gap-1">
+								<CurrencyAmount
+									animate
+									amount={cashFlowData.net}
+									className={
+										cashFlowData.net >= 0 ? "text-green-600" : "text-red-600"
+									}
+								/>
+							</div>
 						</div>
-						<div className="flex items-center gap-1">
-							<CurrencyAmount
-								animate
-								amount={cashFlowData[0].net}
-								className={
-									cashFlowData[0].net >= 0 ? "text-green-600" : "text-red-600"
-								}
-							/>
-						</div>
-					</div>
-				</Card>
-			)}
+					</Card>
+				)}
 		</div>
 	);
 }
