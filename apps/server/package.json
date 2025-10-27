@@ -17,6 +17,7 @@
 		"db:seed": "bun run src/db/seed.ts"
 	},
 	"dependencies": {
+		"date-fns": "^4.1.0",
 		"@orpc/client": "^1.9.1",
 		"@orpc/server": "^1.9.1",
 		"better-auth": "^1.3.18",
