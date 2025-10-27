@@ -4,7 +4,13 @@ import {
 	useNavigate,
 	useSearch,
 } from "@tanstack/react-router";
-import { format, parseISO, startOfMonth } from "date-fns";
+import {
+	endOfMonth,
+	format,
+	parseISO,
+	startOfMonth,
+	subMonths,
+} from "date-fns";
 import { CreditCardIcon } from "lucide-react";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
@@ -17,7 +23,7 @@ import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { ensureSession, useSession } from "@/lib/auth-client";
-import { dateRangeToApiFormat } from "@/lib/utils";
+import { dateRangeToApiFormat, isDateRangeOneMonth } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
 const searchSchema = z.object({
@@ -132,9 +138,20 @@ function RouteComponent() {
 		}),
 	);
 
+	const cashFlowDataInput = useMemo(() => {
+		console.log("isOneMonth", isDateRangeOneMonth(dateRange));
+		console.log("dateRange", dateRange);
+		return isDateRangeOneMonth(dateRange)
+			? dateRangeToApiFormat({
+					from: subMonths(startOfMonth(new Date()), 3),
+					to: endOfMonth(new Date()),
+				})
+			: dateRangeToApiFormat(dateRange);
+	}, [dateRange]);
+
 	const { data: cashFlowData, isLoading: isCashFlowLoading } = useQuery(
 		orpc.dashboard.getCashFlowData.queryOptions({
-			input: dateRangeToApiFormat(dateRange),
+			input: cashFlowDataInput,
 		}),
 	);
 
@@ -214,7 +231,7 @@ function RouteComponent() {
 						<CategoryPieChart data={categoryData ?? []} />
 					</div>
 
-					{cashFlowData && cashFlowData.length >= 2 && (
+					{cashFlowData && (
 						<>
 							{/* Cash Flow Section */}
 							<div>

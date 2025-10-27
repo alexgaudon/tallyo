@@ -51,3 +51,11 @@ export function dateRangeToApiFormat(dateRange: DateRange | undefined) {
 		to: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
 	};
 }
+
+export function isDateRangeOneMonth(dateRange: DateRange | undefined) {
+	if (!dateRange?.from || !dateRange?.to) return false;
+	const diffInDays = Math.abs(
+		(dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24),
+	);
+	return diffInDays < 30;
+}
