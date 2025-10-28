@@ -29,7 +29,9 @@ WORKDIR /app
 # Copy built application and dependencies
 COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/apps/server/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
+
+# Install production dependencies
+RUN bun install --production
 
 # Copy the built frontend to public directory
 COPY --from=builder /app/apps/web/dist ./public
