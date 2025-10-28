@@ -103,11 +103,11 @@ function RouteComponent() {
 
   return (
     <div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="bg-card rounded-xl border shadow-sm p-6">
+      <div className="bg-card rounded-md border shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-              <FolderTreeIcon className="h-6 w-6 text-primary" />
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/10">
+              <FolderTreeIcon className="h-6 w-6 text-accent" />
             </div>
             <div>
               <h1 className="text-2xl font-bold">Categories</h1>
@@ -144,7 +144,7 @@ function RouteComponent() {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-card rounded-xl border shadow-sm p-6">
+      <div className="bg-card rounded-md border shadow-sm p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -173,7 +173,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border shadow-sm p-6">
+      <div className="bg-card rounded-md border shadow-sm p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr,320px]">
           <CategoryList
             categories={filteredCategories}

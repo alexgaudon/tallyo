@@ -70,7 +70,7 @@ function CustomTooltip(props: {
 
     return (
       <div
-        className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2"
+        className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2"
         style={{ zIndex: 9999, position: "relative" }}
       >
         <div className="font-semibold text-sm">{data.name}</div>
@@ -189,12 +189,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* Center text with total spent */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="text-center">
-                  <div className="text-xs text-muted-foreground font-medium">
-                    Total Spent
-                  </div>
                   <div className="text-base font-bold">
                     <CurrencyAmount
                       animate
@@ -203,6 +199,9 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                         0,
                       )}
                     />
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">
+                    Total Spend
                   </div>
                 </div>
               </div>
@@ -220,10 +219,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                 <button
                   key={item.name}
                   type="button"
-                  className={`flex items-start gap-2 p-2 ${
+                  className={`flex items-start gap-2 p-2 rounded-md ${
                     activeIndex === index
                       ? "bg-accent border-accent-foreground/20"
-                      : "bg-card hover:bg-accent/50"
+                      : "bg-card hover:bg-muted/50"
                   } cursor-pointer transition-colors text-left min-w-0`}
                   onClick={() => handleCategoryClick(item.categoryId)}
                   aria-label={`View transactions for ${item.name} category`}

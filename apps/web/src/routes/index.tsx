@@ -112,7 +112,7 @@ function HomeComponent() {
         <div className="container mx-auto px-4 py-20 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
                 <img
                   src="/favicon.ico"
                   alt="Tallyo"
@@ -482,7 +482,7 @@ function HomeComponent() {
             >
               <CardHeader>
                 <div
-                  className={`w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}
+                  className={`w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}
                 >
                   {feature.icon}
                 </div>

@@ -71,10 +71,10 @@ export function Stats({
 
   return (
     <div className="space-y-1">
-      <Card className="p-2">
+      <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CreditCardIcon className="w-3 h-3 text-blue-500" />
+            <CreditCardIcon className="w-3 h-3 text-accent" />
             <span className="text-sm font-medium">Transaction Count</span>
           </div>
           <StatDisplay animate value={data.stats.totalTransactions} />
@@ -83,7 +83,7 @@ export function Stats({
 
       {/* Income Section */}
       <Collapsible open={isIncomeExpanded} onOpenChange={setIsIncomeExpanded}>
-        <Card className="p-2">
+        <Card className="p-4">
           <CollapsibleTrigger className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <TrendingUpIcon className="w-3 h-3 text-green-500" />
@@ -126,7 +126,7 @@ export function Stats({
 
       {/* Expense Section */}
       <Collapsible open={isExpenseExpanded} onOpenChange={setIsExpenseExpanded}>
-        <Card className="p-2">
+        <Card className="p-4">
           <CollapsibleTrigger className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <TrendingDownIcon className="w-3 h-3 text-red-500" />
@@ -170,7 +170,7 @@ export function Stats({
         </Card>
       </Collapsible>
 
-      <Card className="p-2">
+      <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {(() => {
@@ -206,10 +206,10 @@ export function Stats({
         </div>
       </Card>
 
-      <Card className="p-2">
+      <Card className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PiggyBankIcon className="w-3 h-3 text-pink-500" />
+            <PiggyBankIcon className="w-3 h-3 text-accent" />
             <span className="text-sm font-medium">Savings Rate</span>
           </div>
           <div className="flex items-center gap-1">
@@ -231,10 +231,10 @@ export function Stats({
 
       {/* Range Cash Flow */}
       {cashFlowData && cashFlowData.length > 0 && (
-        <Card className="p-2">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUpIcon className="w-3 h-3 text-orange-500" />
+              <TrendingUpIcon className="w-3 h-3 text-accent" />
               <span className="text-sm font-medium">Cash Flow</span>
             </div>
             <div className="flex items-center gap-1">

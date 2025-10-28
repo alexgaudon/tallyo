@@ -183,8 +183,8 @@ function RouteComponent() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-primary/10">
-                <CreditCardIcon className="h-8 w-8 text-primary" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-accent/10">
+                <CreditCardIcon className="h-8 w-8 text-accent" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-4xl font-bold tracking-tight">
@@ -228,7 +228,7 @@ function RouteComponent() {
             <div className="lg:flex-1 space-y-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                   <h2 className="text-lg font-semibold">Overview Stats</h2>
                 </div>
                 <Stats
@@ -240,7 +240,7 @@ function RouteComponent() {
 
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-red-500 rounded-full"></div>
+                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                   <h2 className="text-lg font-semibold">
                     Largest Transactions
                   </h2>
@@ -250,7 +250,7 @@ function RouteComponent() {
 
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                   <h2 className="text-lg font-semibold">Top Merchants</h2>
                 </div>
                 <MerchantStats data={merchantData} />
@@ -261,7 +261,7 @@ function RouteComponent() {
             <div className="lg:flex-2 space-y-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                   <h2 className="text-lg font-semibold">Category Breakdown</h2>
                 </div>
                 <CategoryPieChart data={categoryData ?? []} />
@@ -270,7 +270,7 @@ function RouteComponent() {
               {cashFlowData && (
                 <div>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
+                    <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                     <h2 className="text-lg font-semibold">Cash Flow</h2>
                   </div>
                   <CashFlowChart data={cashFlowData ?? []} />

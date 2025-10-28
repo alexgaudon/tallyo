@@ -52,8 +52,8 @@ export function MerchantStats({
           aria-label={`View transactions for ${merchant.merchantName}`}
         >
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-              <StoreIcon className="w-4 h-4 text-primary" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
+              <StoreIcon className="w-4 h-4 text-accent" />
             </div>
             <div>
               <p className="font-semibold text-sm">{merchant.merchantName}</p>

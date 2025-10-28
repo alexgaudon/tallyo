@@ -13,10 +13,10 @@ export function UnreviewedTransactionsBanner({
   if (count === 0) return null;
 
   return (
-    <Card className="border-l-4 border-l-blue-500 border-muted bg-muted/50">
+    <Card className="border-l-4 border-l-accent border-muted bg-muted/50">
       <CardContent className="flex items-center justify-between p-3">
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-blue-500" />
+          <AlertCircle className="h-4 w-4 text-accent" />
           <span className="text-sm font-medium text-foreground">
             {count} unreviewed transaction{count !== 1 ? "s" : ""} pending
           </span>

@@ -28,7 +28,7 @@ function CustomTooltip({
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-background border border-border rounded-lg shadow-lg p-3 space-y-2">
+      <div className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2">
         <div className="font-semibold text-sm">
           {format(parseISO(`${data.month}-01`), "MMM, yyyy")}
         </div>
@@ -84,7 +84,7 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Cash Flow</CardTitle>
+          <CardTitle className="sr-only">Cash Flow</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
@@ -128,7 +128,7 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cash Flow</CardTitle>
+        <CardTitle className="sr-only">Cash Flow</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">

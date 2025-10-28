@@ -35,10 +35,10 @@ export const Route = createFileRoute("/reports")({
 function RouteComponent() {
   return (
     <div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="bg-card rounded-xl border shadow-sm p-6">
+      <div className="bg-card rounded-md border shadow-sm p-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-            <BarChart3Icon className="h-6 w-6 text-primary" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/10">
+            <BarChart3Icon className="h-6 w-6 text-accent" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Transaction Reports</h1>
@@ -49,7 +49,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border shadow-sm p-6">
+      <div className="bg-card rounded-md border shadow-sm p-6">
         <TransactionReport />
       </div>
     </div>

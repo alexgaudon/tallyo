@@ -406,7 +406,7 @@ export function TransactionReport() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row justify-between items-stretch gap-4">
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-lg p-6 shadow-sm border">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
                 <div className="text-3xl font-extrabold text-primary mb-1">
                   {reportData.summary.totalCount}
                 </div>
@@ -414,7 +414,7 @@ export function TransactionReport() {
                   Total Transactions
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-lg p-6 shadow-sm border">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
                 <div className="text-3xl font-extrabold text-primary mb-1">
                   <CurrencyAmount
                     amount={reportData.summary.totalAmount}
@@ -425,7 +425,7 @@ export function TransactionReport() {
                   Total Amount
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-lg p-6 shadow-sm border">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
                 <div className="text-3xl font-extrabold text-primary mb-1">
                   <CurrencyAmount
                     amount={reportData.summary.averageAmount}
@@ -437,7 +437,7 @@ export function TransactionReport() {
                 </div>
               </div>
               {reportData.summary.monthlyAverage !== undefined && (
-                <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-lg p-6 shadow-sm border">
+                <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
                   <div className="text-3xl font-extrabold text-primary mb-1">
                     <CurrencyAmount
                       amount={reportData.summary.monthlyAverage}
@@ -467,7 +467,7 @@ export function TransactionReport() {
               {reportData.transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-3 border rounded-md"
                 >
                   <div>
                     <div className="font-medium">
