@@ -77,7 +77,7 @@ function RootComponent() {
       <HeadContent />
       <ORPCContext.Provider value={orpcUtils}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             {session && <AppSidebar />}
             <SidebarInset>
               <div className="flex flex-col min-h-svh">

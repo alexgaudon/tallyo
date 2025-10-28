@@ -19,6 +19,7 @@ import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { Stats } from "@/components/dashboard/stats";
+import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
@@ -51,6 +52,14 @@ export const Route = createFileRoute("/dashboard")({
           }
         : defaultDateRange;
 
+    // Calculate cash flow data input - if it's a one-month range, expand to show last 3 months
+    const cashFlowDataInput = isDateRangeOneMonth(dateRange)
+      ? dateRangeToApiFormat({
+          from: subMonths(startOfMonth(new Date()), 3),
+          to: endOfMonth(new Date()),
+        })
+      : dateRangeToApiFormat(dateRange);
+
     await Promise.all([
       context.queryClient.prefetchQuery(
         orpc.dashboard.getStatsCounts.queryOptions({
@@ -68,8 +77,13 @@ export const Route = createFileRoute("/dashboard")({
         }),
       ),
       context.queryClient.prefetchQuery(
-        orpc.dashboard.getCashFlowData.queryOptions({
+        orpc.dashboard.getTransactionStats.queryOptions({
           input: dateRangeToApiFormat(dateRange),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        orpc.dashboard.getCashFlowData.queryOptions({
+          input: cashFlowDataInput,
         }),
       ),
     ]);
@@ -138,6 +152,13 @@ function RouteComponent() {
     }),
   );
 
+  const { data: transactionData, isLoading: isTransactionLoading } = useQuery(
+    orpc.dashboard.getTransactionStats.queryOptions({
+      placeholderData: (previousData) => previousData,
+      input: dateRangeToApiFormat(dateRange),
+    }),
+  );
+
   const cashFlowDataInput = useMemo(() => {
     console.log("isOneMonth", isDateRangeOneMonth(dateRange));
     console.log("dateRange", dateRange);
@@ -191,6 +212,7 @@ function RouteComponent() {
           isStatsLoading ||
           isCategoryLoading ||
           isMerchantLoading ||
+          isTransactionLoading ||
           isCashFlowLoading
         }
       >
@@ -200,49 +222,62 @@ function RouteComponent() {
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
           />
-          {/* Stats and Merchants Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-                <h2 className="text-lg font-semibold">Overview Stats</h2>
-              </div>
-              <Stats
-                data={statsData}
-                categoryData={categoryData}
-                cashFlowData={cashFlowData}
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-2 h-8 bg-green-500 rounded-full"></div>
-                <h2 className="text-lg font-semibold">Top Merchants</h2>
-              </div>
-              <MerchantStats data={merchantData} />
-            </div>
-          </div>
-
-          {/* Category Breakdown Section */}
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
-              <h2 className="text-lg font-semibold">Category Breakdown</h2>
-            </div>
-            <CategoryPieChart data={categoryData ?? []} />
-          </div>
-
-          {cashFlowData && (
-            <>
-              {/* Cash Flow Section */}
+          {/* Main Dashboard Grid */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column: Stats and Merchants */}
+            <div className="lg:flex-1 space-y-8">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
-                  <h2 className="text-lg font-semibold">Cash Flow</h2>
+                  <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
+                  <h2 className="text-lg font-semibold">Overview Stats</h2>
                 </div>
-                <CashFlowChart data={cashFlowData ?? []} />
+                <Stats
+                  data={statsData}
+                  categoryData={categoryData}
+                  cashFlowData={cashFlowData}
+                />
               </div>
-            </>
-          )}
+
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-8 bg-red-500 rounded-full"></div>
+                  <h2 className="text-lg font-semibold">
+                    Largest Transactions
+                  </h2>
+                </div>
+                <TransactionStats data={transactionData} />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-8 bg-green-500 rounded-full"></div>
+                  <h2 className="text-lg font-semibold">Top Merchants</h2>
+                </div>
+                <MerchantStats data={merchantData} />
+              </div>
+            </div>
+
+            {/* Right Column: Category and Cash Flow */}
+            <div className="lg:flex-2 space-y-8">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-8 bg-purple-500 rounded-full"></div>
+                  <h2 className="text-lg font-semibold">Category Breakdown</h2>
+                </div>
+                <CategoryPieChart data={categoryData ?? []} />
+              </div>
+
+              {cashFlowData && (
+                <div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-2 h-8 bg-orange-500 rounded-full"></div>
+                    <h2 className="text-lg font-semibold">Cash Flow</h2>
+                  </div>
+                  <CashFlowChart data={cashFlowData ?? []} />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </DelayedLoading>
     </div>

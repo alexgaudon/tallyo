@@ -92,6 +92,47 @@ export const dashboardRouter = {
         throw error;
       }
     }),
+  getTransactionStats: protectedProcedure
+    .input(dateRangeSchema.optional())
+    .handler(async ({ context, input }) => {
+      const dateRange = input || {};
+      try {
+        const transactionStats = await db
+          .select({
+            id: transaction.id,
+            amount: transaction.amount,
+            date: transaction.date,
+            transactionDetails: transaction.transactionDetails,
+            merchantName: merchant.name,
+          })
+          .from(transaction)
+          .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
+          .leftJoin(category, eq(transaction.categoryId, category.id))
+          .where(
+            and(
+              eq(transaction.reviewed, true),
+              eq(transaction.userId, context.session.user.id),
+              or(
+                isNull(category.id),
+                and(
+                  not(eq(category.treatAsIncome, true)),
+                  eq(category.hideFromInsights, false),
+                ),
+              ),
+              ...(dateRange.from
+                ? [gte(transaction.date, dateRange.from)]
+                : []),
+              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+            ),
+          )
+          .orderBy(sql`${transaction.amount} ASC`)
+          .limit(5);
+        return transactionStats;
+      } catch (error) {
+        console.error("Error fetching transaction stats:", error);
+        throw error;
+      }
+    }),
   getCategoryData: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {

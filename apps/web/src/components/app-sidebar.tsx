@@ -99,6 +99,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === link.to}
+                    tooltip={link.label}
                   >
                     <Link to={link.to} onClick={handleNavigation}>
                       <link.icon />
@@ -119,6 +120,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  tooltip="Account"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
                     {session?.data?.user.image ? (
