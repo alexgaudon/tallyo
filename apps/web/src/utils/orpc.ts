@@ -11,28 +11,28 @@ import type { appRouter } from "../../../server/src/routers/index";
 type ORPCReactUtils = RouterUtils<RouterClient<typeof appRouter>>;
 
 export const queryClient = new QueryClient({
-	queryCache: new QueryCache({
-		onError: (error) => {
-			toast.error(`Error: ${error.message}`, {
-				action: {
-					label: "retry",
-					onClick: () => {
-						queryClient.invalidateQueries();
-					},
-				},
-			});
-		},
-	}),
+  queryCache: new QueryCache({
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`, {
+        action: {
+          label: "retry",
+          onClick: () => {
+            queryClient.invalidateQueries();
+          },
+        },
+      });
+    },
+  }),
 });
 
 export const link = new RPCLink({
-	url: `${window.location.origin}/rpc`,
-	fetch(url, options) {
-		return fetch(url, {
-			...options,
-			credentials: "include",
-		});
-	},
+  url: `${window.location.origin}/rpc`,
+  fetch(url, options) {
+    return fetch(url, {
+      ...options,
+      credentials: "include",
+    });
+  },
 });
 
 export const client: RouterClient<typeof appRouter> = createORPCClient(link);
@@ -42,9 +42,9 @@ export const orpc = createORPCReactQueryUtils(client);
 export const ORPCContext = createContext<ORPCReactUtils | undefined>(undefined);
 
 export function useORPC(): ORPCReactUtils {
-	const orpc = use(ORPCContext);
-	if (!orpc) {
-		throw new Error("ORPCContext is not set up properly");
-	}
-	return orpc;
+  const orpc = use(ORPCContext);
+  if (!orpc) {
+    throw new Error("ORPCContext is not set up properly");
+  }
+  return orpc;
 }

@@ -1,9 +1,9 @@
 import { MerchantForm } from "./merchant-form";
 
 export function CreateMerchantForm({
-	callback,
+  callback,
 }: {
-	callback?: (merchantId?: string) => void;
+  callback?: (merchantId?: string) => void;
 }) {
-	return <MerchantForm callback={callback} />;
+  return <MerchantForm callback={callback} />;
 }

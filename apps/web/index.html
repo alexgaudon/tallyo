@@ -7,7 +7,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <script>
     // Prevent FOUC by setting theme immediately
-    (function () {
+    (() => {
       const storageKey = 'vite-ui-theme';
       const theme = localStorage.getItem(storageKey) || 'dark';
       const root = document.documentElement;

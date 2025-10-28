@@ -9,58 +9,58 @@ import { settingsRouter } from "./settings";
 import { transactionsRouter } from "./transactions";
 
 export type Category = InferRouterOutputs<
-	typeof categoriesRouter
+  typeof categoriesRouter
 >["getUserCategories"]["categories"][number];
 
 export type MerchantWithKeywordsAndCategory = InferRouterOutputs<
-	typeof merchantsRouter
+  typeof merchantsRouter
 >["getUserMerchants"][number];
 
 export type Transaction = InferRouterOutputs<
-	typeof transactionsRouter
+  typeof transactionsRouter
 >["getUserTransactions"]["transactions"][number];
 
 export type DashboardStats = InferRouterOutputs<
-	typeof dashboardRouter
+  typeof dashboardRouter
 >["getStatsCounts"];
 
 export type DashboardCategoryData = InferRouterOutputs<
-	typeof dashboardRouter
+  typeof dashboardRouter
 >["getCategoryData"];
 
 export type DashboardMerchantStats = InferRouterOutputs<
-	typeof dashboardRouter
+  typeof dashboardRouter
 >["getMerchantStats"];
 
 export type DashboardCashFlowData = InferRouterOutputs<
-	typeof dashboardRouter
+  typeof dashboardRouter
 >["getCashFlowData"];
 
 export type DashboardRangeCashFlowData = InferRouterOutputs<
-	typeof dashboardRouter
+  typeof dashboardRouter
 >["rangeCashflow"];
 
 export const appRouter = {
-	healthCheck: publicProcedure.handler(async () => {
-		try {
-			await healthCheck();
-			return "OK";
-		} catch (_error) {
-			throw new Error("DB Not OK");
-		}
-	}),
-	privateData: protectedProcedure.handler(({ context }) => {
-		return {
-			message: "This is private",
-			user: context.session?.user,
-		};
-	}),
-	categories: categoriesRouter,
-	merchants: merchantsRouter,
-	transactions: transactionsRouter,
-	settings: settingsRouter,
-	meta: metaRouter,
-	dashboard: dashboardRouter,
+  healthCheck: publicProcedure.handler(async () => {
+    try {
+      await healthCheck();
+      return "OK";
+    } catch (_error) {
+      throw new Error("DB Not OK");
+    }
+  }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
+  }),
+  categories: categoriesRouter,
+  merchants: merchantsRouter,
+  transactions: transactionsRouter,
+  settings: settingsRouter,
+  meta: metaRouter,
+  dashboard: dashboardRouter,
 };
 
 export type AppRouter = typeof appRouter;

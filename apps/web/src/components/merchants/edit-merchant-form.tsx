@@ -2,11 +2,11 @@ import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/rou
 import { MerchantForm } from "./merchant-form";
 
 export function EditMerchantForm({
-	merchant,
-	callback,
+  merchant,
+  callback,
 }: {
-	merchant: MerchantWithKeywordsAndCategory;
-	callback?: () => void;
+  merchant: MerchantWithKeywordsAndCategory;
+  callback?: () => void;
 }) {
-	return <MerchantForm merchant={merchant} callback={callback} />;
+  return <MerchantForm merchant={merchant} callback={callback} />;
 }

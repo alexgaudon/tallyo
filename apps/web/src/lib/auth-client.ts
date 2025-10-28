@@ -5,48 +5,48 @@ import { createAuthClient } from "better-auth/react";
 import { orpc } from "@/utils/orpc";
 
 export const authClient: ReturnType<typeof createAuthClient> = createAuthClient(
-	{
-		baseURL: window.location.origin,
-	},
+  {
+    baseURL: window.location.origin,
+  },
 );
 
 export const useSessionFetch = async () => {
-	const session = await authClient.getSession();
-	if (!session) return null;
+  const session = await authClient.getSession();
+  if (!session) return null;
 
-	try {
-		const data = await Promise.all([
-			orpc.meta.getUserMeta.call(),
-			orpc.settings.getUserSettings.call(),
-			orpc.meta.isOauthUserOrEmailUser.call(),
-		]);
+  try {
+    const data = await Promise.all([
+      orpc.meta.getUserMeta.call(),
+      orpc.settings.getUserSettings.call(),
+      orpc.meta.isOauthUserOrEmailUser.call(),
+    ]);
 
-		return {
-			...session,
-			...data[1],
-			meta: data[0],
-			isOauthUserOrEmailUser: data[2],
-			isAuthenticated: true,
-		};
-	} catch (error) {
-		if (error instanceof ORPCError) {
-			if (error.code === "UNAUTHORIZED") {
-				return null;
-			}
-		}
-	}
+    return {
+      ...session,
+      ...data[1],
+      meta: data[0],
+      isOauthUserOrEmailUser: data[2],
+      isAuthenticated: true,
+    };
+  } catch (error) {
+    if (error instanceof ORPCError) {
+      if (error.code === "UNAUTHORIZED") {
+        return null;
+      }
+    }
+  }
 };
 
 export const useSession = () => {
-	return useQuery({
-		queryKey: ["session"],
-		queryFn: useSessionFetch,
-		refetchOnWindowFocus: true,
-	});
+  return useQuery({
+    queryKey: ["session"],
+    queryFn: useSessionFetch,
+    refetchOnWindowFocus: true,
+  });
 };
 
 export const ensureSession = (isAuthenticated: boolean, from = "/") => {
-	if (!isAuthenticated) {
-		throw redirect({ to: "/signin", search: { from } });
-	}
+  if (!isAuthenticated) {
+    throw redirect({ to: "/signin", search: { from } });
+  }
 };
