@@ -757,8 +757,6 @@ export const dashboardRouter = {
           isNotNull(transaction.categoryId),
           eq(category.treatAsIncome, true),
           eq(category.hideFromInsights, false),
-          // Only include original split transactions (splitIndex === 1) or non-split transactions
-          or(isNull(transaction.splitIndex), eq(transaction.splitIndex, 1)),
         );
 
         const expenseWhere = and(
@@ -769,8 +767,6 @@ export const dashboardRouter = {
           isNotNull(transaction.categoryId),
           eq(category.treatAsIncome, false),
           eq(category.hideFromInsights, false),
-          // Only include original split transactions (splitIndex === 1) or non-split transactions
-          or(isNull(transaction.splitIndex), eq(transaction.splitIndex, 1)),
         );
 
         const uncategorizedWhere = and(
@@ -779,8 +775,6 @@ export const dashboardRouter = {
           lte(transaction.date, toDate),
           ...(fromDate ? [gte(transaction.date, fromDate)] : []),
           isNull(transaction.categoryId),
-          // Only include original split transactions (splitIndex === 1) or non-split transactions
-          or(isNull(transaction.splitIndex), eq(transaction.splitIndex, 1)),
         );
 
         // Run queries
@@ -788,9 +782,7 @@ export const dashboardRouter = {
           db
             .select({
               monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-              totalAmount: sum(
-                sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-              ),
+              totalAmount: sum(transaction.amount),
             })
             .from(transaction)
             .innerJoin(category, eq(transaction.categoryId, category.id))
@@ -799,9 +791,7 @@ export const dashboardRouter = {
           db
             .select({
               monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-              totalAmount: sum(
-                sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-              ),
+              totalAmount: sum(transaction.amount),
             })
             .from(transaction)
             .innerJoin(category, eq(transaction.categoryId, category.id))
@@ -894,8 +884,6 @@ export const dashboardRouter = {
             eq(transaction.reviewed, true),
             ...(fromDate ? [gte(transaction.date, fromDate)] : []),
             ...(toDate ? [lte(transaction.date, toDate)] : []),
-            // Only include original split transactions (splitIndex === 1) or non-split transactions
-            or(isNull(transaction.splitIndex), eq(transaction.splitIndex, 1)),
           );
 
           // Income query
@@ -925,27 +913,21 @@ export const dashboardRouter = {
             await Promise.all([
               db
                 .select({
-                  totalAmount: sum(
-                    sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-                  ),
+                  totalAmount: sum(transaction.amount),
                 })
                 .from(transaction)
                 .innerJoin(category, eq(transaction.categoryId, category.id))
                 .where(incomeWhere),
               db
                 .select({
-                  totalAmount: sum(
-                    sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-                  ),
+                  totalAmount: sum(transaction.amount),
                 })
                 .from(transaction)
                 .innerJoin(category, eq(transaction.categoryId, category.id))
                 .where(expenseWhere),
               db
                 .select({
-                  totalAmount: sum(
-                    sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-                  ),
+                  totalAmount: sum(transaction.amount),
                 })
                 .from(transaction)
                 .where(uncategorizedWhere),
