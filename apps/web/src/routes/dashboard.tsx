@@ -156,9 +156,9 @@ function RouteComponent() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-screen bg-linear-to-br from-background to-muted/20">
       {/* Hero Section */}
-      <div className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
+      <div className="border-b bg-linear-to-r from-primary/5 to-accent/5">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
