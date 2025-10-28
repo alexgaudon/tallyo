@@ -3,6 +3,7 @@
 	"main": "src/index.ts",
 	"type": "module",
 	"scripts": {
+		"docker:build": "docker build -f apps/server/Dockerfile .",
 		"build": "tsc && tsc-alias",
 		"build:full": "npm run build && cd ../web && npm run build && mkdir -p ../server/public && cp -r dist/* ../server/public/",
 		"check-types": "tsc --noEmit",
