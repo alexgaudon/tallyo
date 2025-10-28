@@ -740,9 +740,7 @@ export const dashboardRouter = {
             ? await db
                 .select({
                   monthKey: sql<string>`TO_CHAR(${transaction.date}::date, 'YYYY-MM')`,
-                  totalAmount: sum(
-                    sql`CASE WHEN ${transaction.splitIndex} = 1 THEN ${transaction.originalAmount} ELSE ${transaction.amount} END`,
-                  ),
+                  totalAmount: sum(transaction.amount),
                 })
                 .from(transaction)
                 .where(whereClause)
