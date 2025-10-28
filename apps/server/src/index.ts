@@ -5,7 +5,6 @@ import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { healthCheck } from "./db";
-
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";

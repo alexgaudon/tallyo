@@ -10,6 +10,7 @@ COPY apps/web/package.json ./apps/web/
 
 # Install dependencies
 RUN bun install
+RUN cd apps/server && bun install
 
 # Copy source code
 COPY . .
