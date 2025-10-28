@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import { memo, useMemo } from "react";
 import {
   Line,
   LineChart,
@@ -17,38 +18,44 @@ function CustomTooltip({
 }: {
   active?: boolean;
   payload?: Array<{
+    value: number;
+    name: string;
+    dataKey: string;
     payload: {
       month: string;
+      monthLabel?: string;
       income: number;
       expenses: number;
       net: number;
     };
   }>;
+  label?: string | number;
 }) {
-  if (active && payload && payload.length) {
+  if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
+
     return (
-      <div className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2">
-        <div className="font-semibold text-sm">
-          {format(parseISO(`${data.month}-01`), "MMM, yyyy")}
+      <div className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2 min-w-[180px]">
+        <div className="font-semibold text-sm border-b pb-2">
+          {data.monthLabel || format(parseISO(`${data.month}-01`), "MMM, yyyy")}
         </div>
-        <div className="space-y-1 text-xs">
-          <div className="flex justify-between">
+        <div className="space-y-1.5 text-xs">
+          <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Income:</span>
-            <span className="font-medium text-green-600">
+            <span className="font-medium text-green-600 dark:text-green-500">
               <CurrencyAmount amount={data.income} />
             </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Expenses:</span>
-            <span className="font-medium text-red-600">
+            <span className="font-medium text-red-600 dark:text-red-500">
               <CurrencyAmount amount={data.expenses} />
             </span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Net:</span>
+          <div className="flex justify-between items-center pt-1 border-t">
+            <span className="text-muted-foreground font-medium">Net:</span>
             <span
-              className={`font-medium ${data.net >= 0 ? "text-green-600" : "text-red-600"}`}
+              className={`font-semibold ${data.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
             >
               <CurrencyAmount amount={data.net} />
             </span>
@@ -60,7 +67,23 @@ function CustomTooltip({
   return null;
 }
 
-export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
+const EMPTY_ARRAY: DashboardCashFlowData = [];
+
+export const CashFlowChart = memo(function CashFlowChart({
+  data,
+}: {
+  data: DashboardCashFlowData;
+}) {
+  // Transform data for the chart - memoized to prevent unnecessary re-renders
+  const chartData = useMemo(
+    () =>
+      data?.map((item) => ({
+        ...item,
+        monthLabel: format(parseISO(`${item.month}-01`), "MMM, yyyy"),
+      })) ?? EMPTY_ARRAY,
+    [data],
+  );
+
   if (!data || data.length === 0) {
     return (
       <Card>
@@ -119,12 +142,6 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
     );
   }
 
-  // Transform data for the chart
-  const chartData = data.map((item) => ({
-    ...item,
-    monthLabel: format(parseISO(`${item.month}-01`), "MMM, yyyy"),
-  }));
-
   return (
     <Card>
       <CardHeader>
@@ -147,8 +164,9 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `$${(value / 100).toFixed(0)}`}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={CustomTooltip} />
               <Line
+                key="income"
                 type="monotone"
                 dataKey="income"
                 stroke="#10b981"
@@ -156,8 +174,10 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
                 dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Income"
+                isAnimationActive={false}
               />
               <Line
+                key="expenses"
                 type="monotone"
                 dataKey="expenses"
                 stroke="#ef4444"
@@ -165,8 +185,10 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
                 dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Expenses"
+                isAnimationActive={false}
               />
               <Line
+                key="net"
                 type="monotone"
                 dataKey="net"
                 stroke="#3b82f6"
@@ -174,6 +196,7 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
                 dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Net"
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -197,4 +220,4 @@ export function CashFlowChart({ data }: { data: DashboardCashFlowData }) {
       </CardContent>
     </Card>
   );
-}
+});

@@ -171,6 +171,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     outerRadius="80%"
                     innerRadius="35%"
                     fill="#8884d8"
+                    isAnimationActive={false}
                     onMouseEnter={(_, index) => setActiveIndex(index)}
                     onMouseLeave={() => setActiveIndex(null)}
                     onClick={(data) => {
@@ -228,7 +229,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   aria-label={`View transactions for ${item.name} category`}
                 >
                   <div
-                    className="h-3 w-3 rounded-full flex-shrink-0 mt-0.5"
+                    className="h-3 w-3 rounded-full shrink-0 mt-0.5"
                     style={{ backgroundColor: item.fill }}
                   />
                   <div className="flex flex-col min-w-0 flex-1">
