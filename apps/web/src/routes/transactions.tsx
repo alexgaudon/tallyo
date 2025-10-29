@@ -374,7 +374,7 @@ function RouteComponent() {
               >
                 <DialogTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="lg"
                     className="shadow w-full sm:w-auto"
                   >
