@@ -70,26 +70,26 @@ function CustomTooltip(props: {
 
     return (
       <div
-        className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2"
+        className="bg-background border border-border rounded-md shadow-lg p-2 space-y-1"
         style={{ zIndex: 9999, position: "relative" }}
       >
-        <div className="font-semibold text-sm">{data.name}</div>
-        <div className="space-y-1 text-xs">
-          <div className="flex justify-between">
+        <div className="font-semibold text-xs">{data.name}</div>
+        <div className="space-y-0.5 text-xs">
+          <div className="flex justify-between gap-2">
             <span className="text-muted-foreground">Amount:</span>
             <span className="font-medium">
               <CurrencyAmount amount={data.value} />
             </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <span className="text-muted-foreground">Percentage:</span>
             <span className="font-medium">{percentage}%</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <span className="text-muted-foreground">Transactions:</span>
             <span className="font-medium">{data.count}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-2">
             <span className="text-muted-foreground">12-Month Avg:</span>
             <span className="font-medium">
               <CurrencyAmount amount={data.average12Months} />
@@ -110,8 +110,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
     return (
       <Card>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-4 text-center">
+            <p className="text-muted-foreground text-sm">
               No transaction data available to display category breakdown.
             </p>
           </div>
@@ -149,15 +149,15 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
   return (
     <Card>
-      <CardContent>
+      <CardContent className="p-4">
         <div
-          className="grid grid-cols-1 xl:grid-cols-3 gap-4"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-3"
           style={{ position: "relative" }}
         >
           {/* Pie Chart */}
-          <div className="flex justify-center xl:col-span-1">
+          <div className="flex justify-center lg:col-span-1">
             <div
-              className="w-full max-w-[400px] h-[400px] min-h-[300px] relative"
+              className="w-full max-w-[240px] h-[240px] min-h-[200px] relative"
               style={{ position: "relative", zIndex: 1 }}
             >
               <ResponsiveContainer width="100%" height="100%">
@@ -168,8 +168,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius="80%"
-                    innerRadius="35%"
+                    outerRadius="75%"
+                    innerRadius="40%"
                     fill="#8884d8"
                     isAnimationActive={false}
                     onMouseEnter={(_, index) => setActiveIndex(index)}
@@ -192,7 +192,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="text-center">
-                  <div className="text-base font-bold">
+                  <div className="text-sm font-bold">
                     <CurrencyAmount
                       animate
                       amount={chartData.reduce(
@@ -201,7 +201,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                       )}
                     />
                   </div>
-                  <div className="text-xs text-muted-foreground font-medium">
+                  <div className="text-[10px] text-muted-foreground font-medium">
                     Total Spend
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
           </div>
 
           {/* Legend */}
-          <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-1.5">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
             {chartData.map((item, index) => {
               const percentage =
                 totalAmount > 0
@@ -220,7 +220,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                 <button
                   key={item.name}
                   type="button"
-                  className={`flex items-start gap-2 p-2 rounded-md ${
+                  className={`flex items-center gap-1.5 px-1.5 py-1 rounded ${
                     activeIndex === index
                       ? "bg-accent border-accent-foreground/20"
                       : "bg-card hover:bg-muted/50"
@@ -229,14 +229,14 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   aria-label={`View transactions for ${item.name} category`}
                 >
                   <div
-                    className="h-3 w-3 rounded-full shrink-0 mt-0.5"
+                    className="h-2.5 w-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: item.fill }}
                   />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-medium text-sm truncate mb-1">
+                    <span className="font-medium text-xs truncate leading-tight">
                       {item.name}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] text-muted-foreground leading-tight">
                       <CurrencyAmount animate amount={item.value} /> (
                       {percentage}%)
                     </span>

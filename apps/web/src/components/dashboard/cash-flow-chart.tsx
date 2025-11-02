@@ -10,6 +10,8 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
+import { useSession } from "@/lib/auth-client";
+import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import type { DashboardCashFlowData } from "../../../../server/src/routers";
 
 function CustomTooltip({
@@ -35,24 +37,24 @@ function CustomTooltip({
     const data = payload[0].payload;
 
     return (
-      <div className="bg-background border border-border rounded-md shadow-lg p-3 space-y-2 min-w-[180px]">
-        <div className="font-semibold text-sm border-b pb-2">
+      <div className="bg-background border border-border rounded-md shadow-lg p-2 space-y-1 min-w-[150px]">
+        <div className="font-semibold text-xs border-b pb-1">
           {data.monthLabel || format(parseISO(`${data.month}-01`), "MMM, yyyy")}
         </div>
-        <div className="space-y-1.5 text-xs">
-          <div className="flex justify-between items-center">
+        <div className="space-y-1 text-xs">
+          <div className="flex justify-between items-center gap-3">
             <span className="text-muted-foreground">Income:</span>
             <span className="font-medium text-green-600 dark:text-green-500">
               <CurrencyAmount amount={data.income} />
             </span>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-3">
             <span className="text-muted-foreground">Expenses:</span>
             <span className="font-medium text-red-600 dark:text-red-500">
               <CurrencyAmount amount={data.expenses} />
             </span>
           </div>
-          <div className="flex justify-between items-center pt-1 border-t">
+          <div className="flex justify-between items-center pt-1 border-t gap-3">
             <span className="text-muted-foreground font-medium">Net:</span>
             <span
               className={`font-semibold ${data.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
@@ -74,6 +76,9 @@ export const CashFlowChart = memo(function CashFlowChart({
 }: {
   data: DashboardCashFlowData;
 }) {
+  const { data: session } = useSession();
+  const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
+
   // Transform data for the chart - memoized to prevent unnecessary re-renders
   const chartData = useMemo(
     () =>
@@ -84,15 +89,24 @@ export const CashFlowChart = memo(function CashFlowChart({
     [data],
   );
 
+  // Y-axis tick formatter with privacy mode support
+  const yAxisTickFormatter = useMemo(
+    () => (value: number) => {
+      const formatted = formatCurrency(value);
+      return String(formatValueWithPrivacy(formatted, isPrivacyMode));
+    },
+    [isPrivacyMode],
+  );
+
   if (!data || data.length === 0) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle>Cash Flow</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-4 text-center">
+            <p className="text-sm text-muted-foreground">
               No transaction data available to display cash flow.
             </p>
           </div>
@@ -106,31 +120,33 @@ export const CashFlowChart = memo(function CashFlowChart({
     const item = data[0];
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="sr-only">Cash Flow</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center space-y-4">
-            <div className="text-lg font-semibold">
+          <div className="flex flex-col items-center justify-center py-4 text-center space-y-2">
+            <div className="text-sm font-semibold text-muted-foreground">
               {format(parseISO(`${item.month}-01`), "MMMM yyyy")}
             </div>
-            <div className="grid grid-cols-3 gap-6 w-full max-w-md">
+            <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Income</div>
-                <div className="text-lg font-semibold text-green-600">
+                <div className="text-xs text-muted-foreground mb-1">Income</div>
+                <div className="text-base font-semibold text-green-600 dark:text-green-500">
                   <CurrencyAmount amount={item.income} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Expenses</div>
-                <div className="text-lg font-semibold text-red-600">
+                <div className="text-xs text-muted-foreground mb-1">
+                  Expenses
+                </div>
+                <div className="text-base font-semibold text-red-600 dark:text-red-500">
                   <CurrencyAmount amount={item.expenses} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">Net</div>
+                <div className="text-xs text-muted-foreground mb-1">Net</div>
                 <div
-                  className={`text-lg font-semibold ${item.net >= 0 ? "text-green-600" : "text-red-600"}`}
+                  className={`text-base font-semibold ${item.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
                 >
                   <CurrencyAmount amount={item.net} />
                 </div>
@@ -144,25 +160,27 @@ export const CashFlowChart = memo(function CashFlowChart({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="sr-only">Cash Flow</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[400px] w-full">
+      <CardContent className="pt-0">
+        <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <XAxis
                 dataKey="monthLabel"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
                 interval="preserveStartEnd"
+                height={30}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `$${(value / 100).toFixed(0)}`}
+                tick={{ fontSize: 11 }}
+                width={80}
+                tickFormatter={yAxisTickFormatter}
               />
               <Tooltip content={CustomTooltip} />
               <Line
@@ -171,8 +189,8 @@ export const CashFlowChart = memo(function CashFlowChart({
                 dataKey="income"
                 stroke="#10b981"
                 strokeWidth={2}
-                dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
+                dot={{ fill: "#10b981", strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5 }}
                 name="Income"
                 isAnimationActive={false}
               />
@@ -182,8 +200,8 @@ export const CashFlowChart = memo(function CashFlowChart({
                 dataKey="expenses"
                 stroke="#ef4444"
                 strokeWidth={2}
-                dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
+                dot={{ fill: "#ef4444", strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5 }}
                 name="Expenses"
                 isAnimationActive={false}
               />
@@ -192,9 +210,9 @@ export const CashFlowChart = memo(function CashFlowChart({
                 type="monotone"
                 dataKey="net"
                 stroke="#3b82f6"
-                strokeWidth={3}
-                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
+                strokeWidth={2.5}
+                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 3 }}
+                activeDot={{ r: 5 }}
                 name="Net"
                 isAnimationActive={false}
               />
@@ -202,17 +220,17 @@ export const CashFlowChart = memo(function CashFlowChart({
           </ResponsiveContainer>
         </div>
         {data.length > 1 && (
-          <div className="flex justify-center gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
+          <div className="flex justify-center gap-4 mt-3 text-xs">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
               <span>Income</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
               <span>Expenses</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-0.5 bg-blue-500" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-0.5 bg-blue-500" />
               <span>Net</span>
             </div>
           </div>
