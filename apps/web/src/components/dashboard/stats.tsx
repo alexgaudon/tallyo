@@ -240,9 +240,9 @@ export function Stats({
             <div className="flex items-center gap-1">
               <CurrencyAmount
                 animate
-                amount={cashFlowData.reduce((sum, item) => sum + item.net, 0)}
+                amount={cashFlowData[cashFlowData.length - 1]?.net ?? 0}
                 className={
-                  cashFlowData.reduce((sum, item) => sum + item.net, 0) >= 0
+                  (cashFlowData[cashFlowData.length - 1]?.net ?? 0) >= 0
                     ? "text-green-600"
                     : "text-red-600"
                 }
