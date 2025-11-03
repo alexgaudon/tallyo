@@ -31,15 +31,12 @@ import { StatDisplay } from "../ui/stat-display";
 export function Stats({
   data,
   categoryData,
-  cashFlowData,
 }: {
   data: DashboardStats | undefined;
   categoryData: DashboardCategoryData | undefined;
-  cashFlowData: DashboardCashFlowData | undefined;
 }) {
   const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
   const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
-
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -228,29 +225,6 @@ export function Stats({
           </div>
         </div>
       </Card>
-
-      {/* Range Cash Flow */}
-      {cashFlowData && cashFlowData.length > 0 && (
-        <Card className="p-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <TrendingUpIcon className="w-3 h-3 text-accent" />
-              <span className="text-xs font-medium">Cash Flow</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CurrencyAmount
-                animate
-                amount={cashFlowData[cashFlowData.length - 1]?.net ?? 0}
-                className={
-                  (cashFlowData[cashFlowData.length - 1]?.net ?? 0) >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }
-              />
-            </div>
-          </div>
-        </Card>
-      )}
     </div>
   );
 }
