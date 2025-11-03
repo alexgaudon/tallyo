@@ -18,13 +18,6 @@ import type {
   DashboardStats,
 } from "../../../../server/src/routers";
 
-type DashboardCashFlowData = Array<{
-  month: string;
-  income: number;
-  expenses: number;
-  net: number;
-}>;
-
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
 
