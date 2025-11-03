@@ -231,11 +231,7 @@ function RouteComponent() {
                   <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
                   <h2 className="text-lg font-semibold">Overview Stats</h2>
                 </div>
-                <Stats
-                  data={statsData}
-                  categoryData={categoryData}
-                  cashFlowData={cashFlowData}
-                />
+                <Stats data={statsData} categoryData={categoryData} />
               </div>
 
               <div>
