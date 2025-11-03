@@ -7,7 +7,6 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import { useState } from "react";
-
 import { Card } from "@/components/ui/card";
 import {
   Collapsible,
@@ -18,47 +17,16 @@ import type {
   DashboardCategoryData,
   DashboardStats,
 } from "../../../../server/src/routers";
+
+type DashboardCashFlowData = Array<{
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+}>;
+
 import { CurrencyAmount } from "../ui/currency-amount";
 import { StatDisplay } from "../ui/stat-display";
-
-function calculateNetIncome(
-  totalIncome: string | number,
-  totalExpenses: string | number,
-): number {
-  const income = Number(totalIncome) || 0;
-  let expenses = Number(totalExpenses) || 0;
-  // Expenses should be negative, but ensure they are if they're not
-  // (defensive: if expenses is positive, make it negative)
-  if (expenses > 0) {
-    expenses = -expenses;
-  }
-  // Expenses are stored as negative values, so adding them to income
-  // gives us net income (e.g., 0 + (-100) = -100)
-  return income + expenses;
-}
-
-function calculateSavingsRate(
-  totalIncome: string | number,
-  totalExpenses: string | number,
-): number {
-  const income = Math.abs(Number(totalIncome) || 0);
-  const expenses = Math.abs(Number(totalExpenses) || 0);
-  if (income + expenses === 0) {
-    return 0;
-  }
-  const savingsRate = (income - expenses) / income;
-  return Math.round(Math.max(0, savingsRate) * 100);
-}
-
-function formatCategoryName(category: {
-  name: string;
-  parentCategory?: { name: string } | null;
-}): string {
-  if (category.parentCategory?.name) {
-    return `${category.parentCategory.name} -> ${category.name}`;
-  }
-  return category.name;
-}
 
 export function Stats({
   data,
@@ -69,7 +37,6 @@ export function Stats({
 }) {
   const [isIncomeExpanded, setIsIncomeExpanded] = useState(false);
   const [isExpenseExpanded, setIsExpenseExpanded] = useState(false);
-
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -92,18 +59,12 @@ export function Stats({
         (cat) => cat.category.treatAsIncome && !cat.category.hideFromInsights,
       )
       .sort((a, b) => a.category.name.localeCompare(b.category.name)) || [];
-
   const expenseCategories =
     categoryData
       ?.filter(
         (cat) => !cat.category.treatAsIncome && !cat.category.hideFromInsights,
       )
       .sort((a, b) => a.category.name.localeCompare(b.category.name)) || [];
-
-  const netIncome = calculateNetIncome(
-    data.stats.totalIncome,
-    data.stats.totalExpenses,
-  );
 
   return (
     <div className="space-y-0.5">
@@ -143,7 +104,9 @@ export function Stats({
                     className="flex items-center justify-between text-xs"
                   >
                     <span className="text-muted-foreground">
-                      {formatCategoryName(cat.category)}
+                      {cat.category.parentCategory?.name &&
+                        `${cat.category.parentCategory?.name} -> `}
+                      {cat.category.name}
                     </span>
                     <CurrencyAmount amount={Number(cat.amount)} />
                   </div>
@@ -187,7 +150,9 @@ export function Stats({
                     className="flex items-center justify-between text-xs"
                   >
                     <span className="text-muted-foreground">
-                      {formatCategoryName(cat.category)}
+                      {cat.category.parentCategory?.name &&
+                        `${cat.category.parentCategory?.name} -> `}
+                      {cat.category.name}
                     </span>
                     <CurrencyAmount amount={Math.abs(Number(cat.amount))} />
                   </div>
@@ -205,18 +170,34 @@ export function Stats({
       <Card className="p-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            {netIncome >= 0 ? (
-              <TrendingUpIcon className="w-3 h-3 text-green-500" />
-            ) : (
-              <TrendingDownIcon className="w-3 h-3 text-red-500" />
-            )}
+            {(() => {
+              const income = Number(data.stats.totalIncome) || 0;
+              const expenses = Number(data.stats.totalExpenses) || 0;
+              const netIncome = income + expenses;
+              return netIncome >= 0 ? (
+                <TrendingUpIcon className="w-3 h-3 text-green-500" />
+              ) : (
+                <TrendingDownIcon className="w-3 h-3 text-red-500" />
+              );
+            })()}
             <span className="text-xs font-medium">Net Income</span>
           </div>
           <div className="flex items-center gap-1">
             <CurrencyAmount
               animate
-              amount={netIncome}
-              className={netIncome >= 0 ? "text-green-600" : "text-red-600"}
+              amount={(() => {
+                const income = Number(data.stats.totalIncome) || 0;
+                const expenses = Number(data.stats.totalExpenses) || 0;
+                // Net income should be income minus expenses, but expenses are negative
+                // so we add them to income to get the correct net
+                return income + expenses;
+              })()}
+              className={(() => {
+                const income = Number(data.stats.totalIncome) || 0;
+                const expenses = Number(data.stats.totalExpenses) || 0;
+                const netIncome = income + expenses;
+                return netIncome >= 0 ? "text-green-600" : "text-red-600";
+              })()}
             />
           </div>
         </div>
@@ -231,10 +212,14 @@ export function Stats({
           <div className="flex items-center gap-1">
             <StatDisplay
               animate
-              value={calculateSavingsRate(
-                data.stats.totalIncome,
-                data.stats.totalExpenses,
-              )}
+              value={(() => {
+                const income = Math.abs(data.stats.totalIncome);
+                const expenses = Math.abs(data.stats.totalExpenses);
+                const savingsRate =
+                  income + expenses === 0 ? 0 : (income - expenses) / income;
+                const displaySavingsRate = savingsRate > 0 ? savingsRate : 0;
+                return Math.round(displaySavingsRate * 100);
+              })()}
             />
             <span className="text-xs text-muted-foreground">%</span>
           </div>
