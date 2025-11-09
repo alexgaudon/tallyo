@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { orpc } from "@/utils/orpc";
@@ -12,7 +12,7 @@ export function ConfirmPassword({
 }) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (_e: React.FormEvent) => {
+  const handleSubmit = async (_e: FormEvent) => {
     setIsLoading(true);
 
     try {

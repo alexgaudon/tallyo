@@ -1,7 +1,7 @@
-import * as React from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 interface DelayedLoadingProps {
-  children: React.ReactNode;
+  children: ReactNode;
   isLoading: boolean;
   delay?: number;
 }
@@ -11,9 +11,9 @@ export function DelayedLoading({
   isLoading,
   delay = 300,
 }: DelayedLoadingProps) {
-  const [showLoading, setShowLoading] = React.useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isLoading) {
       setShowLoading(false);
       return;
