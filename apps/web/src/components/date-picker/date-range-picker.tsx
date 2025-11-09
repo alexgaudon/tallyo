@@ -11,8 +11,7 @@ import {
   subYears,
 } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import * as React from "react";
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -93,7 +92,7 @@ export default function DateRangePicker({
   value?: DateRange | undefined;
 }) {
   const dateId = useId();
-  const [date, setDate] = React.useState<DateRange | undefined>(
+  const [date, setDate] = useState<DateRange | undefined>(
     value || {
       from: startOfDay(startOfMonth(new Date())),
       to: startOfDay(endOfMonth(new Date())),
@@ -104,7 +103,7 @@ export default function DateRangePicker({
   const earliestTransactionDate = data?.meta.earliestTransactionDate;
 
   // Sync with external value
-  React.useEffect(() => {
+  useEffect(() => {
     if (value !== undefined) {
       setDate(value);
     }

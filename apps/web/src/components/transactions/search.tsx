@@ -1,7 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useDebounce } from "@uidotdev/usehooks";
 import { SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { CategorySelect } from "../categories/category-select";
 import { MerchantSelect } from "../merchants/merchant-select";
 import { Button } from "../ui/button";
@@ -48,7 +48,7 @@ export function Search() {
     });
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);
   };
 

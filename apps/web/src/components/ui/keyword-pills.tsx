@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type KeyboardEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ export function KeywordPills({
 	const [inputValue, setInputValue] = useState("");
 
 	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLInputElement>) => {
+		(e: KeyboardEvent<HTMLInputElement>) => {
 			if (e.key === "Enter" && inputValue.trim()) {
 				e.preventDefault();
 				const newKeyword = inputValue.trim();
