@@ -19,6 +19,7 @@
 		"db:generate": "turbo -F server db:generate",
 		"db:migrate": "turbo -F server db:migrate",
 		"db:dev": "docker compose up -d postgres",
+		"db:dev:attached": "docker compose up postgres",
 		"db:down": "docker compose down",
 		"db:seed": "turbo -F server db:seed"
 	},
