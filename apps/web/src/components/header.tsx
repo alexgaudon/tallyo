@@ -36,7 +36,7 @@ export default function Header() {
     const content = (
       <div className="flex items-center">
         <div className="hidden lg:flex lg:items-center lg:space-x-6">
-          {session?.data ? (
+          {session?.user ? (
             <div className="flex items-center space-x-2">
               <ModeToggle />
               <DeveloperModeToggle />
@@ -72,7 +72,7 @@ export default function Header() {
     <TooltipProvider>
       <nav className="border-b">
         <div className="flex items-center px-4 py-3 lg:px-8">
-          {session?.data && (
+          {session?.user && (
             <div className="flex items-center">
               <SidebarTrigger className="-ml-1" />
             </div>
@@ -80,7 +80,7 @@ export default function Header() {
           <div className="flex-1 lg:hidden">
             <Link
               to="/"
-              className={`flex items-center ${session?.data ? "ml-4" : ""}`}
+              className={`flex items-center ${session?.user ? "ml-4" : ""}`}
             >
               <img
                 src="/favicon.ico"

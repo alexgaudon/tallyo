@@ -7,6 +7,7 @@ import type { AppRouter } from "../routers";
 export function createOpenAPIHandler(router: AppRouter) {
   return new OpenAPIHandler(router, {
     // TODO fix any usage, in CI, this throws a big type error
+    // biome-ignore lint/suspicious/noExplicitAny: Type error in CI, needs proper typing
     plugins: [new CORSPlugin(), new ZodSmartCoercionPlugin()] as any,
   });
 }

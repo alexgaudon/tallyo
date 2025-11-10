@@ -7,7 +7,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient, useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
@@ -19,7 +20,7 @@ export default function UserMenu() {
     return <Skeleton className="h-9 w-24" />;
   }
 
-  if (!session || !session.data) {
+  if (!session) {
     return (
       <Button variant="outline" asChild>
         <Link to="/signin">Sign In</Link>
@@ -30,25 +31,21 @@ export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">{session.data.user.name}</Button>
+        <Button variant="outline">{session.user.name}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-card">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>{session.data.user.email}</DropdownMenuItem>
+        <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Button
             variant="destructive"
             className="w-full"
-            onClick={() => {
-              authClient.signOut({
-                fetchOptions: {
-                  onSuccess: () => {
-                    navigate({
-                      to: "/",
-                    });
-                  },
-                },
+            onClick={async () => {
+              await signOut();
+              queryClient.invalidateQueries({ queryKey: ["session"] });
+              navigate({
+                to: "/",
               });
             }}
           >

@@ -29,7 +29,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { authClient, useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 
 export function AppSidebar() {
@@ -123,25 +123,24 @@ export function AppSidebar() {
                   tooltip="Account"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    {session?.data?.user.image ? (
+                    {session?.user?.image ? (
                       <img
-                        alt={session.data.user.name ?? ""}
-                        src={session.data.user.image}
+                        alt={session.user.name ?? ""}
+                        src={session.user.image}
                       />
                     ) : (
                       <AvatarFallback className="rounded-lg">
-                        {session?.data?.user.name
-                          ?.substring(0, 1)
-                          .toUpperCase() ?? ""}
+                        {session?.user?.name?.substring(0, 1).toUpperCase() ??
+                          ""}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {session?.data?.user.name ?? ""}
+                      {session?.user.name ?? ""}
                     </span>
                     <span className="truncate text-xs">
-                      {session?.data?.user.email ?? ""}
+                      {session?.user.email ?? ""}
                     </span>
                   </div>
                   <ChevronUp className="ml-auto size-4" />
@@ -164,19 +163,14 @@ export function AppSidebar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
-                    authClient.signOut({
-                      fetchOptions: {
-                        onSuccess: () => {
-                          queryClient.invalidateQueries({
-                            queryKey: ["session"],
-                          });
-                          setTimeout(() => {
-                            navigate({ to: "/" });
-                          }, 500);
-                        },
-                      },
+                  onClick={async () => {
+                    await signOut();
+                    queryClient.invalidateQueries({
+                      queryKey: ["session"],
                     });
+                    setTimeout(() => {
+                      navigate({ to: "/" });
+                    }, 500);
                   }}
                   className="flex items-center gap-2"
                 >

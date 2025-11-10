@@ -1,11 +1,7 @@
 #!/usr/bin/env bun
 
 import { existsSync } from "node:fs";
-import {
-  type APITransaction,
-  type UploadProgress,
-  uploadTransactions,
-} from "./api-client";
+import { type APITransaction, uploadTransactions } from "./api-client";
 import { getAuthToken, setApiUrl, setAuthToken } from "./config";
 import { mapQFXToAPI, parseQFXFile } from "./qfx";
 import { generatePreviewText } from "./ui/preview";

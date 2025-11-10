@@ -43,17 +43,14 @@ function RouteComponent() {
   const { mutate: updateSettings, isPending } = useMutation(
     orpc.settings.updateSettings.mutationOptions({
       onMutate: async (newSettings) => {
-        // Cancel any outgoing refetches
         await queryClient.cancelQueries({
           queryKey: orpc.settings.getUserSettings.queryOptions().queryKey,
         });
 
-        // Snapshot the previous value
         const previousSettings = queryClient.getQueryData(
           orpc.settings.getUserSettings.queryOptions().queryKey,
         );
 
-        // Optimistically update to the new value
         queryClient.setQueryData(
           orpc.settings.getUserSettings.queryOptions().queryKey,
           (
@@ -66,7 +63,6 @@ function RouteComponent() {
           }),
         );
 
-        // Also update session data optimistically
         queryClient.setQueryData(
           ["session"],
           (
@@ -79,11 +75,9 @@ function RouteComponent() {
           }),
         );
 
-        // Return a context object with the snapshotted value
         return { previousSettings };
       },
       onError: (err, newSettings, context) => {
-        // If the mutation fails, use the context returned from onMutate to roll back
         if (context?.previousSettings) {
           queryClient.setQueryData(
             orpc.settings.getUserSettings.queryOptions().queryKey,
@@ -91,7 +85,6 @@ function RouteComponent() {
           );
         }
 
-        // Also revert session data
         queryClient.setQueryData(
           ["session"],
           (
@@ -161,9 +154,9 @@ function RouteComponent() {
   const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto max-w-2xl px-4 py-12 sm:py-16">
       <Dialog open={isConfirmPasswordOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <ConfirmPassword
             onCancel={() => {
               setIsConfirmPasswordOpen(false);
@@ -176,70 +169,82 @@ function RouteComponent() {
         </DialogContent>
       </Dialog>
 
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <h1 className="text-3xl font-bold mb-8 tracking-tighter text-center sm:text-left">
+        Settings
+      </h1>
 
-      <div className="grid gap-6">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">API Token</CardTitle>
+      <div className="grid gap-8">
+        <Card className="border border-destructive/30 bg-destructive/5 shadow-none">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-destructive text-lg">
+              API Token
+            </CardTitle>
             <CardDescription>
-              Your API token for programmatic access to your transaction data.
-              Keep this token secure and never share it publicly. If
-              compromised, you can regenerate it here.
+              Your API token for programmatic access to your transaction data.{" "}
+              <strong className="text-foreground font-medium">
+                Keep this token secure
+              </strong>{" "}
+              and never share it publicly. If compromised, you can regenerate it
+              here.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
                 <div className="relative flex-1">
                   <Input
                     type={authToken ? "text" : "password"}
                     value={authToken || "•".repeat(79)}
                     readOnly
                     placeholder="No token generated"
-                    className="pr-20"
+                    className="pr-24 font-mono bg-background/60 border-muted-foreground/30"
                   />
                   {authToken && (
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="secondary"
                       onClick={async () => {
                         await navigator.clipboard.writeText(authToken);
                         toast.success("API token copied to clipboard");
                       }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-2 hover:bg-muted cursor-copy"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 h-8 text-xs font-medium"
                     >
                       Copy
                     </Button>
                   )}
                 </div>
-                <Button
-                  onClick={async () => {
-                    setIsConfirmPasswordOpen(true);
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-md transition-colors"
-                >
-                  Regenerate
-                </Button>
-                <Button
-                  onClick={async () => {
-                    try {
-                      await orpc.settings.deleteAuthToken.call();
-                      setAuthToken(null);
-                      toast.success("API token deleted successfully");
-                    } catch (_error) {
-                      toast.error("Failed to delete API token");
-                    }
-                  }}
-                  variant="outline"
-                  className="px-4 py-2 text-sm font-medium"
-                >
-                  Delete
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={async () => {
+                      setIsConfirmPasswordOpen(true);
+                    }}
+                    size="sm"
+                    variant="destructive"
+                    className="px-4 h-8 text-xs font-medium"
+                  >
+                    Regenerate
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await orpc.settings.deleteAuthToken.call();
+                        setAuthToken(null);
+                        toast.success("API token deleted successfully");
+                      } catch (_error) {
+                        toast.error("Failed to delete API token");
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="px-4 h-8 text-xs font-medium border-destructive/40"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 Use this token in the Authorization header:{" "}
-                <code className="bg-muted px-1 rounded">
+                <code className="bg-muted px-1.5 rounded text-foreground border font-mono">
                   Bearer YOUR_TOKEN_HERE
                 </code>
               </p>
@@ -247,9 +252,9 @@ function RouteComponent() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-none border bg-background/60">
           <CardHeader>
-            <CardTitle>Developer Mode</CardTitle>
+            <CardTitle className="text-base">Developer Mode</CardTitle>
             <CardDescription>
               Enable additional developer tools and features. This includes
               advanced debugging options, detailed logging, and experimental
@@ -257,7 +262,7 @@ function RouteComponent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-4 py-1.5">
               <Switch
                 id={devModeId}
                 checked={session?.settings?.isDevMode ?? false}
@@ -269,14 +274,16 @@ function RouteComponent() {
                   });
                 }}
               />
-              <Label htmlFor={devModeId}>Enable developer mode</Label>
+              <Label htmlFor={devModeId} className="font-medium cursor-pointer">
+                Enable developer mode
+              </Label>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-none border bg-background/60">
           <CardHeader>
-            <CardTitle>Privacy Mode</CardTitle>
+            <CardTitle className="text-base">Privacy Mode</CardTitle>
             <CardDescription>
               Hide sensitive information and transaction details from your view.
               When enabled, personal and financial data will be masked, and
@@ -285,7 +292,7 @@ function RouteComponent() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-4 py-1.5">
               <Switch
                 id={privacyModeId}
                 checked={session?.settings?.isPrivacyMode ?? false}
@@ -297,7 +304,12 @@ function RouteComponent() {
                   });
                 }}
               />
-              <Label htmlFor={privacyModeId}>Enable privacy mode</Label>
+              <Label
+                htmlFor={privacyModeId}
+                className="font-medium cursor-pointer"
+              >
+                Enable privacy mode
+              </Label>
             </div>
           </CardContent>
         </Card>

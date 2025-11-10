@@ -5,7 +5,15 @@ import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { healthCheck } from "./db";
-import { auth } from "./lib/auth";
+import {
+  deleteSession,
+  generateState,
+  getDiscordAuthUrl,
+  getSession,
+  handleDiscordCallback,
+  hasUsers,
+  validateState,
+} from "./lib/auth";
 import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";
 import {
@@ -88,18 +96,206 @@ app.use(
   }),
 );
 
-app.on(["POST", "GET"], "/api/auth/**", async (c) => {
+// Check if users exist
+app.get("/api/auth/has-users", async (c) => {
   try {
-    return await auth.handler(c.req.raw);
+    const usersExist = await hasUsers();
+    return c.json({ hasUsers: usersExist });
   } catch (error) {
-    logger.error("Auth request failed", {
-      error,
-      metadata: {
-        method: c.req.method,
-        url: c.req.url,
-      },
+    logger.error("Failed to check users", { error });
+    return c.json({ error: "Failed to check users" }, 500);
+  }
+});
+
+/**
+ * Parse session token from cookie header
+ */
+function parseSessionToken(cookieHeader: string | undefined): string | null {
+  if (!cookieHeader) {
+    return null;
+  }
+  const cookies = cookieHeader.split(";");
+  for (const cookie of cookies) {
+    const trimmed = cookie.trim();
+    if (trimmed.startsWith("session=")) {
+      const value = trimmed.substring(8); // "session=".length
+      return value || null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Build secure cookie string
+ */
+function buildCookieString(
+  name: string,
+  value: string,
+  maxAge: number,
+  options: {
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: "Lax" | "Strict";
+  } = {},
+): string {
+  const isProduction = process.env.NODE_ENV === "production";
+  const parts = [`${name}=${value}`, `Path=/`, `Max-Age=${maxAge}`];
+
+  if (options.httpOnly !== false) {
+    parts.push("HttpOnly");
+  }
+
+  if (options.secure !== false && isProduction) {
+    parts.push("Secure");
+  }
+
+  parts.push(`SameSite=${options.sameSite || "Lax"}`);
+
+  return parts.join("; ");
+}
+
+// Get session
+app.get("/api/auth/session", async (c) => {
+  try {
+    const sessionToken = parseSessionToken(c.req.header("Cookie"));
+    const session = await getSession(sessionToken);
+
+    if (!session) {
+      return c.json({ session: null }, 200);
+    }
+
+    return c.json({ session }, 200);
+  } catch (error) {
+    logger.error("Failed to get session", { error });
+    return c.json({ error: "Failed to get session" }, 500);
+  }
+});
+
+// Discord OAuth - initiate
+app.get("/api/auth/discord/authorize", async (c) => {
+  try {
+    const state = generateState();
+    const authUrl = getDiscordAuthUrl(state);
+
+    // Store state in secure cookie for CSRF protection (10 minutes expiration)
+    const stateCookie = buildCookieString("oauth_state", state, 600, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
     });
-    throw error;
+
+    const response = c.redirect(authUrl);
+    response.headers.set("Set-Cookie", stateCookie);
+    return response;
+  } catch (error) {
+    logger.error("Failed to initiate Discord auth", { error });
+    return c.json({ error: "Failed to initiate authentication" }, 500);
+  }
+});
+
+// Discord OAuth - callback
+app.get("/api/auth/callback/discord", async (c) => {
+  try {
+    const code = c.req.query("code");
+    const state = c.req.query("state");
+    const error = c.req.query("error");
+
+    if (error) {
+      return c.redirect(
+        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
+      );
+    }
+
+    // Validate state parameter for CSRF protection
+    const cookieHeader = c.req.header("Cookie");
+    let storedState: string | null = null;
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(";");
+      for (const cookie of cookies) {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith("oauth_state=")) {
+          storedState = trimmed.substring(12); // "oauth_state=".length
+          break;
+        }
+      }
+    }
+
+    if (!validateState(state) || !storedState || state !== storedState) {
+      logger.warn("Invalid state parameter in OAuth callback", {
+        metadata: { hasState: !!state, hasStoredState: !!storedState },
+      });
+      return c.redirect(
+        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
+      );
+    }
+
+    if (!code) {
+      return c.redirect(
+        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
+      );
+    }
+
+    // Determine if this is a register or sign-in
+    const usersExist = await hasUsers();
+    const isRegister = !usersExist;
+
+    const { sessionToken } = await handleDiscordCallback(code, isRegister);
+
+    // Set session cookie and redirect
+    const redirectUrl = `${process.env.CORS_ORIGIN}/`;
+    const response = c.redirect(redirectUrl);
+
+    // Clear state cookie and set session cookie
+    const clearStateCookie = buildCookieString("oauth_state", "", 0, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
+    const sessionCookie = buildCookieString(
+      "session",
+      sessionToken,
+      30 * 24 * 60 * 60,
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Lax",
+      },
+    );
+
+    response.headers.set(
+      "Set-Cookie",
+      [clearStateCookie, sessionCookie].join(", "),
+    );
+    return response;
+  } catch (error) {
+    logger.error("Discord callback failed", { error });
+    return c.redirect(
+      `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
+    );
+  }
+});
+
+// Sign out
+app.post("/api/auth/signout", async (c) => {
+  try {
+    const sessionToken = parseSessionToken(c.req.header("Cookie"));
+
+    if (sessionToken) {
+      await deleteSession(sessionToken);
+    }
+
+    const clearCookie = buildCookieString("session", "", 0, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
+
+    return c.json({ success: true }, 200, {
+      "Set-Cookie": clearCookie,
+    });
+  } catch (error) {
+    logger.error("Failed to sign out", { error });
+    return c.json({ error: "Failed to sign out" }, 500);
   }
 });
 

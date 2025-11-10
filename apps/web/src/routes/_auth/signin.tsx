@@ -1,23 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useEffect, useId, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { authClient } from "@/lib/auth-client";
-import { orpc, queryClient } from "@/utils/orpc";
-
-const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
-type SignInFormData = z.infer<typeof signInSchema>;
+import { hasUsers, initiateDiscordAuth } from "@/lib/auth-client";
+import { queryClient } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/signin")({
   component: RouteComponent,
@@ -31,145 +18,52 @@ export const Route = createFileRoute("/_auth/signin")({
   validateSearch: z.object({
     from: z.string().optional(),
     scope: z.string().optional(),
+    error: z.string().optional(),
   }),
 });
 
 function RouteComponent() {
-  const [showPassword, setShowPassword] = useState(false);
-
-  const emailId = useId();
-  const passwordId = useId();
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
-  });
-
-  // Auto-fill form in development
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      setValue("email", "test@test.com");
-      setValue("password", "password123");
-    }
-  }, [setValue]);
-
-  const { mutateAsync: createCategory } = useMutation(
-    orpc.categories.createCategory.mutationOptions(),
-  );
-
-  const { from } = Route.useSearch();
-
+  const [usersExist, setUsersExist] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { from, error } = Route.useSearch();
   const navigate = useNavigate();
 
-  function onSubmit(data: SignInFormData) {
-    authClient.signIn.email(
-      {
-        email: data.email,
-        password: data.password,
-      },
-      {
-        onSuccess: (_ctx) => {
-          queryClient.invalidateQueries({ queryKey: ["session"] });
+  useEffect(() => {
+    // Check if users exist
+    hasUsers()
+      .then((exists) => {
+        setUsersExist(exists);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to check users:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
-          setTimeout(() => {
-            navigate({
-              to: from ?? "/",
-            });
-          }, 500);
-        },
-        onError: async (error) => {
-          // In development, if user doesn't exist, auto-create them
-          if (
-            import.meta.env.DEV &&
-            data.email === "test@test.com" &&
-            data.password === "password123"
-          ) {
-            const errorMessage = error.error.message.toLowerCase();
-            const isUserNotFoundError =
-              errorMessage.includes("invalid") ||
-              errorMessage.includes("not found") ||
-              errorMessage.includes("does not exist") ||
-              errorMessage.includes("incorrect") ||
-              errorMessage.includes("wrong");
+  useEffect(() => {
+    // Show error if present in URL
+    if (error) {
+      toast.error(decodeURIComponent(error));
+      // Clear error from URL
+      navigate({
+        to: "/signin",
+        search: { from, scope: undefined, error: undefined },
+        replace: true,
+      });
+    }
+  }, [error, from, navigate]);
 
-            if (isUserNotFoundError) {
-              try {
-                // Create the user
-                await authClient.signUp.email({
-                  name: "Test User",
-                  email: data.email,
-                  password: data.password,
-                });
+  const handleDiscordAuth = () => {
+    queryClient.invalidateQueries({ queryKey: ["session"] });
+    initiateDiscordAuth();
+  };
 
-                // Then sign them in
-                authClient.signIn.email(
-                  {
-                    email: data.email,
-                    password: data.password,
-                  },
-                  {
-                    onSuccess: (_ctx) => {
-                      queryClient.invalidateQueries({ queryKey: ["session"] });
-                      toast.success("Account created and signed in");
-                      setTimeout(() => {
-                        navigate({
-                          to: from ?? "/",
-                        });
-                      }, 500);
-                    },
-                    onError: (signInError) => {
-                      toast.error(signInError.error.message);
-                    },
-                  },
-                );
-              } catch (createError) {
-                // If user already exists, try signing in again
-                // (might have been created between attempts)
-                if (
-                  createError instanceof Error &&
-                  createError.message.toLowerCase().includes("already exists")
-                ) {
-                  authClient.signIn.email(
-                    {
-                      email: data.email,
-                      password: data.password,
-                    },
-                    {
-                      onSuccess: (_ctx) => {
-                        queryClient.invalidateQueries({
-                          queryKey: ["session"],
-                        });
-                        setTimeout(() => {
-                          navigate({
-                            to: from ?? "/",
-                          });
-                        }, 500);
-                      },
-                      onError: (signInError) => {
-                        toast.error(signInError.error.message);
-                      },
-                    },
-                  );
-                } else {
-                  toast.error(
-                    createError instanceof Error
-                      ? createError.message
-                      : "Failed to create account",
-                  );
-                }
-              }
-            } else {
-              toast.error(error.error.message);
-            }
-          } else {
-            toast.error(error.error.message);
-          }
-        },
-      },
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
     );
   }
 
@@ -180,116 +74,39 @@ function RouteComponent() {
         <div className="w-full max-w-md space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {usersExist ? "Welcome back" : "Welcome to Tallyo"}
+            </h1>
             <p className="text-muted-foreground">
-              Sign in to your account to continue
+              {usersExist
+                ? "Sign in to your account to continue"
+                : "Create your account to get started"}
             </p>
           </div>
 
-          {import.meta.env.PROD ? (
-            <div className="flex flex-col gap-2">
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                type="button"
-                onClick={async () => {
-                  await authClient.signIn.social({
-                    provider: "discord",
-                    callbackURL: from ?? "/",
-                  });
-                  createCategory({
-                    name: "Transfer",
-                    hideFromInsights: true,
-                  });
-                }}
+          <div className="flex flex-col gap-2">
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              type="button"
+              onClick={handleDiscordAuth}
+              size="lg"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 127.14 96.36"
+                aria-label="Discord"
+                role="img"
+                className="w-5 h-5 mr-2"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 127.14 96.36"
-                  aria-label="Discord"
-                  role="img"
-                >
-                  <path
-                    fill="#5865f2"
-                    d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"
-                  />
-                </svg>
-                Discord
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id={emailId}
-                      type="email"
-                      placeholder="Enter your email"
-                      className="pl-10"
-                      {...register("email")}
-                    />
-                  </div>
-                  {errors.email && (
-                    <p className="text-sm text-destructive">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id={passwordId}
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="pl-10 pr-10"
-                      {...register("password")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-sm text-destructive">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between float-right">
-                <Button
-                  variant="link"
-                  className="px-0 font-normal"
-                  onClick={() => {
-                    alert("TODO, Coming Soon™");
-                  }}
-                >
-                  Forgot password?
-                </Button>
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Signing in..." : "Sign in"}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
-          )}
+                <path
+                  fill="#5865f2"
+                  d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"
+                />
+              </svg>
+              {usersExist ? "Sign in with Discord" : "Register with Discord"}
+            </Button>
+          </div>
         </div>
       </div>
 
