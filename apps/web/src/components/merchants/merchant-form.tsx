@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { ZapIcon } from "lucide-react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -71,6 +72,25 @@ export function MerchantForm({
       },
     }),
   );
+
+  const { mutateAsync: applyMerchant, isPending: isApplying } = useMutation(
+    orpc.merchants.applyMerchant.mutationOptions(),
+  );
+
+  const handleApplyMerchant = async () => {
+    if (!merchant) return;
+
+    try {
+      const result = await applyMerchant({ id: merchant.id });
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(
+        `Failed to apply merchant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  };
 
   const onSubmit: SubmitHandler<FormValues> = async (values) => {
     try {
@@ -175,9 +195,23 @@ export function MerchantForm({
           )}
         />
 
-        <Button type="submit" className="w-full">
-          {merchant ? "Update Merchant" : "Create Merchant"}
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button type="submit" className="w-full">
+            {merchant ? "Update Merchant" : "Create Merchant"}
+          </Button>
+          {merchant && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleApplyMerchant}
+              disabled={isApplying}
+            >
+              <ZapIcon className="h-4 w-4 mr-2" />
+              Apply to Transactions
+            </Button>
+          )}
+        </div>
       </form>
     </Form>
   );
