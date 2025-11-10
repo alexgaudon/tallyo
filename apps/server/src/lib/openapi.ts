@@ -6,7 +6,8 @@ import type { AppRouter } from "../routers";
 
 export function createOpenAPIHandler(router: AppRouter) {
   return new OpenAPIHandler(router, {
-    plugins: [new CORSPlugin(), new ZodSmartCoercionPlugin()],
+    // TODO fix any usage, in CI, this throws a big type error
+    plugins: [new CORSPlugin(), new ZodSmartCoercionPlugin()] as any,
   });
 }
 

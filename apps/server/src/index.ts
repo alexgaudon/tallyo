@@ -283,6 +283,12 @@ app.get("/", async (c) => {
     if (process.env.NODE_ENV === "production") {
       return c.html(await Bun.file("./public/index.html").text());
     }
+    if (
+      c.req.header("accept")?.includes("text/html") ||
+      c.req.header("accept")?.includes("application/xhtml+xml")
+    ) {
+      return c.redirect("/api-docs");
+    }
     return c.text("OK");
   } catch (error) {
     logger.error("Health check failed", {
