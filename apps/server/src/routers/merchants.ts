@@ -224,6 +224,199 @@ export const merchantsRouter = {
         throw new Error("An unexpected error occurred while updating merchant");
       }
     }),
+  applyMerchant: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .handler(async ({ context, input }) => {
+      try {
+        // Get the merchant with its keywords
+        const merchantData = await db.query.merchant.findFirst({
+          where: and(
+            eq(merchant.id, input.id),
+            eq(merchant.userId, context.session?.user?.id),
+          ),
+          with: {
+            keywords: {
+              columns: {
+                keyword: true,
+              },
+            },
+          },
+        });
+
+        if (!merchantData) {
+          logger.error(
+            `Merchant ${input.id} not found for user ${context.session?.user?.id}`,
+          );
+          throw new Error("Merchant not found");
+        }
+
+        if (!merchantData.keywords || merchantData.keywords.length === 0) {
+          return {
+            message:
+              "No keywords found for this merchant. Add keywords to apply this merchant to transactions.",
+            updatedCount: 0,
+          };
+        }
+
+        const keywords = merchantData.keywords.map((k) => k.keyword);
+        const keywordConditions = keywords.map((keyword) =>
+          eq(transaction.transactionDetails, keyword),
+        );
+
+        const updateData: {
+          merchantId: string;
+          updatedAt: Date;
+          categoryId?: string;
+        } = {
+          merchantId: input.id,
+          updatedAt: new Date(),
+        };
+
+        // Only update category if recommendedCategoryId is provided
+        if (merchantData.recommendedCategoryId) {
+          updateData.categoryId = merchantData.recommendedCategoryId;
+        }
+
+        const updatedResult = await db
+          .update(transaction)
+          .set(updateData)
+          .where(
+            and(
+              eq(transaction.userId, context.session?.user?.id),
+              eq(transaction.reviewed, false),
+              or(...keywordConditions),
+            ),
+          );
+
+        const updatedCount = updatedResult.rowCount ?? 0;
+
+        logger.info(
+          `Applied merchant ${input.id} to ${updatedCount} transactions for user ${context.session?.user?.id}`,
+        );
+
+        return {
+          message:
+            updatedCount > 0
+              ? `Applied merchant to ${updatedCount} unreviewed transaction${updatedCount === 1 ? "" : "s"}`
+              : "No matching unreviewed transactions found",
+          updatedCount,
+        };
+      } catch (error) {
+        logger.error(`Error applying merchant ${input.id}:`, { error });
+        if (error instanceof Error) {
+          throw new Error(`Failed to apply merchant: ${error.message}`);
+        }
+        throw new Error("An unexpected error occurred while applying merchant");
+      }
+    }),
+  applyAllMerchants: protectedProcedure
+    .input(z.object({}))
+    .handler(async ({ context }) => {
+      try {
+        // Get all merchants with their keywords for the user
+        const userMerchants = await db.query.merchant.findMany({
+          where: eq(merchant.userId, context.session?.user?.id),
+          with: {
+            keywords: {
+              columns: {
+                keyword: true,
+              },
+            },
+          },
+        });
+
+        if (!userMerchants || userMerchants.length === 0) {
+          return {
+            message: "No merchants found",
+            totalUpdated: 0,
+            merchantsProcessed: 0,
+          };
+        }
+
+        let totalUpdated = 0;
+        let merchantsProcessed = 0;
+        const results: Array<{
+          merchantId: string;
+          merchantName: string;
+          updatedCount: number;
+        }> = [];
+
+        // Apply each merchant to matching transactions
+        for (const merchantData of userMerchants) {
+          if (!merchantData.keywords || merchantData.keywords.length === 0) {
+            continue; // Skip merchants without keywords
+          }
+
+          const keywords = merchantData.keywords.map((k) => k.keyword);
+          const keywordConditions = keywords.map((keyword) =>
+            eq(transaction.transactionDetails, keyword),
+          );
+
+          const updateData: {
+            merchantId: string;
+            updatedAt: Date;
+            categoryId?: string;
+          } = {
+            merchantId: merchantData.id,
+            updatedAt: new Date(),
+          };
+
+          // Only update category if recommendedCategoryId is provided
+          if (merchantData.recommendedCategoryId) {
+            updateData.categoryId = merchantData.recommendedCategoryId;
+          }
+
+          const updatedResult = await db
+            .update(transaction)
+            .set(updateData)
+            .where(
+              and(
+                eq(transaction.userId, context.session?.user?.id),
+                eq(transaction.reviewed, false),
+                or(...keywordConditions),
+              ),
+            );
+
+          const updatedCount = updatedResult.rowCount ?? 0;
+          totalUpdated += updatedCount;
+          merchantsProcessed++;
+
+          if (updatedCount > 0) {
+            results.push({
+              merchantId: merchantData.id,
+              merchantName: merchantData.name,
+              updatedCount,
+            });
+          }
+        }
+
+        logger.info(
+          `Applied all merchants to ${totalUpdated} transactions for user ${context.session?.user?.id}. Processed ${merchantsProcessed} merchants.`,
+        );
+
+        return {
+          message:
+            totalUpdated > 0
+              ? `Applied ${merchantsProcessed} merchant${merchantsProcessed === 1 ? "" : "s"} to ${totalUpdated} unreviewed transaction${totalUpdated === 1 ? "" : "s"}`
+              : `Processed ${merchantsProcessed} merchant${merchantsProcessed === 1 ? "" : "s"}, but no matching unreviewed transactions were found`,
+          totalUpdated,
+          merchantsProcessed,
+          results,
+        };
+      } catch (error) {
+        logger.error(`Error applying all merchants:`, { error });
+        if (error instanceof Error) {
+          throw new Error(`Failed to apply all merchants: ${error.message}`);
+        }
+        throw new Error(
+          "An unexpected error occurred while applying all merchants",
+        );
+      }
+    }),
   deleteMerchant: protectedProcedure
     .input(
       z.object({

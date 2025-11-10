@@ -1,13 +1,17 @@
+import { useMutation } from "@tanstack/react-query";
 import {
   GitMergeIcon,
   PencilIcon,
   StoreIcon,
   TagIcon,
   XIcon,
+  ZapIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { orpc } from "@/utils/orpc";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import {
   AlertDialog,
@@ -38,6 +42,23 @@ interface MerchantCardProps {
 export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
+
+  const { mutateAsync: applyMerchant, isPending: isApplying } = useMutation(
+    orpc.merchants.applyMerchant.mutationOptions(),
+  );
+
+  const handleApplyMerchant = async () => {
+    try {
+      const result = await applyMerchant({ id: merchant.id });
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(
+        `Failed to apply merchant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  };
 
   return (
     <Card>
@@ -101,6 +122,16 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
                 />
               </DialogContent>
             </Dialog>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-blue-600 touch-manipulation"
+              onClick={handleApplyMerchant}
+              disabled={isApplying}
+              title="Apply merchant to matching unreviewed transactions"
+            >
+              <ZapIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button

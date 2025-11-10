@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2Icon, PlusIcon, SearchIcon } from "lucide-react";
+import { Building2Icon, PlusIcon, SearchIcon, ZapIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateMerchantForm } from "@/components/merchants/create-merchant-form";
@@ -44,6 +44,22 @@ function RouteComponent() {
       },
     }),
   );
+
+  const { mutateAsync: applyAllMerchants, isPending: isApplyingAll } =
+    useMutation(orpc.merchants.applyAllMerchants.mutationOptions());
+
+  const handleApplyAllMerchants = async () => {
+    try {
+      const result = await applyAllMerchants({});
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(
+        `Failed to apply all merchants: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  };
 
   // Filter merchants based on search query
   const filteredMerchants = useMemo(() => {
@@ -96,7 +112,20 @@ function RouteComponent() {
               </p>
             </div>
           </div>
-          <div className="flex justify-center sm:justify-end">
+          <div className="flex justify-center sm:justify-end gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="shadow w-full sm:w-auto"
+              onClick={handleApplyAllMerchants}
+              disabled={
+                isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
+              }
+            >
+              <ZapIcon className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Apply All Merchants</span>
+              <span className="sm:hidden">Apply All</span>
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button
