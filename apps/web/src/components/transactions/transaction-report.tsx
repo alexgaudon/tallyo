@@ -479,7 +479,7 @@ export function TransactionReport() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                              <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0" />
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>Upcoming transaction</p>

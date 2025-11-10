@@ -119,7 +119,7 @@ export function EntitySelect<T extends Entity>({
 							className="h-9 text-sm"
 						/>
 						<CommandList>
-							<CommandEmpty className="py-2 text-sm">{emptyLabel}</CommandEmpty>
+							<CommandEmpty className="p-2 text-sm">{emptyLabel}</CommandEmpty>
 							<CommandGroup>
 								{showCreateOption && onCreateClick && (
 									<CommandItem

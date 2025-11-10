@@ -45,7 +45,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="flex-1 min-w-0 pr-2">
             <div className="flex items-center gap-2 mb-1">
-              <StoreIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <StoreIcon className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="font-medium truncate">{merchant.name}</span>
             </div>
             {merchant.recommendedCategory && (
@@ -54,7 +54,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -136,7 +136,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
                 key={keyword.id}
                 className="inline-flex items-center gap-1 rounded-full bg-muted px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs text-muted-foreground"
               >
-                <TagIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                <TagIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
                 <span className="truncate max-w-[100px] sm:max-w-[120px]">
                   {keyword.keyword}
                 </span>

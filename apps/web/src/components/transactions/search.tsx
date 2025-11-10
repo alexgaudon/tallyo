@@ -1,7 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useDebounce } from "@uidotdev/usehooks";
 import { SlidersHorizontal } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySelect } from "../categories/category-select";
 import { MerchantSelect } from "../merchants/merchant-select";
 import { Button } from "../ui/button";
@@ -19,14 +19,6 @@ export function Search() {
   const params = useSearch({ from: "/transactions" });
   const navigate = useNavigate();
 
-  // Only maintain local state for the search input (debounced)
-  const [filter, setFilter] = useState(params.filter ?? "");
-  const debouncedFilter = useDebounce(filter, 300);
-
-  // UI state
-  const [isOpenMobile, setIsOpenMobile] = useState(false);
-  const [isOpenDesktop, setIsOpenDesktop] = useState(false);
-
   // Navigation helper
   const updateSearchParams = (
     updates: Record<string, string | boolean | null | undefined>,
@@ -41,12 +33,22 @@ export function Search() {
     });
   };
 
+  // Only maintain local state for the search input (debounced)
+  const [filter, setFilter] = useState(() => params.filter ?? "");
+  const previousDebouncedFilterRef = useRef<string | undefined>(params.filter);
+  const debouncedFilter = useDebounce(filter, 300);
+
   // Update URL when debounced filter changes
-  if (debouncedFilter !== (params.filter ?? "")) {
-    updateSearchParams({
-      filter: debouncedFilter || undefined,
-    });
+  if (debouncedFilter !== previousDebouncedFilterRef.current) {
+    previousDebouncedFilterRef.current = debouncedFilter;
+    if (debouncedFilter !== (params.filter ?? "")) {
+      updateSearchParams({ filter: debouncedFilter });
+    }
   }
+
+  // UI state
+  const [isOpenMobile, setIsOpenMobile] = useState(false);
+  const [isOpenDesktop, setIsOpenDesktop] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);
