@@ -1,0 +1,19 @@
+{
+	"name": "tallyo-cli",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "src/main.ts",
+	"scripts": {
+		"dev": "bun run --hot src/main.ts",
+		"build": "bun build src/main.ts --compile --outfile dist/tallyo --target bun",
+		"start": "bun run src/main.ts"
+	},
+	"dependencies": {
+		"@opentui/core": "^0.1.0",
+		"zod": "^4.1.12"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.3",
+		"@types/bun": "^1.3.1"
+	}
+}
