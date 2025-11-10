@@ -8,6 +8,11 @@ import { healthCheck } from "./db";
 import { auth } from "./lib/auth";
 import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";
+import {
+  createOpenAPIGenerator,
+  generateOpenAPISpec,
+  getScalarHTML,
+} from "./lib/openapi";
 import { appRouter } from "./routers/index";
 
 const app = new Hono();
@@ -224,6 +229,47 @@ app.use("/rpc/*", async (c, next) => {
   }
 });
 
+// OpenAPI / Swagger UI Documentation
+const openAPIGenerator = createOpenAPIGenerator();
+
+app.get("/api-docs/spec.json", async (c) => {
+  try {
+    const url = new URL(c.req.url);
+    const baseUrl = `${url.protocol}//${url.host}/rpc`;
+    const spec = await generateOpenAPISpec(
+      openAPIGenerator,
+      appRouter,
+      baseUrl,
+    );
+    return c.json(spec);
+  } catch (error) {
+    logger.error("OpenAPI spec generation failed", {
+      error,
+      metadata: {
+        url: c.req.url,
+      },
+    });
+    return c.json({ error: "Failed to generate OpenAPI spec" }, 500);
+  }
+});
+
+app.get("/api-docs", async (c) => {
+  try {
+    const url = new URL(c.req.url);
+    const specUrl = `${url.protocol}//${url.host}/api-docs/spec.json`;
+    const html = getScalarHTML(specUrl);
+    return c.html(html);
+  } catch (error) {
+    logger.error("OpenAPI docs page failed", {
+      error,
+      metadata: {
+        url: c.req.url,
+      },
+    });
+    return c.json({ error: "Failed to load API documentation" }, 500);
+  }
+});
+
 app.get("/", async (c) => {
   try {
     const url = new URL(c.req.url);
@@ -257,7 +303,11 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", async (c) => {
     const url = new URL(c.req.url);
     // Don't serve index.html for API routes
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/rpc/")) {
+    if (
+      url.pathname.startsWith("/api/") ||
+      url.pathname.startsWith("/rpc/") ||
+      url.pathname.startsWith("/api-docs")
+    ) {
       return c.notFound();
     }
     return c.html(await Bun.file("./public/index.html").text());
