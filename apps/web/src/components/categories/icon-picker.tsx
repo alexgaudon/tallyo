@@ -21,6 +21,7 @@ import {
   FileText,
   Folder,
   Fuel,
+  Gamepad2 as Gamepad,
   Gift,
   GraduationCap,
   Heart,
@@ -96,6 +97,7 @@ const ICONS = {
   Plane,
   Train,
   Wifi,
+  Gamepad,
 } as const;
 
 interface IconPickerProps {
