@@ -8,7 +8,7 @@
 	"scripts": {
 		"check": "biome check --write .",
 		"prepare": "husky",
-		"dev": "bun run db:dev && turbo dev",
+		"dev": "turbo dev --filter=web --filter=server",
 		"build": "turbo build",
 		"check-types": "turbo check-types",
 		"dev:native": "turbo -F native dev",
