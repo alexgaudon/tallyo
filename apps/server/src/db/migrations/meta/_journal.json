@@ -15,6 +15,13 @@
       "when": 1754943553236,
       "tag": "0001_striped_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762822232526,
+      "tag": "0002_chubby_meggan",
+      "breakpoints": true
     }
   ]
 }

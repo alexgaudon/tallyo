@@ -8,6 +8,10 @@ import { metaRouter } from "./meta";
 import { settingsRouter } from "./settings";
 import { transactionsRouter } from "./transactions";
 
+export type WebhookResult = InferRouterOutputs<
+  typeof metaRouter
+>["triggerWebhookRefresh"]["results"][number];
+
 export type Category = InferRouterOutputs<
   typeof categoriesRouter
 >["getUserCategories"]["categories"][number];

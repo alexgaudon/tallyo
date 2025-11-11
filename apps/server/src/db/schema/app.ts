@@ -17,6 +17,7 @@ export const settings = pgTable("settings", {
   userId: text("user_id").notNull().unique(),
   isDevMode: boolean("is_dev_mode").notNull().default(false),
   isPrivacyMode: boolean("is_privacy_mode").notNull().default(false),
+  webhookUrls: text("webhook_urls").array().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

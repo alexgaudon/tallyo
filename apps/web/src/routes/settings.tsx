@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -39,6 +40,13 @@ function RouteComponent() {
   const privacyModeId = useId();
 
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [newWebhookUrl, setNewWebhookUrl] = useState("");
+
+  const { data: settingsData } = useQuery(
+    orpc.settings.getUserSettings.queryOptions(),
+  );
+
+  const webhookUrls = settingsData?.settings?.webhookUrls ?? [];
 
   const { mutate: updateSettings, isPending } = useMutation(
     orpc.settings.updateSettings.mutationOptions({
@@ -55,7 +63,13 @@ function RouteComponent() {
           orpc.settings.getUserSettings.queryOptions().queryKey,
           (
             old:
-              | { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+              | {
+                  settings: {
+                    isDevMode: boolean;
+                    isPrivacyMode: boolean;
+                    webhookUrls?: string[];
+                  };
+                }
               | undefined,
           ) => ({
             ...old,
@@ -67,7 +81,13 @@ function RouteComponent() {
           ["session"],
           (
             old:
-              | { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+              | {
+                  settings: {
+                    isDevMode: boolean;
+                    isPrivacyMode: boolean;
+                    webhookUrls?: string[];
+                  };
+                }
               | undefined,
           ) => ({
             ...old,
@@ -89,7 +109,13 @@ function RouteComponent() {
           ["session"],
           (
             old:
-              | { settings: { isDevMode: boolean; isPrivacyMode: boolean } }
+              | {
+                  settings: {
+                    isDevMode: boolean;
+                    isPrivacyMode: boolean;
+                    webhookUrls?: string[];
+                  };
+                }
               | undefined,
           ) => ({
             ...old,
@@ -254,6 +280,130 @@ function RouteComponent() {
 
         <Card className="shadow-none border bg-background/60">
           <CardHeader>
+            <CardTitle className="text-base">
+              Auto-Import Webhook URLs
+            </CardTitle>
+            <CardDescription>
+              Configure webhook URLs that will receive notifications when new
+              transactions are imported. Add multiple URLs to send notifications
+              to different endpoints.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                <div className="relative flex-1">
+                  <Input
+                    type="url"
+                    value={newWebhookUrl}
+                    onChange={(e) => setNewWebhookUrl(e.target.value)}
+                    placeholder="https://example.com/webhook"
+                    className="font-mono bg-background/60 border-muted-foreground/30"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (newWebhookUrl.trim()) {
+                          const url = newWebhookUrl.trim();
+                          try {
+                            new URL(url);
+                            if (webhookUrls.includes(url)) {
+                              toast.error("This URL is already added");
+                              return;
+                            }
+                            const updatedUrls = [...webhookUrls, url];
+                            updateSettings({
+                              isDevMode: session?.settings?.isDevMode ?? false,
+                              isPrivacyMode:
+                                session?.settings?.isPrivacyMode ?? false,
+                              webhookUrls: updatedUrls,
+                            });
+                            setNewWebhookUrl("");
+                            toast.success("Webhook URL added");
+                          } catch {
+                            toast.error("Please enter a valid URL");
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (newWebhookUrl.trim()) {
+                      const url = newWebhookUrl.trim();
+                      try {
+                        new URL(url);
+                        if (webhookUrls.includes(url)) {
+                          toast.error("This URL is already added");
+                          return;
+                        }
+                        const updatedUrls = [...webhookUrls, url];
+                        updateSettings({
+                          isDevMode: session?.settings?.isDevMode ?? false,
+                          isPrivacyMode:
+                            session?.settings?.isPrivacyMode ?? false,
+                          webhookUrls: updatedUrls,
+                        });
+                        setNewWebhookUrl("");
+                        toast.success("Webhook URL added");
+                      } catch {
+                        toast.error("Please enter a valid URL");
+                      }
+                    }
+                  }}
+                  size="sm"
+                  variant="default"
+                  className="px-4 h-8 text-xs font-medium"
+                  disabled={isPending || !newWebhookUrl.trim()}
+                >
+                  Add URL
+                </Button>
+              </div>
+              {webhookUrls.length > 0 && (
+                <div className="flex flex-col gap-2 mt-2">
+                  {webhookUrls.map((url) => (
+                    <div
+                      key={url}
+                      className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border border-muted-foreground/20"
+                    >
+                      <code className="flex-1 text-sm font-mono text-foreground break-all">
+                        {url}
+                      </code>
+                      <Button
+                        onClick={() => {
+                          const updatedUrls = webhookUrls.filter(
+                            (u) => u !== url,
+                          );
+                          updateSettings({
+                            isDevMode: session?.settings?.isDevMode ?? false,
+                            isPrivacyMode:
+                              session?.settings?.isPrivacyMode ?? false,
+                            webhookUrls: updatedUrls,
+                          });
+                          toast.success("Webhook URL removed");
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 shrink-0"
+                        disabled={isPending}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {webhookUrls.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No webhook URLs configured. Add a URL above to get started.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-none border bg-background/60">
+          <CardHeader>
             <CardTitle className="text-base">Developer Mode</CardTitle>
             <CardDescription>
               Enable additional developer tools and features. This includes
@@ -271,6 +421,7 @@ function RouteComponent() {
                   updateSettings({
                     isDevMode: !(session?.settings?.isDevMode ?? false),
                     isPrivacyMode: session?.settings?.isPrivacyMode ?? false,
+                    webhookUrls: webhookUrls,
                   });
                 }}
               />
@@ -301,6 +452,7 @@ function RouteComponent() {
                   updateSettings({
                     isPrivacyMode: !(session?.settings?.isPrivacyMode ?? false),
                     isDevMode: session?.settings?.isDevMode ?? false,
+                    webhookUrls: webhookUrls,
                   });
                 }}
               />

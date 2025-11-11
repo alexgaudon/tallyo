@@ -9,6 +9,7 @@ import { useSession } from "@/lib/auth-client";
 import { ModeToggle } from "./mode-toggle";
 import { DeveloperModeToggle } from "./settings/developer-mode-toggle";
 import { PrivacyModeToggle } from "./settings/privacy-mode-toggle";
+import { WebhookButton } from "./webhook-button";
 
 const loadingContent = (
   <>
@@ -38,6 +39,7 @@ export default function Header() {
         <div className="hidden lg:flex lg:items-center lg:space-x-6">
           {session?.user ? (
             <div className="flex items-center space-x-2">
+              <WebhookButton />
               <ModeToggle />
               <DeveloperModeToggle />
               <PrivacyModeToggle />

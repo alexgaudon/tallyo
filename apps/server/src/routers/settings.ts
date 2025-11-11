@@ -12,6 +12,7 @@ export const settingsRouter = {
       columns: {
         isDevMode: true,
         isPrivacyMode: true,
+        webhookUrls: true,
       },
     });
 
@@ -26,7 +27,10 @@ export const settingsRouter = {
     }
 
     return {
-      settings: userSettings,
+      settings: {
+        ...userSettings,
+        webhookUrls: userSettings?.webhookUrls ?? [],
+      },
     };
   }),
   updateSettings: protectedProcedure
@@ -34,16 +38,29 @@ export const settingsRouter = {
       z.object({
         isDevMode: z.boolean(),
         isPrivacyMode: z.boolean(),
+        webhookUrls: z.array(z.string().url()).optional(),
       }),
     )
     .handler(async ({ context, input }) => {
       try {
+        const updateData: {
+          isDevMode: boolean;
+          isPrivacyMode: boolean;
+          webhookUrls?: string[];
+          updatedAt: Date;
+        } = {
+          isDevMode: input.isDevMode,
+          isPrivacyMode: input.isPrivacyMode,
+          updatedAt: new Date(),
+        };
+
+        if (input.webhookUrls !== undefined) {
+          updateData.webhookUrls = input.webhookUrls;
+        }
+
         const updatedSettings = await db
           .update(settings)
-          .set({
-            ...input,
-            updatedAt: new Date(),
-          })
+          .set(updateData)
           .where(eq(settings.userId, context.session.user.id))
           .returning();
 
