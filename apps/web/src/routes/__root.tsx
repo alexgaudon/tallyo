@@ -13,9 +13,11 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useSession, useSessionFetch } from "@/lib/auth-client";
@@ -70,26 +72,51 @@ function RootComponent() {
 
   useKeyboardShortcuts();
 
+  const isAuthenticated = !!session;
+
   return (
     <>
       <HeadContent />
       <ORPCContext.Provider value={orpcUtils}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <div className="flex flex-col min-h-svh">
-            {location.pathname.startsWith("/sign") ? (
-              <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
-                <Link to="/">
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-              </div>
-            ) : !session && location.pathname === "/" ? null : (
-              <Header />
-            )}
-            <main className="flex-1">
-              <Outlet />
-            </main>
-            <Footer />
-          </div>
+          {isAuthenticated ? (
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <div className="flex flex-col min-h-svh">
+                  {location.pathname.startsWith("/sign") ? (
+                    <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
+                      <Link to="/">
+                        <ArrowLeft className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <Header />
+                  )}
+                  <main className="flex-1">
+                    <Outlet />
+                  </main>
+                  <Footer />
+                </div>
+              </SidebarInset>
+            </SidebarProvider>
+          ) : (
+            <div className="flex flex-col min-h-svh">
+              {location.pathname.startsWith("/sign") ? (
+                <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
+                  <Link to="/">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </div>
+              ) : !session && location.pathname === "/" ? null : (
+                <Header />
+              )}
+              <main className="flex-1">
+                <Outlet />
+              </main>
+              <Footer />
+            </div>
+          )}
           <Toaster richColors />
         </ThemeProvider>
       </ORPCContext.Provider>

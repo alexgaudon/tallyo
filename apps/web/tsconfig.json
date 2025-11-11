@@ -9,13 +9,19 @@
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 		"types": ["vite/client"],
-		"rootDirs": ["."],
 		"baseUrl": ".",
 		"composite": true,
 		"paths": {
 			"@/*": ["./src/*"]
 		}
 	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	],
 	"references": [
 		{
 			"path": "../server"

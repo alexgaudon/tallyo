@@ -23,13 +23,24 @@ export const settingsRouter = {
 
       userSettings = await db.query.settings.findFirst({
         where: eq(settings.userId, context.session.user.id),
+        columns: {
+          isDevMode: true,
+          isPrivacyMode: true,
+          webhookUrls: true,
+        },
       });
+    }
+
+    // Type narrowing: If still missing after second fetch, throw an error.
+    if (!userSettings) {
+      throw new Error("Failed to initialize user settings.");
     }
 
     return {
       settings: {
-        ...userSettings,
-        webhookUrls: userSettings?.webhookUrls ?? [],
+        isDevMode: userSettings.isDevMode,
+        isPrivacyMode: userSettings.isPrivacyMode,
+        webhookUrls: userSettings.webhookUrls ?? [],
       },
     };
   }),
@@ -38,7 +49,7 @@ export const settingsRouter = {
       z.object({
         isDevMode: z.boolean(),
         isPrivacyMode: z.boolean(),
-        webhookUrls: z.array(z.string().url()).optional(),
+        webhookUrls: z.array(z.url()).optional(),
       }),
     )
     .handler(async ({ context, input }) => {

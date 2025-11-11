@@ -46,7 +46,7 @@ function RouteComponent() {
     orpc.settings.getUserSettings.queryOptions(),
   );
 
-  const webhookUrls = settingsData?.settings?.webhookUrls ?? [];
+  const webhookUrls: string[] = settingsData?.settings?.webhookUrls ?? [];
 
   const { mutate: updateSettings, isPending } = useMutation(
     orpc.settings.updateSettings.mutationOptions({
@@ -361,7 +361,7 @@ function RouteComponent() {
               </div>
               {webhookUrls.length > 0 && (
                 <div className="flex flex-col gap-2 mt-2">
-                  {webhookUrls.map((url) => (
+                  {webhookUrls.map((url: string) => (
                     <div
                       key={url}
                       className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border border-muted-foreground/20"
@@ -372,7 +372,7 @@ function RouteComponent() {
                       <Button
                         onClick={() => {
                           const updatedUrls = webhookUrls.filter(
-                            (u) => u !== url,
+                            (u: string) => u !== url,
                           );
                           updateSettings({
                             isDevMode: session?.settings?.isDevMode ?? false,

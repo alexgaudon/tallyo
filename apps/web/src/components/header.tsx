@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -158,6 +159,7 @@ export default function Header() {
       <nav className="border-b">
         <div className="flex items-center px-4 py-3 lg:px-8">
           <div className="flex items-center">
+            {session?.user && <SidebarTrigger className="mr-2 lg:hidden" />}
             <Link to="/" className="flex items-center">
               <img
                 src="/favicon.ico"
