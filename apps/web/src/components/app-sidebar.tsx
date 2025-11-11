@@ -38,6 +38,10 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
 
+  if (!isMobile) {
+    return null;
+  }
+
   const handleNavigation = () => {
     if (isMobile) {
       setOpenMobile(false);
