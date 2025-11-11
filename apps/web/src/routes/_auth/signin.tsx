@@ -1,4 +1,11 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import {
+  BarChart3,
+  Building2,
+  Computer,
+  PieChart,
+  TrendingUp,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -71,8 +78,8 @@ function RouteComponent() {
     <div className="min-h-screen flex">
       {/* Left Side - Sign In Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          {/* Header */}
+        <div className="max-w-md space-y-8">
+          {/* Header - visible only on left side */}
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">
               {usersExist ? "Welcome back" : "Welcome to Tallyo"}
@@ -111,65 +118,122 @@ function RouteComponent() {
       </div>
 
       {/* Right Side - Visual Content */}
-      <div className="hidden lg:flex flex-1 bg-linear-to-br from-accent to-secondary relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 text-center">
-          <div className="space-y-8 max-w-lg">
+      <div className="hidden lg:flex flex-1 relative overflow-hidden bg-linear-to-br from-primary/20 via-primary/10 to-secondary/20">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/30 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/30 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        </div>
+
+        {/* Grid Pattern Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-center items-center text-foreground p-16 w-full">
+          <div className="w-full max-w-2xl space-y-12">
             {/* Hero Section */}
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm mx-auto">
-                <img
-                  src="/favicon.ico"
-                  alt="Tallyo"
-                  className="w-16 h-16 rounded-full"
-                />
+            <div className="space-y-6 text-center">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-20 h-20 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg border border-primary/20">
+                    <img
+                      src="/favicon.ico"
+                      alt="Tallyo"
+                      className="w-12 h-12 rounded-full"
+                    />
+                  </div>
+                </div>
               </div>
-              <h2 className="text-4xl font-bold">
-                Measure. Understand. Improve.
-              </h2>
-              <p className="text-lg text-white/90 leading-relaxed">
-                Tallyo helps you gain insights into your personal finances so
-                you can make better financial decisions.
-              </p>
+              <div className="space-y-3">
+                <h2 className="text-5xl font-bold tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  Measure. Understand. Improve.
+                </h2>
+                <p className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+                  Tallyo helps you gain insights into your personal finances so
+                  you can make better financial decisions.
+                </p>
+              </div>
             </div>
 
-            {/* Features Section */}
-            <div className="space-y-6">
-              <h3 className="text-2xl font-semibold">Features</h3>
-              <div className="grid grid-cols-2 gap-4 text-left">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-white">
-                    Transaction Logging
-                  </h4>
-                  <p className="text-sm text-white/80">
-                    Easily upload transactions from any financial provider via
-                    API.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-white">Categorization</h4>
-                  <p className="text-sm text-white/80">
-                    Automatically categorize transactions for streamlined
-                    analysis.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-white">
-                    Vendor Normalization
-                  </h4>
-                  <p className="text-sm text-white/80">
-                    Normalizes vendors to a single entity for better analysis.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-white">
-                    Insights & Charts
-                  </h4>
-                  <p className="text-sm text-white/80">
-                    Visualize your finances with intuitive charts and key stats.
-                  </p>
+            {/* Features Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="group relative p-6 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <h4 className="font-semibold text-foreground">
+                      Transaction Logging
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Easily upload transactions from any financial provider via
+                      API.
+                    </p>
+                  </div>
                 </div>
               </div>
+
+              <div className="group relative p-6 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <PieChart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <h4 className="font-semibold text-foreground">
+                      Categorization
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Automatically categorize transactions for streamlined
+                      analysis.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative p-6 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Building2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <h4 className="font-semibold text-foreground">
+                      Vendor Normalization
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Normalizes vendors to a single entity for better analysis.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative p-6 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <BarChart3 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <h4 className="font-semibold text-foreground">
+                      Insights & Charts
+                    </h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Visualize your finances with intuitive charts and key
+                      stats.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trust Indicator */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-4">
+              <Computer className="w-4 h-4 text-primary" />
+              <span>Built by developers for developers</span>
             </div>
           </div>
         </div>
