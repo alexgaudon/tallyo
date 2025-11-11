@@ -116,7 +116,7 @@ function RouteComponent() {
             <Button
               variant="outline"
               size="lg"
-              className="shadow w-full sm:w-auto"
+              className="shadow w-1/2 sm:w-auto"
               onClick={handleApplyAllMerchants}
               disabled={
                 isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
@@ -131,7 +131,7 @@ function RouteComponent() {
                 <Button
                   variant="default"
                   size="lg"
-                  className="shadow w-full sm:w-auto"
+                  className="shadow w-1/2 sm:w-auto"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">New Merchant</span>
