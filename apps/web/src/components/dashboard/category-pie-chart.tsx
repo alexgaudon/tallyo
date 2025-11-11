@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
@@ -106,6 +106,104 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const navigate = useNavigate();
 
+  // Rerender tracking
+  const renderCount = useRef(0);
+  const prevProps = useRef<{ data: DashboardCategoryData }>({ data });
+
+  useEffect(() => {
+    renderCount.current += 1;
+    console.group(`🔄 CategoryPieChart Rerender #${renderCount.current}`);
+    console.log("Previous data:", prevProps.current.data);
+    console.log("Current data:", data);
+
+    // Check what changed
+    if (prevProps.current.data !== data) {
+      console.log("📊 Data reference changed");
+      if (prevProps.current.data.length !== data.length) {
+        console.log(
+          `  - Length changed: ${prevProps.current.data.length} → ${data.length}`,
+        );
+      }
+      // Check if data content changed
+      const prevDataStr = JSON.stringify(prevProps.current.data);
+      const currentDataStr = JSON.stringify(data);
+      if (prevDataStr !== currentDataStr) {
+        console.log("  - Data content changed");
+      }
+    }
+
+    console.log("Active index:", activeIndex);
+    console.groupEnd();
+
+    prevProps.current = { data };
+  });
+
+  // Memoize chart data so it only recalculates when data prop changes
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const sortedData = [...data].sort(
+      (a, b) => Number(a.amount) - Number(b.amount),
+    );
+
+    // Filter out income categories and prepare chart data
+    return sortedData
+      .filter((item) => !item.category.treatAsIncome)
+      .filter((item) => !item.category.hideFromInsights)
+      .map((item) => ({
+        name: formatCategoryText(item.category),
+        value: Math.abs(Number(item.amount)),
+        fill: getColorFromCategoryId(item.category.id),
+        count: item.count,
+        categoryId: item.category.id,
+        average12Months: item.average12Months || 0,
+      }));
+  }, [data]);
+
+  // Calculate total for percentage calculations
+  const totalAmount = useMemo(
+    () => chartData.reduce((sum, item) => sum + item.value, 0),
+    [chartData],
+  );
+
+  const handleCategoryClick = useCallback(
+    (categoryId: string) => {
+      navigate({
+        to: "/transactions",
+        search: { category: categoryId, page: 1 },
+      });
+    },
+    [navigate],
+  );
+
+  // Memoize tooltip content to prevent recreation on every render
+  const tooltipContent = useCallback(
+    (props: { active?: boolean; payload?: TooltipPayloadItem[] }) => (
+      <CustomTooltip {...props} chartData={chartData} />
+    ),
+    [chartData],
+  );
+
+  // Memoize mouse event handlers
+  const handleMouseEnter = useCallback((_: unknown, index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setActiveIndex(null);
+  }, []);
+
+  const handlePieClick = useCallback(
+    (data: { categoryId?: string }) => {
+      if (data?.categoryId) {
+        handleCategoryClick(data.categoryId);
+      }
+    },
+    [handleCategoryClick],
+  );
+
   if (!data || data.length === 0) {
     return (
       <Card>
@@ -119,33 +217,6 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
       </Card>
     );
   }
-
-  const sortedData = [...data].sort(
-    (a, b) => Number(a.amount) - Number(b.amount),
-  );
-
-  // Filter out income categories and prepare chart data
-  const chartData = sortedData
-    .filter((item) => !item.category.treatAsIncome)
-    .filter((item) => !item.category.hideFromInsights)
-    .map((item) => ({
-      name: formatCategoryText(item.category),
-      value: Math.abs(Number(item.amount)),
-      fill: getColorFromCategoryId(item.category.id),
-      count: item.count,
-      categoryId: item.category.id,
-      average12Months: item.average12Months || 0,
-    }));
-
-  // Calculate total for percentage calculations
-  const totalAmount = chartData.reduce((sum, item) => sum + item.value, 0);
-
-  const handleCategoryClick = (categoryId: string) => {
-    navigate({
-      to: "/transactions",
-      search: { category: categoryId, page: 1 },
-    });
-  };
 
   return (
     <Card>
@@ -172,34 +243,20 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     innerRadius="40%"
                     fill="#8884d8"
                     isAnimationActive={false}
-                    onMouseEnter={(_, index) => setActiveIndex(index)}
-                    onMouseLeave={() => setActiveIndex(null)}
-                    onClick={(data) => {
-                      if (data?.categoryId) {
-                        handleCategoryClick(data.categoryId);
-                      }
-                    }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    onClick={handlePieClick}
                     // Removed invalid activeShape prop for Pie, as recharts Pie does not support activeShape here.
                     style={{ cursor: "pointer" }}
                   />
-                  <Tooltip
-                    content={(props) => (
-                      <CustomTooltip {...props} chartData={chartData} />
-                    )}
-                  />
+                  <Tooltip content={tooltipContent} />
                 </PieChart>
               </ResponsiveContainer>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="text-center">
                   <div className="text-sm font-bold">
-                    <CurrencyAmount
-                      animate
-                      amount={chartData.reduce(
-                        (sum, item) => sum + item.value,
-                        0,
-                      )}
-                    />
+                    <CurrencyAmount animate amount={totalAmount} />
                   </div>
                   <div className="text-[10px] text-muted-foreground font-medium">
                     Total Spend
@@ -222,7 +279,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   type="button"
                   className={`flex items-center gap-1.5 px-1.5 py-1 rounded ${
                     activeIndex === index
-                      ? "bg-accent border-accent-foreground/20"
+                      ? "bg-muted/50 border-accent-foreground/20"
                       : "bg-card hover:bg-muted/50"
                   } cursor-pointer transition-colors text-left min-w-0`}
                   onClick={() => handleCategoryClick(item.categoryId)}
