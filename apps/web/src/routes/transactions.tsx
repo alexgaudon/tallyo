@@ -21,15 +21,17 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
+import { getPreferredPageSize } from "@/utils/page-size";
 import type {
   Category,
   MerchantWithKeywordsAndCategory,
 } from "../../../server/src/routers";
-import type { RouterAppContext } from "./__root";
+
+const PREFERRED_PAGE_SIZE_KEY = "tallyo.preferredPageSize";
 
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
   filter: z.string().optional(),
   category: z.string().optional(),
   merchant: z.string().optional(),
@@ -37,7 +39,9 @@ const searchSchema = z.object({
   onlyWithoutMerchant: z.boolean().optional(),
 });
 
-type SearchParams = z.infer<typeof searchSchema>;
+type SearchParams = z.infer<typeof searchSchema> & {
+  pageSize: number;
+};
 
 // Infer the query response type from the orpc query
 type TransactionQueryResponse = Awaited<
@@ -63,14 +67,20 @@ const createTransactionQueryOptions = (
 };
 
 export const Route = createFileRoute("/transactions")({
-  validateSearch: searchSchema,
-  beforeLoad: async ({
-    context,
-    search,
-  }: {
-    context: RouterAppContext & { isAuthenticated: boolean };
-    search: SearchParams;
-  }) => {
+  validateSearch: ({ search }) => {
+    // Parse with the schema first (handle undefined search)
+    const parsed = searchSchema.parse(search ?? {});
+
+    // Get preferred page size from localStorage if not provided
+    const preferredPageSize = getPreferredPageSize();
+
+    // Set pageSize if not provided
+    return {
+      ...parsed,
+      pageSize: parsed.pageSize ?? preferredPageSize,
+    } as SearchParams;
+  },
+  beforeLoad: async ({ context, search }) => {
     ensureSession(context.isAuthenticated, "/transactions");
 
     await Promise.all([
@@ -324,11 +334,21 @@ function RouteComponent() {
   const handlePageChange = (page: number) => {
     navigate({
       to: "/transactions",
-      search: (prev) => ({ ...prev, page }),
+      search: (prev) => ({
+        ...prev,
+        page,
+        pageSize: prev.pageSize ?? search.pageSize,
+      }),
     });
   };
 
   const handlePageSizeChange = (pageSize: number) => {
+    // Save to localStorage
+    try {
+      localStorage.setItem(PREFERRED_PAGE_SIZE_KEY, pageSize.toString());
+    } catch {
+      // If localStorage fails, continue anyway
+    }
     navigate({
       to: "/transactions",
       search: { ...search, pageSize, page: 1 },

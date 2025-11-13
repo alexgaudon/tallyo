@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getPreferredPageSize } from "@/utils/page-size";
 
 interface UnreviewedTransactionsBannerProps {
   count: number;
@@ -22,7 +23,14 @@ export function UnreviewedTransactionsBanner({
           </span>
         </div>
         <Button asChild size="sm" variant="ghost">
-          <Link to="/transactions" search={{ onlyUnreviewed: true }}>
+          <Link
+            to="/transactions"
+            search={{
+              onlyUnreviewed: true,
+              page: 1,
+              pageSize: getPreferredPageSize(),
+            }}
+          >
             <Eye className="h-3 w-3 mr-1" />
             Review
           </Link>

@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CreditCardIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getPreferredPageSize } from "@/utils/page-size";
 import type { TransactionStatsData } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 
@@ -28,12 +29,6 @@ export function TransactionStats({
     );
   }
 
-  const handleTransactionClick = () => {
-    navigate({
-      to: "/transactions",
-    });
-  };
-
   return (
     <div className="space-y-0 border rounded-lg overflow-hidden flex flex-col">
       {data.map((transaction, index) => (
@@ -47,11 +42,12 @@ export function TransactionStats({
             },
           )}
           onClick={() => {
-            handleTransactionClick();
             navigate({
               to: "/transactions",
               search: {
                 filter: transaction.transactionDetails,
+                page: 1,
+                pageSize: getPreferredPageSize(),
               },
             });
           }}
