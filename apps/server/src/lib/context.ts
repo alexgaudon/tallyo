@@ -24,10 +24,12 @@ function parseSessionToken(cookieHeader: string | undefined): string | null {
 }
 
 export async function createContext({ context }: CreateContextOptions) {
-  const sessionToken = parseSessionToken(context.req.header("Cookie"));
+  const cookieHeader = context.req.header("Cookie");
+  const sessionToken = parseSessionToken(cookieHeader);
   const session = await getSession(sessionToken);
 
   return {
+    cookieHeader: cookieHeader || undefined,
     session: session
       ? {
           user: session.user,

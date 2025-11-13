@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
   BarChart3,
   Building2,
@@ -6,7 +6,6 @@ import {
   PieChart,
   TrendingUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,10 @@ import { queryClient } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/signin")({
   component: RouteComponent,
+  loader: async () => {
+    const usersExist = await hasUsers();
+    return { usersExist };
+  },
   beforeLoad: async ({ context, search }) => {
     if (search.scope !== "token") {
       if (context.isAuthenticated) {
@@ -30,49 +33,17 @@ export const Route = createFileRoute("/_auth/signin")({
 });
 
 function RouteComponent() {
-  const [usersExist, setUsersExist] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { from, error } = Route.useSearch();
-  const navigate = useNavigate();
+  const { usersExist } = Route.useLoaderData();
+  const { error } = Route.useSearch();
 
-  useEffect(() => {
-    // Check if users exist
-    hasUsers()
-      .then((exists) => {
-        setUsersExist(exists);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to check users:", err);
-        setIsLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    // Show error if present in URL
-    if (error) {
-      toast.error(decodeURIComponent(error));
-      // Clear error from URL
-      navigate({
-        to: "/signin",
-        search: { from, scope: undefined, error: undefined },
-        replace: true,
-      });
-    }
-  }, [error, from, navigate]);
-
-  const handleDiscordAuth = () => {
-    queryClient.invalidateQueries({ queryKey: ["session"] });
-    initiateDiscordAuth();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
+  if (error) {
+    toast.error(decodeURIComponent(error));
   }
+
+  const handleDiscordAuth = async () => {
+    queryClient.invalidateQueries({ queryKey: ["session"] });
+    await initiateDiscordAuth();
+  };
 
   return (
     <div className="min-h-screen flex">

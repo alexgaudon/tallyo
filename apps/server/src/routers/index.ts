@@ -1,6 +1,7 @@
 import type { InferRouterOutputs } from "@orpc/server";
 import { healthCheck } from "../db";
 import { protectedProcedure, publicProcedure } from "../lib/orpc";
+import { authRouter } from "./auth";
 import { categoriesRouter } from "./categories";
 import { dashboardRouter } from "./dashboard";
 import { merchantsRouter } from "./merchants";
@@ -67,6 +68,7 @@ export const appRouter = {
       user: context.session?.user,
     };
   }),
+  auth: authRouter,
   categories: categoriesRouter,
   merchants: merchantsRouter,
   transactions: transactionsRouter,

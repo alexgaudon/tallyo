@@ -17,42 +17,32 @@ export interface Session {
  * Check if users exist in the system
  */
 export async function hasUsers(): Promise<boolean> {
-  const response = await fetch("/api/auth/has-users");
-  const data = await response.json();
-  return data.hasUsers || false;
+  const result = await orpc.auth.hasUsers.call();
+  return result.hasUsers || false;
 }
 
 /**
  * Get current session
  */
 export async function getSession(): Promise<Session | null> {
-  const response = await fetch("/api/auth/session", {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = await response.json();
-  return data.session;
+  const result = await orpc.auth.getSession.call();
+  return result.session;
 }
 
 /**
  * Sign out
  */
 export async function signOut(): Promise<void> {
-  await fetch("/api/auth/signout", {
-    method: "POST",
-    credentials: "include",
-  });
+  await orpc.auth.signOut.call();
 }
 
 /**
  * Initiate Discord OAuth flow
  */
-export function initiateDiscordAuth(): void {
-  window.location.href = "/api/auth/discord/authorize";
+export async function initiateDiscordAuth(): Promise<void> {
+  const result = await orpc.auth.getDiscordAuthUrl.call();
+  // Redirect to REST endpoint that sets cookie and redirects to Discord
+  window.location.href = `/api/auth/discord/authorize?state=${result.state}`;
 }
 
 export const useSessionFetch = async () => {

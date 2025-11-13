@@ -7,7 +7,6 @@ import { z } from "zod";
 import { healthCheck } from "./db";
 import {
   deleteSession,
-  generateState,
   getDiscordAuthUrl,
   getSession,
   handleDiscordCallback,
@@ -171,15 +170,25 @@ app.get("/api/auth/session", async (c) => {
   }
 });
 
-// Discord OAuth - initiate
+// Discord OAuth - initiate (sets cookie and redirects)
+// This endpoint is kept as REST because it needs to set cookies and redirect
 app.get("/api/auth/discord/authorize", async (c) => {
   try {
-    const state = generateState();
-    const authUrl = getDiscordAuthUrl(state);
+    const stateParam = c.req.query("state");
+    if (!stateParam) {
+      return c.json({ error: "State parameter required" }, 400);
+    }
+
+    // Validate state format
+    if (!validateState(stateParam)) {
+      return c.json({ error: "Invalid state parameter" }, 400);
+    }
+
+    const authUrl = getDiscordAuthUrl(stateParam);
 
     // Store state in cookie for CSRF protection (10 minutes expiration)
     const isProduction = process.env.NODE_ENV === "production";
-    const stateCookie = buildCookieString("oauth_state", state, 600, {
+    const stateCookie = buildCookieString("oauth_state", stateParam, 600, {
       httpOnly: true,
       secure: isProduction,
       sameSite: "Lax",
