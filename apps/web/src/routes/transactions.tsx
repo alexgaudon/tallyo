@@ -21,28 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
+import { getPreferredPageSize } from "@/utils/page-size";
 import type {
   Category,
   MerchantWithKeywordsAndCategory,
 } from "../../../server/src/routers";
 
 const PREFERRED_PAGE_SIZE_KEY = "tallyo.preferredPageSize";
-
-const getPreferredPageSize = (): number => {
-  if (typeof window === "undefined") return 10;
-  try {
-    const stored = localStorage.getItem(PREFERRED_PAGE_SIZE_KEY);
-    if (stored) {
-      const parsed = Number.parseInt(stored, 10);
-      if (parsed >= 1 && parsed <= 100) {
-        return parsed;
-      }
-    }
-  } catch {
-    // If localStorage fails, use default
-  }
-  return 10;
-};
 
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
