@@ -63,12 +63,21 @@ export async function createOrUpdateAuthToken(userId: string): Promise<string> {
 
 /**
  * Validate an auth token and return the user ID if valid
+ *
+ * Note: Since tokens are hashed with bcrypt, we can't query by token directly.
+ * However, we can optimize by checking tokens in batches or using a different
+ * approach. For now, we'll iterate through all tokens, but this should be
+ * optimized if the number of users grows significantly.
+ *
+ * Alternative approaches:
+ * - Store a hash of the token (e.g., SHA256) alongside the bcrypt hash for quick lookup
+ * - Use a different hashing scheme that allows direct comparison
+ * - Limit the number of active tokens per user
  */
 export async function validateAuthToken(token: string): Promise<string | null> {
   try {
-    // We can't directly compare bcrypt hashes, so we need to find by a different approach
-    // For now, let's get all tokens and verify them one by one
-    // In a production system, you might want to add an index or use a different approach
+    // Get all tokens (since we can't query by bcrypt hash directly)
+    // TODO: Consider adding a SHA256 hash of the token for faster lookup
     const tokenRecords = await db.query.authToken.findMany();
 
     for (const tokenRecord of tokenRecords) {

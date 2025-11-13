@@ -4,25 +4,8 @@ import {
   getDiscordAuthUrl,
   hasUsers,
 } from "../lib/auth";
+import { parseSessionToken } from "../lib/cookies";
 import { publicProcedure } from "../lib/orpc";
-
-/**
- * Parse session token from cookie header
- */
-function parseSessionToken(cookieHeader: string | undefined): string | null {
-  if (!cookieHeader) {
-    return null;
-  }
-  const cookies = cookieHeader.split(";");
-  for (const cookie of cookies) {
-    const trimmed = cookie.trim();
-    if (trimmed.startsWith("session=")) {
-      const value = trimmed.substring(8); // "session=".length
-      return value || null;
-    }
-  }
-  return null;
-}
 
 export const authRouter = {
   hasUsers: publicProcedure.handler(async () => {

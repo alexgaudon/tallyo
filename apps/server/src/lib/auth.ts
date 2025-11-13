@@ -29,7 +29,6 @@ const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 export interface DiscordUser {
   id: string;
   username: string;
-  discriminator: string;
   avatar: string | null;
   email: string;
   verified: boolean;
@@ -128,7 +127,6 @@ async function getDiscordUser(accessToken: string): Promise<DiscordUser> {
   return {
     id: String(data.id),
     username: String(data.username),
-    discriminator: String(data.discriminator || "0"),
     avatar: data.avatar ? String(data.avatar) : null,
     email: String(data.email),
     verified: Boolean(data.verified),

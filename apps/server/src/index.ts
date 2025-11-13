@@ -14,6 +14,7 @@ import {
   validateState,
 } from "./lib/auth";
 import { createContext } from "./lib/context";
+import { parseCookie, parseSessionToken } from "./lib/cookies";
 import { logger } from "./lib/logger";
 import {
   createOpenAPIGenerator,
@@ -107,24 +108,6 @@ app.get("/api/auth/has-users", async (c) => {
 });
 
 /**
- * Parse session token from cookie header
- */
-function parseSessionToken(cookieHeader: string | undefined): string | null {
-  if (!cookieHeader) {
-    return null;
-  }
-  const cookies = cookieHeader.split(";");
-  for (const cookie of cookies) {
-    const trimmed = cookie.trim();
-    if (trimmed.startsWith("session=")) {
-      const value = trimmed.substring(8); // "session=".length
-      return value || null;
-    }
-  }
-  return null;
-}
-
-/**
  * Build secure cookie string
  */
 function buildCookieString(
@@ -216,7 +199,7 @@ app.get("/api/auth/callback/discord", async (c) => {
       );
     }
 
-    // Validate state parameter for CSRF protection (simplified - just check format)
+    // Validate state parameter for CSRF protection
     if (!validateState(state)) {
       logger.warn("Invalid state parameter format in OAuth callback", {
         metadata: { hasState: !!state },
@@ -225,6 +208,28 @@ app.get("/api/auth/callback/discord", async (c) => {
         `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
       );
     }
+
+    // Validate state cookie matches query parameter (CSRF protection)
+    const cookieHeader = c.req.header("Cookie");
+    const stateCookie = parseCookie(cookieHeader, "oauth_state");
+    if (!stateCookie || stateCookie !== state) {
+      logger.warn("State cookie mismatch in OAuth callback", {
+        metadata: {
+          hasStateCookie: !!stateCookie,
+          stateMatches: stateCookie === state,
+        },
+      });
+      return c.redirect(
+        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
+      );
+    }
+
+    // Clear state cookie after validation (prevent reuse)
+    const clearStateCookie = buildCookieString("oauth_state", "", 0, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
 
     if (!code) {
       return c.redirect(
@@ -254,15 +259,24 @@ app.get("/api/auth/callback/discord", async (c) => {
       },
     );
 
-    // Create response with cookie
+    // Create response with cookies (session + cleared state)
     const response = c.redirect(redirectUrl);
-    response.headers.set("Set-Cookie", sessionCookie);
+    response.headers.append("Set-Cookie", sessionCookie);
+    response.headers.append("Set-Cookie", clearStateCookie);
     return response;
   } catch (error) {
     logger.error("Discord callback failed", { error });
-    return c.redirect(
+    // Clear state cookie on error
+    const clearStateCookie = buildCookieString("oauth_state", "", 0, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Lax",
+    });
+    const response = c.redirect(
       `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
     );
+    response.headers.append("Set-Cookie", clearStateCookie);
+    return response;
   }
 });
 
