@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
@@ -105,38 +105,6 @@ function CustomTooltip(props: {
 export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const navigate = useNavigate();
-
-  // Rerender tracking
-  const renderCount = useRef(0);
-  const prevProps = useRef<{ data: DashboardCategoryData }>({ data });
-
-  useEffect(() => {
-    renderCount.current += 1;
-    console.group(`🔄 CategoryPieChart Rerender #${renderCount.current}`);
-    console.log("Previous data:", prevProps.current.data);
-    console.log("Current data:", data);
-
-    // Check what changed
-    if (prevProps.current.data !== data) {
-      console.log("📊 Data reference changed");
-      if (prevProps.current.data.length !== data.length) {
-        console.log(
-          `  - Length changed: ${prevProps.current.data.length} → ${data.length}`,
-        );
-      }
-      // Check if data content changed
-      const prevDataStr = JSON.stringify(prevProps.current.data);
-      const currentDataStr = JSON.stringify(data);
-      if (prevDataStr !== currentDataStr) {
-        console.log("  - Data content changed");
-      }
-    }
-
-    console.log("Active index:", activeIndex);
-    console.groupEnd();
-
-    prevProps.current = { data };
-  });
 
   // Memoize chart data so it only recalculates when data prop changes
   const chartData = useMemo(() => {
