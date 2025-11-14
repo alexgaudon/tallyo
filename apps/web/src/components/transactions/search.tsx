@@ -2,7 +2,6 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { SlidersHorizontal } from "lucide-react";
 import { type ChangeEvent, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getPreferredPageSize } from "@/utils/page-size";
 import { CategorySelect } from "../categories/category-select";
 import { MerchantSelect } from "../merchants/merchant-select";
 import { Button } from "../ui/button";
@@ -26,14 +25,11 @@ export function Search() {
   ) => {
     navigate({
       to: "/transactions",
-      search: (prev) => {
-        return {
-          ...prev,
-          ...updates,
-          page: 1, // Reset to first page when filters change
-          pageSize: prev?.pageSize ?? getPreferredPageSize(),
-        };
-      },
+      search: (prev) => ({
+        ...prev,
+        ...updates,
+        page: 1, // Reset to first page when filters change
+      }),
     });
   };
 

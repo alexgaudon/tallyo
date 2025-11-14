@@ -62,6 +62,12 @@ export const appRouter = {
       throw new Error("DB Not OK");
     }
   }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
+  }),
   auth: authRouter,
   categories: categoriesRouter,
   merchants: merchantsRouter,

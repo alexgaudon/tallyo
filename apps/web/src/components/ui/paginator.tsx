@@ -78,16 +78,9 @@ export function Paginator({
 				</div>
 				<Select
 					value={pagination.pageSize.toString()}
-					onValueChange={(value) => {
-						const newPageSize = Number.parseInt(value, 10);
-						// Save to localStorage
-						try {
-							localStorage.setItem("tallyo.preferredPageSize", value);
-						} catch {
-							// If localStorage fails, continue anyway
-						}
-						onPageSizeChange(newPageSize);
-					}}
+					onValueChange={(value) =>
+						onPageSizeChange(Number.parseInt(value, 10))
+					}
 					disabled={isLoading}
 				>
 					<SelectTrigger className="h-8 w-[70px]">

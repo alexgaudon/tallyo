@@ -1,7 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { StoreIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getPreferredPageSize } from "@/utils/page-size";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
 import { CurrencyAmount } from "../ui/currency-amount";
 
@@ -33,11 +32,7 @@ export function MerchantStats({
   const handleMerchantClick = (merchantId: string) => {
     navigate({
       to: "/transactions",
-      search: {
-        merchant: merchantId,
-        page: 1,
-        pageSize: getPreferredPageSize(),
-      },
+      search: { merchant: merchantId, page: 1 },
     });
   };
 

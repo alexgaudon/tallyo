@@ -6,9 +6,9 @@ import type { RouterClient } from "@orpc/server";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createContext, use } from "react";
 import { toast } from "sonner";
-import type { AppRouter } from "../../../server/src/routers/index";
+import type { appRouter } from "../../../server/src/routers/index";
 
-type ORPCReactUtils = RouterUtils<RouterClient<AppRouter>>;
+type ORPCReactUtils = RouterUtils<RouterClient<typeof appRouter>>;
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -35,7 +35,7 @@ export const link = new RPCLink({
   },
 });
 
-export const client: RouterClient<AppRouter> = createORPCClient(link);
+export const client: RouterClient<typeof appRouter> = createORPCClient(link);
 
 export const orpc = createORPCReactQueryUtils(client);
 

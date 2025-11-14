@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from "react";
 import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
-import { getPreferredPageSize } from "@/utils/page-size";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
@@ -141,11 +140,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
     (categoryId: string) => {
       navigate({
         to: "/transactions",
-        search: {
-          category: categoryId,
-          page: 1,
-          pageSize: getPreferredPageSize(),
-        },
+        search: { category: categoryId, page: 1 },
       });
     },
     [navigate],
