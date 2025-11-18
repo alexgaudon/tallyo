@@ -5,7 +5,7 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { CreditCardIcon, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { Search } from "@/components/transactions/search";
@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocalPageSize } from "@/hooks/use-local-page-size";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import type {
@@ -29,7 +30,7 @@ import type { RouterAppContext } from "./__root";
 
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
   filter: z.string().optional(),
   category: z.string().optional(),
   merchant: z.string().optional(),
@@ -69,9 +70,28 @@ export const Route = createFileRoute("/transactions")({
     search,
   }: {
     context: RouterAppContext & { isAuthenticated: boolean };
-    search: SearchParams;
+    search: any;
   }) => {
     ensureSession(context.isAuthenticated, "/transactions");
+
+    // Get effective page size for prefetching
+    let effectivePageSize = 10;
+    try {
+      const stored = localStorage.getItem("transactions-page-size");
+      if (stored) {
+        const parsed = Number.parseInt(stored, 10);
+        if ([10, 25, 50, 100].includes(parsed)) {
+          effectivePageSize = parsed;
+        }
+      }
+    } catch (error) {
+      // Ignore local storage errors
+    }
+
+    const effectiveSearch = {
+      ...search,
+      pageSize: search.pageSize ?? effectivePageSize,
+    };
 
     await Promise.all([
       context.queryClient.prefetchQuery(
@@ -80,7 +100,9 @@ export const Route = createFileRoute("/transactions")({
       context.queryClient.prefetchQuery(
         orpc.merchants.getUserMerchants.queryOptions(),
       ),
-      context.queryClient.prefetchQuery(createTransactionQueryOptions(search)),
+      context.queryClient.prefetchQuery(
+        createTransactionQueryOptions(effectiveSearch),
+      ),
     ]);
   },
   component: RouteComponent,
@@ -91,13 +113,37 @@ function RouteComponent() {
   const search = useSearch({ from: "/transactions" });
   const queryClient = useQueryClient();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const { pageSize: localPageSize, savePageSize } = useLocalPageSize();
+
+  // Use local page size if not in search params
+  const effectivePageSize = search.pageSize ?? localPageSize;
+  const effectiveSearch = { ...search, pageSize: effectivePageSize };
+
+  // Ensure page size is always in URL and sync with local storage
+  useEffect(() => {
+    // If no page size in URL, set it from local storage
+    if (!search.pageSize) {
+      navigate({
+        to: "/transactions",
+        search: { ...search, pageSize: localPageSize },
+        replace: true,
+      });
+    } else {
+      // Sync local storage with URL
+      savePageSize(search.pageSize);
+    }
+  }, [search.pageSize, localPageSize, navigate, search, savePageSize]);
+
   const { data: transactionsData } = useQuery(
-    createTransactionQueryOptions(search, { keepPreviousData: true }),
+    createTransactionQueryOptions(effectiveSearch, { keepPreviousData: true }),
   );
 
   // Prefetch next page
   useQuery({
-    ...createTransactionQueryOptions({ ...search, page: search.page + 1 }),
+    ...createTransactionQueryOptions({
+      ...effectiveSearch,
+      page: effectiveSearch.page + 1,
+    }),
     staleTime: 1000 * 60, // Keep data fresh for 1 minute
   });
 
@@ -105,11 +151,13 @@ function RouteComponent() {
     orpc.transactions.updateTransactionCategory.mutationOptions({
       onMutate: async ({ id, categoryId }) => {
         // Cancel any outgoing refetches
-        await queryClient.cancelQueries(createTransactionQueryOptions(search));
+        await queryClient.cancelQueries(
+          createTransactionQueryOptions(effectiveSearch),
+        );
 
         // Snapshot the previous value
         const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
         // Get available categories for optimistic update
@@ -119,7 +167,7 @@ function RouteComponent() {
 
         // Optimistically update to the new value
         queryClient.setQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
 
@@ -153,14 +201,14 @@ function RouteComponent() {
         // If the mutation fails, use the context returned from onMutate to roll back
         if (context?.previousData) {
           queryClient.setQueryData(
-            createTransactionQueryOptions(search).queryKey,
+            createTransactionQueryOptions(effectiveSearch).queryKey,
             context.previousData,
           );
         }
       },
       onSettled: async () => {
         await queryClient.invalidateQueries(
-          createTransactionQueryOptions(search),
+          createTransactionQueryOptions(effectiveSearch),
         );
       },
     }),
@@ -169,10 +217,12 @@ function RouteComponent() {
   const { mutateAsync: updateMerchant } = useMutation(
     orpc.transactions.updateTransactionMerchant.mutationOptions({
       onMutate: async ({ id, merchantId }) => {
-        await queryClient.cancelQueries(createTransactionQueryOptions(search));
+        await queryClient.cancelQueries(
+          createTransactionQueryOptions(effectiveSearch),
+        );
 
         const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
         // Get available merchants for optimistic update
@@ -181,7 +231,7 @@ function RouteComponent() {
         );
 
         queryClient.setQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
 
@@ -213,14 +263,14 @@ function RouteComponent() {
       onError: (_err, _variables, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(
-            createTransactionQueryOptions(search).queryKey,
+            createTransactionQueryOptions(effectiveSearch).queryKey,
             context.previousData,
           );
         }
       },
       onSettled: async () => {
         await queryClient.invalidateQueries(
-          createTransactionQueryOptions(search),
+          createTransactionQueryOptions(effectiveSearch),
         );
       },
     }),
@@ -229,14 +279,16 @@ function RouteComponent() {
   const { mutateAsync: updateNotes } = useMutation(
     orpc.transactions.updateTransactionNotes.mutationOptions({
       onMutate: async ({ id, notes }) => {
-        await queryClient.cancelQueries(createTransactionQueryOptions(search));
+        await queryClient.cancelQueries(
+          createTransactionQueryOptions(effectiveSearch),
+        );
 
         const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
         queryClient.setQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
             return {
@@ -253,14 +305,14 @@ function RouteComponent() {
       onError: (_err, _variables, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(
-            createTransactionQueryOptions(search).queryKey,
+            createTransactionQueryOptions(effectiveSearch).queryKey,
             context.previousData,
           );
         }
       },
       onSettled: async () => {
         await queryClient.invalidateQueries(
-          createTransactionQueryOptions(search),
+          createTransactionQueryOptions(effectiveSearch),
         );
       },
     }),
@@ -269,14 +321,16 @@ function RouteComponent() {
   const { mutateAsync: toggleReviewed } = useMutation(
     orpc.transactions.toggleTransactionReviewed.mutationOptions({
       onMutate: async ({ id }) => {
-        await queryClient.cancelQueries(createTransactionQueryOptions(search));
+        await queryClient.cancelQueries(
+          createTransactionQueryOptions(effectiveSearch),
+        );
 
         const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
         queryClient.setQueryData(
-          createTransactionQueryOptions(search).queryKey,
+          createTransactionQueryOptions(effectiveSearch).queryKey,
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
             return {
@@ -295,14 +349,16 @@ function RouteComponent() {
       onError: (_err, _variables, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(
-            createTransactionQueryOptions(search).queryKey,
+            createTransactionQueryOptions(effectiveSearch).queryKey,
             context.previousData,
           );
         }
       },
       onSettled: async () => {
         await Promise.all([
-          queryClient.invalidateQueries(createTransactionQueryOptions(search)),
+          queryClient.invalidateQueries(
+            createTransactionQueryOptions(effectiveSearch),
+          ),
           queryClient.invalidateQueries({
             queryKey: ["session"],
           }),
@@ -315,7 +371,7 @@ function RouteComponent() {
     orpc.transactions.deleteTransaction.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: createTransactionQueryOptions(search).queryKey,
+          queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
         });
       },
     }),
@@ -329,6 +385,7 @@ function RouteComponent() {
   };
 
   const handlePageSizeChange = (pageSize: number) => {
+    savePageSize(pageSize);
     navigate({
       to: "/transactions",
       search: { ...search, pageSize, page: 1 },
@@ -394,7 +451,8 @@ function RouteComponent() {
                     callback={() => {
                       queryClient.invalidateQueries({
                         queryKey:
-                          createTransactionQueryOptions(search).queryKey,
+                          createTransactionQueryOptions(effectiveSearch)
+                            .queryKey,
                       });
                       setIsCreateFormOpen(false);
                     }}
@@ -413,7 +471,7 @@ function RouteComponent() {
             pagination={{
               total: transactionsData?.pagination.total ?? 0,
               page: transactionsData?.pagination.page ?? 1,
-              pageSize: transactionsData?.pagination.pageSize ?? 25,
+              pageSize: search.pageSize ?? localPageSize,
               totalPages: transactionsData?.pagination.totalPages ?? 1,
             }}
             onPageChange={handlePageChange}
