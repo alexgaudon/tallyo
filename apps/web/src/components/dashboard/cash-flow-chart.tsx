@@ -37,24 +37,24 @@ function CustomTooltip({
     const data = payload[0].payload;
 
     return (
-      <div className="bg-background border border-border rounded-md shadow-lg p-2 space-y-1 min-w-[150px]">
-        <div className="font-semibold text-xs border-b pb-1">
+      <div className="bg-popover border border-border/50 rounded-lg shadow-lg p-3 space-y-1.5 min-w-[160px]">
+        <div className="font-semibold text-sm border-b pb-1.5">
           {data.monthLabel || format(parseISO(`${data.month}-01`), "MMM, yyyy")}
         </div>
-        <div className="space-y-1 text-xs">
-          <div className="flex justify-between items-center gap-3">
+        <div className="space-y-1.5 text-sm">
+          <div className="flex justify-between items-center gap-4">
             <span className="text-muted-foreground">Income:</span>
             <span className="font-medium text-green-600 dark:text-green-500">
               <CurrencyAmount amount={data.income} />
             </span>
           </div>
-          <div className="flex justify-between items-center gap-3">
+          <div className="flex justify-between items-center gap-4">
             <span className="text-muted-foreground">Expenses:</span>
             <span className="font-medium text-red-600 dark:text-red-500">
               <CurrencyAmount amount={data.expenses} />
             </span>
           </div>
-          <div className="flex justify-between items-center pt-1 border-t gap-3">
+          <div className="flex justify-between items-center pt-1.5 border-t gap-4">
             <span className="text-muted-foreground font-medium">Net:</span>
             <span
               className={`font-semibold ${data.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
@@ -100,12 +100,12 @@ export const CashFlowChart = memo(function CashFlowChart({
 
   if (!data || data.length === 0) {
     return (
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle>Cash Flow</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-4 text-center">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-sm text-muted-foreground">
               No transaction data available to display cash flow.
             </p>
@@ -119,34 +119,36 @@ export const CashFlowChart = memo(function CashFlowChart({
   if (data.length === 1) {
     const item = data[0];
     return (
-      <Card>
+      <Card className="shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="sr-only">Cash Flow</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-4 text-center space-y-2">
-            <div className="text-sm font-semibold text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-6 text-center space-y-3">
+            <div className="text-base font-semibold text-muted-foreground">
               {format(parseISO(`${item.month}-01`), "MMMM yyyy")}
             </div>
-            <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
+            <div className="grid grid-cols-3 gap-6 w-full max-w-sm">
               <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-1">Income</div>
-                <div className="text-base font-semibold text-green-600 dark:text-green-500">
+                <div className="text-xs text-muted-foreground mb-1.5">
+                  Income
+                </div>
+                <div className="text-lg font-semibold text-green-600 dark:text-green-500">
                   <CurrencyAmount amount={item.income} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-1">
+                <div className="text-xs text-muted-foreground mb-1.5">
                   Expenses
                 </div>
-                <div className="text-base font-semibold text-red-600 dark:text-red-500">
+                <div className="text-lg font-semibold text-red-600 dark:text-red-500">
                   <CurrencyAmount amount={item.expenses} />
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-1">Net</div>
+                <div className="text-xs text-muted-foreground mb-1.5">Net</div>
                 <div
-                  className={`text-base font-semibold ${item.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
+                  className={`text-lg font-semibold ${item.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
                 >
                   <CurrencyAmount amount={item.net} />
                 </div>
@@ -159,38 +161,45 @@ export const CashFlowChart = memo(function CashFlowChart({
   }
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="sr-only">Cash Flow</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="h-[280px] w-full">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <XAxis
                 dataKey="monthLabel"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 interval="preserveStartEnd"
-                height={30}
+                height={32}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 width={80}
                 tickFormatter={yAxisTickFormatter}
               />
-              <Tooltip content={CustomTooltip} />
+              <Tooltip
+                content={CustomTooltip}
+                cursor={{
+                  stroke: "#888",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 4",
+                }}
+              />
               <Line
                 key="income"
                 type="monotone"
                 dataKey="income"
                 stroke="#10b981"
                 strokeWidth={2}
-                dot={{ fill: "#10b981", strokeWidth: 2, r: 3 }}
-                activeDot={{ r: 5 }}
+                dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
                 name="Income"
                 isAnimationActive={false}
               />
@@ -200,8 +209,8 @@ export const CashFlowChart = memo(function CashFlowChart({
                 dataKey="expenses"
                 stroke="#ef4444"
                 strokeWidth={2}
-                dot={{ fill: "#ef4444", strokeWidth: 2, r: 3 }}
-                activeDot={{ r: 5 }}
+                dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
                 name="Expenses"
                 isAnimationActive={false}
               />
@@ -211,8 +220,8 @@ export const CashFlowChart = memo(function CashFlowChart({
                 dataKey="net"
                 stroke="#3b82f6"
                 strokeWidth={2.5}
-                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 3 }}
-                activeDot={{ r: 5 }}
+                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6 }}
                 name="Net"
                 isAnimationActive={false}
               />
@@ -220,17 +229,17 @@ export const CashFlowChart = memo(function CashFlowChart({
           </ResponsiveContainer>
         </div>
         {data.length > 1 && (
-          <div className="flex justify-center gap-4 mt-3 text-xs">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+          <div className="flex justify-center gap-5 mt-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500 ring-2 ring-green-500/20" />
               <span>Income</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-500/20" />
               <span>Expenses</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-0.5 bg-blue-500" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-0.5 bg-blue-500 rounded-sm" />
               <span>Net</span>
             </div>
           </div>

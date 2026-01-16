@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { StoreIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { DashboardMerchantStats } from "../../../../server/src/routers";
+import { Card } from "../ui/card";
+import { CardListEmpty } from "../ui/card-list";
 import { CurrencyAmount } from "../ui/currency-amount";
 
 export function MerchantStats({
@@ -13,19 +14,11 @@ export function MerchantStats({
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="rounded-full bg-muted p-3 mb-4">
-          {/* You can use a merchant/store icon here if desired */}
-          <span className="text-muted-foreground text-3xl">🏪</span>
-        </div>
-        <h3 className="text-lg font-semibold mb-2">
-          No Merchant Data Available
-        </h3>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Merchant breakdown will appear here once you have transactions with
-          merchants.
-        </p>
-      </div>
+      <CardListEmpty
+        icon={<span className="text-4xl">🏪</span>}
+        title="No Merchant Data Available"
+        description="Merchant breakdown will appear here once you have transactions with merchants."
+      />
     );
   }
 
@@ -37,37 +30,31 @@ export function MerchantStats({
   };
 
   return (
-    <div className="space-y-0 border rounded-lg overflow-hidden flex flex-col">
-      {data.map((merchant, index) => (
-        <button
+    <div className="space-y-2">
+      {data.map((merchant) => (
+        <Card
           key={merchant.merchantId}
-          type="button"
-          className={cn(
-            "bg-card flex items-center justify-between p-3 hover:bg-muted/50 transition-colors flex-1 cursor-pointer w-full text-left",
-            {
-              "border-b": index !== data.length - 1,
-            },
-          )}
+          className="p-4 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => handleMerchantClick(merchant.merchantId)}
           aria-label={`View transactions for ${merchant.merchantName}`}
         >
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
-              <StoreIcon className="w-4 h-4 text-accent" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-lg bg-accent/10">
+                <StoreIcon className="w-4 h-4 text-accent" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">{merchant.merchantName}</p>
+                <p className="text-sm text-muted-foreground">
+                  {merchant.count} transaction{merchant.count !== 1 ? "s" : ""}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-sm">{merchant.merchantName}</p>
-              <p className="text-xs text-muted-foreground">
-                {merchant.count} transaction{merchant.count !== 1 ? "s" : ""}
-              </p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-sm">
+            <div className="text-right">
               <CurrencyAmount animate amount={Number(merchant.totalAmount)} />
-            </p>
+            </div>
           </div>
-        </button>
+        </Card>
       ))}
     </div>
   );

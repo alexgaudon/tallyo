@@ -70,26 +70,26 @@ function CustomTooltip(props: {
 
     return (
       <div
-        className="bg-background border border-border rounded-md shadow-lg p-2 space-y-1"
+        className="bg-popover border border-border/50 rounded-lg shadow-lg p-3 space-y-1.5"
         style={{ zIndex: 9999, position: "relative" }}
       >
-        <div className="font-semibold text-xs">{data.name}</div>
-        <div className="space-y-0.5 text-xs">
-          <div className="flex justify-between gap-2">
+        <div className="font-semibold text-sm">{data.name}</div>
+        <div className="space-y-1 text-sm">
+          <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Amount:</span>
             <span className="font-medium">
               <CurrencyAmount amount={data.value} />
             </span>
           </div>
-          <div className="flex justify-between gap-2">
+          <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Percentage:</span>
             <span className="font-medium">{percentage}%</span>
           </div>
-          <div className="flex justify-between gap-2">
+          <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Transactions:</span>
             <span className="font-medium">{data.count}</span>
           </div>
-          <div className="flex justify-between gap-2">
+          <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">12-Month Avg:</span>
             <span className="font-medium">
               <CurrencyAmount amount={data.average12Months} />
@@ -187,8 +187,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
   }
 
   return (
-    <Card>
-      <CardContent className="p-4">
+    <Card className="shadow-sm">
+      <CardContent className="p-4 sm:p-6">
         <div
           className="grid grid-cols-1 lg:grid-cols-3 gap-3"
           style={{ position: "relative" }}
@@ -196,7 +196,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
           {/* Pie Chart */}
           <div className="flex justify-center lg:col-span-1">
             <div
-              className="w-full max-w-[240px] h-[240px] min-h-[200px] relative"
+              className="w-full max-w-[260px] h-[260px] min-h-[220px] relative"
               style={{ position: "relative", zIndex: 1 }}
             >
               <ResponsiveContainer width="100%" height="100%">
@@ -223,10 +223,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="text-center">
-                  <div className="text-sm font-bold">
+                  <div className="text-base font-bold">
                     <CurrencyAmount animate amount={totalAmount} />
                   </div>
-                  <div className="text-[10px] text-muted-foreground font-medium">
+                  <div className="text-xs text-muted-foreground font-medium">
                     Total Spend
                   </div>
                 </div>
@@ -235,7 +235,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
           </div>
 
           {/* Legend */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {chartData.map((item, index) => {
               const percentage =
                 totalAmount > 0
@@ -245,23 +245,23 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                 <button
                   key={item.name}
                   type="button"
-                  className={`flex items-center gap-1.5 px-1.5 py-1 rounded ${
+                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent transition-all ${
                     activeIndex === index
-                      ? "bg-muted/50 border-accent-foreground/20"
-                      : "bg-card hover:bg-muted/50"
-                  } cursor-pointer transition-colors text-left min-w-0`}
+                      ? "bg-muted/70 border-accent-foreground/10 shadow-sm"
+                      : "bg-card hover:bg-muted/60 hover:border-accent-foreground/5"
+                  } cursor-pointer text-left min-w-0`}
                   onClick={() => handleCategoryClick(item.categoryId)}
                   aria-label={`View transactions for ${item.name} category`}
                 >
                   <div
-                    className="h-2.5 w-2.5 rounded-full shrink-0"
+                    className="h-3 w-3 rounded-full shrink-0 ring-1 ring-black/5"
                     style={{ backgroundColor: item.fill }}
                   />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-medium text-xs truncate leading-tight">
+                    <span className="font-medium text-sm truncate leading-tight">
                       {item.name}
                     </span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">
+                    <span className="text-xs text-muted-foreground leading-tight">
                       <CurrencyAmount animate amount={item.value} /> (
                       {percentage}%)
                     </span>
