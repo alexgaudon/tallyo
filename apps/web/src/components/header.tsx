@@ -140,6 +140,7 @@ export default function Header() {
           )}
         </div>
         <div className="flex space-x-2 lg:hidden">
+          {session?.user && <WebhookButton />}
           <ModeToggle />
           <DeveloperModeToggle />
           <PrivacyModeToggle />
