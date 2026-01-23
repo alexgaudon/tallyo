@@ -70,7 +70,7 @@ export const Route = createFileRoute("/transactions")({
     search,
   }: {
     context: RouterAppContext & { isAuthenticated: boolean };
-    search: any;
+    search: SearchParams;
   }) => {
     ensureSession(context.isAuthenticated, "/transactions");
 
