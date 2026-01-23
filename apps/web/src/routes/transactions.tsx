@@ -47,7 +47,7 @@ type TransactionQueryResponse = Awaited<
 
 const createTransactionQueryOptions = (
   search: SearchParams,
-  options?: { keepPreviousData?: boolean },
+  options?: Record<string, unknown>,
 ) => {
   return orpc.transactions.getUserTransactions.queryOptions({
     ...options,
@@ -84,7 +84,7 @@ export const Route = createFileRoute("/transactions")({
           effectivePageSize = parsed;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Ignore local storage errors
     }
 
@@ -134,9 +134,13 @@ function RouteComponent() {
     }
   }, [search.pageSize, localPageSize, navigate, search, savePageSize]);
 
-  const { data: transactionsData } = useQuery(
-    createTransactionQueryOptions(effectiveSearch, { keepPreviousData: true }),
+  const { data } = useQuery(
+    createTransactionQueryOptions(effectiveSearch, {
+      keepPreviousData: true,
+      refetchInterval: 30000,
+    }),
   );
+  const transactionsData = data as TransactionQueryResponse | undefined;
 
   // Prefetch next page
   useQuery({
