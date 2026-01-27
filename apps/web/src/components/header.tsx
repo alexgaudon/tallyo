@@ -157,33 +157,38 @@ export default function Header() {
 
   return (
     <TooltipProvider>
-      <nav className="border-b">
-        <div className="flex items-center px-4 py-3 lg:px-8">
-          <div className="flex items-center">
+      <nav className="border-b bg-background/80 backdrop-blur-sm supports-backdrop-filter:bg-background/70">
+        <div className="flex items-center gap-4 px-4 py-2.5 lg:px-8">
+          <div className="flex items-center min-w-0">
             {session?.user && <SidebarTrigger className="mr-2 lg:hidden" />}
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="flex items-center min-w-0">
               <img
                 src="/favicon.ico"
                 alt="Tallyo logo"
-                className="h-8 w-8 rounded-lg mr-4"
+                className="h-8 w-8 rounded-lg mr-3 shrink-0"
               />
-              <span className="font-semibold">Tallyo</span>
+              <span className="font-semibold tracking-tight text-sm sm:text-base truncate">
+                Tallyo
+              </span>
             </Link>
           </div>
           {session?.user && (
-            <div className="hidden lg:flex lg:items-center lg:space-x-6 ml-8">
+            <div className="hidden lg:flex lg:items-center lg:space-x-4 ml-6">
               {links.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`relative flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium tracking-wide uppercase transition-colors ${
                     location.pathname === link.to
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <link.icon className="h-4 w-4" />
-                  <span>{link.label}</span>
+                  <span className="truncate">{link.label}</span>
+                  {location.pathname === link.to && (
+                    <span className="pointer-events-none absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-accent" />
+                  )}
                 </Link>
               ))}
             </div>

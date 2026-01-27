@@ -55,20 +55,20 @@ export function Search() {
   };
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-2.5 w-full">
       {/* Mobile layout: Two rows */}
-      <div className="flex lg:hidden flex-col gap-2 w-full">
+      <div className="flex lg:hidden flex-col gap-2.5 w-full">
         {/* First row: Search input and filters dropdown */}
         <div className="flex gap-2 w-full">
           <Input
             value={filter}
             onChange={handleChange}
             placeholder="Search transactions..."
-            className="flex-1"
+            className="flex-1 h-9 text-sm"
           />
           <DropdownMenu open={isOpenMobile} onOpenChange={setIsOpenMobile}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" size="icon" className="h-9 w-9">
                 <SlidersHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -144,12 +144,12 @@ export function Search() {
       </div>
 
       {/* Desktop layout: Single row */}
-      <div className="hidden lg:flex gap-2 w-full">
+      <div className="hidden lg:flex gap-2.5 w-full items-center">
         <Input
           value={filter}
           onChange={handleChange}
           placeholder="Search transactions..."
-          className="flex-1"
+          className="flex-1 h-9 text-sm"
         />
         <MerchantSelect
           allowNull
@@ -167,7 +167,7 @@ export function Search() {
             }
           }}
           value={params.merchant ?? null}
-          className="flex-1"
+          className="flex-1 min-w-[180px]"
         />
         <CategorySelect
           allowNull
@@ -183,12 +183,15 @@ export function Search() {
             }
           }}
           value={params.category ?? null}
-          className="flex-1"
+          className="flex-1 min-w-[160px]"
         />
         <DropdownMenu open={isOpenDesktop} onOpenChange={setIsOpenDesktop}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" size="sm" className="h-9 px-3 gap-2">
               <SlidersHorizontal className="w-4 h-4" />
+              <span className="hidden xl:inline text-xs font-medium">
+                More filters
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[200px]">

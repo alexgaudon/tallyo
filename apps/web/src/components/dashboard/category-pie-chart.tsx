@@ -207,8 +207,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius="75%"
-                    innerRadius="40%"
+                    outerRadius="78%"
+                    innerRadius="52%"
                     fill="#8884d8"
                     isAnimationActive={false}
                     onMouseEnter={handleMouseEnter}
@@ -223,10 +223,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
                 <div className="text-center">
-                  <div className="text-base font-bold">
+                  <div className="text-sm sm:text-base font-semibold leading-tight">
                     <CurrencyAmount animate amount={totalAmount} />
                   </div>
-                  <div className="text-xs text-muted-foreground font-medium">
+                  <div className="mt-0.5 text-[0.65rem] sm:text-xs text-muted-foreground font-medium tracking-wide uppercase">
                     Total Spend
                   </div>
                 </div>

@@ -414,17 +414,19 @@ function RouteComponent() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
-        <div className="bg-card rounded-md border shadow-sm p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/10">
-                <CreditCardIcon className="h-6 w-6 text-accent" />
+    <div className="bg-background/60">
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
+        <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent/10">
+                <CreditCardIcon className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">Transactions</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
+                  Transactions
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   Manage and review your transactions
                 </p>
               </div>
@@ -439,15 +441,15 @@ function RouteComponent() {
                 <DialogTrigger asChild>
                   <Button
                     variant="default"
-                    size="lg"
-                    className="shadow w-full sm:w-auto"
+                    size="sm"
+                    className="w-full sm:w-auto gap-2 sm:gap-2.5 shadow-sm"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">New Transaction</span>
                     <span className="sm:hidden">New</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[620px]">
                   <DialogHeader>
                     <DialogTitle>Create New Transaction</DialogTitle>
                     <DialogDescription>
@@ -469,10 +471,10 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-        <div className="bg-card rounded-md border shadow-sm p-6">
+        <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-4">
           <Search />
         </div>
-        <div className="bg-card rounded-md border shadow-sm p-6 overflow-x-auto">
+        <div className="rounded-lg px-0 sm:px-0 lg:px-0">
           <TransactionsTable
             transactions={transactionsData?.transactions ?? []}
             pagination={{

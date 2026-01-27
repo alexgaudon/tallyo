@@ -160,7 +160,7 @@ export default function DateRangePicker({
               !date && "text-muted-foreground",
             )}
           >
-            <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
             {date?.from ? (
               date.to ? (
                 <>
@@ -245,7 +245,7 @@ export default function DateRangePicker({
           onClick={() => navigateMonth("prev")}
           disabled={!date?.from}
         >
-          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
         </Button>
         <Button
           variant="outline"
@@ -254,7 +254,7 @@ export default function DateRangePicker({
           onClick={() => navigateMonth("next")}
           disabled={!date?.from}
         >
-          <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+          <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
         </Button>
       </div>
     </div>

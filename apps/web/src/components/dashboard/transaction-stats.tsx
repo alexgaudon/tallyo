@@ -29,11 +29,11 @@ export function TransactionStats({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {data.map((transaction) => (
         <Card
           key={transaction.id}
-          className="p-4 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
+          className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => {
             handleTransactionClick();
             navigate({
@@ -46,15 +46,15 @@ export function TransactionStats({
           aria-label={`View transaction ${transaction.transactionDetails}`}
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-accent/10">
-                <CreditCardIcon className="w-4 h-4 text-accent" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-accent/10">
+                <CreditCardIcon className="w-3.5 h-3.5 text-accent" />
               </div>
               <div>
-                <p className="font-medium text-sm">
+                <p className="font-medium text-xs sm:text-sm">
                   {transaction.transactionDetails}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[0.7rem] sm:text-xs text-muted-foreground">
                   {`${
                     transaction.merchantName
                       ? transaction.merchantName

@@ -214,14 +214,14 @@ export function TransactionsTable({
               size="icon"
               onClick={() => toggleReviewed({ id: transaction.id })}
               className={cn(
-                "transition-colors",
+                "h-7 w-7 rounded-full border border-transparent bg-background hover:border-accent/60 hover:bg-accent/10 transition-colors",
                 transaction.reviewed
                   ? "text-green-600"
                   : "text-muted-foreground",
               )}
               disabled={isDisabled}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           {isDisabled && tooltipMessage && (
@@ -235,21 +235,23 @@ export function TransactionsTable({
   };
 
   return (
-    <div>
+    <div className="space-y-2">
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-muted/50">
+          <TableRow className="hover:bg-transparent">
             {isDevMode && (
               <TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
             )}
 
-            <TableHead className="w-[100px] px-2 sm:px-4">Date</TableHead>
-            <TableHead className="min-w-fit px-2 sm:px-4">Merchant</TableHead>
-            <TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4">
+            <TableHead className="w-[80px] px-2 sm:px-3">Date</TableHead>
+            <TableHead className="min-w-[130px] px-2 sm:px-3">
+              Merchant
+            </TableHead>
+            <TableHead className="min-w-[130px] sm:min-w-[150px] px-2 sm:px-3">
               Category
             </TableHead>
-            <TableHead className="px-2 sm:px-4 min-w-[200px]">Notes</TableHead>
-            <TableHead className="w-[100px] px-2 sm:px-4 text-right">
+            <TableHead className="px-2 sm:px-3 min-w-[200px]">Notes</TableHead>
+            <TableHead className="w-[96px] px-2 sm:px-3 text-right">
               Amount
             </TableHead>
             {isDevMode && (
@@ -257,10 +259,10 @@ export function TransactionsTable({
                 External ID
               </TableHead>
             )}
-            <TableHead className="w-[80px] px-2 sm:px-4 text-center">
+            <TableHead className="w-[72px] px-2 sm:px-3 text-center">
               Reviewed
             </TableHead>
-            <TableHead className="w-[120px] px-2 sm:px-4 text-center">
+            <TableHead className="w-[88px] px-2 sm:px-3 text-center">
               Actions
             </TableHead>
           </TableRow>
@@ -279,7 +281,7 @@ export function TransactionsTable({
                   {transaction.id}
                 </TableCell>
               )}
-              <TableCell className="whitespace-nowrap px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
                 <div className="flex items-center gap-2">
                   {format(
                     parseTransactionDate(transaction.date),
@@ -299,7 +301,7 @@ export function TransactionsTable({
                   )}
                 </div>
               </TableCell>
-              <TableCell className="px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="px-2 sm:px-3 h-10 align-middle">
                 <div className="flex items-center h-full">
                   {transaction.reviewed ? (
                     transaction.merchant ? (
@@ -346,7 +348,7 @@ export function TransactionsTable({
                   )}
                 </div>
               </TableCell>
-              <TableCell className="px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="px-2 sm:px-3 h-10 align-middle">
                 <div className="flex items-center h-full">
                   {transaction.reviewed ? (
                     transaction.category ? (
@@ -390,7 +392,7 @@ export function TransactionsTable({
                   )}
                 </div>
               </TableCell>
-              <TableCell className="px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="px-2 sm:px-3 h-10 align-middle">
                 <input
                   type="text"
                   value={localNotes[transaction.id] ?? ""}
@@ -400,15 +402,15 @@ export function TransactionsTable({
                   onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
                   placeholder="Add notes..."
                   className={cn(
-                    "w-full border rounded px-2 h-8 text-base bg-background md:text-sm md:h-7",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    "w-full border-input rounded-md border bg-background/80 px-2 h-8 text-xs sm:text-sm md:h-8",
+                    "focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                     "transition-colors",
                   )}
                   disabled={isLoading}
                 />
               </TableCell>
-              <TableCell className="text-right font-medium px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="text-right font-medium px-2 sm:px-3 h-10 align-middle">
                 <CurrencyAmount
                   amount={transaction.amount}
                   showColor
@@ -434,10 +436,10 @@ export function TransactionsTable({
                   )}
                 </TableCell>
               )}
-              <TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
                 {renderReviewButton(transaction)}
               </TableCell>
-              <TableCell className="text-center px-2 sm:px-4 h-10 align-middle">
+              <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
                 <div className="flex items-center justify-center gap-1">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

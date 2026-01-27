@@ -98,16 +98,18 @@ function RouteComponent() {
   }
 
   return (
-    <div className="container mx-auto max-w-screen-2xl p-4 sm:p-6 lg:p-8 space-y-6">
-      <div className="bg-card rounded-md border shadow-sm p-6">
+    <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
+      <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent/10">
-              <Building2Icon className="h-6 w-6 text-accent" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent/10">
+              <Building2Icon className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold">Merchants</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
+                Merchants
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 Manage your merchants and their categories
               </p>
             </div>
@@ -115,8 +117,8 @@ function RouteComponent() {
           <div className="flex justify-center sm:justify-end gap-2">
             <Button
               variant="outline"
-              size="lg"
-              className="shadow w-1/2 sm:w-auto"
+              size="sm"
+              className="w-1/2 sm:w-auto shadow-sm"
               onClick={handleApplyAllMerchants}
               disabled={
                 isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
@@ -130,8 +132,8 @@ function RouteComponent() {
               <DialogTrigger asChild>
                 <Button
                   variant="default"
-                  size="lg"
-                  className="shadow w-1/2 sm:w-auto"
+                  size="sm"
+                  className="w-1/2 sm:w-auto shadow-sm"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">New Merchant</span>
@@ -153,19 +155,19 @@ function RouteComponent() {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-card rounded-md border shadow-sm p-6">
+      <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4">
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search merchants by name, keywords, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12 text-sm placeholder:text-sm"
+            className="pl-9 h-9 text-sm placeholder:text-xs sm:placeholder:text-sm"
           />
         </div>
       </div>
 
-      <div className="bg-card rounded-md border shadow-sm p-6">
+      <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-2 py-2 sm:px-4 sm:py-4">
         <div className="w-full">
           <MerchantList
             merchants={filteredMerchants}

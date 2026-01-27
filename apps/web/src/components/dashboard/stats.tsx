@@ -72,14 +72,16 @@ export function Stats({
   })();
 
   return (
-    <div className="space-y-2">
-      <Card className="p-4 shadow-sm">
+    <div className="space-y-1.5">
+      <Card className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <CreditCardIcon className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <CreditCardIcon className="w-3.5 h-3.5 text-primary" />
             </div>
-            <span className="text-sm font-medium">Transaction Count</span>
+            <span className="text-xs sm:text-sm font-medium">
+              Transaction Count
+            </span>
           </div>
           <StatDisplay animate value={data.stats.totalTransactions} />
         </div>
@@ -87,13 +89,15 @@ export function Stats({
 
       {/* Income Section */}
       <Collapsible open={isIncomeExpanded} onOpenChange={setIsIncomeExpanded}>
-        <Card className="p-4 shadow-sm">
+        <Card className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-green-500/10">
-                <TrendingUpIcon className="w-4 h-4 text-green-500" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-green-500/10">
+                <TrendingUpIcon className="w-3.5 h-3.5 text-green-500" />
               </div>
-              <span className="text-sm font-medium">Total Income</span>
+              <span className="text-xs sm:text-sm font-medium">
+                Total Income
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <CurrencyAmount animate amount={income} />
@@ -105,7 +109,7 @@ export function Stats({
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2">
-            <div className="space-y-1.5 pl-9">
+            <div className="space-y-1.5 pl-8">
               {incomeCategories.length > 0 ? (
                 incomeCategories.map((cat) => (
                   <div
@@ -132,13 +136,15 @@ export function Stats({
 
       {/* Expense Section */}
       <Collapsible open={isExpenseExpanded} onOpenChange={setIsExpenseExpanded}>
-        <Card className="p-4 shadow-sm">
+        <Card className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-red-500/10">
-                <TrendingDownIcon className="w-4 h-4 text-red-500" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-md bg-red-500/10">
+                <TrendingDownIcon className="w-3.5 h-3.5 text-red-500" />
               </div>
-              <span className="text-sm font-medium">Total Expenses</span>
+              <span className="text-xs sm:text-sm font-medium">
+                Total Expenses
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <CurrencyAmount animate amount={Math.abs(expenses)} />
@@ -150,7 +156,7 @@ export function Stats({
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2">
-            <div className="space-y-1.5 pl-9">
+            <div className="space-y-1.5 pl-8">
               {expenseCategories.length > 0 ? (
                 expenseCategories.map((cat) => (
                   <div
@@ -175,19 +181,19 @@ export function Stats({
         </Card>
       </Collapsible>
 
-      <Card className="p-4 shadow-sm">
+      <Card className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <div
               className={`p-1.5 rounded-lg ${netIncome >= 0 ? "bg-green-500/10" : "bg-red-500/10"}`}
             >
               {netIncome >= 0 ? (
-                <TrendingUpIcon className="w-4 h-4 text-green-500" />
+                <TrendingUpIcon className="w-3.5 h-3.5 text-green-500" />
               ) : (
-                <TrendingDownIcon className="w-4 h-4 text-red-500" />
+                <TrendingDownIcon className="w-3.5 h-3.5 text-red-500" />
               )}
             </div>
-            <span className="text-sm font-medium">Net Income</span>
+            <span className="text-xs sm:text-sm font-medium">Net Income</span>
           </div>
           <div className="flex items-center gap-1">
             <CurrencyAmount
@@ -199,13 +205,13 @@ export function Stats({
         </div>
       </Card>
 
-      <Card className="p-4 shadow-sm">
+      <Card className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-primary/10">
-              <PiggyBankIcon className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-primary/10">
+              <PiggyBankIcon className="w-3.5 h-3.5 text-primary" />
             </div>
-            <span className="text-sm font-medium">Savings Rate</span>
+            <span className="text-xs sm:text-sm font-medium">Savings Rate</span>
           </div>
           <div className="flex items-center gap-1">
             <StatDisplay animate value={savingsRate} />

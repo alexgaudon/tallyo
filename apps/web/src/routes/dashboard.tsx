@@ -177,20 +177,23 @@ function RouteComponent() {
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-background to-muted/20">
+    <div className="min-h-svh bg-linear-to-br from-background to-muted/40">
       {/* Hero Section */}
       <div className="border-b bg-linear-to-r from-primary/5 to-accent/5">
-        <div className="container mx-auto px-4 py-6">
+        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-accent/10">
-                <CreditCardIcon className="h-8 w-8 text-accent" />
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-accent/10">
+                <CreditCardIcon className="h-6 w-6 sm:h-7 sm:w-7 text-accent" />
               </div>
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-bold tracking-tight">
-                  {greeting}
-                </h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-1 h-6 rounded-full bg-accent/80" />
+                  <p className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground truncate">
+                    {greeting}
+                  </p>
+                </div>
+                <p className="mt-1 text-xs sm:text-sm text-muted-foreground/90 truncate">
                   Here's your financial overview
                 </p>
               </div>
@@ -206,7 +209,6 @@ function RouteComponent() {
           </div>
         </div>
       </div>
-
       <DelayedLoading
         isLoading={
           isStatsLoading ||
@@ -217,7 +219,7 @@ function RouteComponent() {
         }
       >
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-8 space-y-8">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 lg:space-y-8">
           {/* Unreviewed Transactions Banner */}
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
@@ -227,17 +229,19 @@ function RouteComponent() {
             {/* Left Column: Stats and Merchants */}
             <div className="lg:flex-1 space-y-8">
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
-                  <h2 className="text-lg font-semibold">Overview Stats</h2>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-1 h-6 rounded-full bg-accent/80" />
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                    Overview Stats
+                  </h2>
                 </div>
                 <Stats data={statsData} categoryData={categoryData} />
               </div>
 
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
-                  <h2 className="text-lg font-semibold">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-1 h-6 rounded-full bg-accent/80" />
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
                     Largest Transactions
                   </h2>
                 </div>
@@ -245,9 +249,11 @@ function RouteComponent() {
               </div>
 
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
-                  <h2 className="text-lg font-semibold">Top Merchants</h2>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-1 h-6 rounded-full bg-accent/80" />
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                    Top Merchants
+                  </h2>
                 </div>
                 <MerchantStats data={merchantData} />
               </div>
@@ -256,18 +262,22 @@ function RouteComponent() {
             {/* Right Column: Category and Cash Flow */}
             <div className="lg:flex-2 space-y-8">
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
-                  <h2 className="text-lg font-semibold">Category Breakdown</h2>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-1 h-6 rounded-full bg-accent/80" />
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                    Category Breakdown
+                  </h2>
                 </div>
                 <CategoryPieChart data={categoryData ?? []} />
               </div>
 
               {cashFlowData && (
                 <div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-2 h-8 bg-accent rounded-full transition-colors"></div>
-                    <h2 className="text-lg font-semibold">Cash Flow</h2>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-1 h-6 rounded-full bg-accent/80" />
+                    <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                      Cash Flow
+                    </h2>
                   </div>
                   <CashFlowChart data={cashFlowData ?? []} />
                 </div>

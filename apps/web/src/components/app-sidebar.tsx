@@ -22,14 +22,17 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut, useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import { queryClient } from "@/utils/orpc";
 
 export function AppSidebar() {
@@ -37,7 +40,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
-
+  // Only render sidebar navigation on small screens; desktop uses header nav.
   if (!isMobile) {
     return null;
   }
@@ -54,19 +57,31 @@ export function AppSidebar() {
     session?.meta?.unreviewedTransactionCount ?? 0;
 
   const links = [
-    { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
-    { to: "/merchants", label: "Merchants", icon: StoreIcon },
-    { to: "/categories", label: "Categories", icon: FolderTreeIcon },
     {
-      to: hasUnreviewedTransactions
-        ? "/transactions?onlyUnreviewed=true"
-        : "/transactions",
-      label: `Transactions${
-        hasUnreviewedTransactions ? ` (${unreviewedTransactionCount})` : ""
-      }`,
+      to: "/dashboard",
+      label: "Dashboard",
+      icon: BlocksIcon,
+    },
+    {
+      to: "/transactions",
+      label: "Transactions",
       icon: CreditCardIcon,
     },
-    { to: "/reports", label: "Reports", icon: BarChart3Icon },
+    {
+      to: "/merchants",
+      label: "Merchants",
+      icon: StoreIcon,
+    },
+    {
+      to: "/categories",
+      label: "Categories",
+      icon: FolderTreeIcon,
+    },
+    {
+      to: "/reports",
+      label: "Reports",
+      icon: BarChart3Icon,
+    },
   ];
 
   return (
@@ -96,22 +111,51 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
+          <SidebarGroupLabel className="text-[0.65rem] uppercase tracking-wide text-sidebar-foreground/60">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {links.map((link) => (
-                <SidebarMenuItem key={link.to}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname === link.to}
-                    tooltip={link.label}
-                  >
-                    <Link to={link.to} onClick={handleNavigation}>
-                      <link.icon />
-                      <span>{link.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {links.map((link) => {
+                const isActive =
+                  location.pathname === link.to ||
+                  (link.to === "/transactions" &&
+                    location.pathname.startsWith("/transactions"));
+
+                const showBadge =
+                  link.to === "/transactions" && hasUnreviewedTransactions;
+
+                return (
+                  <SidebarMenuItem key={link.to}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={link.label}
+                      className={cn(
+                        "relative flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold tracking-wide uppercase transition-colors",
+                        isActive
+                          ? "text-sidebar-foreground"
+                          : "text-sidebar-foreground/70 hover:text-sidebar-foreground",
+                      )}
+                    >
+                      <Link to={link.to} onClick={handleNavigation}>
+                        <link.icon />
+                        <span className="truncate">{link.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {isActive && (
+                      <span className="pointer-events-none absolute inset-x-3 -bottom-1 h-0.5 rounded-full bg-sidebar-accent" />
+                    )}
+                    {showBadge && (
+                      <SidebarMenuBadge className="bg-sidebar-accent/20 text-sidebar-accent-foreground border border-sidebar-accent/40">
+                        {unreviewedTransactionCount > 99
+                          ? "99+"
+                          : unreviewedTransactionCount}
+                      </SidebarMenuBadge>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
