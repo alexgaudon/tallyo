@@ -377,6 +377,9 @@ function RouteComponent() {
         queryClient.invalidateQueries({
           queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
         });
+        queryClient.invalidateQueries({
+          queryKey: ["transactions", "getUserTransactions", "session"],
+        });
       },
     }),
   );
