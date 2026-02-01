@@ -37,6 +37,17 @@ export function MerchantSelect({
   const merchants: MerchantWithKeywordsAndCategory[] = data ?? [];
   const entities = merchants.map(({ id, name }) => ({ id, name }));
 
+  const formatEntityWithDetails = (entity: { id: string; name: string }) => (
+    <div className="flex flex-col">
+      <span className="font-medium">{entity.name}</span>
+      {transactionDetails && (
+        <span className="text-xs text-muted-foreground truncate max-w-[300px]">
+          {transactionDetails}
+        </span>
+      )}
+    </div>
+  );
+
   const handleCreateSuccess = (merchantId: string) => {
     // Automatically select the newly created merchant
     onValueChange(merchantId);
@@ -81,6 +92,7 @@ export function MerchantSelect({
         placeholder={transactionDetails ?? placeholder}
         className={className}
         entities={entities}
+        formatEntity={transactionDetails ? formatEntityWithDetails : undefined}
         emptyLabel="No merchants available"
         disabled={disabled}
         showActionButtons={showActionButtons || actionButtons.length > 0}

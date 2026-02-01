@@ -323,28 +323,23 @@ export function TransactionsTable({
                       </span>
                     )
                   ) : (
-                    <div className="flex flex-col justify-center w-full">
-                      <MerchantSelect
-                        value={transaction.merchant?.id}
-                        onValueChange={(merchantId) =>
-                          updateMerchant({
-                            id: transaction.id,
-                            merchantId: merchantId,
-                          })
-                        }
-                        placeholder="Select merchant"
-                        className="min-w-[280px]"
-                        allowNull
-                        disabled={isLoading}
-                        transactionDetails={transaction.transactionDetails}
-                        onEditMerchant={(merchantId) => {
-                          setEditMerchantDialog({ open: true, merchantId });
-                        }}
-                      />
-                      <p className="text-xs text-muted-foreground truncate">
-                        {transaction.transactionDetails}
-                      </p>
-                    </div>
+                    <MerchantSelect
+                      value={transaction.merchant?.id}
+                      onValueChange={(merchantId) =>
+                        updateMerchant({
+                          id: transaction.id,
+                          merchantId: merchantId,
+                        })
+                      }
+                      placeholder="Select merchant"
+                      className="min-w-[280px]"
+                      allowNull
+                      disabled={isLoading}
+                      transactionDetails={transaction.transactionDetails}
+                      onEditMerchant={(merchantId) => {
+                        setEditMerchantDialog({ open: true, merchantId });
+                      }}
+                    />
                   )}
                 </div>
               </TableCell>

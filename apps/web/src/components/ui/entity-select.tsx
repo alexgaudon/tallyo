@@ -98,7 +98,7 @@ export function EntitySelect<T extends Entity>({
 					aria-haspopup="listbox"
 					aria-expanded={open}
 					className={cn(
-						"w-full h-9 justify-between gap-2 text-sm",
+						"w-full h-9 justify-between gap-2 text-sm border-input/50",
 						!value && "text-muted-foreground",
 						className,
 					)}

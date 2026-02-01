@@ -86,8 +86,8 @@ body {
   --accent: #000000;
   --accent-foreground: #ffffff;
   --destructive: #000000;
-  --border: #d0d0d0;
-  --input: #d0d0d0;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
   --ring: #000000;
 
   /* Chart colors - alternating black and white patterns */
@@ -128,8 +128,8 @@ body {
   --accent: #ffffff;
   --accent-foreground: #000000;
   --destructive: #ffffff;
-  --border: #ffffff;
-  --input: #ffffff;
+  --border: #262626;
+  --input: #262626;
   --ring: #ffffff;
 
   /* Chart colors - inverted for dark mode */
