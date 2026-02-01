@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3Icon,
@@ -21,7 +22,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { signOut, useSession } from "@/lib/auth-client";
-import { queryClient } from "@/utils/orpc";
+import { orpc, queryClient } from "@/utils/orpc";
 import { ModeToggle } from "./mode-toggle";
 import { DeveloperModeToggle } from "./settings/developer-mode-toggle";
 import { PrivacyModeToggle } from "./settings/privacy-mode-toggle";
@@ -48,8 +49,13 @@ const loadingContent = (
 
 export default function Header() {
   const { data: session, isPending } = useSession();
+  const { data: settingsData } = useQuery(
+    orpc.settings.getUserSettings.queryOptions(),
+  );
   const location = useLocation();
   const navigate = useNavigate();
+  const hasWebhooksConfigured =
+    (settingsData?.settings?.webhookUrls?.length ?? 0) > 0;
 
   const hasUnreviewedTransactions =
     (session?.meta?.unreviewedTransactionCount ?? 0) > 0;
@@ -78,7 +84,7 @@ export default function Header() {
         <div className="hidden lg:flex lg:items-center lg:space-x-6">
           {session?.user ? (
             <div className="flex items-center space-x-2">
-              <WebhookButton />
+              {hasWebhooksConfigured && <WebhookButton />}
               <ModeToggle />
               <DeveloperModeToggle />
               <PrivacyModeToggle />
@@ -140,7 +146,7 @@ export default function Header() {
           )}
         </div>
         <div className="flex space-x-2 lg:hidden">
-          {session?.user && <WebhookButton />}
+          {session?.user && hasWebhooksConfigured && <WebhookButton />}
           <ModeToggle />
           <DeveloperModeToggle />
           <PrivacyModeToggle />

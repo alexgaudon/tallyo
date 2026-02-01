@@ -45,10 +45,6 @@ export function WebhookButton(props: React.ComponentProps<typeof Button>) {
         });
       },
     });
-    toast("Triggering webhooks...", {
-      description: "This will trigger a refresh of all webhooks.",
-      duration: 2000,
-    });
   };
 
   return (
