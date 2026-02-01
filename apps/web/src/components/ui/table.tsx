@@ -6,12 +6,12 @@ function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto lg:overflow-visible rounded-md border bg-card"
+      className="relative w-full overflow-x-auto lg:overflow-visible border-2 bg-card"
     >
       <table
         data-slot="table"
         className={cn(
-          "w-full caption-bottom text-xs sm:text-sm",
+          "w-full caption-bottom text-xs sm:text-sm font-mono",
           "border-separate border-spacing-0",
           className
         )}
@@ -26,7 +26,7 @@ function TableHeader({ className, ...props }: ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "bg-muted/60 text-muted-foreground [&_tr]:border-b [&_tr]:border-border",
+        "bg-muted text-muted-foreground [&_tr]:border-b-2 [&_tr]:border-border",
         className
       )}
       {...props}
@@ -49,7 +49,7 @@ function TableFooter({ className, ...props }: ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        "bg-muted border-t-2 font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -62,7 +62,7 @@ function TableRow({ className, ...props }: ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/40 data-[state=selected]:bg-muted/70 border-b border-border transition-colors",
+        "hover:bg-muted/60 data-[state=selected]:bg-muted border-b-2 border-border transition-none",
         className
       )}
       {...props}
@@ -75,7 +75,7 @@ function TableHead({ className, ...props }: ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-9 sm:h-10 px-2 text-left align-middle font-semibold tracking-wide text-[0.7rem] sm:text-xs uppercase whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-[2px]",
+        "text-foreground h-10 sm:h-11 px-3 text-left align-middle font-semibold tracking-wider text-[0.7rem] sm:text-xs uppercase whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-[2px] font-mono",
         className
       )}
       {...props}
@@ -88,7 +88,7 @@ function TableCell({ className, ...props }: ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-[2px]",
+        "p-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-[2px] font-mono",
         className
       )}
       {...props}
@@ -103,7 +103,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
+      className={cn("text-muted-foreground mt-4 text-sm font-mono", className)}
       {...props}
     />
   )

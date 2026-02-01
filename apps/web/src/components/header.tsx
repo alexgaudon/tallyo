@@ -92,7 +92,7 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-8 w-8 rounded-full"
+                    className="relative h-8 w-8 hover:bg-transparent hover:border-transparent"
                   >
                     <Avatar className="h-8 w-8">
                       {session?.user?.image ? (

@@ -16,11 +16,32 @@ module.exports = {
         "2xl": "1400px",
       },
     },
+    fontFamily: {
+      mono: [
+        '"Geist Mono"',
+        '"JetBrains Mono"',
+        '"Fira Code"',
+        "ui-monospace",
+        "SFMono-Regular",
+        "monospace",
+      ],
+    },
     extend: {
       borderRadius: {
-        lg: "0.375rem", // reduced from 0.5rem
-        md: "0.25rem", // reduced from 0.375rem
-        sm: "0.125rem", // reduced from 0.25rem
+        lg: "0px",
+        md: "0px",
+        sm: "0px",
+      },
+      borderWidth: {
+        3: "3px",
+        4: "4px",
+      },
+      boxShadow: {
+        // Blocky shadows with no blur
+        block: "4px 4px 0 0 rgba(0, 0, 0, 1)",
+        "block-sm": "2px 2px 0 0 rgba(0, 0, 0, 1)",
+        "block-lg": "6px 6px 0 0 rgba(0, 0, 0, 1)",
+        "block-dark": "4px 4px 0 0 rgba(255, 255, 255, 1)",
       },
     },
   },

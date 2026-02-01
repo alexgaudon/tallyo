@@ -1,6 +1,42 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @keyframes loading {
   0% {
     transform: translateX(-100%);
@@ -16,9 +52,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans:
-    "Inter", "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "Geist Mono", "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    "SF Mono", Menlo, Consolas, monospace;
 }
 
 html,
@@ -31,101 +67,97 @@ body {
 }
 
 :root {
-  /* Core radius used by components (card, inputs, buttons, etc.) */
-  --radius: 0.375rem;
-  /* Light mode – calm neutrals with a softer, less saturated accent */
-  --background: oklch(0.985 0.01 250);
-  --foreground: oklch(0.26 0.03 255);
-  --card: oklch(0.98 0.008 250);
-  --card-foreground: oklch(0.26 0.03 255);
-  --popover: oklch(0.99 0.006 250);
-  --popover-foreground: oklch(0.26 0.03 255);
-  --primary: oklch(0.63 0.15 245);
-  --primary-foreground: oklch(0.985 0.008 250);
-  --secondary: oklch(0.96 0.012 250);
-  --secondary-foreground: oklch(0.28 0.025 260);
-  --muted: oklch(0.955 0.008 250);
-  --muted-foreground: oklch(0.55 0.025 260);
-  --accent: oklch(0.9 0.055 240);
-  --accent-foreground: oklch(0.2 0.03 250);
-  --destructive: oklch(0.63 0.24 27);
-  --border: oklch(0.9 0.015 250);
-  --input: oklch(0.9 0.015 250);
-  --ring: oklch(0.63 0.15 245);
-  /* Chart palette tuned for dashboards */
-  --chart-1: oklch(0.63 0.2 255);
-  --chart-2: oklch(0.7 0.16 210);
-  --chart-3: oklch(0.7 0.16 140);
-  --chart-4: oklch(0.78 0.14 75);
-  --chart-5: oklch(0.72 0.16 25);
-  --chart-6: oklch(0.65 0.18 310);
-  --chart-7: oklch(0.62 0.19 260);
-  --chart-8: oklch(0.68 0.16 190);
+  /* Blocky aesthetic - zero border radius */
+  --radius: 0px;
 
-  /* Sidebar surfaces */
-  --sidebar: oklch(0.975 0.008 250);
-  --sidebar-foreground: oklch(0.24 0.03 255);
-  --sidebar-primary: oklch(0.63 0.15 245);
-  --sidebar-primary-foreground: oklch(0.985 0.008 250);
-  --sidebar-accent: oklch(0.9 0.055 240);
-  --sidebar-accent-foreground: oklch(0.2 0.03 250);
-  --sidebar-border: oklch(0.9 0.015 250);
-  --sidebar-ring: oklch(0.63 0.15 245);
+  /* Light mode - pure black and white only */
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #000000;
+  --muted: #f0f0f0;
+  --muted-foreground: #666666;
+  --accent: #000000;
+  --accent-foreground: #ffffff;
+  --destructive: #000000;
+  --border: #d0d0d0;
+  --input: #d0d0d0;
+  --ring: #000000;
+
+  /* Chart colors - alternating black and white patterns */
+  --chart-1: #000000;
+  --chart-2: #333333;
+  --chart-3: #666666;
+  --chart-4: #999999;
+  --chart-5: #cccccc;
+  --chart-6: #000000;
+  --chart-7: #444444;
+  --chart-8: #888888;
+
+  /* Sidebar - same monochrome scheme */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #000000;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f0f0;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #000000;
+  --sidebar-ring: #000000;
 }
 
 .dark {
-  /* Dark mode – slightly elevated surfaces with a softer accent */
-  --background: oklch(0.16 0.015 250);
-  --foreground: oklch(0.97 0.008 250);
+  /* Dark mode - pure black and white only */
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ffffff;
+  --muted: #1a1a1a;
+  --muted-foreground: #999999;
+  --accent: #ffffff;
+  --accent-foreground: #000000;
+  --destructive: #ffffff;
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #ffffff;
 
-  --card: oklch(0.21 0.015 250);
-  --card-foreground: oklch(0.97 0.008 250);
+  /* Chart colors - inverted for dark mode */
+  --chart-1: #ffffff;
+  --chart-2: #cccccc;
+  --chart-3: #999999;
+  --chart-4: #666666;
+  --chart-5: #333333;
+  --chart-6: #ffffff;
+  --chart-7: #bbbbbb;
+  --chart-8: #777777;
 
-  --popover: oklch(0.2 0.015 250);
-  --popover-foreground: oklch(0.97 0.008 250);
-
-  --primary: oklch(0.74 0.15 245);
-  --primary-foreground: oklch(0.12 0.025 250);
-
-  --secondary: oklch(0.25 0.015 250);
-  --secondary-foreground: oklch(0.96 0.008 250);
-
-  --muted: oklch(0.25 0.015 250);
-  --muted-foreground: oklch(0.7 0.025 260);
-
-  --accent: oklch(0.7 0.08 240);
-  --accent-foreground: oklch(0.97 0.008 250);
-
-  --destructive: oklch(0.7 0.19 22);
-
-  --border: oklch(0.32 0.015 255);
-  --input: oklch(0.28 0.015 255);
-  --ring: oklch(0.74 0.15 245);
-
-  --chart-1: oklch(0.73 0.2 255);
-  --chart-2: oklch(0.78 0.17 210);
-  --chart-3: oklch(0.78 0.17 140);
-  --chart-4: oklch(0.82 0.16 75);
-  --chart-5: oklch(0.78 0.18 25);
-  --chart-6: oklch(0.78 0.18 310);
-  --chart-7: oklch(0.76 0.2 260);
-  --chart-8: oklch(0.8 0.16 190);
-
-  --sidebar: oklch(0.18 0.015 255);
-  --sidebar-foreground: oklch(0.97 0.008 250);
-  --sidebar-primary: oklch(0.78 0.15 245);
-  --sidebar-primary-foreground: oklch(0.12 0.025 250);
-  --sidebar-accent: oklch(0.7 0.08 240);
-  --sidebar-accent-foreground: oklch(0.97 0.008 250);
-  --sidebar-border: oklch(0.32 0.015 255);
-  --sidebar-ring: oklch(0.74 0.15 245);
+  /* Sidebar */
+  --sidebar: #000000;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #ffffff;
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -165,9 +197,18 @@ body {
 @layer base {
   * {
     @apply border-border;
+    font-family: var(--font-mono);
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-mono);
+  }
+
+  /* Blocky aesthetic - ensure no rounded corners anywhere */
+  *,
+  *::before,
+  *::after {
+    border-radius: 0 !important;
   }
 }
 
@@ -187,4 +228,44 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Selection styling - blocky and monochrome */
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Scrollbar styling - blocky and monochrome */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border: 1px solid var(--border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Focus styles - blocky outline */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Button and input base styles */
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-mono);
 }

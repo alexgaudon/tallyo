@@ -189,11 +189,11 @@ function RouteComponent() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5">
                   <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <p className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground truncate">
+                  <p className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-foreground truncate">
                     {greeting}
                   </p>
                 </div>
-                <p className="mt-1 text-xs sm:text-sm text-muted-foreground/90 truncate">
+                <p className="mt-1 text-xs sm:text-sm text-muted-foreground truncate">
                   Here's your financial overview
                 </p>
               </div>
