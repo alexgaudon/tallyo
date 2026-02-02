@@ -80,7 +80,7 @@ function RootComponent() {
       <ORPCContext.Provider value={orpcUtils}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           {isAuthenticated ? (
-            <div className="flex flex-col min-h-svh">
+            <div className="flex flex-col min-h-screen">
               <TopNav />
               <MobileNavDrawer />
               <main className="flex-1 pt-16">
@@ -90,7 +90,7 @@ function RootComponent() {
               <BottomNav />
             </div>
           ) : (
-            <div className="flex flex-col min-h-svh">
+            <div className="flex flex-col min-h-screen">
               {location.pathname.startsWith("/sign") ? (
                 <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
                   <Link to="/">

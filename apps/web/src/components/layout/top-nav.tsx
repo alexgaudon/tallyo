@@ -5,9 +5,12 @@ import {
   CreditCardIcon,
   FolderTreeIcon,
   LogOut,
+  RefreshCw,
   Settings,
   StoreIcon,
 } from "lucide-react";
+import { toast } from "sonner";
+import { ModeToggle } from "@/components/mode-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +35,21 @@ export function TopNav() {
   const { data: session } = useSession();
 
   if (!session?.user) return null;
+
+  const handleTriggerWebhooks = async () => {
+    try {
+      const result = await fetch("/api/webhooks/trigger", {
+        method: "POST",
+      });
+      if (result.ok) {
+        toast.success("Webhooks triggered successfully");
+      } else {
+        toast.error("Failed to trigger webhooks");
+      }
+    } catch {
+      toast.error("Failed to trigger webhooks");
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
@@ -70,24 +88,25 @@ export function TopNav() {
         </div>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleTriggerWebhooks}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            title="Trigger Webhooks"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+
+          <ModeToggle />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="w-8 h-8 bg-accent flex items-center justify-center rounded-none cursor-pointer"
+                className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
-                {session?.user?.image ? (
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name ?? ""}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-accent-foreground font-mono text-sm">
-                    {session?.user?.name?.substring(0, 1).toUpperCase() ?? "U"}
-                  </span>
-                )}
+                <Settings className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
