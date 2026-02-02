@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { queryClient } from "@/utils/orpc";
+import { orpc, queryClient } from "@/utils/orpc";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
@@ -38,16 +38,19 @@ export function TopNav() {
 
   const handleTriggerWebhooks = async () => {
     try {
-      const result = await fetch("/api/webhooks/trigger", {
-        method: "POST",
+      const data = await orpc.meta.triggerWebhookRefresh.call();
+      const successCount = data.results.filter((r) => r.success).length;
+      const totalCount = data.results.length;
+      toast.success("Webhooks triggered!", {
+        description: `${successCount}/${totalCount} webhooks succeeded.`,
+        duration: 3000,
       });
-      if (result.ok) {
-        toast.success("Webhooks triggered successfully");
-      } else {
-        toast.error("Failed to trigger webhooks");
-      }
-    } catch {
-      toast.error("Failed to trigger webhooks");
+    } catch (error) {
+      toast.error("Failed to trigger webhooks", {
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+        duration: 3000,
+      });
     }
   };
 
