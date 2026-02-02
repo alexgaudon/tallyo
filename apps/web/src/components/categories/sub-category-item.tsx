@@ -44,19 +44,19 @@ export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
     : FolderIcon;
 
   return (
-    <div className="flex items-center justify-between rounded-md border bg-muted/50 p-2 pl-8">
+    <div className="flex items-center justify-between border border-border p-2 pl-8">
       <div className="flex items-center gap-2">
         <Icon className="h-3 w-3 text-muted-foreground" />
         <span className="text-sm">{category.name}</span>
         <div className="flex items-center gap-1">
           {category.treatAsIncome && (
-            <div className="flex items-center gap-1 rounded-md bg-green-100 px-1.5 py-0.5 text-xs text-green-700">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs border border-green-500/30 text-green-600">
               <DollarSignIcon className="h-2.5 w-2.5" />
               <span>Income</span>
             </div>
           )}
           {category.hideFromInsights && (
-            <div className="flex items-center gap-1 rounded-md bg-orange-100 px-1.5 py-0.5 text-xs text-orange-700">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs border border-orange-500/30 text-orange-600">
               <EyeOffIcon className="h-2.5 w-2.5" />
               <span>Hidden</span>
             </div>
@@ -70,17 +70,14 @@ export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-primary"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground"
             >
               <PencilIcon className="h-3 w-3" />
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-lg">
-                <PencilIcon className="h-4 w-4" />
-                Edit Category
-              </DialogTitle>
+              <DialogTitle>Edit Category</DialogTitle>
             </DialogHeader>
             <EditCategoryForm
               category={category}

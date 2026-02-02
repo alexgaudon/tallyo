@@ -196,34 +196,34 @@ export const CashFlowChart = memo(function CashFlowChart({
                 key="income"
                 type="monotone"
                 dataKey="income"
-                stroke="#10b981"
+                stroke="#22c55e"
                 strokeWidth={2}
-                dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "#22c55e", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Income"
-                isAnimationActive={false}
+                isAnimationActive={true}
               />
               <Line
                 key="expenses"
                 type="monotone"
                 dataKey="expenses"
-                stroke="#ef4444"
+                stroke="#dc2626"
                 strokeWidth={2}
-                dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Expenses"
-                isAnimationActive={false}
+                isAnimationActive={true}
               />
               <Line
                 key="net"
                 type="monotone"
                 dataKey="net"
-                stroke="#3b82f6"
+                stroke="#a78bfa"
                 strokeWidth={2.5}
-                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "#a78bfa", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Net"
-                isAnimationActive={false}
+                isAnimationActive={true}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -231,15 +231,15 @@ export const CashFlowChart = memo(function CashFlowChart({
         {data.length > 1 && (
           <div className="flex justify-center gap-5 mt-4 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500 ring-2 ring-green-500/20" />
+              <div className="w-3 h-3 bg-green-500" />
               <span>Income</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500 ring-2 ring-red-500/20" />
+              <div className="w-3 h-3 bg-red-500" />
               <span>Expenses</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-0.5 bg-blue-500 rounded-sm" />
+              <div className="w-8 h-0.5 bg-accent" />
               <span>Net</span>
             </div>
           </div>

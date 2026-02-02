@@ -4,7 +4,7 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
-import { CreditCardIcon, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
@@ -36,11 +36,11 @@ const searchSchema = z.object({
   merchant: z.string().optional(),
   onlyUnreviewed: z.boolean().optional(),
   onlyWithoutMerchant: z.boolean().optional(),
+  create: z.boolean().optional(),
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
 
-// Infer the query response type from the orpc query
 type TransactionQueryResponse = Awaited<
   ReturnType<typeof orpc.transactions.getUserTransactions.call>
 >;
@@ -74,7 +74,6 @@ export const Route = createFileRoute("/transactions")({
   }) => {
     ensureSession(context.isAuthenticated, "/transactions");
 
-    // Get effective page size for prefetching
     let effectivePageSize = 10;
     try {
       const stored = localStorage.getItem("transactions-page-size");
@@ -115,13 +114,10 @@ function RouteComponent() {
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const { pageSize: localPageSize, savePageSize } = useLocalPageSize();
 
-  // Use local page size if not in search params
   const effectivePageSize = search.pageSize ?? localPageSize;
   const effectiveSearch = { ...search, pageSize: effectivePageSize };
 
-  // Ensure page size is always in URL and sync with local storage
   useEffect(() => {
-    // If no page size in URL, set it from local storage
     if (!search.pageSize) {
       navigate({
         to: "/transactions",
@@ -129,10 +125,22 @@ function RouteComponent() {
         replace: true,
       });
     } else {
-      // Sync local storage with URL
       savePageSize(search.pageSize);
     }
   }, [search.pageSize, localPageSize, navigate, search, savePageSize]);
+
+  // Open create modal when navigating with ?create=true
+  useEffect(() => {
+    if (search.create) {
+      setIsCreateFormOpen(true);
+      // Clear the create param from URL
+      navigate({
+        to: "/transactions",
+        search: { ...search, create: undefined },
+        replace: true,
+      });
+    }
+  }, [search.create, navigate, search]);
 
   const { data } = useQuery(
     createTransactionQueryOptions(effectiveSearch, {
@@ -142,40 +150,34 @@ function RouteComponent() {
   );
   const transactionsData = data as TransactionQueryResponse | undefined;
 
-  // Prefetch next page
   useQuery({
     ...createTransactionQueryOptions({
       ...effectiveSearch,
       page: effectiveSearch.page + 1,
     }),
-    staleTime: 1000 * 60, // Keep data fresh for 1 minute
+    staleTime: 1000 * 60,
   });
 
   const { mutateAsync: updateCategory } = useMutation(
     orpc.transactions.updateTransactionCategory.mutationOptions({
       onMutate: async ({ id, categoryId }) => {
-        // Cancel any outgoing refetches
         await queryClient.cancelQueries(
           createTransactionQueryOptions(effectiveSearch),
         );
 
-        // Snapshot the previous value
         const previousData = queryClient.getQueryData(
           createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
-        // Get available categories for optimistic update
         const categoriesData = queryClient.getQueryData(
           orpc.categories.getUserCategories.queryOptions().queryKey,
         );
 
-        // Optimistically update to the new value
         queryClient.setQueryData(
           createTransactionQueryOptions(effectiveSearch).queryKey,
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
 
-            // Find the category object if categoryId is provided
             const selectedCategory =
               categoryId && categoriesData
                 ? (
@@ -198,11 +200,9 @@ function RouteComponent() {
           },
         );
 
-        // Return a context object with the snapshotted value
         return { previousData };
       },
       onError: (_err, _variables, context) => {
-        // If the mutation fails, use the context returned from onMutate to roll back
         if (context?.previousData) {
           queryClient.setQueryData(
             createTransactionQueryOptions(effectiveSearch).queryKey,
@@ -229,7 +229,6 @@ function RouteComponent() {
           createTransactionQueryOptions(effectiveSearch).queryKey,
         );
 
-        // Get available merchants for optimistic update
         const merchantsData = queryClient.getQueryData(
           orpc.merchants.getUserMerchants.queryOptions().queryKey,
         );
@@ -239,7 +238,6 @@ function RouteComponent() {
           (old: TransactionQueryResponse | undefined) => {
             if (!old) return old;
 
-            // Find the merchant object if merchantId is provided
             const selectedMerchant =
               merchantId && merchantsData
                 ? (merchantsData as MerchantWithKeywordsAndCategory[]).find(
@@ -414,67 +412,55 @@ function RouteComponent() {
   };
 
   return (
-    <div className="bg-background/60">
-      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8 space-y-4 sm:space-y-5 lg:space-y-6">
-        <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent/10">
-                <CreditCardIcon className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight">
-                  Transactions
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  Manage and review your transactions
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-center sm:justify-end">
-              <Dialog
-                open={isCreateFormOpen}
-                onOpenChange={(open) => {
-                  setIsCreateFormOpen(open);
-                }}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full sm:w-auto gap-2 sm:gap-2.5 shadow-sm"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">New Transaction</span>
-                    <span className="sm:hidden">New</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[620px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Transaction</DialogTitle>
-                    <DialogDescription>
-                      Add a new transaction to your records.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <CreateTransactionForm
-                    callback={() => {
-                      queryClient.invalidateQueries({
-                        queryKey:
-                          createTransactionQueryOptions(effectiveSearch)
-                            .queryKey,
-                      });
-                      setIsCreateFormOpen(false);
-                    }}
-                  />
-                </DialogContent>
-              </Dialog>
-            </div>
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold font-sans">Transactions</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage and review your transactions
+            </p>
           </div>
+          <Dialog
+            open={isCreateFormOpen}
+            onOpenChange={(open) => {
+              setIsCreateFormOpen(open);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Transaction
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[620px]">
+              <DialogHeader>
+                <DialogTitle>Create New Transaction</DialogTitle>
+                <DialogDescription>
+                  Add a new transaction to your records.
+                </DialogDescription>
+              </DialogHeader>
+              <CreateTransactionForm
+                callback={() => {
+                  queryClient.invalidateQueries({
+                    queryKey:
+                      createTransactionQueryOptions(effectiveSearch).queryKey,
+                  });
+                  setIsCreateFormOpen(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
-        <div className="bg-card/80 backdrop-blur-sm rounded-lg border shadow-xs sm:shadow-sm px-4 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-4">
+
+        {/* Search */}
+        <div className="border border-border p-4">
           <Search />
         </div>
-        <div className="rounded-lg px-0 sm:px-0 lg:px-0">
+
+        {/* Table */}
+        <div className="border border-border">
           <TransactionsTable
             transactions={transactionsData?.transactions ?? []}
             pagination={{

@@ -144,23 +144,24 @@ export default function DateRangePicker({
   };
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1 sm:gap-2 w-full sm:max-w-[25%]",
-        className,
-      )}
-    >
+    <div className={cn("flex items-center gap-1 sm:gap-2", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             id={dateId}
             variant="outline"
             className={cn(
-              "flex-1 justify-start text-left font-normal text-xs sm:text-sm h-8 sm:h-10",
+              "justify-start text-left font-normal",
+              "h-10 text-sm w-auto min-w-[140px] sm:min-w-[200px]",
               !date && "text-muted-foreground",
             )}
           >
-            <CalendarIcon className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
+            <CalendarIcon
+              className={cn(
+                "mr-1 sm:mr-2 text-foreground/80",
+                "h-3 w-3 sm:h-4 sm:w-4",
+              )}
+            />
             {date?.from ? (
               date.to ? (
                 <>
@@ -183,7 +184,7 @@ export default function DateRangePicker({
                 </>
               )
             ) : (
-              <span className="text-xs sm:text-sm">Pick a date</span>
+              <span className="text-xs sm:text-sm">Pick dates</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -195,7 +196,6 @@ export default function DateRangePicker({
               defaultMonth={date?.from}
               selected={date}
               onSelect={(newDate) => {
-                // Normalize dates to avoid timezone issues
                 const normalizedDate = newDate
                   ? {
                       from: normalizeDate(newDate.from),
@@ -237,24 +237,22 @@ export default function DateRangePicker({
       </Popover>
 
       {/* Month Navigation Arrows */}
-      <div className="flex gap-0.5 sm:gap-1">
+      <div className="flex-1 flex gap-2 sm:gap-1 sm:flex-none">
         <Button
           variant="outline"
-          size="sm"
-          className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+          className="flex-1 h-10 sm:h-10 sm:flex-none sm:w-10"
           onClick={() => navigateMonth("prev")}
           disabled={!date?.from}
         >
-          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
         <Button
           variant="outline"
-          size="sm"
-          className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+          className="flex-1 h-10 sm:h-10 sm:flex-none sm:w-10"
           onClick={() => navigateMonth("next")}
           disabled={!date?.from}
         >
-          <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-foreground/80" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
     </div>

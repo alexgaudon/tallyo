@@ -1,5 +1,4 @@
 import { StoreIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { MerchantCard } from "./merchant-card";
 
@@ -24,22 +23,18 @@ export function MerchantList({
 
   if (!merchants.length) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8 text-center">
-          <StoreIcon className="mb-3 h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
-          <h3 className="mb-2 text-base sm:text-lg font-semibold">
-            No merchants yet
-          </h3>
-          <p className="text-sm text-muted-foreground px-4">
-            Add your first merchant to get started
-          </p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center p-8 text-center border border-border">
+        <StoreIcon className="mb-3 h-12 w-12 text-muted-foreground" />
+        <h3 className="mb-2 text-lg font-semibold">No merchants yet</h3>
+        <p className="text-sm text-muted-foreground">
+          Add your first merchant to get started
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
       {merchants.map((merchant) => (
         <MerchantCard
           key={merchant.id}

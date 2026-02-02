@@ -6,16 +6,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Section } from "@/components/ui/section";
 import { Switch } from "@/components/ui/switch";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -180,60 +174,58 @@ function RouteComponent() {
   const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-12 sm:py-16">
-      <Dialog open={isConfirmPasswordOpen}>
-        <DialogContent className="max-w-sm">
-          <ConfirmPassword
-            onCancel={() => {
-              setIsConfirmPasswordOpen(false);
-            }}
-            onConfirm={(apiKey: string) => {
-              setIsConfirmPasswordOpen(false);
-              setAuthToken(apiKey);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="max-w-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
+        <Dialog open={isConfirmPasswordOpen}>
+          <DialogContent className="max-w-sm">
+            <ConfirmPassword
+              onCancel={() => {
+                setIsConfirmPasswordOpen(false);
+              }}
+              onConfirm={(apiKey: string) => {
+                setIsConfirmPasswordOpen(false);
+                setAuthToken(apiKey);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
 
-      <h1 className="text-3xl font-bold mb-8 tracking-tighter text-center sm:text-left">
-        Settings
-      </h1>
+        <div>
+          <h1 className="text-2xl font-bold font-sans">Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your account settings and preferences
+          </p>
+        </div>
 
-      <div className="grid gap-8">
-        <Card className="border border-destructive/30 bg-destructive/5 shadow-none">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-destructive text-lg">
-              API Token
-            </CardTitle>
-            <CardDescription>
-              Your API token for programmatic access to your transaction data.{" "}
-              <strong className="text-foreground font-medium">
-                Keep this token secure
-              </strong>{" "}
-              and never share it publicly. If compromised, you can regenerate it
-              here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+        <div className="space-y-8">
+          {/* API Token */}
+          <Section>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">API Token</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your API token for programmatic access. Keep it secure and never
+                share it publicly.
+              </p>
+            </div>
+            <div className="border border-border p-4">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
                 <div className="relative flex-1">
                   <Input
                     type={authToken ? "text" : "password"}
                     value={authToken || "•".repeat(79)}
                     readOnly
                     placeholder="No token generated"
-                    className="pr-24 font-mono bg-background/60 border-muted-foreground/30"
+                    className="pr-24 font-mono bg-background"
                   />
                   {authToken && (
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="outline"
                       onClick={async () => {
                         await navigator.clipboard.writeText(authToken);
                         toast.success("API token copied to clipboard");
                       }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-3 h-8 text-xs font-medium"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 text-xs"
                     >
                       Copy
                     </Button>
@@ -246,7 +238,7 @@ function RouteComponent() {
                     }}
                     size="sm"
                     variant="destructive"
-                    className="px-4 h-8 text-xs font-medium"
+                    className="h-8 text-xs"
                   >
                     Regenerate
                   </Button>
@@ -256,49 +248,47 @@ function RouteComponent() {
                         await orpc.settings.deleteAuthToken.call();
                         setAuthToken(null);
                         toast.success("API token deleted successfully");
-                      } catch (_error) {
+                      } catch {
                         toast.error("Failed to delete API token");
                       }
                     }}
                     variant="outline"
                     size="sm"
-                    className="px-4 h-8 text-xs font-medium border-destructive/40"
+                    className="h-8 text-xs"
                   >
                     Delete
                   </Button>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Use this token in the Authorization header:{" "}
-                <code className="bg-muted px-1.5 rounded text-foreground border font-mono">
+              <p className="text-xs text-muted-foreground">
+                Use in Authorization header:{" "}
+                <code className="bg-muted px-1.5 font-mono text-xs">
                   Bearer YOUR_TOKEN_HERE
                 </code>
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </Section>
 
-        <Card className="shadow-none border bg-background/60">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Auto-Import Webhook URLs
-            </CardTitle>
-            <CardDescription>
-              Configure webhook URLs that will receive notifications when new
-              transactions are imported. Add multiple URLs to send notifications
-              to different endpoints.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+          {/* Webhooks */}
+          <Section>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">
+                Auto-Import Webhook URLs
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Configure webhook URLs to receive notifications when new
+                transactions are imported.
+              </p>
+            </div>
+            <div className="border border-border p-4">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-4">
                 <div className="relative flex-1">
                   <Input
                     type="url"
                     value={newWebhookUrl}
                     onChange={(e) => setNewWebhookUrl(e.target.value)}
                     placeholder="https://example.com/webhook"
-                    className="font-mono bg-background/60 border-muted-foreground/30"
+                    className="font-mono bg-background"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -352,21 +342,20 @@ function RouteComponent() {
                     }
                   }}
                   size="sm"
-                  variant="default"
-                  className="px-4 h-8 text-xs font-medium"
                   disabled={isPending || !newWebhookUrl.trim()}
+                  className="h-10 sm:h-10"
                 >
                   Add URL
                 </Button>
               </div>
               {webhookUrls.length > 0 && (
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="space-y-2">
                   {webhookUrls.map((url: string) => (
                     <div
                       key={url}
-                      className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border border-muted-foreground/20"
+                      className="flex items-center gap-2 p-2 border border-border"
                     >
-                      <code className="flex-1 text-sm font-mono text-foreground break-all">
+                      <code className="flex-1 text-sm font-mono break-all">
                         {url}
                       </code>
                       <Button
@@ -384,7 +373,7 @@ function RouteComponent() {
                         }}
                         size="sm"
                         variant="ghost"
-                        className="h-7 w-7 p-0 shrink-0"
+                        className="h-8 w-8 p-0 shrink-0"
                         disabled={isPending}
                       >
                         <X className="h-4 w-4" />
@@ -394,77 +383,79 @@ function RouteComponent() {
                 </div>
               )}
               {webhookUrls.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-2">
+                <p className="text-sm text-muted-foreground text-center py-4">
                   No webhook URLs configured. Add a URL above to get started.
                 </p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </Section>
 
-        <Card className="shadow-none border bg-background/60">
-          <CardHeader>
-            <CardTitle className="text-base">Developer Mode</CardTitle>
-            <CardDescription>
-              Enable additional developer tools and features. This includes
-              advanced debugging options, detailed logging, and experimental
-              features that may not be fully tested.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 py-1.5">
-              <Switch
-                id={devModeId}
-                checked={session?.settings?.isDevMode ?? false}
-                disabled={isPending}
-                onCheckedChange={() => {
-                  updateSettings({
-                    isDevMode: !(session?.settings?.isDevMode ?? false),
-                    isPrivacyMode: session?.settings?.isPrivacyMode ?? false,
-                    webhookUrls: webhookUrls,
-                  });
-                }}
-              />
-              <Label htmlFor={devModeId} className="font-medium cursor-pointer">
-                Enable developer mode
-              </Label>
+          {/* Developer Mode */}
+          <Section>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Developer Mode</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Enable additional developer tools and debugging options.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="border border-border p-4">
+              <div className="flex items-center justify-between py-1">
+                <Label
+                  htmlFor={devModeId}
+                  className="font-medium cursor-pointer"
+                >
+                  Enable developer mode
+                </Label>
+                <Switch
+                  id={devModeId}
+                  checked={session?.settings?.isDevMode ?? false}
+                  disabled={isPending}
+                  onCheckedChange={() => {
+                    updateSettings({
+                      isDevMode: !(session?.settings?.isDevMode ?? false),
+                      isPrivacyMode: session?.settings?.isPrivacyMode ?? false,
+                      webhookUrls: webhookUrls,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </Section>
 
-        <Card className="shadow-none border bg-background/60">
-          <CardHeader>
-            <CardTitle className="text-base">Privacy Mode</CardTitle>
-            <CardDescription>
-              Hide sensitive information and transaction details from your view.
-              When enabled, personal and financial data will be masked, and
-              detailed transaction information will be hidden to protect your
-              privacy.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 py-1.5">
-              <Switch
-                id={privacyModeId}
-                checked={session?.settings?.isPrivacyMode ?? false}
-                disabled={isPending}
-                onCheckedChange={() => {
-                  updateSettings({
-                    isPrivacyMode: !(session?.settings?.isPrivacyMode ?? false),
-                    isDevMode: session?.settings?.isDevMode ?? false,
-                    webhookUrls: webhookUrls,
-                  });
-                }}
-              />
-              <Label
-                htmlFor={privacyModeId}
-                className="font-medium cursor-pointer"
-              >
-                Enable privacy mode
-              </Label>
+          {/* Privacy Mode */}
+          <Section>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Privacy Mode</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Hide sensitive information and transaction details from view.
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="border border-border p-4">
+              <div className="flex items-center justify-between py-1">
+                <Label
+                  htmlFor={privacyModeId}
+                  className="font-medium cursor-pointer"
+                >
+                  Enable privacy mode
+                </Label>
+                <Switch
+                  id={privacyModeId}
+                  checked={session?.settings?.isPrivacyMode ?? false}
+                  disabled={isPending}
+                  onCheckedChange={() => {
+                    updateSettings({
+                      isPrivacyMode: !(
+                        session?.settings?.isPrivacyMode ?? false
+                      ),
+                      isDevMode: session?.settings?.isDevMode ?? false,
+                      webhookUrls: webhookUrls,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </Section>
+        </div>
       </div>
     </div>
   );

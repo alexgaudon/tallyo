@@ -55,6 +55,9 @@
   --font-mono:
     "Geist Mono", "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
     "SF Mono", Menlo, Consolas, monospace;
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
 
 html,
@@ -70,87 +73,87 @@ body {
   /* Blocky aesthetic - zero border radius */
   --radius: 0px;
 
-  /* Light mode - pure black and white only */
+  /* Light mode - pure black and white with muted plum accent */
   --background: #ffffff;
-  --foreground: #000000;
+  --foreground: #171717;
   --card: #ffffff;
-  --card-foreground: #000000;
+  --card-foreground: #171717;
   --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #000000;
+  --popover-foreground: #171717;
+  --primary: #171717;
   --primary-foreground: #ffffff;
   --secondary: #f5f5f5;
-  --secondary-foreground: #000000;
+  --secondary-foreground: #171717;
   --muted: #f0f0f0;
-  --muted-foreground: #666666;
-  --accent: #000000;
+  --muted-foreground: #737373;
+  --accent: #7c3aed;
   --accent-foreground: #ffffff;
-  --destructive: #000000;
+  --destructive: #dc2626;
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #000000;
+  --ring: #7c3aed;
 
-  /* Chart colors - alternating black and white patterns */
-  --chart-1: #000000;
-  --chart-2: #333333;
-  --chart-3: #666666;
-  --chart-4: #999999;
-  --chart-5: #cccccc;
-  --chart-6: #000000;
-  --chart-7: #444444;
-  --chart-8: #888888;
+  /* Chart colors - muted plum variations */
+  --chart-1: #7c3aed;
+  --chart-2: #8b5cf6;
+  --chart-3: #a78bfa;
+  --chart-4: #c4b5fd;
+  --chart-5: #ddd6fe;
+  --chart-6: #7c3aed;
+  --chart-7: #a78bfa;
+  --chart-8: #c4b5fd;
 
-  /* Sidebar - same monochrome scheme */
+  /* Sidebar - top nav, minimal styling */
   --sidebar: #ffffff;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #000000;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #7c3aed;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f0f0;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: #000000;
-  --sidebar-ring: #000000;
+  --sidebar-accent: #f5f3ff;
+  --sidebar-accent-foreground: #7c3aed;
+  --sidebar-border: #e5e5e5;
+  --sidebar-ring: #7c3aed;
 }
 
 .dark {
-  /* Dark mode - pure black and white only */
-  --background: #000000;
+  /* Dark mode - soft black with muted plum accent */
+  --background: #0a0a0a;
   --foreground: #ffffff;
-  --card: #000000;
+  --card: #0a0a0a;
   --card-foreground: #ffffff;
-  --popover: #000000;
+  --popover: #0a0a0a;
   --popover-foreground: #ffffff;
   --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: #1a1a1a;
+  --primary-foreground: #0a0a0a;
+  --secondary: #171717;
   --secondary-foreground: #ffffff;
-  --muted: #1a1a1a;
-  --muted-foreground: #999999;
-  --accent: #ffffff;
-  --accent-foreground: #000000;
-  --destructive: #ffffff;
+  --muted: #171717;
+  --muted-foreground: #a3a3a3;
+  --accent: #a78bfa;
+  --accent-foreground: #0a0a0a;
+  --destructive: #f87171;
   --border: #262626;
   --input: #262626;
-  --ring: #ffffff;
+  --ring: #a78bfa;
 
-  /* Chart colors - inverted for dark mode */
-  --chart-1: #ffffff;
-  --chart-2: #cccccc;
-  --chart-3: #999999;
-  --chart-4: #666666;
-  --chart-5: #333333;
-  --chart-6: #ffffff;
-  --chart-7: #bbbbbb;
-  --chart-8: #777777;
+  /* Chart colors - inverted plum variations for dark */
+  --chart-1: #a78bfa;
+  --chart-2: #8b5cf6;
+  --chart-3: #7c3aed;
+  --chart-4: #6d28d9;
+  --chart-5: #5b21b6;
+  --chart-6: #a78bfa;
+  --chart-7: #7c3aed;
+  --chart-8: #6d28d9;
 
   /* Sidebar */
-  --sidebar: #000000;
+  --sidebar: #0a0a0a;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #ffffff;
-  --sidebar-ring: #ffffff;
+  --sidebar-primary: #a78bfa;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1e1b4b;
+  --sidebar-accent-foreground: #a78bfa;
+  --sidebar-border: #262626;
+  --sidebar-ring: #a78bfa;
 }
 
 @theme inline {
@@ -197,18 +200,28 @@ body {
 @layer base {
   * {
     @apply border-border;
-    font-family: var(--font-mono);
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-mono);
+    @apply bg-background text-foreground font-sans;
   }
-
-  /* Blocky aesthetic - ensure no rounded corners anywhere */
-  *,
-  *::before,
-  *::after {
-    border-radius: 0 !important;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-sans font-bold;
+  }
+  button,
+  input,
+  textarea,
+  select {
+    @apply font-sans;
+  }
+  code,
+  pre,
+  .font-mono {
+    @apply font-mono;
   }
 }
 
@@ -219,15 +232,6 @@ body {
 
 .recharts-default-tooltip {
   z-index: 99999;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
 }
 
 /* Selection styling - blocky and monochrome */

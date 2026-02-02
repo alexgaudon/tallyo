@@ -11,7 +11,7 @@ import {
   startOfMonth,
   subMonths,
 } from "date-fns";
-import { CreditCardIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
@@ -23,6 +23,8 @@ import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
+import { Button } from "@/components/ui/button";
+import { Section } from "@/components/ui/section";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { dateRangeToApiFormat, isDateRangeOneMonth } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
@@ -52,7 +54,6 @@ export const Route = createFileRoute("/dashboard")({
           }
         : defaultDateRange;
 
-    // Calculate cash flow data input - if it's a one-month range, expand to show last 3 months
     const cashFlowDataInput = isDateRangeOneMonth(dateRange)
       ? dateRangeToApiFormat({
           from: subMonths(startOfMonth(new Date()), 3),
@@ -97,11 +98,11 @@ function RouteComponent() {
 
   const now = new Date();
   const hour = now.getHours();
-  let greeting = "Good evening 🌙";
+  let greeting = "Good evening";
   if (hour < 12) {
-    greeting = "Good morning 👋";
+    greeting = "Good morning";
   } else if (hour < 17) {
-    greeting = "Good afternoon 🌞";
+    greeting = "Good afternoon";
   }
 
   const dateRange = useMemo((): DateRange | undefined => {
@@ -160,8 +161,6 @@ function RouteComponent() {
   );
 
   const cashFlowDataInput = useMemo(() => {
-    console.log("isOneMonth", isDateRangeOneMonth(dateRange));
-    console.log("dateRange", dateRange);
     return isDateRangeOneMonth(dateRange)
       ? dateRangeToApiFormat({
           from: subMonths(startOfMonth(new Date()), 3),
@@ -176,116 +175,218 @@ function RouteComponent() {
     }),
   );
 
+  const isLoading =
+    isStatsLoading ||
+    isCategoryLoading ||
+    isMerchantLoading ||
+    isTransactionLoading ||
+    isCashFlowLoading;
+
   return (
-    <div className="min-h-svh bg-linear-to-br from-background to-muted/40">
-      {/* Hero Section */}
-      <div className="border-b bg-linear-to-r from-primary/5 to-accent/5">
-        <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-accent/10">
-                <CreditCardIcon className="h-6 w-6 sm:h-7 sm:w-7 text-accent" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <p className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-foreground truncate">
-                    {greeting}
-                  </p>
-                </div>
-                <p className="mt-1 text-xs sm:text-sm text-muted-foreground truncate">
-                  Here's your financial overview
-                </p>
-              </div>
+    <div className="min-h-[calc(100vh-4rem)] overflow-x-hidden">
+      <DelayedLoading isLoading={isLoading}>
+        <DashboardHeader
+          greeting={greeting}
+          userName={session?.user?.name}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+        />
+
+        <div className="max-w-screen-2xl mx-auto px-3 py-4 lg:px-6 space-y-6 lg:space-y-8">
+          <UnreviewedTransactionsBanner
+            count={session?.meta?.unreviewedTransactionCount ?? 0}
+            onReviewClick={() =>
+              navigate({
+                to: "/transactions",
+                search: { onlyUnreviewed: true },
+              })
+            }
+          />
+
+          <Section>
+            <div className="mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-semibold">Overview</h2>
             </div>
-            <div className="flex justify-center sm:justify-end w-full sm:w-auto">
-              <div className="w-full max-w-xs sm:max-w-none">
-                <DateRangePicker
-                  value={dateRange}
-                  onRangeChange={handleDateRangeChange}
-                />
-              </div>
+            <div className="border border-border">
+              <Stats data={statsData} />
             </div>
+          </Section>
+
+          <DashboardCharts
+            cashFlowData={cashFlowData}
+            categoryData={categoryData}
+            dateRange={dateRange}
+          />
+
+          <DashboardDetails
+            merchantData={merchantData}
+            transactionData={transactionData}
+          />
+        </div>
+      </DelayedLoading>
+    </div>
+  );
+}
+
+function DashboardHeader({
+  greeting,
+  userName,
+  dateRange,
+  onDateRangeChange,
+}: {
+  greeting: string;
+  userName: string | null | undefined;
+  dateRange: DateRange | undefined;
+  onDateRangeChange: (range: DateRange | undefined) => void;
+}) {
+  const navigate = useNavigate();
+
+  return (
+    <header className="border-b border-border bg-background">
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold font-sans">
+              {greeting}, {userName?.split(" ")[0] ?? "there"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {format(new Date(), "EEEE, MMMM d, yyyy")}
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <div className="w-full">
+              <DateRangePicker
+                value={dateRange}
+                onRangeChange={onDateRangeChange}
+                className="w-full"
+              />
+            </div>
+            <Button
+              onClick={() =>
+                navigate({ to: "/transactions", search: { create: true } })
+              }
+              className="w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Transaction
+            </Button>
           </div>
         </div>
       </div>
-      <DelayedLoading
-        isLoading={
-          isStatsLoading ||
-          isCategoryLoading ||
-          isMerchantLoading ||
-          isTransactionLoading ||
-          isCashFlowLoading
-        }
-      >
-        {/* Main Content */}
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-7 lg:px-8 lg:py-8 space-y-6 lg:space-y-8">
-          {/* Unreviewed Transactions Banner */}
-          <UnreviewedTransactionsBanner
-            count={session?.meta?.unreviewedTransactionCount ?? 0}
-          />
-          {/* Main Dashboard Grid */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: Stats and Merchants */}
-            <div className="lg:flex-1 space-y-8">
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                    Overview Stats
-                  </h2>
-                </div>
-                <Stats data={statsData} categoryData={categoryData} />
-              </div>
+    </header>
+  );
+}
 
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                    Largest Transactions
-                  </h2>
-                </div>
-                <TransactionStats data={transactionData} />
-              </div>
+function DashboardCharts({
+  cashFlowData,
+  categoryData,
+  dateRange,
+}: {
+  cashFlowData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getCashFlowData.call>>
+    | undefined;
+  categoryData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getCategoryData.call>>
+    | undefined;
+  dateRange: DateRange | undefined;
+}) {
+  const hasMultipleMonths = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return false;
+    const from = new Date(dateRange.from);
+    const to = new Date(dateRange.to);
+    return (
+      to.getMonth() !== from.getMonth() ||
+      to.getFullYear() !== from.getFullYear()
+    );
+  }, [dateRange]);
 
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                    Top Merchants
-                  </h2>
-                </div>
-                <MerchantStats data={merchantData} />
-              </div>
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      {hasMultipleMonths && (
+        <div className="lg:col-span-2">
+          <Section>
+            <div className="mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-lg font-semibold">Cash Flow</h2>
             </div>
-
-            {/* Right Column: Category and Cash Flow */}
-            <div className="lg:flex-2 space-y-8">
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-1 h-6 rounded-full bg-accent/80" />
-                  <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                    Category Breakdown
-                  </h2>
-                </div>
-                <CategoryPieChart data={categoryData ?? []} />
-              </div>
-
-              {cashFlowData && (
-                <div>
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-1 h-6 rounded-full bg-accent/80" />
-                    <h2 className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                      Cash Flow
-                    </h2>
-                  </div>
-                  <CashFlowChart data={cashFlowData ?? []} />
+            <div className="border border-border p-3 sm:p-4">
+              {cashFlowData && cashFlowData.length > 0 ? (
+                <CashFlowChart data={cashFlowData} />
+              ) : (
+                <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                  No cash flow data
                 </div>
               )}
             </div>
-          </div>
+          </Section>
         </div>
-      </DelayedLoading>
+      )}
+
+      <div className={hasMultipleMonths ? undefined : "lg:col-span-3"}>
+        <Section>
+          <div className="mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold">
+              Top Categories
+            </h2>
+          </div>
+          <div className="border border-border p-3 sm:p-4">
+            {categoryData && categoryData.length > 0 ? (
+              <CategoryPieChart data={categoryData} />
+            ) : (
+              <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                No category data
+              </div>
+            )}
+          </div>
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+function DashboardDetails({
+  merchantData,
+  transactionData,
+}: {
+  merchantData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getMerchantStats.call>>
+    | undefined;
+  transactionData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getTransactionStats.call>>
+    | undefined;
+}) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <Section>
+        <div className="mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold">Top Merchants</h2>
+        </div>
+        <div className="border border-border">
+          {merchantData && merchantData.length > 0 ? (
+            <MerchantStats data={merchantData} />
+          ) : (
+            <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
+              No merchant data
+            </div>
+          )}
+        </div>
+      </Section>
+
+      <Section>
+        <div className="mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold">
+            Largest Transactions
+          </h2>
+        </div>
+        <div className="border border-border">
+          {transactionData && transactionData.length > 0 ? (
+            <TransactionStats data={transactionData} />
+          ) : (
+            <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
+              No transaction data
+            </div>
+          )}
+        </div>
+      </Section>
     </div>
   );
 }

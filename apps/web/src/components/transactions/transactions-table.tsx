@@ -272,7 +272,8 @@ export function TransactionsTable({
             <TableRow
               key={transaction.id}
               className={cn(
-                "hover:bg-muted/50 transition-colors",
+                "hover:bg-muted/50 transition-colors border-l-2 border-l-transparent",
+                !transaction.reviewed && "border-l-accent",
                 isLoading && "opacity-50",
               )}
             >
@@ -291,7 +292,7 @@ export function TransactionsTable({
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0" />
+                          <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>Upcoming transaction</p>

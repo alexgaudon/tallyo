@@ -6,10 +6,11 @@ import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
-// Chart colors for different categories
+// Chart colors - diverse, distinct colors
 const chartColors = [
-  "#3b82f6", // blue
-  "#10b981", // green
+  "#7c3aed", // muted plum
+  "#0ea5e9", // sky blue
+  "#22c55e", // green
   "#f59e0b", // amber
   "#ef4444", // red
   "#8b5cf6", // violet
@@ -21,8 +22,7 @@ const chartColors = [
   "#14b8a6", // teal
   "#f43f5e", // rose
   "#a855f7", // purple
-  "#0ea5e9", // sky
-  "#22c55e", // emerald
+  "#64748b", // slate
   "#eab308", // yellow
 ];
 
@@ -209,12 +209,10 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     cy="50%"
                     outerRadius="78%"
                     innerRadius="52%"
-                    fill="#8884d8"
                     isAnimationActive={false}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                     onClick={handlePieClick}
-                    // Removed invalid activeShape prop for Pie, as recharts Pie does not support activeShape here.
                     style={{ cursor: "pointer" }}
                   />
                   <Tooltip content={tooltipContent} />
