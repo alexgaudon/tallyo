@@ -41,7 +41,7 @@ export function MerchantSelect({
     <div className="flex flex-col">
       <span className="font-medium">{entity.name}</span>
       {transactionDetails && (
-        <span className="text-xs text-muted-foreground truncate max-w-[300px]">
+        <span className="text-xs text-foreground/70 truncate max-w-[300px]">
           {transactionDetails}
         </span>
       )}
@@ -89,7 +89,7 @@ export function MerchantSelect({
       <EntitySelect
         value={value}
         onValueChange={onValueChange}
-        placeholder={transactionDetails ?? placeholder}
+        placeholder={placeholder}
         className={className}
         entities={entities}
         formatEntity={transactionDetails ? formatEntityWithDetails : undefined}
