@@ -302,8 +302,8 @@ export function TransactionsTable({
                   )}
                 </div>
               </TableCell>
-              <TableCell className="px-2 sm:px-3 h-10 align-middle">
-                <div className="flex items-center h-full">
+              <TableCell className="px-2 sm:px-3 h-14 align-middle">
+                <div className="relative flex items-center h-full">
                   {transaction.reviewed ? (
                     transaction.merchant ? (
                       <Button
@@ -324,23 +324,31 @@ export function TransactionsTable({
                       </span>
                     )
                   ) : (
-                    <MerchantSelect
-                      value={transaction.merchant?.id}
-                      onValueChange={(merchantId) =>
-                        updateMerchant({
-                          id: transaction.id,
-                          merchantId: merchantId,
-                        })
-                      }
-                      placeholder="Select merchant"
-                      className="min-w-[280px]"
-                      allowNull
-                      disabled={isLoading}
-                      transactionDetails={transaction.transactionDetails}
-                      onEditMerchant={(merchantId) => {
-                        setEditMerchantDialog({ open: true, merchantId });
-                      }}
-                    />
+                    <>
+                      <MerchantSelect
+                        value={transaction.merchant?.id}
+                        onValueChange={(merchantId) =>
+                          updateMerchant({
+                            id: transaction.id,
+                            merchantId: merchantId,
+                          })
+                        }
+                        placeholder="Select merchant"
+                        className="min-w-[280px]"
+                        allowNull
+                        disabled={isLoading}
+                        transactionDetails={transaction.transactionDetails}
+                        onEditMerchant={(merchantId) => {
+                          setEditMerchantDialog({ open: true, merchantId });
+                        }}
+                      />
+                      {!transaction.reviewed &&
+                        transaction.transactionDetails && (
+                          <span className="absolute top-full left-0 mt-0.5 text-[10px] text-muted-foreground truncate max-w-[280px] leading-none">
+                            {transaction.transactionDetails}
+                          </span>
+                        )}
+                    </>
                   )}
                 </div>
               </TableCell>

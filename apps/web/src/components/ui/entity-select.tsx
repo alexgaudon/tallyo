@@ -145,7 +145,7 @@ export function EntitySelect<T extends Entity>({
 											onValueChange(entity.id);
 											setOpen(false);
 										}}
-										className="flex items-center gap-2 h-9 text-sm"
+										className="group flex items-center gap-2 h-9 text-sm"
 									>
 										<CheckIcon
 											className={cn(

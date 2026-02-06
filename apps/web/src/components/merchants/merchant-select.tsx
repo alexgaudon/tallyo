@@ -40,11 +40,6 @@ export function MerchantSelect({
   const formatEntityWithDetails = (entity: { id: string; name: string }) => (
     <div className="flex flex-col">
       <span className="font-medium">{entity.name}</span>
-      {transactionDetails && (
-        <span className="text-xs text-foreground/70 truncate max-w-[300px]">
-          {transactionDetails}
-        </span>
-      )}
     </div>
   );
 

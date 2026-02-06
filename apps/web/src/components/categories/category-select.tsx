@@ -23,7 +23,7 @@ export const formatCategory = (category: Category) => {
     return (
       <span className="flex items-center gap-1">
         {category.parentCategory.name}
-        <ArrowRight className="h-3 w-3" />
+        <ArrowRight className="h-3 w-3 shrink-0 opacity-70 group-hover:opacity-100 group-hover:text-accent-foreground" />
         {category.name}
       </span>
     );
