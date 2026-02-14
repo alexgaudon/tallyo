@@ -521,9 +521,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Log application startup errors
+// Log application startup errors (include full error so message/stack are visible)
 process.on("uncaughtException", (error) => {
   logger.error("Uncaught exception", { error });
+  console.error(error);
   process.exit(1);
 });
 
