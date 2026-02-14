@@ -10,7 +10,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **shadcn/ui** - Reusable UI components
 - **Hono** - Lightweight, performant server framework
 - **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Bun** - Runtime environment
+- **Node.js** - Runtime environment
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
 - **Authentication** - Email & password authentication with Better Auth
@@ -22,7 +22,7 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 First, install the dependencies:
 
 ```bash
-bun install
+npm install
 ```
 ## Database Setup
 
@@ -30,7 +30,7 @@ This project uses PostgreSQL with Drizzle ORM.
 
 1. Make sure you have a PostgreSQL database set up.
 ```bash
-bun run db:dev # or bun run db:dev:attached for db logs in the terminal
+npm run db:dev # or npm run db:dev:attached for db logs in the terminal
 ```
 
 2. Setup `apps/server/.env` file with your PostgreSQL connection details.
@@ -43,13 +43,13 @@ The `.env.example` file is setup for local development, change it before running
 
 3. Apply the schema to your database:
 ```bash
-bun db:push
+npm run db:push
 ```
 
 Then, run the development server:
 
 ```bash
-bun dev
+npm run dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
@@ -67,11 +67,11 @@ tallyo-rewrite/
 
 ## Available Scripts
 
-- `bun dev`: Start all applications in development mode
-- `bun build`: Build all applications
-- `bun dev:web`: Start only the web application
-- `bun dev:server`: Start only the server
-- `bun check-types`: Check TypeScript types across all apps
-- `bun db:push`: Push schema changes to database
-- `bun db:studio`: Open database studio UI
-- `bun check`: Run Biome formatting and linting
+- `npm run dev`: Start all applications in development mode
+- `npm run build`: Build all applications
+- `npm run dev:web`: Start only the web application
+- `npm run dev:server`: Start only the server
+- `npm run check-types`: Check TypeScript types across all apps
+- `npm run db:push`: Push schema changes to database
+- `npm run db:studio`: Open database studio UI
+- `npm run check`: Run Biome formatting and linting

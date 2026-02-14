@@ -14,20 +14,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+        cache: "npm"
 
     - name: Install dependencies
-      run: bun install
+      run: npm ci
 
     - name: Build server
-      run: bun run build --filter=server
+      run: npm run build --workspace=server
 
     - name: Build web
-      run: bun run build --filter=web
+      run: npm run build --workspace=web
 
     - name: Check types
-      run: bun run check-types
+      run: npm run check-types
       continue-on-error: true
 
     - name: Set up Docker Buildx
@@ -48,4 +51,4 @@ jobs:
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/tallyo:latest
         cache-from: type=gha
-        cache-to: type=gha,mode=max 
+        cache-to: type=gha,mode=max

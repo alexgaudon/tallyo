@@ -12,13 +12,15 @@ export function UnreviewedTransactionsBanner({
   if (!count) return null;
 
   return (
-    <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 shadow-soft">
-      <div className="flex items-center justify-between">
+    <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-accent" />
-          <span className="text-sm">
-            <span className="font-semibold text-accent">{count}</span>{" "}
-            transaction{count !== 1 && "s"} need your attention
+          <AlertCircle className="h-4 w-4 text-accent shrink-0" />
+          <span className="text-sm text-foreground">
+            <span className="font-semibold text-accent tabular-nums">
+              {count}
+            </span>{" "}
+            transaction{count !== 1 ? "s" : ""} need review
           </span>
         </div>
         {onReviewClick ? (

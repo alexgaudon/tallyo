@@ -1,5 +1,5 @@
 # Build stage
-FROM oven/bun:1-alpine AS builder
+FROM node:24-alpine AS builder
 
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
@@ -7,17 +7,17 @@ ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb ./
+COPY package.json package-lock.json* ./
 COPY apps/web/package.json ./apps/web/
 
 # Install dependencies
-RUN bun install
+RUN cd apps/web && npm install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN cd apps/web && bun run build
+RUN cd apps/web && npm run build
 
 # Production stage
 FROM nginx:alpine
@@ -30,4 +30,4 @@ COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["nginx", "-g", "daemon off;"]

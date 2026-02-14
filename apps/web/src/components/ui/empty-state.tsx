@@ -23,19 +23,19 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-16 px-4 text-center rounded-xl border border-border/60 shadow-soft",
+        "flex flex-col items-center justify-center py-16 px-4 text-center rounded-xl border border-border/80 bg-card shadow-sm",
         className
       )}
     >
       {icon && (
         <div className="mb-4 text-muted-foreground">{icon}</div>
       )}
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>
       {description && (
         <p className="text-sm text-muted-foreground mb-4 max-w-sm">{description}</p>
       )}
       {action && (
-        <Button onClick={action.onClick}>
+        <Button onClick={action.onClick} className="bg-accent hover:bg-accent/90 text-accent-foreground">
           {action.label}
         </Button>
       )}

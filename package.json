@@ -33,7 +33,7 @@
 		"turbo": "^2.7.5"
 	},
 	"lint-staged": {
-		"*": "bun run check"
+		"*": "npm run check"
 	},
-	"packageManager": "bun@1.1.38"
+	"packageManager": "npm@10.8.2"
 }

@@ -1,7 +1,9 @@
 import { RPCHandler } from "@orpc/server/fetch";
 import "dotenv/config";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
-import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { healthCheck } from "./db";
@@ -482,7 +484,9 @@ app.get("/", async (c) => {
     }
     await healthCheck();
     if (process.env.NODE_ENV === "production") {
-      return c.html(await Bun.file("./public/index.html").text());
+      return c.html(
+        await readFile(join(process.cwd(), "public", "index.html"), "utf-8"),
+      );
     }
     if (
       c.req.header("accept")?.includes("text/html") ||
@@ -517,13 +521,16 @@ if (process.env.NODE_ENV === "production") {
     ) {
       return c.notFound();
     }
-    return c.html(await Bun.file("./public/index.html").text());
+    return c.html(
+      await readFile(join(process.cwd(), "public", "index.html"), "utf-8"),
+    );
   });
 }
 
-// Log application startup errors
+// Log application startup errors (include full error so message/stack are visible)
 process.on("uncaughtException", (error) => {
   logger.error("Uncaught exception", { error });
+  console.error(error);
   process.exit(1);
 });
 

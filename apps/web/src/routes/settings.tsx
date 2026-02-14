@@ -174,29 +174,33 @@ function RouteComponent() {
   const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <div className="max-w-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
-        <Dialog open={isConfirmPasswordOpen}>
-          <DialogContent className="max-w-sm">
-            <ConfirmPassword
-              onCancel={() => {
-                setIsConfirmPasswordOpen(false);
-              }}
-              onConfirm={(apiKey: string) => {
-                setIsConfirmPasswordOpen(false);
-                setAuthToken(apiKey);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+    <div className="min-h-full">
+      <Dialog open={isConfirmPasswordOpen}>
+        <DialogContent className="max-w-sm">
+          <ConfirmPassword
+            onCancel={() => {
+              setIsConfirmPasswordOpen(false);
+            }}
+            onConfirm={(apiKey: string) => {
+              setIsConfirmPasswordOpen(false);
+              setAuthToken(apiKey);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
-        <div>
-          <h1 className="text-2xl font-bold font-sans">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage your account settings and preferences
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-2xl mx-auto px-4 py-5 lg:px-8">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+            Account
           </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Settings
+          </h1>
         </div>
+      </header>
 
+      <div className="max-w-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
         <div className="space-y-8">
           {/* API Token */}
           <Section>
@@ -207,7 +211,7 @@ function RouteComponent() {
                 share it publicly.
               </p>
             </div>
-            <div className="rounded-xl border border-border/60 shadow-soft p-4">
+            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
                 <div className="relative flex-1">
                   <Input
@@ -280,7 +284,7 @@ function RouteComponent() {
                 transactions are imported.
               </p>
             </div>
-            <div className="rounded-xl border border-border/60 shadow-soft p-4">
+            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-4">
                 <div className="relative flex-1">
                   <Input
@@ -398,7 +402,7 @@ function RouteComponent() {
                 Enable additional developer tools and debugging options.
               </p>
             </div>
-            <div className="rounded-xl border border-border/60 shadow-soft p-4">
+            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={devModeId}
@@ -430,7 +434,7 @@ function RouteComponent() {
                 Hide sensitive information and transaction details from view.
               </p>
             </div>
-            <div className="rounded-xl border border-border/60 shadow-soft p-4">
+            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={privacyModeId}

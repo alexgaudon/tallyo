@@ -102,31 +102,35 @@ function HomeComponent() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10" />
-        <div className="container mx-auto px-4 py-20 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
+      <section className="relative overflow-hidden border-b border-border/50">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" />
+        <div className="container mx-auto px-4 py-20 sm:py-24 relative z-10">
+          <div className="text-center max-w-3xl mx-auto">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center ring-1 ring-accent/20">
                 <img
                   src="/favicon.ico"
                   alt="Tallyo"
-                  className="w-12 h-12 rounded-full"
+                  className="w-9 h-9 rounded-lg"
                 />
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Measure. Understand. Improve.
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-foreground">
+              Your finances, in one place
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-              Tallyo helps you gain insights into your personal finances so you
-              can make better financial decisions.
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              Track spending, see where your money goes, and make better
+              decisions with clear insights.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="text-lg px-8 py-6">
-                <Link to="/signin">Get Started</Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                asChild
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+              >
+                <Link to="/signin">Get started free</Link>
               </Button>
             </div>
           </div>
@@ -134,33 +138,35 @@ function HomeComponent() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Powerful Features for Financial Mastery
+      <section className="container mx-auto px-4 py-16 sm:py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
+            Built for clarity
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to take control of your finances, from
-            transaction tracking to advanced analytics.
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Transaction tracking, categories, and reports so you always know
+            where your money goes.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
             <Card
               key={feature.title}
-              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+              className="group border-border/80 bg-card shadow-sm hover:shadow-md transition-shadow"
             >
               <CardHeader>
                 <div
-                  className={`w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${feature.color}`}
+                  className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3 ${feature.color}`}
                 >
                   {feature.icon}
                 </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardTitle className="text-base font-semibold">
+                  {feature.title}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base leading-relaxed">
+                <CardDescription className="text-sm leading-relaxed">
                   {feature.description}
                 </CardDescription>
               </CardContent>
@@ -170,41 +176,33 @@ function HomeComponent() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-primary text-primary-foreground py-20">
+      <section className="border-t border-border/50 bg-muted/30 py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Take Control of Your Finances?
+          <h2 className="text-2xl font-bold mb-2 text-foreground">
+            Start tracking today
           </h2>
-          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-            Join thousands of users who are already making better financial
-            decisions with Tallyo.
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Connect your data or add transactions manually—you’re in control.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              asChild
-              size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-6"
-            >
-              <Link to="/signin">Get Started</Link>
-            </Button>
-          </div>
+          <Button
+            asChild
+            size="lg"
+            className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
+          >
+            <Link to="/signin">Get started free</Link>
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-muted/50 py-12">
+      <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src="/favicon.ico"
-              alt="Tallyo"
-              className="w-8 h-8 rounded-full mr-2"
-            />
-            <span className="text-xl font-semibold">Tallyo</span>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <img src="/favicon.ico" alt="Tallyo" className="w-6 h-6 rounded" />
+            <span className="font-semibold text-foreground">Tallyo</span>
           </div>
-          <p className="text-muted-foreground">
-            © {new Date().getFullYear()} Tallyo. All rights reserved.
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Tallyo
           </p>
         </div>
       </footer>

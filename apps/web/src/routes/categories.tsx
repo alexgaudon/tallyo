@@ -95,32 +95,37 @@ function RouteComponent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-sans">Categories</h1>
-            <p className="text-sm text-muted-foreground">
-              Organize your transactions with categories
-            </p>
+    <div className="min-h-full">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                Organization
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                Categories
+              </h1>
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New category
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>New Category</DialogTitle>
+                </DialogHeader>
+                <CreateCategoryForm callback={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                New Category
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>New Category</DialogTitle>
-              </DialogHeader>
-              <CreateCategoryForm callback={() => setOpen(false)} />
-            </DialogContent>
-          </Dialog>
         </div>
+      </header>
 
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
         {/* Search & Filter - same width as category cards (list uses p-4) */}
         <div className="px-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

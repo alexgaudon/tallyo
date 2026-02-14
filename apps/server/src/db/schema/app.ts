@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -13,7 +14,7 @@ import { user } from "./auth";
 export const settings = pgTable("settings", {
   id: text("id")
     .primaryKey()
-    .$defaultFn((): string => Bun.randomUUIDv7()),
+    .$defaultFn((): string => crypto.randomUUID()),
   userId: text("user_id").notNull().unique(),
   isDevMode: boolean("is_dev_mode").notNull().default(false),
   isPrivacyMode: boolean("is_privacy_mode").notNull().default(false),
@@ -34,7 +35,7 @@ export const category = pgTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn((): string => Bun.randomUUIDv7()),
+      .$defaultFn((): string => crypto.randomUUID()),
     name: text("name").notNull(),
     userId: text("user_id").notNull(),
     parentCategoryId: text("parent_category_id"),
@@ -69,7 +70,7 @@ export const merchant = pgTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn((): string => Bun.randomUUIDv7()),
+      .$defaultFn((): string => crypto.randomUUID()),
     name: text("name").notNull(),
     userId: text("user_id").notNull(),
     recommendedCategoryId: text("recommended_category_id"),
@@ -86,7 +87,7 @@ export const merchantKeyword = pgTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn((): string => Bun.randomUUIDv7()),
+      .$defaultFn((): string => crypto.randomUUID()),
     merchantId: text("merchant_id").notNull(),
     userId: text("user_id").notNull(),
     keyword: text("keyword").notNull(),
@@ -133,7 +134,7 @@ export const transaction = pgTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn((): string => Bun.randomUUIDv7()),
+      .$defaultFn((): string => crypto.randomUUID()),
     userId: text("user_id").notNull(),
     merchantId: text("merchant_id"),
     categoryId: text("category_id"),
@@ -174,7 +175,7 @@ export const authToken = pgTable(
   {
     id: text("id")
       .primaryKey()
-      .$defaultFn((): string => Bun.randomUUIDv7()),
+      .$defaultFn((): string => crypto.randomUUID()),
     userId: text("user_id").notNull(),
     token: text("token").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),

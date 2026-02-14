@@ -6,7 +6,7 @@ function Table({ className, ...props }: ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto lg:overflow-visible border border-border rounded-xl bg-card shadow-soft"
+      className="relative w-full overflow-x-auto lg:overflow-visible border border-border rounded-xl bg-card shadow-sm"
     >
       <table
         data-slot="table"

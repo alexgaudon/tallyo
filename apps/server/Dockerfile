@@ -1,28 +1,27 @@
 # Build stage
-FROM oven/bun:1-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lockb ./
+# Copy package files and workspace package.json files
+COPY package.json package-lock.json* ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 
-# Install dependencies
-RUN bun install
-RUN cd apps/server && bun install
+# Single root install so workspace lockfile and hoisting match local (--ignore-scripts skips husky)
+RUN npm install --ignore-scripts
 
 # Copy source code
 COPY . .
 
 # Build the backend
-RUN cd apps/server && bun run build
+RUN npm run build --workspace=server
 
 # Build the frontend
-RUN cd apps/web && bun run build
+RUN npm run build --workspace=web
 
 # Production stage
-FROM oven/bun:1-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
@@ -30,8 +29,8 @@ WORKDIR /app
 COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/apps/server/package.json ./
 
-# Install production dependencies
-RUN bun install --production
+# Install production dependencies only
+RUN npm install --omit=dev --ignore-scripts
 
 # Copy the built frontend to public directory
 COPY --from=builder /app/apps/web/dist ./public
@@ -41,4 +40,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["bun", "run", "dist/src/index.js"] 
+CMD ["node", "dist/src/start.js"]

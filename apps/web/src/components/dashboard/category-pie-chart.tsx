@@ -6,24 +6,15 @@ import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
-// Chart colors - diverse, distinct colors
 const chartColors = [
-  "#7c3aed", // muted plum
-  "#0ea5e9", // sky blue
-  "#22c55e", // green
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#8b5cf6", // violet
-  "#06b6d4", // cyan
-  "#f97316", // orange
-  "#84cc16", // lime
-  "#ec4899", // pink
-  "#6366f1", // indigo
-  "#14b8a6", // teal
-  "#f43f5e", // rose
-  "#a855f7", // purple
-  "#64748b", // slate
-  "#eab308", // yellow
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-7)",
+  "var(--chart-8)",
 ];
 
 function hashString(str: string): number {
