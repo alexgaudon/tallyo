@@ -41,4 +41,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["bun", "run", "dist/src/index.js"] 
+CMD ["bun", "run", "dist/src/start.js"] 

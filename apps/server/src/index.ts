@@ -532,16 +532,4 @@ process.on("unhandledRejection", (reason) => {
   logger.error("Unhandled rejection", { error: reason });
 });
 
-// Explicit server start so the process stays alive in Docker / production
-// (Bun's auto-serve when default-exporting a Hono app can be unreliable with `bun run dist/...`)
-if (import.meta.main) {
-  const port = parseInt(process.env.PORT || "3000", 10);
-  Bun.serve({
-    fetch: app.fetch,
-    port,
-    hostname: "0.0.0.0",
-  });
-  logger.info(`Server listening on http://0.0.0.0:${port}`);
-}
-
 export default app;
