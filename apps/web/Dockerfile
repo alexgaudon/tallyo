@@ -1,5 +1,5 @@
 # Build stage
-FROM oven/bun:1-alpine AS builder
+FROM oven/bun:latest AS builder
 
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
