@@ -1,28 +1,28 @@
 # Build stage
-FROM oven/bun:latest AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lockb ./
+COPY package.json package-lock.json* ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 
-# Install dependencies
-RUN bun install
-RUN cd apps/server && bun install
+# Install dependencies (monorepo: install from root so workspaces resolve, or install per-app)
+RUN cd apps/server && npm install
+RUN cd apps/web && npm install
 
 # Copy source code
 COPY . .
 
 # Build the backend
-RUN cd apps/server && bun run build
+RUN cd apps/server && npm run build
 
 # Build the frontend
-RUN cd apps/web && bun run build
+RUN cd apps/web && npm run build
 
 # Production stage
-FROM oven/bun:latest
+FROM node:24-alpine
 
 WORKDIR /app
 
@@ -30,8 +30,8 @@ WORKDIR /app
 COPY --from=builder /app/apps/server/dist ./dist
 COPY --from=builder /app/apps/server/package.json ./
 
-# Install production dependencies
-RUN bun install --production
+# Install production dependencies only
+RUN npm install --omit=dev
 
 # Copy the built frontend to public directory
 COPY --from=builder /app/apps/web/dist ./public
@@ -41,4 +41,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["bun", "run", "dist/src/start.js"] 
+CMD ["node", "dist/src/start.js"]

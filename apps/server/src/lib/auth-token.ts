@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import bcrypt from "bcrypt";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { authToken } from "../db/schema";
@@ -12,12 +13,10 @@ export function generateAuthToken(): string {
 }
 
 /**
- * Hash a token using Bun's built-in crypto
+ * Hash a token using bcrypt
  */
 function hashToken(token: string): string {
-  return Bun.password.hashSync(token, {
-    algorithm: "bcrypt",
-  });
+  return bcrypt.hashSync(token, 10);
 }
 
 /**
@@ -82,7 +81,7 @@ export async function validateAuthToken(token: string): Promise<string | null> {
 
     for (const tokenRecord of tokenRecords) {
       try {
-        const isValid = Bun.password.verifySync(token, tokenRecord.token);
+        const isValid = bcrypt.compareSync(token, tokenRecord.token);
         if (isValid) {
           return tokenRecord.userId;
         }
