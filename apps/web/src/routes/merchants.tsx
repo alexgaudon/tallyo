@@ -91,7 +91,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
+    <div className="min-h-full">
       <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

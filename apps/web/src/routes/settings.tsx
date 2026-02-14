@@ -174,7 +174,7 @@ function RouteComponent() {
   const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
   return (
-    <div className="min-h-[calc(100vh-4rem)]">
+    <div className="min-h-full">
       <div className="max-w-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
         <Dialog open={isConfirmPasswordOpen}>
           <DialogContent className="max-w-sm">

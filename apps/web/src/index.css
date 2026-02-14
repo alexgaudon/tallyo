@@ -256,23 +256,16 @@ body {
   color: var(--accent-foreground);
 }
 
-/* Scrollbar styling - soft and rounded */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Hide main document scrollbar but keep scroll behavior */
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
-::-webkit-scrollbar-track {
-  background: var(--muted);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* Focus styles - soft ring */
