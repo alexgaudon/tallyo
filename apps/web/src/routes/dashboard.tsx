@@ -192,7 +192,7 @@ function RouteComponent() {
           onDateRangeChange={handleDateRangeChange}
         />
 
-        <div className="max-w-screen-2xl mx-auto px-3 py-6 lg:px-8 space-y-6 lg:space-y-8">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6 lg:space-y-8">
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
             onReviewClick={() =>
@@ -204,8 +204,10 @@ function RouteComponent() {
           />
 
           <Section>
-            <div className="mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-lg font-semibold">Overview</h2>
+            <div className="mb-4">
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Overview
+              </h2>
             </div>
             <Stats data={statsData} />
           </Section>
@@ -240,16 +242,16 @@ function DashboardHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm">
-      <div className="max-w-screen-2xl mx-auto px-4 py-4 lg:px-8 lg:py-6">
+    <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
+      <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8 lg:py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold font-sans">
-              {greeting}, {userName?.split(" ")[0] ?? "there"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
               {format(new Date(), "EEEE, MMMM d, yyyy")}
             </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              {greeting}, {userName?.split(" ")[0] ?? "there"}
+            </h1>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <div className="w-full">
@@ -303,8 +305,10 @@ function DashboardCharts({
       {hasMultipleMonths && (
         <div className="lg:col-span-2">
           <Section>
-            <div className="mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-lg font-semibold">Cash Flow</h2>
+            <div className="mb-4">
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                Cash Flow
+              </h2>
             </div>
             {cashFlowData && cashFlowData.length > 0 ? (
               <CashFlowChart data={cashFlowData} />
@@ -319,8 +323,8 @@ function DashboardCharts({
 
       <div className={hasMultipleMonths ? undefined : "lg:col-span-3"}>
         <Section>
-          <div className="mb-3 sm:mb-4">
-            <h2 className="text-base sm:text-lg font-semibold">
+          <div className="mb-4">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Top Categories
             </h2>
           </div>
@@ -351,8 +355,10 @@ function DashboardDetails({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
       <Section>
-        <div className="mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold">Top Merchants</h2>
+        <div className="mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Top Merchants
+          </h2>
         </div>
         {merchantData && merchantData.length > 0 ? (
           <MerchantStats data={merchantData} />
@@ -364,8 +370,8 @@ function DashboardDetails({
       </Section>
 
       <Section>
-        <div className="mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold">
+        <div className="mb-4">
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
             Largest Transactions
           </h2>
         </div>

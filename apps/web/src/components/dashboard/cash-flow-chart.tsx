@@ -44,20 +44,20 @@ function CustomTooltip({
         <div className="space-y-1.5 text-sm">
           <div className="flex justify-between items-center gap-4">
             <span className="text-muted-foreground">Income:</span>
-            <span className="font-medium text-green-600 dark:text-green-500">
+            <span className="font-medium text-[var(--income)]">
               <CurrencyAmount amount={data.income} />
             </span>
           </div>
           <div className="flex justify-between items-center gap-4">
             <span className="text-muted-foreground">Expenses:</span>
-            <span className="font-medium text-red-600 dark:text-red-500">
+            <span className="font-medium text-[var(--expense)]">
               <CurrencyAmount amount={data.expenses} />
             </span>
           </div>
           <div className="flex justify-between items-center pt-1.5 border-t gap-4">
             <span className="text-muted-foreground font-medium">Net:</span>
             <span
-              className={`font-semibold ${data.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
+              className={`font-semibold ${data.net >= 0 ? "text-[var(--income)]" : "text-[var(--expense)]"}`}
             >
               <CurrencyAmount amount={data.net} />
             </span>
@@ -133,7 +133,7 @@ export const CashFlowChart = memo(function CashFlowChart({
                 <div className="text-xs text-muted-foreground mb-1.5">
                   Income
                 </div>
-                <div className="text-lg font-semibold text-green-600 dark:text-green-500">
+                <div className="text-lg font-semibold text-[var(--income)]">
                   <CurrencyAmount amount={item.income} />
                 </div>
               </div>
@@ -141,14 +141,14 @@ export const CashFlowChart = memo(function CashFlowChart({
                 <div className="text-xs text-muted-foreground mb-1.5">
                   Expenses
                 </div>
-                <div className="text-lg font-semibold text-red-600 dark:text-red-500">
+                <div className="text-lg font-semibold text-[var(--expense)]">
                   <CurrencyAmount amount={item.expenses} />
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-xs text-muted-foreground mb-1.5">Net</div>
                 <div
-                  className={`text-lg font-semibold ${item.net >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}`}
+                  className={`text-lg font-semibold ${item.net >= 0 ? "text-[var(--income)]" : "text-[var(--expense)]"}`}
                 >
                   <CurrencyAmount amount={item.net} />
                 </div>
@@ -196,9 +196,9 @@ export const CashFlowChart = memo(function CashFlowChart({
                 key="income"
                 type="monotone"
                 dataKey="income"
-                stroke="#22c55e"
+                stroke="var(--income)"
                 strokeWidth={2}
-                dot={{ fill: "#22c55e", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "var(--income)", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Income"
                 isAnimationActive={true}
@@ -207,9 +207,9 @@ export const CashFlowChart = memo(function CashFlowChart({
                 key="expenses"
                 type="monotone"
                 dataKey="expenses"
-                stroke="#dc2626"
+                stroke="var(--expense)"
                 strokeWidth={2}
-                dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "var(--expense)", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Expenses"
                 isAnimationActive={true}
@@ -218,9 +218,9 @@ export const CashFlowChart = memo(function CashFlowChart({
                 key="net"
                 type="monotone"
                 dataKey="net"
-                stroke="#a78bfa"
+                stroke="var(--accent)"
                 strokeWidth={2.5}
-                dot={{ fill: "#a78bfa", strokeWidth: 2, r: 4 }}
+                dot={{ fill: "var(--accent)", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Net"
                 isAnimationActive={true}
@@ -229,17 +229,17 @@ export const CashFlowChart = memo(function CashFlowChart({
           </ResponsiveContainer>
         </div>
         {data.length > 1 && (
-          <div className="flex justify-center gap-5 mt-4 text-sm">
+          <div className="flex flex-wrap justify-center gap-5 mt-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500" />
+              <div className="w-3 h-3 rounded-sm bg-[var(--income)]" />
               <span>Income</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500" />
+              <div className="w-3 h-3 rounded-sm bg-[var(--expense)]" />
               <span>Expenses</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-0.5 bg-accent" />
+              <div className="w-3 h-0.5 rounded-full bg-accent" />
               <span>Net</span>
             </div>
           </div>

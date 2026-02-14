@@ -413,54 +413,59 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-sans">Transactions</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage and review your transactions
-            </p>
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                Your activity
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                Transactions
+              </h1>
+            </div>
+            <Dialog
+              open={isCreateFormOpen}
+              onOpenChange={(open) => {
+                setIsCreateFormOpen(open);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add transaction
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[620px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Transaction</DialogTitle>
+                  <DialogDescription>
+                    Add a new transaction to your records.
+                  </DialogDescription>
+                </DialogHeader>
+                <CreateTransactionForm
+                  callback={() => {
+                    queryClient.invalidateQueries({
+                      queryKey:
+                        createTransactionQueryOptions(effectiveSearch).queryKey,
+                    });
+                    setIsCreateFormOpen(false);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog
-            open={isCreateFormOpen}
-            onOpenChange={(open) => {
-              setIsCreateFormOpen(open);
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Transaction
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[620px]">
-              <DialogHeader>
-                <DialogTitle>Create New Transaction</DialogTitle>
-                <DialogDescription>
-                  Add a new transaction to your records.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateTransactionForm
-                callback={() => {
-                  queryClient.invalidateQueries({
-                    queryKey:
-                      createTransactionQueryOptions(effectiveSearch).queryKey,
-                  });
-                  setIsCreateFormOpen(false);
-                }}
-              />
-            </DialogContent>
-          </Dialog>
         </div>
+      </header>
 
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
         {/* Search */}
-        <div className="rounded-xl border border-border/60 shadow-soft p-4">
+        <div className="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
           <Search />
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-border/60 shadow-soft overflow-hidden">
+        <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-sm">
           <TransactionsTable
             transactions={transactionsData?.transactions ?? []}
             pagination={{

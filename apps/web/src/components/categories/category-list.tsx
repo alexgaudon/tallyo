@@ -24,7 +24,7 @@ export function CategoryList({
 
   if (!categories.length) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/60 shadow-soft">
+      <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/80 bg-card shadow-sm">
         <FolderIcon className="mb-2 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-1 text-lg font-semibold">No categories yet</h3>
         <p className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export function CategoryList({
         .map((orphanedChild) => (
           <div
             key={orphanedChild.id}
-            className="rounded-xl border border-border/60 shadow-soft p-4"
+            className="rounded-xl border border-border/80 bg-card shadow-sm p-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

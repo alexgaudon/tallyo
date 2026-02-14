@@ -110,11 +110,12 @@ export function CurrencyAmount({
 
 	const content = (
 		<span
+			data-currency
 			className={cn(
-				"font-mono",
+				"font-mono tabular-nums",
 				"flex items-center",
-				showColor && animatedAmount < 0 && "text-red-600",
-				showColor && animatedAmount > 0 && "text-green-600",
+				showColor && animatedAmount < 0 && "text-[var(--expense)]",
+				showColor && animatedAmount > 0 && "text-[var(--income)]",
 				isAnimating && "transition-all duration-75 ease-out",
 				className,
 			)}

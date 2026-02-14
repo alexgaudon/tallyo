@@ -92,43 +92,48 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold font-sans">Merchants</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your merchants and their categories
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleApplyAllMerchants}
-              disabled={
-                isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
-              }
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Apply All
-            </Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Merchant
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>New Merchant</DialogTitle>
-                </DialogHeader>
-                <CreateMerchantForm callback={() => setOpen(false)} />
-              </DialogContent>
-            </Dialog>
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
+        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                Vendors & payees
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                Merchants
+              </h1>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleApplyAllMerchants}
+                disabled={
+                  isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
+                }
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Apply all
+              </Button>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New merchant
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>New Merchant</DialogTitle>
+                  </DialogHeader>
+                  <CreateMerchantForm callback={() => setOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
+      </header>
 
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
         {/* Search - same width as merchant cards (list uses p-4) */}
         <div className="px-4">
           <div className="relative w-full">

@@ -75,13 +75,11 @@ body {
 }
 
 :root {
-  /* Modern, flowy aesthetic - soft radius */
   --radius: 0.5rem;
   --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
   --shadow-soft-lg:
     0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
 
-  /* Light mode - pure black and white with muted plum accent */
   --background: #ffffff;
   --foreground: #171717;
   --card: #ffffff;
@@ -94,36 +92,40 @@ body {
   --secondary-foreground: #171717;
   --muted: #f0f0f0;
   --muted-foreground: #737373;
-  --accent: #7c3aed;
+  --accent: #475569;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #7c3aed;
+  --ring: #475569;
 
-  /* Chart colors - muted plum variations */
+  --income: #059669;
+  --income-muted: #d1fae5;
+  --expense: #dc2626;
+  --expense-muted: #fee2e2;
+  --savings: #475569;
+  --savings-muted: #f1f5f9;
+
   --chart-1: #7c3aed;
-  --chart-2: #8b5cf6;
-  --chart-3: #a78bfa;
-  --chart-4: #c4b5fd;
-  --chart-5: #ddd6fe;
-  --chart-6: #7c3aed;
-  --chart-7: #a78bfa;
-  --chart-8: #c4b5fd;
+  --chart-2: #2563eb;
+  --chart-3: #059669;
+  --chart-4: #d97706;
+  --chart-5: #dc2626;
+  --chart-6: #0891b2;
+  --chart-7: #65a30d;
+  --chart-8: #ea580c;
 
-  /* Sidebar - top nav, minimal styling */
   --sidebar: #ffffff;
   --sidebar-foreground: #171717;
-  --sidebar-primary: #7c3aed;
+  --sidebar-primary: #475569;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5f3ff;
-  --sidebar-accent-foreground: #7c3aed;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #475569;
   --sidebar-border: #e5e5e5;
-  --sidebar-ring: #7c3aed;
+  --sidebar-ring: #475569;
 }
 
 .dark {
-  /* Dark mode - soft black with muted plum accent */
   --background: #0a0a0a;
   --foreground: #ffffff;
   --card: #0a0a0a;
@@ -136,32 +138,37 @@ body {
   --secondary-foreground: #ffffff;
   --muted: #171717;
   --muted-foreground: #a3a3a3;
-  --accent: #a78bfa;
+  --accent: #94a3b8;
   --accent-foreground: #0a0a0a;
   --destructive: #f87171;
   --border: #262626;
   --input: #262626;
-  --ring: #a78bfa;
+  --ring: #94a3b8;
 
-  /* Chart colors - inverted plum variations for dark */
+  --income: #34d399;
+  --income-muted: #064e3b;
+  --expense: #f87171;
+  --expense-muted: #450a0a;
+  --savings: #94a3b8;
+  --savings-muted: #334155;
+
   --chart-1: #a78bfa;
-  --chart-2: #8b5cf6;
-  --chart-3: #7c3aed;
-  --chart-4: #6d28d9;
-  --chart-5: #5b21b6;
-  --chart-6: #a78bfa;
-  --chart-7: #7c3aed;
-  --chart-8: #6d28d9;
+  --chart-2: #60a5fa;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f87171;
+  --chart-6: #22d3ee;
+  --chart-7: #a3e635;
+  --chart-8: #fb923c;
 
-  /* Sidebar */
   --sidebar: #0a0a0a;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #a78bfa;
+  --sidebar-primary: #94a3b8;
   --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #1e1b4b;
-  --sidebar-accent-foreground: #a78bfa;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #94a3b8;
   --sidebar-border: #262626;
-  --sidebar-ring: #a78bfa;
+  --sidebar-ring: #94a3b8;
 
   --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-soft-lg:
@@ -211,6 +218,12 @@ body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --color-savings: var(--savings);
+  --color-income-muted: var(--income-muted);
+  --color-expense-muted: var(--expense-muted);
+  --color-savings-muted: var(--savings-muted);
 }
 
 @layer base {
@@ -239,9 +252,12 @@ body {
   .font-mono {
     @apply font-mono;
   }
+  .font-mono,
+  [data-currency] {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
-/* Ensure Recharts tooltips appear above all other elements */
 .recharts-tooltip-wrapper {
   z-index: 99999;
 }
@@ -250,37 +266,32 @@ body {
   z-index: 99999;
 }
 
-/* Selection styling */
 ::selection {
   background-color: var(--accent);
   color: var(--accent-foreground);
 }
 
-/* Hide main document scrollbar but keep scroll behavior */
 html,
 body {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
-/* Focus styles - soft ring */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: var(--radius-md);
 }
 
-/* Remove outline from command input */
 [data-slot="command-input"]:focus-visible {
   outline: none;
 }
 
-/* Button and input base styles - sans for flow, mono for data */
 button,
 input,
 textarea,

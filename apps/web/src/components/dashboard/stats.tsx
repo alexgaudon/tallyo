@@ -37,51 +37,71 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   })();
 
   return (
-    <div className="grid grid-cols-2 gap-3 p-3 sm:p-4">
-      <Card className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
-            <CreditCardIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
+    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-muted">
+            <CreditCardIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Transactions</div>
-            <StatDisplay animate value={data.stats.totalTransactions} />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/10">
-            <TrendingUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Income</div>
-            <CurrencyAmount animate amount={income} />
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Transactions
+            </div>
+            <StatDisplay
+              animate
+              value={data.stats.totalTransactions}
+              className="text-lg sm:text-xl font-semibold tabular-nums"
+            />
           </div>
         </div>
       </Card>
 
-      <Card className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
-            <TrendingDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
+      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-income-muted">
+            <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Expenses</div>
-            <CurrencyAmount animate amount={Math.abs(expenses)} />
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Income
+            </div>
+            <CurrencyAmount
+              animate
+              amount={income}
+              className="text-lg sm:text-xl font-semibold text-income"
+            />
           </div>
         </div>
       </Card>
 
-      <Card className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
-            <PiggyBankIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
+      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-expense-muted">
+            <TrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
           </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Savings</div>
-            <div className="font-mono font-semibold text-sm sm:text-base">
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Expenses
+            </div>
+            <CurrencyAmount
+              animate
+              amount={Math.abs(expenses)}
+              className="text-lg sm:text-xl font-semibold text-expense"
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-savings-muted">
+            <PiggyBankIcon className="w-4 h-4 sm:w-5 sm:h-5 text-savings" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Savings rate
+            </div>
+            <div className="text-lg sm:text-xl font-semibold tabular-nums text-savings">
               {savingsRate}%
             </div>
           </div>

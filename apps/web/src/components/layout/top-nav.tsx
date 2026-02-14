@@ -55,12 +55,12 @@ export function TopNav() {
   };
 
   return (
-    <nav className="sticky top-0 left-0 right-0 border-b border-border/60 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 z-50 h-12 shrink-0">
+    <nav className="sticky top-0 left-0 right-0 border-b border-border/50 bg-card/95 backdrop-blur-md z-50 h-12 shrink-0 shadow-sm">
       <div className="max-w-screen-2xl mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
-          <span className="font-mono font-bold text-xl tracking-tight">
-            TALLYO
+          <span className="font-semibold text-lg tracking-tight text-foreground">
+            Tallyo
           </span>
         </Link>
 

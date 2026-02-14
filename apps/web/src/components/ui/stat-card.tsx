@@ -19,7 +19,7 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <div className={cn("border border-border rounded-xl p-4 shadow-soft", className)}>
+    <div className={cn("border border-border rounded-xl p-4 shadow-sm bg-card", className)}>
       <div className="text-sm text-muted-foreground mb-1">{title}</div>
       <div className="text-3xl font-mono font-bold">{value}</div>
       {change && (
