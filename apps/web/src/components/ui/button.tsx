@@ -5,20 +5,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 font-mono uppercase tracking-wider border-2 transition-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 rounded-lg border border-transparent transition-colors duration-200",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground border-primary hover:bg-transparent hover:text-primary",
+        default:
+          "bg-primary text-primary-foreground hover:opacity-90 shadow-soft",
         destructive:
-          "bg-destructive text-primary-foreground border-destructive hover:bg-transparent hover:text-destructive",
+          "bg-destructive text-primary-foreground hover:opacity-90 shadow-soft",
         outline:
-          "bg-transparent border-input text-foreground hover:bg-muted hover:border-input",
+          "bg-transparent border-border text-foreground hover:bg-muted/80 hover:border-muted-foreground/30",
         secondary:
-          "bg-secondary text-secondary-foreground border-secondary hover:bg-transparent hover:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-border",
         ghost:
-          "bg-transparent border-transparent text-foreground hover:bg-muted hover:border-input",
-        link: "bg-transparent border-transparent text-foreground underline-offset-4 hover:underline",
+          "bg-transparent text-foreground hover:bg-muted/80",
+        link: "bg-transparent text-foreground underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2 has-[>svg]:px-3",

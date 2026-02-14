@@ -60,7 +60,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
   };
 
   return (
-    <div className="border border-border p-4">
+    <div className="rounded-xl border border-border/60 shadow-soft p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-2 mb-1">
@@ -157,7 +157,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
           {merchant.keywords.map((keyword) => (
             <span
               key={keyword.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs border border-border text-muted-foreground"
+              className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border border-border text-muted-foreground"
             >
               <TagIcon className="h-3 w-3 shrink-0" />
               <span className="truncate max-w-[100px]">{keyword.keyword}</span>

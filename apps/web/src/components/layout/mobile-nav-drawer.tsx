@@ -77,10 +77,10 @@ export function MobileNavDrawer() {
                 to={item.to}
                 onClick={handleNavigation}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors border border-transparent",
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors border border-transparent",
                   isActive
                     ? "bg-accent/10 text-accent border-accent/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                 )}
               >
                 <item.icon className="w-5 h-5" />

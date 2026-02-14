@@ -12,7 +12,7 @@ export function UnreviewedTransactionsBanner({
   if (!count) return null;
 
   return (
-    <div className="border border-accent/30 bg-accent/5 p-4">
+    <div className="rounded-xl border border-accent/20 bg-accent/5 p-4 shadow-soft">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4 text-accent" />

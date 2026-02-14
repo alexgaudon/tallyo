@@ -192,7 +192,7 @@ function RouteComponent() {
           onDateRangeChange={handleDateRangeChange}
         />
 
-        <div className="max-w-screen-2xl mx-auto px-3 py-4 lg:px-6 space-y-6 lg:space-y-8">
+        <div className="max-w-screen-2xl mx-auto px-3 py-6 lg:px-8 space-y-6 lg:space-y-8">
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
             onReviewClick={() =>
@@ -207,9 +207,7 @@ function RouteComponent() {
             <div className="mb-3 sm:mb-4">
               <h2 className="text-base sm:text-lg font-semibold">Overview</h2>
             </div>
-            <div className="border border-border">
-              <Stats data={statsData} />
-            </div>
+            <Stats data={statsData} />
           </Section>
 
           <DashboardCharts
@@ -242,8 +240,8 @@ function DashboardHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border bg-background">
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+    <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm">
+      <div className="max-w-screen-2xl mx-auto px-4 py-4 lg:px-8 lg:py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold font-sans">
@@ -308,15 +306,13 @@ function DashboardCharts({
             <div className="mb-3 sm:mb-4">
               <h2 className="text-base sm:text-lg font-semibold">Cash Flow</h2>
             </div>
-            <div className="border border-border p-3 sm:p-4">
-              {cashFlowData && cashFlowData.length > 0 ? (
-                <CashFlowChart data={cashFlowData} />
-              ) : (
-                <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                  No cash flow data
-                </div>
-              )}
-            </div>
+            {cashFlowData && cashFlowData.length > 0 ? (
+              <CashFlowChart data={cashFlowData} />
+            ) : (
+              <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+                No cash flow data
+              </div>
+            )}
           </Section>
         </div>
       )}
@@ -328,15 +324,13 @@ function DashboardCharts({
               Top Categories
             </h2>
           </div>
-          <div className="border border-border p-3 sm:p-4">
-            {categoryData && categoryData.length > 0 ? (
-              <CategoryPieChart data={categoryData} />
-            ) : (
-              <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                No category data
-              </div>
-            )}
-          </div>
+          {categoryData && categoryData.length > 0 ? (
+            <CategoryPieChart data={categoryData} />
+          ) : (
+            <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+              No category data
+            </div>
+          )}
         </Section>
       </div>
     </div>
@@ -360,15 +354,13 @@ function DashboardDetails({
         <div className="mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold">Top Merchants</h2>
         </div>
-        <div className="border border-border">
-          {merchantData && merchantData.length > 0 ? (
-            <MerchantStats data={merchantData} />
-          ) : (
-            <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
-              No merchant data
-            </div>
-          )}
-        </div>
+        {merchantData && merchantData.length > 0 ? (
+          <MerchantStats data={merchantData} />
+        ) : (
+          <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+            No merchant data
+          </div>
+        )}
       </Section>
 
       <Section>
@@ -377,15 +369,13 @@ function DashboardDetails({
             Largest Transactions
           </h2>
         </div>
-        <div className="border border-border">
-          {transactionData && transactionData.length > 0 ? (
-            <TransactionStats data={transactionData} />
-          ) : (
-            <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
-              No transaction data
-            </div>
-          )}
-        </div>
+        {transactionData && transactionData.length > 0 ? (
+          <TransactionStats data={transactionData} />
+        ) : (
+          <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+            No transaction data
+          </div>
+        )}
       </Section>
     </div>
   );

@@ -25,14 +25,14 @@ export const ToggleSwitch = forwardRef<HTMLButtonElement, ToggleSwitchProps>(
           disabled={disabled}
           onClick={() => onCheckedChange(!checked)}
           className={cn(
-            "relative inline-flex h-6 w-11 items-center border border-border transition-colors",
+            "relative inline-flex h-6 w-11 items-center rounded-full border border-border transition-colors",
             checked ? "bg-accent" : "bg-secondary",
             disabled && "opacity-50 cursor-not-allowed"
           )}
         >
           <span
             className={cn(
-              "inline-block h-4 w-4 transform bg-background border border-border transition-transform",
+              "inline-block h-4 w-4 transform rounded-full bg-background border border-border transition-transform",
               checked ? "translate-x-5" : "translate-x-0"
             )}
           />

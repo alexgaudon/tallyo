@@ -129,9 +129,9 @@ function RouteComponent() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="border border-border p-4">
-          <div className="relative">
+        {/* Search - same width as merchant cards (list uses p-4) */}
+        <div className="px-4">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search merchants by name, keywords, or category..."
@@ -143,13 +143,11 @@ function RouteComponent() {
         </div>
 
         {/* List */}
-        <div className="border border-border">
-          <MerchantList
-            merchants={filteredMerchants}
-            isLoading={isLoading}
-            onDelete={handleDelete}
-          />
-        </div>
+        <MerchantList
+          merchants={filteredMerchants}
+          isLoading={isLoading}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

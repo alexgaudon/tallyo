@@ -55,7 +55,7 @@ export function TopNav() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+    <nav className="sticky top-0 left-0 right-0 border-b border-border/60 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 z-50 h-12 shrink-0">
       <div className="max-w-screen-2xl mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
@@ -77,10 +77,10 @@ export function TopNav() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200",
                   isActive
                     ? "text-accent bg-accent/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                 )}
               >
                 <item.icon className="w-4 h-4" />

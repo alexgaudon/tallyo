@@ -207,7 +207,7 @@ function RouteComponent() {
                 share it publicly.
               </p>
             </div>
-            <div className="border border-border p-4">
+            <div className="rounded-xl border border-border/60 shadow-soft p-4">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
                 <div className="relative flex-1">
                   <Input
@@ -280,7 +280,7 @@ function RouteComponent() {
                 transactions are imported.
               </p>
             </div>
-            <div className="border border-border p-4">
+            <div className="rounded-xl border border-border/60 shadow-soft p-4">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-4">
                 <div className="relative flex-1">
                   <Input
@@ -353,7 +353,7 @@ function RouteComponent() {
                   {webhookUrls.map((url: string) => (
                     <div
                       key={url}
-                      className="flex items-center gap-2 p-2 border border-border"
+                      className="flex items-center gap-2 p-2 rounded-lg border border-border"
                     >
                       <code className="flex-1 text-sm font-mono break-all">
                         {url}
@@ -398,7 +398,7 @@ function RouteComponent() {
                 Enable additional developer tools and debugging options.
               </p>
             </div>
-            <div className="border border-border p-4">
+            <div className="rounded-xl border border-border/60 shadow-soft p-4">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={devModeId}
@@ -430,7 +430,7 @@ function RouteComponent() {
                 Hide sensitive information and transaction details from view.
               </p>
             </div>
-            <div className="border border-border p-4">
+            <div className="rounded-xl border border-border/60 shadow-soft p-4">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={privacyModeId}
