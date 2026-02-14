@@ -40,7 +40,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
     <div className="grid grid-cols-2 gap-3 p-3 sm:p-4">
       <Card className="p-3 sm:p-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-accent/10">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
             <CreditCardIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
           </div>
           <div>
@@ -52,7 +52,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 
       <Card className="p-3 sm:p-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-green-500/10">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-green-500/10">
             <TrendingUpIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
           </div>
           <div>
@@ -64,7 +64,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 
       <Card className="p-3 sm:p-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-red-500/10">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-red-500/10">
             <TrendingDownIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
           </div>
           <div>
@@ -76,7 +76,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 
       <Card className="p-3 sm:p-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 bg-accent/10">
+          <div className="p-1.5 sm:p-2 rounded-lg bg-accent/10">
             <PiggyBankIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
           </div>
           <div>

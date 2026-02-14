@@ -30,6 +30,9 @@ const secondaryNavItems = [
   { to: "/reports", label: "Reports", icon: BarChart3Icon },
 ];
 
+const BOTTOM_NAV_HEIGHT = 56;
+const BOTTOM_NAV_SAFE = "env(safe-area-inset-bottom, 0px)";
+
 export function BottomNav() {
   const location = useLocation();
   const { data: session } = useSession();
@@ -39,8 +42,14 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 h-16 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95 z-50 lg:hidden">
-        <div className="flex items-center justify-around h-full px-4">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 lg:hidden"
+        style={{
+          height: `calc(${BOTTOM_NAV_HEIGHT}px + ${BOTTOM_NAV_SAFE})`,
+          paddingBottom: BOTTOM_NAV_SAFE,
+        }}
+      >
+        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
           {navItems.map((item) => {
             const isActive =
               location.pathname === item.to ||
@@ -52,27 +61,44 @@ export function BottomNav() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex flex-col items-center gap-1 p-2 transition-colors",
-                  isActive ? "text-accent" : "text-muted-foreground",
+                  "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] rounded-lg transition-colors duration-200 active:scale-95",
+                  isActive
+                    ? "text-accent"
+                    : "text-muted-foreground active:bg-muted/80",
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span
+                  className={cn(
+                    "flex items-center justify-center w-9 h-9 rounded-full transition-colors",
+                    isActive && "bg-accent/10",
+                  )}
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                </span>
+                <span className="text-[11px] font-medium leading-tight">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
 
-          {/* Add Button */}
+          {/* Add Button - elevated FAB-style */}
           <Dialog>
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="flex flex-col items-center gap-1 p-2 text-accent"
+                className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] -mt-5 rounded-xl text-accent active:scale-95 transition-transform duration-200"
+                aria-label="Add transaction"
               >
-                <div className="w-10 h-10 bg-accent flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-accent-foreground" />
+                <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center shadow-lg shadow-accent/25 ring-2 ring-background">
+                  <Plus
+                    className="w-6 h-6 text-accent-foreground"
+                    strokeWidth={2.5}
+                  />
                 </div>
-                <span className="text-[10px] font-medium">Add</span>
+                <span className="text-[11px] font-medium leading-tight mt-1">
+                  Add
+                </span>
               </button>
             </DialogTrigger>
             <DialogContent>
@@ -91,20 +117,36 @@ export function BottomNav() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex flex-col items-center gap-1 p-2 transition-colors",
-                  isActive ? "text-accent" : "text-muted-foreground",
+                  "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] rounded-lg transition-colors duration-200 active:scale-95",
+                  isActive
+                    ? "text-accent"
+                    : "text-muted-foreground active:bg-muted/80",
                 )}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span
+                  className={cn(
+                    "flex items-center justify-center w-9 h-9 rounded-full transition-colors",
+                    isActive && "bg-accent/10",
+                  )}
+                >
+                  <item.icon className="w-5 h-5 shrink-0" />
+                </span>
+                <span className="text-[11px] font-medium leading-tight">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
         </div>
       </nav>
 
-      {/* Spacer for fixed bottom nav */}
-      <div className="h-16 lg:hidden" />
+      {/* Spacer for fixed bottom nav - matches nav height including safe area */}
+      <div
+        className="lg:hidden"
+        style={{
+          height: `calc(${BOTTOM_NAV_HEIGHT}px + ${BOTTOM_NAV_SAFE})`,
+        }}
+      />
     </>
   );
 }

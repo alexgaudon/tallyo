@@ -83,7 +83,7 @@ function RootComponent() {
             <div className="flex flex-col min-h-screen">
               <TopNav />
               <MobileNavDrawer />
-              <main className="flex-1 pt-16">
+              <main className="flex-1 bg-muted/30">
                 <Outlet />
               </main>
               <Footer />

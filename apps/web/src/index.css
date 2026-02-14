@@ -58,6 +58,9 @@
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-soft-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
 }
 
 html,
@@ -72,8 +75,11 @@ body {
 }
 
 :root {
-  /* Blocky aesthetic - zero border radius */
-  --radius: 0px;
+  /* Modern, flowy aesthetic - soft radius */
+  --radius: 0.5rem;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-soft-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
 
   /* Light mode - pure black and white with muted plum accent */
   --background: #ffffff;
@@ -156,13 +162,21 @@ body {
   --sidebar-accent-foreground: #a78bfa;
   --sidebar-border: #262626;
   --sidebar-ring: #a78bfa;
+
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-soft-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 10px 24px -4px rgba(0, 0, 0, 0.2);
 }
 
 @theme inline {
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-soft-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -236,36 +250,36 @@ body {
   z-index: 99999;
 }
 
-/* Selection styling - blocky and monochrome */
+/* Selection styling */
 ::selection {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
-/* Scrollbar styling - blocky and monochrome */
+/* Scrollbar styling - soft and rounded */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--background);
-  border: 1px solid var(--border);
+  background: var(--muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--foreground);
-  border: 1px solid var(--border);
+  background: var(--border);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
 
-/* Focus styles - blocky outline */
+/* Focus styles - soft ring */
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+  border-radius: var(--radius-md);
 }
 
 /* Remove outline from command input */
@@ -273,10 +287,10 @@ body {
   outline: none;
 }
 
-/* Button and input base styles */
+/* Button and input base styles - sans for flow, mono for data */
 button,
 input,
 textarea,
 select {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }

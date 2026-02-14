@@ -455,12 +455,12 @@ function RouteComponent() {
         </div>
 
         {/* Search */}
-        <div className="border border-border p-4">
+        <div className="rounded-xl border border-border/60 shadow-soft p-4">
           <Search />
         </div>
 
         {/* Table */}
-        <div className="border border-border">
+        <div className="rounded-xl border border-border/60 shadow-soft overflow-hidden">
           <TransactionsTable
             transactions={transactionsData?.transactions ?? []}
             pagination={{

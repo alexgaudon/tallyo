@@ -121,10 +121,10 @@ function RouteComponent() {
           </Dialog>
         </div>
 
-        {/* Search & Filter */}
-        <div className="border border-border p-4">
+        {/* Search & Filter - same width as category cards (list uses p-4) */}
+        <div className="px-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search categories..."
@@ -137,7 +137,7 @@ function RouteComponent() {
               value={filterType}
               onValueChange={(value: FilterType) => setFilterType(value)}
             >
-              <SelectTrigger className="w-full sm:w-[140px] h-10">
+              <SelectTrigger className="w-full sm:w-[140px] h-10 shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -150,13 +150,11 @@ function RouteComponent() {
         </div>
 
         {/* List */}
-        <div className="border border-border">
-          <CategoryList
-            categories={filteredCategories}
-            isLoading={isLoading}
-            onDelete={handleDelete}
-          />
-        </div>
+        <CategoryList
+          categories={filteredCategories}
+          isLoading={isLoading}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

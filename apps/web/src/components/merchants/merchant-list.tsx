@@ -23,7 +23,7 @@ export function MerchantList({
 
   if (!merchants.length) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border border-border">
+      <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/60 shadow-soft">
         <StoreIcon className="mb-3 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-2 text-lg font-semibold">No merchants yet</h3>
         <p className="text-sm text-muted-foreground">

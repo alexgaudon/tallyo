@@ -44,7 +44,7 @@ export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
     : FolderIcon;
 
   return (
-    <div className="flex items-center justify-between border border-border p-2 pl-8">
+    <div className="flex items-center justify-between rounded-lg border border-border/60 p-2 pl-8">
       <div className="flex items-center gap-2">
         <Icon className="h-3 w-3 text-muted-foreground" />
         <span className="text-sm">{category.name}</span>

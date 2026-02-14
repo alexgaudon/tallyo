@@ -7,7 +7,7 @@ function Card({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-4 border-2 shadow-block dark:shadow-block-dark",
+        "bg-card text-card-foreground flex flex-col gap-4 border border-border rounded-xl shadow-soft",
         className
       )}
       {...props}
@@ -32,7 +32,7 @@ function CardTitle({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("leading-none font-semibold font-mono uppercase tracking-wider", className)}
+      className={cn("leading-none font-semibold", className)}
       {...props}
     />
   )
@@ -42,7 +42,7 @@ function CardDescription({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm font-mono", className)}
+      className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
   )
@@ -65,7 +65,7 @@ function CardContent({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-6 pb-6 font-mono", className)}
+      className={cn("px-6 pb-6", className)}
       {...props}
     />
   )
@@ -76,7 +76,7 @@ function CardFooter({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center px-6 pt-4 border-t-2 [.border-t]:pt-4",
+        "flex items-center px-6 pt-4 border-t border-border [.border-t]:pt-4",
         className
       )}
       {...props}
