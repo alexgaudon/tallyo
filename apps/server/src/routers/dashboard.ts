@@ -55,6 +55,467 @@ function _calculateVolatility(values: number[]): number {
   return (standardDeviation / mean) * 100;
 }
 
+type StatsDateRange = { from?: string; to?: string };
+
+/** Returns same-month day range (1–31) or null if range spans months or is invalid. */
+function getSameMonthDayWindow(
+  from: string,
+  to: string,
+): { fromDay: number; toDay: number } | null {
+  const [fromY, fromM, fromD] = from.split("-").map(Number);
+  const [toY, toM, toD] = to.split("-").map(Number);
+  if (fromY !== toY || fromM !== toM || fromD > toD) return null;
+  return { fromDay: fromD, toDay: toD };
+}
+
+/** Average income/expense/transaction count for day-fromDay-to-day-toDay across all months. */
+async function getWindowAverages(
+  userId: string,
+  fromDay: number,
+  toDay: number,
+): Promise<{
+  avgIncome: number;
+  avgExpense: number;
+  avgTxCount: number;
+} | null> {
+  const dayGte = sql`EXTRACT(DAY FROM ${transaction.date}) >= ${fromDay}`;
+  const dayLte = sql`EXTRACT(DAY FROM ${transaction.date}) <= ${toDay}`;
+  const baseWhere = and(
+    eq(transaction.userId, userId),
+    eq(transaction.reviewed, true),
+    dayGte,
+    dayLte,
+  );
+
+  const [incomeRows, expenseRows, txRows] = await Promise.all([
+    db
+      .select({
+        y: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        m: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        total: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          baseWhere,
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+    db
+      .select({
+        y: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        m: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        total: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          baseWhere,
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+    db
+      .select({
+        y: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        m: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        cnt: count(),
+      })
+      .from(transaction)
+      .where(baseWhere)
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+  ]);
+
+  if (
+    incomeRows.length === 0 &&
+    expenseRows.length === 0 &&
+    txRows.length === 0
+  ) {
+    return null;
+  }
+
+  const sumIncome = incomeRows.reduce(
+    (a, r) => a + Math.abs(Number(r.total ?? 0)),
+    0,
+  );
+  const sumExpense = expenseRows.reduce(
+    (a, r) => a + Math.abs(Number(r.total ?? 0)),
+    0,
+  );
+  const sumTx = txRows.reduce((a, r) => a + (r.cnt ?? 0), 0);
+
+  return {
+    avgIncome: incomeRows.length > 0 ? sumIncome / incomeRows.length : 0,
+    avgExpense: expenseRows.length > 0 ? sumExpense / expenseRows.length : 0,
+    avgTxCount: txRows.length > 0 ? Math.round(sumTx / txRows.length) : 0,
+  };
+}
+
+async function getStatsForDateRange(
+  userId: string,
+  dateRange: StatsDateRange,
+): Promise<{
+  stats: {
+    totalTransactions: number;
+    totalCategories: number;
+    totalMerchants: number;
+    totalMerchantKeywords: number;
+    totalExpenses: number;
+    totalIncome: number;
+    totalIncomeTransactions: number;
+    totalExpenseTransactions: number;
+    avgIncomeTransactionsPerMonth: number;
+    avgExpenseTransactionsPerMonth: number;
+    avgIncomeAmountPerMonth: number;
+    avgExpenseAmountPerMonth: number;
+    periodLengthInDays: number;
+    avgIncomeForWindow: number | null;
+    avgExpenseForWindow: number | null;
+    avgTransactionCountForWindow: number | null;
+  };
+}> {
+  const [
+    transactionCount,
+    categoryCount,
+    merchantCount,
+    merchantKeywordCount,
+    expenseCount,
+    incomeCount,
+    expenseTransactionCount,
+    incomeTransactionCount,
+    avgIncomeAmountsPerMonth,
+    avgExpenseAmountsPerMonth,
+    avgIncomeTransactionsPerMonth,
+    avgExpenseTransactionsPerMonth,
+  ] = await Promise.allSettled([
+    db
+      .select({ count: count() })
+      .from(transaction)
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+        ),
+      ),
+    db
+      .select({ count: count() })
+      .from(category)
+      .where(eq(category.userId, userId)),
+    db
+      .select({ count: count() })
+      .from(merchant)
+      .where(eq(merchant.userId, userId)),
+    db
+      .select({ count: count() })
+      .from(merchantKeyword)
+      .where(eq(merchantKeyword.userId, userId)),
+    db
+      .select({ amount: sum(transaction.amount) })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+        ),
+      ),
+    db
+      .select({ amount: sum(transaction.amount) })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+        ),
+      ),
+    db
+      .select({ count: count() })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+        ),
+      ),
+    db
+      .select({ count: count() })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+        ),
+      ),
+    db
+      .select({
+        year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        totalAmount: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(transaction.reviewed, true),
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+    db
+      .select({
+        year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        totalAmount: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(transaction.reviewed, true),
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+    db
+      .select({
+        year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        count: count(),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+    db
+      .select({
+        year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
+        month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
+        count: count(),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+          eq(transaction.reviewed, true),
+        ),
+      )
+      .groupBy(
+        sql`EXTRACT(YEAR FROM ${transaction.date})`,
+        sql`EXTRACT(MONTH FROM ${transaction.date})`,
+      ),
+  ]);
+
+  let avgIncomeAmountPerMonth = 0;
+  let avgExpenseAmountPerMonth = 0;
+  let avgIncomeTransactions = 0;
+  let avgExpenseTransactions = 0;
+
+  if (
+    avgIncomeAmountsPerMonth.status === "fulfilled" &&
+    avgIncomeAmountsPerMonth.value.length > 0
+  ) {
+    const totalIncomeAmount = avgIncomeAmountsPerMonth.value.reduce(
+      (sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
+      0,
+    );
+    avgIncomeAmountPerMonth =
+      totalIncomeAmount / avgIncomeAmountsPerMonth.value.length;
+  } else {
+    const totalIncomeAmount =
+      incomeCount.status === "fulfilled" && incomeCount.value[0].amount
+        ? Math.abs(Number(incomeCount.value[0].amount))
+        : 0;
+    if (totalIncomeAmount > 0) avgIncomeAmountPerMonth = totalIncomeAmount / 6;
+  }
+
+  if (
+    avgExpenseAmountsPerMonth.status === "fulfilled" &&
+    avgExpenseAmountsPerMonth.value.length > 0
+  ) {
+    const totalExpenseAmount = avgExpenseAmountsPerMonth.value.reduce(
+      (sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
+      0,
+    );
+    avgExpenseAmountPerMonth =
+      totalExpenseAmount / avgExpenseAmountsPerMonth.value.length;
+  } else {
+    const totalExpenseAmount =
+      expenseCount.status === "fulfilled" && expenseCount.value[0].amount
+        ? Math.abs(Number(expenseCount.value[0].amount))
+        : 0;
+    if (totalExpenseAmount > 0)
+      avgExpenseAmountPerMonth = totalExpenseAmount / 6;
+  }
+
+  if (
+    avgIncomeTransactionsPerMonth.status === "fulfilled" &&
+    avgIncomeTransactionsPerMonth.value.length > 0
+  ) {
+    const totalIncomeTransactions = avgIncomeTransactionsPerMonth.value.reduce(
+      (sum, month) => sum + (month.count || 0),
+      0,
+    );
+    avgIncomeTransactions = Math.round(
+      totalIncomeTransactions / avgIncomeTransactionsPerMonth.value.length,
+    );
+  } else {
+    const totalIncomeCount =
+      incomeTransactionCount.status === "fulfilled"
+        ? incomeTransactionCount.value[0].count
+        : 0;
+    if (totalIncomeCount > 0)
+      avgIncomeTransactions = Math.round(totalIncomeCount / 6);
+  }
+
+  if (
+    avgExpenseTransactionsPerMonth.status === "fulfilled" &&
+    avgExpenseTransactionsPerMonth.value.length > 0
+  ) {
+    const totalExpenseTransactions =
+      avgExpenseTransactionsPerMonth.value.reduce(
+        (sum, month) => sum + (month.count || 0),
+        0,
+      );
+    avgExpenseTransactions = Math.round(
+      totalExpenseTransactions / avgExpenseTransactionsPerMonth.value.length,
+    );
+  } else {
+    const totalExpenseCount =
+      expenseTransactionCount.status === "fulfilled"
+        ? expenseTransactionCount.value[0].count
+        : 0;
+    if (totalExpenseCount > 0)
+      avgExpenseTransactions = Math.round(totalExpenseCount / 6);
+  }
+
+  let periodLengthInDays = 30;
+  if (dateRange.from && dateRange.to) {
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
+    periodLengthInDays =
+      Math.ceil(
+        Math.abs(toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24),
+      ) + 1;
+  }
+
+  let avgIncomeForWindow: number | null = null;
+  let avgExpenseForWindow: number | null = null;
+  let avgTransactionCountForWindow: number | null = null;
+  if (dateRange.from && dateRange.to) {
+    const window = getSameMonthDayWindow(dateRange.from, dateRange.to);
+    if (window) {
+      const windowAvgs = await getWindowAverages(
+        userId,
+        window.fromDay,
+        window.toDay,
+      );
+      if (windowAvgs) {
+        avgIncomeForWindow = Math.round(windowAvgs.avgIncome);
+        avgExpenseForWindow = Math.round(windowAvgs.avgExpense);
+        avgTransactionCountForWindow = windowAvgs.avgTxCount;
+      }
+    }
+  }
+
+  return {
+    stats: {
+      totalTransactions:
+        transactionCount.status === "fulfilled"
+          ? transactionCount.value[0].count
+          : 0,
+      totalCategories:
+        categoryCount.status === "fulfilled" ? categoryCount.value[0].count : 0,
+      totalMerchants:
+        merchantCount.status === "fulfilled" ? merchantCount.value[0].count : 0,
+      totalMerchantKeywords:
+        merchantKeywordCount.status === "fulfilled"
+          ? merchantKeywordCount.value[0].count
+          : 0,
+      totalExpenses:
+        expenseCount.status === "fulfilled" && expenseCount.value[0].amount
+          ? Number(expenseCount.value[0].amount)
+          : 0,
+      totalIncome:
+        incomeCount.status === "fulfilled" && incomeCount.value[0].amount
+          ? Number(incomeCount.value[0].amount)
+          : 0,
+      totalIncomeTransactions:
+        incomeTransactionCount.status === "fulfilled"
+          ? incomeTransactionCount.value[0].count
+          : 0,
+      totalExpenseTransactions:
+        expenseTransactionCount.status === "fulfilled"
+          ? expenseTransactionCount.value[0].count
+          : 0,
+      avgIncomeTransactionsPerMonth: avgIncomeTransactions,
+      avgExpenseTransactionsPerMonth: avgExpenseTransactions,
+      avgIncomeAmountPerMonth: avgIncomeAmountPerMonth,
+      avgExpenseAmountPerMonth: avgExpenseAmountPerMonth,
+      periodLengthInDays,
+      avgIncomeForWindow,
+      avgExpenseForWindow,
+      avgTransactionCountForWindow,
+    },
+  };
+}
+
 export const dashboardRouter = {
   getMerchantStats: protectedProcedure
     .input(dateRangeSchema.optional())
@@ -281,370 +742,7 @@ export const dashboardRouter = {
   getStatsCounts: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
-
-      const [
-        transactionCount,
-        categoryCount,
-        merchantCount,
-        merchantKeywordCount,
-        expenseCount,
-        incomeCount,
-        expenseTransactionCount,
-        incomeTransactionCount,
-        avgIncomeAmountsPerMonth,
-        avgExpenseAmountsPerMonth,
-        avgIncomeTransactionsPerMonth,
-        avgExpenseTransactionsPerMonth,
-      ] = await Promise.allSettled([
-        db
-          .select({
-            count: count(),
-          })
-          .from(transaction)
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          ),
-        db
-          .select({
-            count: count(),
-          })
-          .from(category)
-          .where(eq(category.userId, context.session.user.id)),
-        db
-          .select({
-            count: count(),
-          })
-          .from(merchant)
-          .where(eq(merchant.userId, context.session.user.id)),
-        db
-          .select({
-            count: count(),
-          })
-          .from(merchantKeyword)
-          .where(eq(merchantKeyword.userId, context.session.user.id)),
-        db
-          .select({
-            amount: sum(transaction.amount),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, false),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          ),
-        db
-          .select({
-            amount: sum(transaction.amount),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, true),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          ),
-        // Count expense transactions
-        db
-          .select({
-            count: count(),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, false),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          ),
-        // Count income transactions
-        db
-          .select({
-            count: count(),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, true),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          ),
-        // Get all income amounts grouped by month for averages
-        db
-          .select({
-            year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
-            month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
-            totalAmount: sum(transaction.amount),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(transaction.reviewed, true),
-              eq(category.treatAsIncome, true),
-              eq(category.hideFromInsights, false),
-            ),
-          )
-          .groupBy(
-            sql`EXTRACT(YEAR FROM ${transaction.date})`,
-            sql`EXTRACT(MONTH FROM ${transaction.date})`,
-          ),
-        // Get all expense amounts grouped by month for averages
-        db
-          .select({
-            year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
-            month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
-            totalAmount: sum(transaction.amount),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(transaction.reviewed, true),
-              eq(category.treatAsIncome, false),
-              eq(category.hideFromInsights, false),
-            ),
-          )
-          .groupBy(
-            sql`EXTRACT(YEAR FROM ${transaction.date})`,
-            sql`EXTRACT(MONTH FROM ${transaction.date})`,
-          ),
-        // Calculate average income transactions per month (all time)
-        db
-          .select({
-            year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
-            month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
-            count: count(),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, true),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-            ),
-          )
-          .groupBy(
-            sql`EXTRACT(YEAR FROM ${transaction.date})`,
-            sql`EXTRACT(MONTH FROM ${transaction.date})`,
-          ),
-        // Calculate average expense transactions per month (all time)
-        db
-          .select({
-            year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
-            month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
-            count: count(),
-          })
-          .from(transaction)
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.userId, context.session.user.id),
-              eq(category.treatAsIncome, false),
-              eq(category.hideFromInsights, false),
-              eq(transaction.reviewed, true),
-            ),
-          )
-          .groupBy(
-            sql`EXTRACT(YEAR FROM ${transaction.date})`,
-            sql`EXTRACT(MONTH FROM ${transaction.date})`,
-          ),
-      ]);
-
-      // Calculate average monthly amounts and transaction counts
-      let avgIncomeAmountPerMonth = 0;
-      let avgExpenseAmountPerMonth = 0;
-      let avgIncomeTransactions = 0;
-      let avgExpenseTransactions = 0;
-
-      // Calculate average income amount per month
-      if (
-        avgIncomeAmountsPerMonth.status === "fulfilled" &&
-        avgIncomeAmountsPerMonth.value.length > 0
-      ) {
-        const totalIncomeAmount = avgIncomeAmountsPerMonth.value.reduce(
-          (sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
-          0,
-        );
-        const monthCount = avgIncomeAmountsPerMonth.value.length;
-        avgIncomeAmountPerMonth = totalIncomeAmount / monthCount;
-      } else {
-        // Fallback: estimate based on total income and rough month count
-        const totalIncomeAmount =
-          incomeCount.status === "fulfilled" && incomeCount.value[0].amount
-            ? Math.abs(Number(incomeCount.value[0].amount))
-            : 0;
-        if (totalIncomeAmount > 0) {
-          // Rough estimate: assume data spans about 6 months
-          avgIncomeAmountPerMonth = totalIncomeAmount / 6;
-        }
-      }
-
-      // Calculate average expense amount per month
-      if (
-        avgExpenseAmountsPerMonth.status === "fulfilled" &&
-        avgExpenseAmountsPerMonth.value.length > 0
-      ) {
-        const totalExpenseAmount = avgExpenseAmountsPerMonth.value.reduce(
-          (sum, month) => sum + Math.abs(Number(month.totalAmount || 0)),
-          0,
-        );
-        const monthCount = avgExpenseAmountsPerMonth.value.length;
-        avgExpenseAmountPerMonth = totalExpenseAmount / monthCount;
-      } else {
-        // Fallback: estimate based on total expenses and rough month count
-        const totalExpenseAmount =
-          expenseCount.status === "fulfilled" && expenseCount.value[0].amount
-            ? Math.abs(Number(expenseCount.value[0].amount))
-            : 0;
-        if (totalExpenseAmount > 0) {
-          // Rough estimate: assume data spans about 6 months
-          avgExpenseAmountPerMonth = totalExpenseAmount / 6;
-        }
-      }
-
-      // Calculate average income transaction count per month
-      if (
-        avgIncomeTransactionsPerMonth.status === "fulfilled" &&
-        avgIncomeTransactionsPerMonth.value.length > 0
-      ) {
-        const totalIncomeTransactions =
-          avgIncomeTransactionsPerMonth.value.reduce(
-            (sum, month) => sum + (month.count || 0),
-            0,
-          );
-        const monthCount = avgIncomeTransactionsPerMonth.value.length;
-        avgIncomeTransactions = Math.round(
-          totalIncomeTransactions / monthCount,
-        );
-      } else {
-        // Fallback: estimate based on total transactions and rough month count
-        const totalIncomeCount =
-          incomeTransactionCount.status === "fulfilled"
-            ? incomeTransactionCount.value[0].count
-            : 0;
-        if (totalIncomeCount > 0) {
-          // Rough estimate: assume data spans about 6 months
-          avgIncomeTransactions = Math.round(totalIncomeCount / 6);
-        }
-      }
-
-      // Calculate average expense amount and transaction count per month
-      if (
-        avgExpenseTransactionsPerMonth.status === "fulfilled" &&
-        avgExpenseTransactionsPerMonth.value.length > 0
-      ) {
-        const totalExpenseTransactions =
-          avgExpenseTransactionsPerMonth.value.reduce(
-            (sum, month) => sum + (month.count || 0),
-            0,
-          );
-        const monthCount = avgExpenseTransactionsPerMonth.value.length;
-        avgExpenseTransactions = Math.round(
-          totalExpenseTransactions / monthCount,
-        );
-      } else {
-        // Fallback: estimate based on total transactions and rough month count
-        const totalExpenseCount =
-          expenseTransactionCount.status === "fulfilled"
-            ? expenseTransactionCount.value[0].count
-            : 0;
-        if (totalExpenseCount > 0) {
-          // Rough estimate: assume data spans about 6 months
-          avgExpenseTransactions = Math.round(totalExpenseCount / 6);
-        }
-      }
-
-      // Calculate period length for normalization
-      let periodLengthInDays = 30; // Default to 30 days if no date range
-      if (dateRange.from && dateRange.to) {
-        const fromDate = new Date(dateRange.from);
-        const toDate = new Date(dateRange.to);
-        const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
-        periodLengthInDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
-      }
-
-      const result = {
-        stats: {
-          totalTransactions:
-            transactionCount.status === "fulfilled"
-              ? transactionCount.value[0].count
-              : 0,
-          totalCategories:
-            categoryCount.status === "fulfilled"
-              ? categoryCount.value[0].count
-              : 0,
-          totalMerchants:
-            merchantCount.status === "fulfilled"
-              ? merchantCount.value[0].count
-              : 0,
-          totalMerchantKeywords:
-            merchantKeywordCount.status === "fulfilled"
-              ? merchantKeywordCount.value[0].count
-              : 0,
-          totalExpenses:
-            expenseCount.status === "fulfilled" && expenseCount.value[0].amount
-              ? Number(expenseCount.value[0].amount)
-              : 0,
-          totalIncome:
-            incomeCount.status === "fulfilled" && incomeCount.value[0].amount
-              ? Number(incomeCount.value[0].amount)
-              : 0,
-          totalIncomeTransactions:
-            incomeTransactionCount.status === "fulfilled"
-              ? incomeTransactionCount.value[0].count
-              : 0,
-          totalExpenseTransactions:
-            expenseTransactionCount.status === "fulfilled"
-              ? expenseTransactionCount.value[0].count
-              : 0,
-          avgIncomeTransactionsPerMonth: avgIncomeTransactions,
-          avgExpenseTransactionsPerMonth: avgExpenseTransactions,
-          avgIncomeAmountPerMonth: avgIncomeAmountPerMonth,
-          avgExpenseAmountPerMonth: avgExpenseAmountPerMonth,
-          periodLengthInDays: periodLengthInDays,
-        },
-      };
-
-      return result;
+      return getStatsForDateRange(context.session.user.id, input || {});
     }),
   getCashFlowData: protectedProcedure
     .input(dateRangeSchema.optional())

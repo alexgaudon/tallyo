@@ -18,6 +18,7 @@ import { z } from "zod";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
+import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
 import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
@@ -210,6 +211,9 @@ function RouteComponent() {
               </h2>
             </div>
             <Stats data={statsData} />
+            <div className="mt-4">
+              <PeriodInsights data={statsData} />
+            </div>
           </Section>
 
           <DashboardCharts
