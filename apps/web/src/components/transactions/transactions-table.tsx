@@ -214,7 +214,7 @@ export function TransactionsTable({
               size="icon"
               onClick={() => toggleReviewed({ id: transaction.id })}
               className={cn(
-                "h-7 w-7 rounded-full border border-transparent bg-background hover:border-accent/60 hover:bg-accent/10 transition-colors",
+                "h-7 w-7 rounded-full border border-transparent bg-background hover:border-muted-foreground/30 hover:bg-muted/60 transition-colors",
                 transaction.reviewed ? "text-income" : "text-muted-foreground",
               )}
               disabled={isDisabled}

@@ -145,7 +145,12 @@ export const merchantsRouter = {
             ...updateData,
             updatedAt: new Date(),
           })
-          .where(eq(merchant.id, id))
+          .where(
+            and(
+              eq(merchant.id, id),
+              eq(merchant.userId, context.session?.user?.id),
+            ),
+          )
           .returning();
 
         if (!updatedMerchant || updatedMerchant.length === 0) {

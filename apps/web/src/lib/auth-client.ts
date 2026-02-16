@@ -62,11 +62,20 @@ export const useSessionFetch = async () => {
       isAuthenticated: true,
     };
   } catch (error) {
-    if (error instanceof ORPCError) {
-      if (error.code === "UNAUTHORIZED") {
-        return null;
-      }
+    if (error instanceof ORPCError && error.code === "UNAUTHORIZED") {
+      return null;
     }
+    // Never return undefined: return minimal session so UI has defined data and can refetch
+    return {
+      ...session,
+      settings: {
+        isDevMode: false,
+        isPrivacyMode: false,
+        webhookUrls: [],
+      },
+      meta: { unreviewedTransactionCount: 0 },
+      isAuthenticated: true,
+    };
   }
 };
 

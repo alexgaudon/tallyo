@@ -237,7 +237,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   className={`flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent transition-all ${
                     activeIndex === index
                       ? "bg-muted/70 border-accent-foreground/10 shadow-sm"
-                      : "bg-card hover:bg-muted/60 hover:border-accent-foreground/5"
+                      : "bg-card hover:bg-muted/60 hover:border-muted-foreground/10"
                   } cursor-pointer text-left min-w-0`}
                   onClick={() => handleCategoryClick(item.categoryId)}
                   aria-label={`View transactions for ${item.name} category`}
