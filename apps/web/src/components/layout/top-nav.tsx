@@ -95,7 +95,7 @@ export function TopNav() {
           <button
             type="button"
             onClick={handleTriggerWebhooks}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title="Trigger Webhooks"
           >
             <RefreshCw className="w-5 h-5" />
@@ -107,7 +107,7 @@ export function TopNav() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
                 <Settings className="w-5 h-5" />
               </button>
