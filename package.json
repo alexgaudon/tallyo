@@ -35,5 +35,8 @@
 	"lint-staged": {
 		"*": "npm run check"
 	},
+	"overrides": {
+		"diff": "8.0.3"
+	},
 	"packageManager": "npm@10.8.2"
 }
