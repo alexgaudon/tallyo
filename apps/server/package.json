@@ -18,7 +18,7 @@
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
-    "@orpc/client": "^1.10.2",
+    "@orpc/client": "^1.13.6",
     "@orpc/openapi": "^1.11.0",
     "@orpc/server": "^1.10.2",
     "@orpc/zod": "^1.11.0",
