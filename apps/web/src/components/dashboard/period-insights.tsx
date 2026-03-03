@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
-import { formatCurrency } from "@/lib/utils";
 import type { DashboardStats } from "../../../../server/src/routers";
 
 const DAYS_PER_MONTH = 30;
@@ -154,7 +153,11 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
             {incomeChange !== null && <ComparisonBadge change={incomeChange} />}
           </div>
           <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg {formatCurrency(Math.round(expectedIncome))}
+            avg{" "}
+            <CurrencyAmount
+              amount={Math.round(expectedIncome)}
+              className="text-xs"
+            />
           </p>
         </div>
         <div className="min-w-0">
@@ -172,7 +175,11 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg {formatCurrency(Math.round(expectedExpenses))}
+            avg{" "}
+            <CurrencyAmount
+              amount={Math.round(expectedExpenses)}
+              className="text-xs"
+            />
           </p>
         </div>
         <div className="min-w-0">

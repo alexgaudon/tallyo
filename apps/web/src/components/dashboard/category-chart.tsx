@@ -47,7 +47,7 @@ export function CategoryChart({ data }: { data: DashboardCategoryData }) {
                 </span>
               </div>
               <div className="text-right">
-                <span className="font-semibold text-base">
+                <span className="font-semibold text-base tabular-nums">
                   {formatCurrency(Number(item.amount))}
                 </span>
               </div>
