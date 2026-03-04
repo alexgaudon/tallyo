@@ -29,7 +29,7 @@
     "pg": "^8.16.3",
     "winston": "^3.18.3",
     "zod": "^4.1.12",
-    "@hono/node-server": "^1.19.9",
+    "@hono/node-server": "^1.19.10",
     "bcrypt": "^6.0.0"
   },
   "devDependencies": {
