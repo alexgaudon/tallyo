@@ -25,7 +25,6 @@ import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { Button } from "@/components/ui/button";
-import { Section } from "@/components/ui/section";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { dateRangeToApiFormat, isDateRangeOneMonth } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
@@ -193,7 +192,7 @@ function RouteComponent() {
           onDateRangeChange={handleDateRangeChange}
         />
 
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6 lg:space-y-8">
+        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8 space-y-5">
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
             onReviewClick={() =>
@@ -204,17 +203,15 @@ function RouteComponent() {
             }
           />
 
-          <Section>
-            <div className="mb-4">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="grid gap-5">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground mb-3">
                 Overview
               </h2>
+              <Stats data={statsData} />
             </div>
-            <Stats data={statsData} />
-            <div className="mt-4">
-              <PeriodInsights data={statsData} />
-            </div>
-          </Section>
+            <PeriodInsights data={statsData} />
+          </div>
 
           <DashboardCharts
             cashFlowData={cashFlowData}
@@ -246,19 +243,19 @@ function DashboardHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
-      <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8 lg:py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
-              {format(new Date(), "EEEE, MMMM d, yyyy")}
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+    <header className="border-b border-border/40 bg-gradient-to-b from-card/60 to-card/30">
+      <div className="max-w-screen-2xl mx-auto px-4 py-4 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               {greeting}, {userName?.split(" ")[0] ?? "there"}
             </h1>
+            <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
+              {format(new Date(), "EEEE, MMMM d")}
+            </span>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            <div className="w-full">
+          <div className="flex items-stretch gap-2 w-full sm:w-auto">
+            <div className="flex-1 sm:flex-none min-w-0">
               <DateRangePicker
                 value={dateRange}
                 onRangeChange={onDateRangeChange}
@@ -269,10 +266,10 @@ function DashboardHeader({
               onClick={() =>
                 navigate({ to: "/transactions", search: { create: true } })
               }
-              className="w-full sm:w-auto"
+              className="shrink-0"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Transaction
+              <Plus className="w-4 h-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Add</span>
             </Button>
           </div>
         </div>
@@ -305,41 +302,35 @@ function DashboardCharts({
   }, [dateRange]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
       {hasMultipleMonths && (
         <div className="lg:col-span-2">
-          <Section>
-            <div className="mb-4">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                Cash Flow
-              </h2>
+          <div className="mb-3">
+            <h2 className="text-sm font-semibold text-foreground">Cash Flow</h2>
+          </div>
+          {cashFlowData && cashFlowData.length > 0 ? (
+            <CashFlowChart data={cashFlowData} />
+          ) : (
+            <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+              No cash flow data
             </div>
-            {cashFlowData && cashFlowData.length > 0 ? (
-              <CashFlowChart data={cashFlowData} />
-            ) : (
-              <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-                No cash flow data
-              </div>
-            )}
-          </Section>
+          )}
         </div>
       )}
 
       <div className={hasMultipleMonths ? undefined : "lg:col-span-3"}>
-        <Section>
-          <div className="mb-4">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Top Categories
-            </h2>
+        <div className="mb-3">
+          <h2 className="text-sm font-semibold text-foreground">
+            Top Categories
+          </h2>
+        </div>
+        {categoryData && categoryData.length > 0 ? (
+          <CategoryPieChart data={categoryData} />
+        ) : (
+          <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+            No category data
           </div>
-          {categoryData && categoryData.length > 0 ? (
-            <CategoryPieChart data={categoryData} />
-          ) : (
-            <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-              No category data
-            </div>
-          )}
-        </Section>
+        )}
       </div>
     </div>
   );
@@ -357,13 +348,11 @@ function DashboardDetails({
     | undefined;
 }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-      <Section>
-        <div className="mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Top Merchants
-          </h2>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div>
+        <h2 className="text-sm font-semibold text-foreground mb-3">
+          Top Merchants
+        </h2>
         {merchantData && merchantData.length > 0 ? (
           <MerchantStats data={merchantData} />
         ) : (
@@ -371,14 +360,12 @@ function DashboardDetails({
             No merchant data
           </div>
         )}
-      </Section>
+      </div>
 
-      <Section>
-        <div className="mb-4">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Largest Transactions
-          </h2>
-        </div>
+      <div>
+        <h2 className="text-sm font-semibold text-foreground mb-3">
+          Largest Transactions
+        </h2>
         {transactionData && transactionData.length > 0 ? (
           <TransactionStats data={transactionData} />
         ) : (
@@ -386,7 +373,7 @@ function DashboardDetails({
             No transaction data
           </div>
         )}
-      </Section>
+      </div>
     </div>
   );
 }
