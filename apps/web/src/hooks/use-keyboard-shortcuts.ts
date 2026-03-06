@@ -1,5 +1,5 @@
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
@@ -29,56 +29,51 @@ export function useKeyboardShortcuts() {
     }),
   );
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl+Shift+D (or Cmd+Shift+D on Mac) to toggle developer mode
-      if (event.ctrlKey && event.shiftKey && event.key === "D") {
-        event.preventDefault();
+  useHotkey(
+    "Mod+Shift+D",
+    () => {
+      if (!session?.settings) return;
 
-        if (!session?.settings) return;
+      const currentDevMode = session.settings.isDevMode ?? false;
+      updateSettings({
+        isDevMode: !currentDevMode,
+        isPrivacyMode: session.settings.isPrivacyMode ?? false,
+      });
 
-        const currentDevMode = session.settings.isDevMode ?? false;
-        updateSettings({
-          isDevMode: !currentDevMode,
-          isPrivacyMode: session.settings.isPrivacyMode ?? false,
-        });
+      toast.success(
+        `Developer mode ${!currentDevMode ? "enabled" : "disabled"}`,
+        {
+          description: !currentDevMode
+            ? "Developer tools are now visible"
+            : "Developer tools are now hidden",
+          duration: 3000,
+        },
+      );
+    },
+    { enabled: !!session?.settings },
+  );
 
-        toast.success(
-          `Developer mode ${!currentDevMode ? "enabled" : "disabled"}`,
-          {
-            description: !currentDevMode
-              ? "Developer tools are now visible"
-              : "Developer tools are now hidden",
-            duration: 3000,
-          },
-        );
-      }
+  useHotkey(
+    "Mod+Shift+P",
+    () => {
+      if (!session?.settings) return;
 
-      // Ctrl+Shift+P (or Cmd+Shift+P on Mac) to toggle privacy mode
-      if (event.ctrlKey && event.shiftKey && event.key === "P") {
-        event.preventDefault();
+      const currentPrivacyMode = session.settings.isPrivacyMode ?? false;
+      updateSettings({
+        isDevMode: session.settings.isDevMode ?? false,
+        isPrivacyMode: !currentPrivacyMode,
+      });
 
-        if (!session?.settings) return;
-
-        const currentPrivacyMode = session.settings.isPrivacyMode ?? false;
-        updateSettings({
-          isDevMode: session.settings.isDevMode ?? false,
-          isPrivacyMode: !currentPrivacyMode,
-        });
-
-        toast.success(
-          `Privacy mode ${!currentPrivacyMode ? "enabled" : "disabled"}`,
-          {
-            description: !currentPrivacyMode
-              ? "Sensitive information is now hidden"
-              : "Sensitive information is now visible",
-            duration: 3000,
-          },
-        );
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [session?.settings, updateSettings]);
+      toast.success(
+        `Privacy mode ${!currentPrivacyMode ? "enabled" : "disabled"}`,
+        {
+          description: !currentPrivacyMode
+            ? "Sensitive information is now hidden"
+            : "Sensitive information is now visible",
+          duration: 3000,
+        },
+      );
+    },
+    { enabled: !!session?.settings },
+  );
 }
