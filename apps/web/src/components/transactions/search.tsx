@@ -64,7 +64,7 @@ export function Search() {
             value={filter}
             onChange={handleChange}
             placeholder="Search transactions..."
-            className="flex-1 h-9 text-sm"
+            className="flex-1 h-9"
           />
           <DropdownMenu open={isOpenMobile} onOpenChange={setIsOpenMobile}>
             <DropdownMenuTrigger asChild>
@@ -149,7 +149,7 @@ export function Search() {
           value={filter}
           onChange={handleChange}
           placeholder="Search transactions..."
-          className="flex-1 h-9 text-sm"
+          className="flex-1 h-9"
         />
         <MerchantSelect
           allowNull

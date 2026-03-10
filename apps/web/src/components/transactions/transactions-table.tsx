@@ -404,7 +404,7 @@ export function TransactionsTable({
                   onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
                   placeholder="Add notes..."
                   className={cn(
-                    "w-full border-input rounded-md border bg-background/80 px-2 h-8 text-xs sm:text-sm md:h-8",
+                    "w-full border-input rounded-md border bg-background/80 px-2 h-8 text-base md:text-sm md:h-8",
                     "focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                     "transition-colors",
