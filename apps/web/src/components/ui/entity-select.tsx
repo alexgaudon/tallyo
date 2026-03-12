@@ -145,7 +145,7 @@ export function EntitySelect<T extends Entity>({
 								)}
 							>
 								<PlusIcon className="h-3.5 w-3.5 shrink-0" />
-								<div className="flex-1 min-w-0 break-words">
+								<div className="flex-1 min-w-0 wrap-break-word">
 									{createOptionLabel}
 								</div>
 							</CommandItem>
@@ -170,7 +170,7 @@ export function EntitySelect<T extends Entity>({
 										value === entity.id ? "opacity-100" : "opacity-0",
 									)}
 								/>
-								<div className="flex-1 min-w-0 break-words">
+								<div className="flex-1 min-w-0 wrap-break-word">
 									{formatEntity(entity)}
 								</div>
 							</CommandItem>
@@ -213,8 +213,7 @@ export function EntitySelect<T extends Entity>({
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
-						"max-h-[85vh] flex flex-col rounded-t-xl border-t",
-						popoverWidth,
+						"max-h-[85vh] flex flex-col rounded-t-xl border-t w-full max-w-none",
 					)}
 				>
 					<div className="flex flex-col flex-1 min-h-0 overflow-hidden p-0">
