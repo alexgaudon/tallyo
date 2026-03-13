@@ -5,19 +5,16 @@ import {
   CreditCardIcon,
   FolderTreeIcon,
   LogOut,
-  Menu,
   Settings,
   StoreIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -31,25 +28,29 @@ const navItems = [
   { to: "/reports", label: "Reports", icon: BarChart3Icon },
 ];
 
-export function MobileNavDrawer() {
+interface MobileNavDrawerProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
   const { data: session } = useSession();
   const location = useLocation();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
 
   if (!session?.user) return null;
 
+  const isOpen = open !== undefined ? open : internalOpen;
+  const handleOpenChange =
+    onOpenChange !== undefined ? onOpenChange : setInternalOpen;
+
   const handleNavigation = () => {
-    setOpen(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </DrawerTrigger>
+    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
       <DrawerContent>
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center justify-between">

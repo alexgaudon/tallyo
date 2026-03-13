@@ -70,6 +70,8 @@ function RootComponent() {
 
   const { data: session } = useSession();
 
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
   useKeyboardShortcuts();
 
   const isAuthenticated = !!session;
@@ -81,8 +83,11 @@ function RootComponent() {
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           {isAuthenticated ? (
             <div className="flex flex-col min-h-screen">
-              <TopNav />
-              <MobileNavDrawer />
+              <TopNav onMenuClick={() => setMobileDrawerOpen(true)} />
+              <MobileNavDrawer
+                open={mobileDrawerOpen}
+                onOpenChange={setMobileDrawerOpen}
+              />
               <main className="flex-1 bg-muted/20">
                 <Outlet />
               </main>

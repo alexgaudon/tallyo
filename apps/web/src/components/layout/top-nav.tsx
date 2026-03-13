@@ -5,12 +5,14 @@ import {
   CreditCardIcon,
   FolderTreeIcon,
   LogOut,
+  Menu,
   RefreshCw,
   Settings,
   StoreIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +31,11 @@ const navItems = [
   { to: "/reports", label: "Reports", icon: BarChart3Icon },
 ];
 
-export function TopNav() {
+interface TopNavProps {
+  onMenuClick?: () => void;
+}
+
+export function TopNav({ onMenuClick }: TopNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: session } = useSession();
@@ -58,11 +64,21 @@ export function TopNav() {
     <nav className="sticky top-0 left-0 right-0 border-b border-border/50 bg-card/95 backdrop-blur-md z-50 h-12 shrink-0 shadow-sm">
       <div className="max-w-screen-2xl mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3">
-          <span className="font-semibold text-lg tracking-tight text-foreground">
-            Tallyo
-          </span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Link to="/" className="flex items-center gap-3">
+            <span className="font-semibold text-lg tracking-tight text-foreground">
+              Tallyo
+            </span>
+          </Link>
+        </div>
 
         {/* Primary Navigation - Desktop */}
         <div className="hidden lg:flex items-center gap-1">
