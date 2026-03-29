@@ -1,6 +1,6 @@
 import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Command,
@@ -92,10 +92,20 @@ export function EntitySelect<T extends Entity>({
 	popoverWidth = "w-[400px]",
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
+	const [searchValue, setSearchValue] = useState("");
 	const isMobile = useIsMobile();
+	const commandListRef = useRef<HTMLDivElement>(null);
 	const selectedEntity = value
 		? entities.find((entity) => entity.id === value)
 		: null;
+
+	const handleSearchChange = useCallback((value: string) => {
+		setSearchValue(value);
+		// Scroll to top when search changes
+		if (commandListRef.current) {
+			commandListRef.current.scrollTop = 0;
+		}
+	}, []);
 
 	const triggerButton = (
 		<Button
@@ -123,8 +133,11 @@ export function EntitySelect<T extends Entity>({
 					placeholder={searchPlaceholder}
 					className={cn("h-10 text-base shrink-0", isMobile && "text-base")}
 					autoFocus={!isMobile}
+					value={searchValue}
+					onValueChange={handleSearchChange}
 				/>
 				<CommandList
+					ref={commandListRef}
 					className={cn(
 						"flex-1 overflow-auto",
 						isMobile ? "max-h-[60vh]" : "max-h-[300px]",
@@ -211,7 +224,13 @@ export function EntitySelect<T extends Entity>({
 		return (
 			<Drawer
 				open={open}
-				onOpenChange={setOpen}
+				onOpenChange={(newOpen) => {
+					setOpen(newOpen);
+					if (!newOpen) {
+						// Reset search when closing
+						setSearchValue("");
+					}
+				}}
 				direction="bottom"
 				modal={false}
 			>
@@ -230,7 +249,16 @@ export function EntitySelect<T extends Entity>({
 	}
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover 
+			open={open} 
+			onOpenChange={(newOpen) => {
+				setOpen(newOpen);
+				if (!newOpen) {
+					// Reset search when closing
+					setSearchValue("");
+				}
+			}}
+		>
 			<PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
 			<PopoverContent 
 				className={cn(popoverWidth, "p-0")}
