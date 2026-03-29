@@ -9,6 +9,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { orpc } from "@/utils/orpc";
+import { cn } from "@/lib/utils";
 
 export interface PaginationInfo {
 	total: number;
@@ -49,8 +50,66 @@ export function Paginator({
 	};
 
 	return (
-		<div className={`flex items-center justify-between px-2 py-4 ${className}`}>
-			<div className="flex items-center gap-4">
+		<div className={cn("flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 py-4", className)}>
+			{/* Mobile: Stacked layout with larger touch targets */}
+			<div className="flex items-center justify-between sm:hidden">
+				<Button
+					variant="outline"
+					size="default"
+					className="h-11 w-11"
+					onClick={() => onPageChange(Math.max(1, pagination.page - 1))}
+					disabled={pagination.page === 1 || isLoading}
+				>
+					<ChevronLeft className="h-5 w-5" />
+				</Button>
+				
+				<div className="flex flex-col items-center">
+					<span className="text-sm font-medium">
+						Page {pagination.page} of {pagination.totalPages}
+					</span>
+					<span className="text-xs text-muted-foreground">
+						{pagination.total} items
+					</span>
+				</div>
+				
+				<Button
+					variant="outline"
+					size="default"
+					className="h-11 w-11"
+					onClick={() =>
+						onPageChange(Math.min(pagination.totalPages, pagination.page + 1))
+					}
+					disabled={pagination.page === pagination.totalPages || isLoading}
+				>
+					<ChevronRight className="h-5 w-5" />
+				</Button>
+			</div>
+			
+			{/* Mobile: Page size selector below */}
+			<div className="flex items-center justify-center gap-2 sm:hidden">
+				<span className="text-sm text-muted-foreground">Show</span>
+				<Select
+					value={pagination.pageSize.toString()}
+					onValueChange={(value) =>
+						onPageSizeChange(Number.parseInt(value, 10))
+					}
+					disabled={isLoading}
+				>
+					<SelectTrigger className="h-9 w-[80px]">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{PAGE_SIZE_OPTIONS.map((size) => (
+							<SelectItem key={size} value={size.toString()}>
+								{size}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{/* Desktop: Horizontal layout */}
+			<div className="hidden sm:flex sm:items-center sm:gap-4">
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
@@ -95,7 +154,7 @@ export function Paginator({
 					</SelectContent>
 				</Select>
 			</div>
-			<div className="text-sm text-muted-foreground">
+			<div className="hidden sm:block text-sm text-muted-foreground">
 				{pagination.total} total items
 			</div>
 		</div>

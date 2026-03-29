@@ -145,21 +145,21 @@ const TransactionCard = memo(function TransactionCard({
     !transaction.reviewed && (!transaction.category || !transaction.merchant);
 
   return (
-    <Card
+    <div
       className={cn(
-        "relative overflow-hidden",
+        "relative bg-card rounded-lg overflow-hidden",
         isLoading && "opacity-50",
-        needsReview && "border-l-4 border-l-accent",
       )}
     >
+      {/* Status bar at top - orange for unreviewed, green for reviewed */}
       <div
         className={cn(
-          "absolute top-0 left-0 right-0 h-1",
+          "absolute top-0 left-0 right-0 h-1 z-10",
           transaction.reviewed ? "bg-income/30" : "bg-accent",
         )}
       />
 
-      <CardHeader className="pb-3 pt-4">
+      <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -269,9 +269,11 @@ const TransactionCard = memo(function TransactionCard({
                 : "Assign merchant to review"}
           </div>
         )}
-      </CardHeader>
+      </div>
 
-      <CardContent className={cn("space-y-4", transaction.reviewed && "pt-0")}>
+      <div
+        className={cn("px-4 pb-4 space-y-4", transaction.reviewed && "pt-0")}
+      >
         {transaction.reviewed ? (
           // Compact view for reviewed transactions
           <div className="flex flex-col gap-2">
@@ -404,8 +406,8 @@ const TransactionCard = memo(function TransactionCard({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
