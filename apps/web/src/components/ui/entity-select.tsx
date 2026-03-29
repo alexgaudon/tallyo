@@ -209,7 +209,12 @@ export function EntitySelect<T extends Entity>({
 
 	if (isMobile) {
 		return (
-			<Drawer open={open} onOpenChange={setOpen} direction="bottom">
+			<Drawer
+				open={open}
+				onOpenChange={setOpen}
+				direction="bottom"
+				modal={false}
+			>
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
@@ -227,7 +232,16 @@ export function EntitySelect<T extends Entity>({
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
-			<PopoverContent className={cn(popoverWidth, "p-0")}>
+			<PopoverContent 
+				className={cn(popoverWidth, "p-0")}
+				onInteractOutside={(e) => {
+					// Don't close when clicking the trigger button itself
+					const target = e.target as HTMLElement;
+					if (target.closest('[data-slot="popover-trigger"]')) {
+						e.preventDefault();
+					}
+				}}
+			>
 				<div className="flex flex-col">{listContent}</div>
 			</PopoverContent>
 		</Popover>

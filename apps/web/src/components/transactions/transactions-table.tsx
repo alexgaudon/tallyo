@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { Check, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import {
   CategorySelect,
   formatCategory,
@@ -10,6 +10,7 @@ import { EditCategoryDialog } from "@/components/categories/edit-category-dialog
 import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
@@ -40,6 +41,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -55,6 +57,357 @@ interface TransactionsTableProps {
   onMerchantClick?: (merchantId: string) => void;
   isLoading?: boolean;
 }
+
+// Helper functions moved outside component
+const parseTransactionDate = (dateValue: string | Date) => {
+  let year: number;
+  let month: number;
+  let day: number;
+
+  if (typeof dateValue === "string") {
+    const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (dateMatch) {
+      year = Number.parseInt(dateMatch[1], 10);
+      month = Number.parseInt(dateMatch[2], 10) - 1;
+      day = Number.parseInt(dateMatch[3], 10);
+    } else {
+      const date = parseISO(dateValue);
+      year = date.getFullYear();
+      month = date.getMonth();
+      day = date.getDate();
+    }
+  } else {
+    year = dateValue.getFullYear();
+    month = dateValue.getMonth();
+    day = dateValue.getDate();
+  }
+
+  return new Date(year, month, day);
+};
+
+const isUpcomingTransaction = (dateValue: string | Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const transactionDate = parseTransactionDate(dateValue);
+  transactionDate.setHours(0, 0, 0, 0);
+
+  const daysDifference =
+    Math.floor(
+      (transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    ) + 1;
+  return daysDifference >= 2 && daysDifference <= 30;
+};
+
+// Memoized mobile card component
+interface TransactionCardProps {
+  transaction: Transaction;
+  localNote: string;
+  isLoading: boolean;
+  isDevMode: boolean;
+  onNoteChange: (id: string, value: string) => void;
+  onNoteBlur: (id: string, value: string) => void;
+  onToggleReviewed: (id: string) => void;
+  onDelete: (id: string) => void;
+  onCategoryChange: (id: string, categoryId: string | null) => void;
+  onMerchantChange: (id: string, merchantId: string | null) => void;
+  onMerchantClick?: (merchantId: string) => void;
+  onCategoryClick?: (categoryId: string) => void;
+  onEditMerchant: (merchantId: string) => void;
+  onEditCategory: (categoryId: string) => void;
+  onCreateCategory: () => void;
+}
+
+const TransactionCard = memo(function TransactionCard({
+  transaction,
+  localNote,
+  isLoading,
+  isDevMode,
+  onNoteChange,
+  onNoteBlur,
+  onToggleReviewed,
+  onDelete,
+  onCategoryChange,
+  onMerchantChange,
+  onMerchantClick,
+  onCategoryClick,
+  onEditMerchant,
+  onEditCategory,
+  onCreateCategory,
+}: TransactionCardProps) {
+  const date = parseTransactionDate(transaction.date);
+  const isUpcoming = isUpcomingTransaction(transaction.date);
+  const needsReview = !transaction.reviewed;
+  const needsCategory = !transaction.category && !transaction.reviewed;
+  const needsMerchant = !transaction.merchant && !transaction.reviewed;
+
+  const isReviewDisabled =
+    !transaction.reviewed && (!transaction.category || !transaction.merchant);
+
+  return (
+    <Card
+      className={cn(
+        "relative overflow-hidden",
+        isLoading && "opacity-50",
+        needsReview && "border-l-4 border-l-accent",
+      )}
+    >
+      <div
+        className={cn(
+          "absolute top-0 left-0 right-0 h-1",
+          transaction.reviewed ? "bg-income/30" : "bg-accent",
+        )}
+      />
+
+      <CardHeader className="pb-3 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                {format(date, "MMM d, yyyy")}
+              </span>
+              {isUpcoming && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-accent/20 text-accent-foreground"
+                >
+                  Upcoming
+                </Badge>
+              )}
+              {!transaction.reviewed && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-accent/20 text-accent-foreground"
+                >
+                  Needs Review
+                </Badge>
+              )}
+            </div>
+
+            <div className="mt-2">
+              <CurrencyAmount
+                amount={transaction.amount}
+                showColor
+                className="text-lg font-semibold"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onToggleReviewed(transaction.id)}
+                    className={cn(
+                      "rounded-full border border-transparent bg-background hover:border-muted-foreground/30 hover:bg-muted/60 transition-colors h-10 w-10",
+                      transaction.reviewed
+                        ? "text-income"
+                        : "text-muted-foreground",
+                    )}
+                    disabled={isReviewDisabled || isLoading}
+                    aria-label={
+                      transaction.reviewed
+                        ? "Mark as unreviewed"
+                        : "Mark as reviewed"
+                    }
+                  >
+                    <Check className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                {isReviewDisabled && (
+                  <TooltipContent>
+                    <p>
+                      {!transaction.category && !transaction.merchant
+                        ? "Assign a category and merchant before reviewing"
+                        : !transaction.category
+                          ? "Assign a category before reviewing"
+                          : "Assign a merchant before reviewing"}
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10"
+                  aria-label="Delete transaction"
+                >
+                  <Trash className="h-5 w-5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this transaction?
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(transaction.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+
+        {needsReview && (needsCategory || needsMerchant) && (
+          <div className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
+            {needsCategory && needsMerchant
+              ? "Assign category and merchant to review"
+              : needsCategory
+                ? "Assign category to review"
+                : "Assign merchant to review"}
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className={cn("space-y-4", transaction.reviewed && "pt-0")}>
+        {transaction.reviewed ? (
+          // Compact view for reviewed transactions
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              {transaction.merchant ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    transaction.merchant &&
+                    onMerchantClick?.(transaction.merchant.id)
+                  }
+                  className="text-foreground hover:underline font-medium"
+                >
+                  {transaction.merchant.name}
+                </button>
+              ) : (
+                <span className="text-muted-foreground">No merchant</span>
+              )}
+              <span className="text-muted-foreground">•</span>
+              {transaction.category ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    transaction.category &&
+                    onCategoryClick?.(transaction.category.id)
+                  }
+                  className="text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  {formatCategory(transaction.category)}
+                </button>
+              ) : (
+                <span className="text-muted-foreground">No category</span>
+              )}
+            </div>
+            <input
+              type="text"
+              id={`notes-${transaction.id}`}
+              value={localNote}
+              onChange={(e) => onNoteChange(transaction.id, e.target.value)}
+              onBlur={(e) => onNoteBlur(transaction.id, e.target.value)}
+              placeholder="Add notes..."
+              className="w-full border-input rounded-md border bg-background/80 px-2 focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-10 text-base py-2"
+              disabled={isLoading}
+              aria-label="Transaction notes"
+            />
+          </div>
+        ) : (
+          // Full editing view for unreviewed transactions
+          <>
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">
+                Merchant
+              </span>
+              <div className="w-full">
+                <MerchantSelect
+                  value={transaction.merchant?.id}
+                  onValueChange={(merchantId) =>
+                    onMerchantChange(transaction.id, merchantId)
+                  }
+                  placeholder="Select merchant..."
+                  className="w-full"
+                  allowNull
+                  disabled={isLoading}
+                  transactionDetails={transaction.transactionDetails}
+                  onEditMerchant={onEditMerchant}
+                />
+                {transaction.transactionDetails && (
+                  <span className="block mt-1 text-[10px] text-muted-foreground truncate leading-none">
+                    {transaction.transactionDetails}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">
+                Category
+              </span>
+              <CategorySelect
+                value={transaction.category?.id}
+                onValueChange={(categoryId) =>
+                  onCategoryChange(transaction.id, categoryId)
+                }
+                placeholder="Select category..."
+                className="w-full"
+                allowNull
+                disabled={isLoading}
+                onEditCategory={onEditCategory}
+                onCreateCategory={onCreateCategory}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor={`notes-${transaction.id}`}
+                className="text-xs font-medium text-muted-foreground uppercase tracking-wider block"
+              >
+                Notes
+              </label>
+              <input
+                type="text"
+                id={`notes-${transaction.id}`}
+                value={localNote}
+                onChange={(e) => onNoteChange(transaction.id, e.target.value)}
+                onBlur={(e) => onNoteBlur(transaction.id, e.target.value)}
+                placeholder="Add notes..."
+                className="w-full border-input rounded-md border bg-background/80 px-2 focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-10 text-base py-2"
+                disabled={isLoading}
+                aria-label="Transaction notes"
+              />
+            </div>
+          </>
+        )}
+
+        {isDevMode && (
+          <div className="pt-3 border-t border-border space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">ID:</span>
+              <span className="font-mono text-muted-foreground truncate max-w-[200px]">
+                {transaction.id}
+              </span>
+            </div>
+            {transaction.externalId && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">External ID:</span>
+                <span className="font-mono text-muted-foreground truncate max-w-[200px]">
+                  {transaction.externalId}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
 
 export function TransactionsTable({
   transactions,
@@ -77,7 +430,6 @@ export function TransactionsTable({
     Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
   );
 
-  // Dialog state
   const [editMerchantDialog, setEditMerchantDialog] = useState<{
     open: boolean;
     merchantId: string;
@@ -94,20 +446,16 @@ export function TransactionsTable({
   const updateNotesRef = useRef(updateNotes);
   const transactionsRef = useRef(transactions);
 
-  // Update refs when props change
   useEffect(() => {
     updateNotesRef.current = updateNotes;
     transactionsRef.current = transactions;
   }, [updateNotes, transactions]);
 
-  // Handle unsaved changes before unload
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       const hasUnsavedChanges = Object.keys(unsavedChanges.current).length > 0;
       if (hasUnsavedChanges) {
         e.preventDefault();
-
-        // Try to save changes before unload
         for (const [id, value] of Object.entries(unsavedChanges.current)) {
           const transaction = transactionsRef.current.find((t) => t.id === id);
           if (transaction?.notes !== value) {
@@ -121,7 +469,6 @@ export function TransactionsTable({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-  // Sync notes with server data
   useEffect(() => {
     const serverNotes = Object.fromEntries(
       transactions.map((t) => [t.id, t.notes ?? ""]),
@@ -143,55 +490,17 @@ export function TransactionsTable({
     }
   };
 
-  // Helper function to parse date and ensure correct local display
-  // Helper function to check if transaction is upcoming (1-10 days in future)
-  const isUpcomingTransaction = (dateValue: string | Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const handleToggleReviewed = (id: string) => toggleReviewed({ id });
+  const handleDelete = (id: string) => deleteTransaction({ id });
+  const handleCategoryChange = (id: string, categoryId: string | null) =>
+    updateCategory({ id, categoryId });
+  const handleMerchantChange = (id: string, merchantId: string | null) =>
+    updateMerchant({ id, merchantId });
 
-    const transactionDate = parseTransactionDate(dateValue);
-    transactionDate.setHours(0, 0, 0, 0);
-
-    const daysDifference =
-      Math.floor(
-        (transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-      ) + 1;
-    return daysDifference >= 2 && daysDifference <= 30;
-  };
-
-  const parseTransactionDate = (dateValue: string | Date) => {
-    let year: number;
-    let month: number;
-    let day: number;
-
-    if (typeof dateValue === "string") {
-      // Extract just the date part (YYYY-MM-DD) from any date string
-      const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (dateMatch) {
-        year = Number.parseInt(dateMatch[1], 10);
-        month = Number.parseInt(dateMatch[2], 10) - 1; // Month is 0-indexed
-        day = Number.parseInt(dateMatch[3], 10);
-      } else {
-        // Fallback to parsing as ISO
-        const date = parseISO(dateValue);
-        year = date.getFullYear();
-        month = date.getMonth();
-        day = date.getDate();
-      }
-    } else {
-      // If it's a Date object, extract the components
-      year = dateValue.getFullYear();
-      month = dateValue.getMonth();
-      day = dateValue.getDate();
-    }
-
-    // Create a new date using the local date constructor (this ensures local time)
-    const finalDate = new Date(year, month, day);
-
-    return finalDate;
-  };
-
-  const renderReviewButton = (transaction: Transaction) => {
+  const renderReviewButton = (
+    transaction: Transaction,
+    size: "sm" | "lg" = "sm",
+  ) => {
     const isDisabled =
       (!transaction.reviewed &&
         (!transaction.category || !transaction.merchant)) ||
@@ -205,6 +514,9 @@ export function TransactionsTable({
             : "Assign a merchant before reviewing"
         : undefined;
 
+    const buttonSizeClass = size === "lg" ? "h-10 w-10" : "h-7 w-7";
+    const iconSizeClass = size === "lg" ? "h-5 w-5" : "h-3.5 w-3.5";
+
     return (
       <TooltipProvider>
         <Tooltip>
@@ -214,12 +526,16 @@ export function TransactionsTable({
               size="icon"
               onClick={() => toggleReviewed({ id: transaction.id })}
               className={cn(
-                "h-7 w-7 rounded-full border border-transparent bg-background hover:border-muted-foreground/30 hover:bg-muted/60 transition-colors",
+                "rounded-full border border-transparent bg-background hover:border-muted-foreground/30 hover:bg-muted/60 transition-colors",
+                buttonSizeClass,
                 transaction.reviewed ? "text-income" : "text-muted-foreground",
               )}
               disabled={isDisabled}
+              aria-label={
+                transaction.reviewed ? "Mark as unreviewed" : "Mark as reviewed"
+              }
             >
-              <Check className="h-3.5 w-3.5" />
+              <Check className={iconSizeClass} />
             </Button>
           </TooltipTrigger>
           {isDisabled && tooltipMessage && (
@@ -232,248 +548,297 @@ export function TransactionsTable({
     );
   };
 
-  return (
-    <div className="space-y-2">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            {isDevMode && (
-              <TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
-            )}
+  const renderDeleteButton = (
+    transaction: Transaction,
+    size: "sm" | "lg" = "sm",
+  ) => {
+    const buttonSizeClass = size === "lg" ? "h-10 w-10" : "h-8 w-8";
+    const iconSizeClass = size === "lg" ? "h-5 w-5" : "h-4 w-4";
 
-            <TableHead className="w-[80px] px-2 sm:px-3">Date</TableHead>
-            <TableHead className="min-w-[130px] px-2 sm:px-3">
-              Merchant
-            </TableHead>
-            <TableHead className="min-w-[130px] sm:min-w-[150px] px-2 sm:px-3">
-              Category
-            </TableHead>
-            <TableHead className="px-2 sm:px-3 min-w-[200px]">Notes</TableHead>
-            <TableHead className="w-[96px] px-2 sm:px-3 text-right">
-              Amount
-            </TableHead>
-            {isDevMode && (
-              <TableHead className="w-[100px] px-2 sm:px-4">
-                External ID
-              </TableHead>
-            )}
-            <TableHead className="w-[72px] px-2 sm:px-3 text-center">
-              Reviewed
-            </TableHead>
-            <TableHead className="w-[88px] px-2 sm:px-3 text-center">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions.map((transaction) => (
-            <TableRow
-              key={transaction.id}
-              className={cn(
-                "hover:bg-muted/50 transition-colors border-l-2 border-l-transparent",
-                !transaction.reviewed && "border-l-accent",
-                isLoading && "opacity-50",
-              )}
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={buttonSizeClass}
+            aria-label="Delete transaction"
+          >
+            <Trash className={iconSizeClass} />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            Are you sure you want to delete this transaction?
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTransaction({ id: transaction.id })}
             >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
+
+  const renderMerchantField = (
+    transaction: Transaction,
+    isMobileView: boolean,
+  ) => {
+    if (transaction.reviewed) {
+      return transaction.merchant ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          onClick={() =>
+            transaction.merchant && onMerchantClick?.(transaction.merchant.id)
+          }
+        >
+          {transaction.merchant.name}
+        </Button>
+      ) : (
+        <span className="text-muted-foreground truncate">No merchant</span>
+      );
+    }
+
+    return (
+      <div className={cn("relative", isMobileView && "w-full")}>
+        <MerchantSelect
+          value={transaction.merchant?.id}
+          onValueChange={(merchantId) =>
+            updateMerchant({ id: transaction.id, merchantId })
+          }
+          placeholder={isMobileView ? "Select merchant..." : "Select merchant"}
+          className={isMobileView ? "w-full" : "min-w-[280px]"}
+          allowNull
+          disabled={isLoading}
+          transactionDetails={transaction.transactionDetails}
+          onEditMerchant={(merchantId) =>
+            setEditMerchantDialog({ open: true, merchantId })
+          }
+        />
+        {!transaction.reviewed && transaction.transactionDetails && (
+          <span className="block mt-1 text-[10px] text-muted-foreground truncate leading-none">
+            {transaction.transactionDetails}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const renderCategoryField = (
+    transaction: Transaction,
+    isMobileView: boolean,
+  ) => {
+    if (transaction.reviewed) {
+      return transaction.category ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          onClick={() =>
+            transaction.category && onCategoryClick?.(transaction.category.id)
+          }
+        >
+          {formatCategory(transaction.category)}
+        </Button>
+      ) : (
+        <span className="text-muted-foreground truncate">No category</span>
+      );
+    }
+
+    return (
+      <CategorySelect
+        value={transaction.category?.id}
+        onValueChange={(categoryId) =>
+          updateCategory({ id: transaction.id, categoryId })
+        }
+        placeholder={isMobileView ? "Select category..." : "Select category"}
+        className={
+          isMobileView ? "w-full" : "w-full min-w-[180px] sm:min-w-[200px]"
+        }
+        allowNull
+        disabled={isLoading}
+        onEditCategory={(categoryId) =>
+          setEditCategoryDialog({ open: true, categoryId })
+        }
+        onCreateCategory={() => setCreateCategoryDialog(true)}
+      />
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Desktop Table View */}
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
               {isDevMode && (
-                <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
-                  {transaction.id}
-                </TableCell>
+                <TableHead className="w-[80px] px-2 sm:px-4">ID</TableHead>
               )}
-              <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
-                <div className="flex items-center gap-2">
-                  {format(
-                    parseTransactionDate(transaction.date),
-                    "MMM d, yyyy",
-                  )}
-                  {isUpcomingTransaction(transaction.date) && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Upcoming transaction</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="px-2 sm:px-3 h-14 align-middle">
-                <div className="relative flex items-center h-full">
-                  {transaction.reviewed ? (
-                    transaction.merchant ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        onClick={() => {
-                          if (transaction.merchant) {
-                            onMerchantClick?.(transaction.merchant.id);
-                          }
-                        }}
-                      >
-                        {transaction.merchant.name}
-                      </Button>
-                    ) : (
-                      <span className="text-muted-foreground truncate">
-                        No merchant
-                      </span>
-                    )
-                  ) : (
-                    <>
-                      <MerchantSelect
-                        value={transaction.merchant?.id}
-                        onValueChange={(merchantId) =>
-                          updateMerchant({
-                            id: transaction.id,
-                            merchantId: merchantId,
-                          })
-                        }
-                        placeholder="Select merchant"
-                        className="min-w-[280px]"
-                        allowNull
-                        disabled={isLoading}
-                        transactionDetails={transaction.transactionDetails}
-                        onEditMerchant={(merchantId) => {
-                          setEditMerchantDialog({ open: true, merchantId });
-                        }}
-                      />
-                      {!transaction.reviewed &&
-                        transaction.transactionDetails && (
-                          <span className="absolute top-full left-0 mt-0.5 text-[10px] text-muted-foreground truncate max-w-[280px] leading-none">
-                            {transaction.transactionDetails}
-                          </span>
-                        )}
-                    </>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="px-2 sm:px-3 h-10 align-middle">
-                <div className="flex items-center h-full">
-                  {transaction.reviewed ? (
-                    transaction.category ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        onClick={() => {
-                          if (transaction.category) {
-                            onCategoryClick?.(transaction.category.id);
-                          }
-                        }}
-                      >
-                        {formatCategory(transaction.category)}
-                      </Button>
-                    ) : (
-                      <span className="text-muted-foreground truncate">
-                        No category
-                      </span>
-                    )
-                  ) : (
-                    <CategorySelect
-                      value={transaction.category?.id}
-                      onValueChange={(categoryId) =>
-                        updateCategory({
-                          id: transaction.id,
-                          categoryId: categoryId,
-                        })
-                      }
-                      placeholder="Select category"
-                      className="w-full min-w-[180px] sm:min-w-[200px]"
-                      allowNull
-                      disabled={isLoading}
-                      onEditCategory={(categoryId) => {
-                        setEditCategoryDialog({ open: true, categoryId });
-                      }}
-                      onCreateCategory={() => {
-                        setCreateCategoryDialog(true);
-                      }}
-                    />
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="px-2 sm:px-3 h-10 align-middle">
-                <input
-                  type="text"
-                  value={localNotes[transaction.id] ?? ""}
-                  onChange={(e) =>
-                    handleNoteChange(transaction.id, e.target.value)
-                  }
-                  onBlur={(e) => handleNoteBlur(transaction.id, e.target.value)}
-                  placeholder="Add notes..."
-                  className={cn(
-                    "w-full border-input rounded-md border bg-background/80 px-2 h-8 text-base md:text-sm md:h-8",
-                    "focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0",
-                    "disabled:opacity-50 disabled:cursor-not-allowed",
-                    "transition-colors",
-                  )}
-                  disabled={isLoading}
-                />
-              </TableCell>
-              <TableCell className="text-right font-medium px-2 sm:px-3 h-10 align-middle">
-                <CurrencyAmount
-                  amount={transaction.amount}
-                  showColor
-                  className="transition-colors"
-                />
-              </TableCell>
+              <TableHead className="w-[80px] px-2 sm:px-3">Date</TableHead>
+              <TableHead className="min-w-[130px] px-2 sm:px-3">
+                Merchant
+              </TableHead>
+              <TableHead className="min-w-[130px] sm:min-w-[150px] px-2 sm:px-3">
+                Category
+              </TableHead>
+              <TableHead className="px-2 sm:px-3 min-w-[200px]">
+                Notes
+              </TableHead>
+              <TableHead className="w-[96px] px-2 sm:px-3 text-right">
+                Amount
+              </TableHead>
               {isDevMode && (
-                <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
-                  {transaction.externalId &&
-                  transaction.externalId.length > 30 ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span>{transaction.externalId.slice(0, 30)}…</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <span>{transaction.externalId}</span>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ) : (
-                    transaction.externalId
-                  )}
-                </TableCell>
+                <TableHead className="w-[100px] px-2 sm:px-4">
+                  External ID
+                </TableHead>
               )}
-              <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
-                {renderReviewButton(transaction)}
-              </TableCell>
-              <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
-                <div className="flex items-center justify-center gap-1">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
-                      </AlertDialogHeader>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this transaction?
-                      </AlertDialogDescription>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() =>
-                            deleteTransaction({ id: transaction.id })
-                          }
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </TableCell>
+              <TableHead className="w-[72px] px-2 sm:px-3 text-center">
+                Reviewed
+              </TableHead>
+              <TableHead className="w-[88px] px-2 sm:px-3 text-center">
+                Actions
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {transactions.map((transaction) => (
+              <TableRow
+                key={transaction.id}
+                className={cn(
+                  "hover:bg-muted/50 transition-colors border-l-2 border-l-transparent",
+                  !transaction.reviewed && "border-l-accent",
+                  isLoading && "opacity-50",
+                )}
+              >
+                {isDevMode && (
+                  <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+                    {transaction.id}
+                  </TableCell>
+                )}
+                <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
+                  <div className="flex items-center gap-2">
+                    {format(
+                      parseTransactionDate(transaction.date),
+                      "MMM d, yyyy",
+                    )}
+                    {isUpcomingTransaction(transaction.date) && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Upcoming transaction</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="px-2 sm:px-3 h-14 align-middle">
+                  <div className="relative flex items-center h-full">
+                    {renderMerchantField(transaction, false)}
+                  </div>
+                </TableCell>
+                <TableCell className="px-2 sm:px-3 h-10 align-middle">
+                  <div className="flex items-center h-full">
+                    {renderCategoryField(transaction, false)}
+                  </div>
+                </TableCell>
+                <TableCell className="px-2 sm:px-3 h-10 align-middle">
+                  <input
+                    type="text"
+                    value={localNotes[transaction.id] ?? ""}
+                    onChange={(e) =>
+                      handleNoteChange(transaction.id, e.target.value)
+                    }
+                    onBlur={(e) =>
+                      handleNoteBlur(transaction.id, e.target.value)
+                    }
+                    placeholder="Add notes..."
+                    className="w-full border-input rounded-md border bg-background/80 px-2 h-8 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    disabled={isLoading}
+                    aria-label="Transaction notes"
+                  />
+                </TableCell>
+                <TableCell className="text-right font-medium px-2 sm:px-3 h-10 align-middle">
+                  <CurrencyAmount
+                    amount={transaction.amount}
+                    showColor
+                    className="transition-colors"
+                  />
+                </TableCell>
+                {isDevMode && (
+                  <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+                    {transaction.externalId &&
+                    transaction.externalId.length > 30 ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>{transaction.externalId.slice(0, 30)}…</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span>{transaction.externalId}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      transaction.externalId
+                    )}
+                  </TableCell>
+                )}
+                <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
+                  {renderReviewButton(transaction, "sm")}
+                </TableCell>
+                <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
+                  <div className="flex items-center justify-center gap-1">
+                    {renderDeleteButton(transaction, "sm")}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {transactions.map((transaction) => (
+          <TransactionCard
+            key={transaction.id}
+            transaction={transaction}
+            localNote={localNotes[transaction.id] ?? ""}
+            isLoading={isLoading}
+            isDevMode={isDevMode}
+            onNoteChange={handleNoteChange}
+            onNoteBlur={handleNoteBlur}
+            onToggleReviewed={handleToggleReviewed}
+            onDelete={handleDelete}
+            onCategoryChange={handleCategoryChange}
+            onMerchantChange={handleMerchantChange}
+            onMerchantClick={onMerchantClick}
+            onCategoryClick={onCategoryClick}
+            onEditMerchant={(merchantId) =>
+              setEditMerchantDialog({ open: true, merchantId })
+            }
+            onEditCategory={(categoryId) =>
+              setEditCategoryDialog({ open: true, categoryId })
+            }
+            onCreateCategory={() => setCreateCategoryDialog(true)}
+          />
+        ))}
+      </div>
+
       <Paginator
         pagination={pagination}
         onPageChange={onPageChange}
@@ -481,7 +846,6 @@ export function TransactionsTable({
         isLoading={isLoading}
       />
 
-      {/* Edit Merchant Dialog */}
       <EditMerchantDialog
         open={editMerchantDialog.open}
         onOpenChange={(open) =>
@@ -493,7 +857,6 @@ export function TransactionsTable({
         merchantId={editMerchantDialog.merchantId}
       />
 
-      {/* Edit Category Dialog */}
       <EditCategoryDialog
         open={editCategoryDialog.open}
         onOpenChange={(open) =>
@@ -505,13 +868,10 @@ export function TransactionsTable({
         categoryId={editCategoryDialog.categoryId}
       />
 
-      {/* Create Category Dialog */}
       <CreateCategoryDialog
         open={createCategoryDialog}
         onOpenChange={setCreateCategoryDialog}
-        onSuccess={(categoryId) => {
-          console.log("Category created:", categoryId);
-        }}
+        onSuccess={(categoryId) => console.log("Category created:", categoryId)}
       />
     </div>
   );
