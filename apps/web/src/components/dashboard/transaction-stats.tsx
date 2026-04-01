@@ -1,9 +1,51 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CreditCardIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { TransactionStatsData } from "../../../../server/src/routers";
 import { Card } from "../ui/card";
 import { CardListEmpty } from "../ui/card-list";
 import { CurrencyAmount } from "../ui/currency-amount";
+
+const formatRelativeTime = (dateValue: string | Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const transactionDate = new Date(dateValue);
+  transactionDate.setHours(0, 0, 0, 0);
+
+  const daysDifference = Math.floor(
+    (today.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysDifference === 0) {
+    return "Today";
+  } else if (daysDifference === 1) {
+    return "Yesterday";
+  } else if (daysDifference > 1 && daysDifference < 30) {
+    return `${daysDifference} days ago`;
+  } else if (daysDifference >= 30 && daysDifference < 365) {
+    const months = Math.floor(daysDifference / 30);
+    return `${months} ${months === 1 ? "month" : "months"} ago`;
+  } else if (daysDifference >= 365) {
+    const years = Math.floor(daysDifference / 365);
+    return `${years} ${years === 1 ? "year" : "years"} ago`;
+  } else if (daysDifference === -1) {
+    return "Tomorrow";
+  } else if (daysDifference < -1 && daysDifference > -30) {
+    return `In ${Math.abs(daysDifference)} days`;
+  } else if (daysDifference <= -30 && daysDifference > -365) {
+    const months = Math.floor(Math.abs(daysDifference) / 30);
+    return `In ${months} ${months === 1 ? "month" : "months"}`;
+  } else {
+    const years = Math.floor(Math.abs(daysDifference) / 365);
+    return `In ${years} ${years === 1 ? "year" : "years"}`;
+  }
+};
 
 export function TransactionStats({
   data,
@@ -60,13 +102,29 @@ export function TransactionStats({
                       ? transaction.merchantName
                       : "Unknown Merchant"
                   } • `}
-                  {transaction.date
-                    ? new Date(transaction.date).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "Unknown Date"}
+                  {transaction.date ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-default">
+                            {new Date(transaction.date).toLocaleDateString(
+                              undefined,
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatRelativeTime(transaction.date)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    "Unknown Date"
+                  )}
                 </p>
               </div>
             </div>

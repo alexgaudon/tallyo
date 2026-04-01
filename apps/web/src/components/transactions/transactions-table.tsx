@@ -10,7 +10,6 @@ import { EditCategoryDialog } from "@/components/categories/edit-category-dialog
 import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
@@ -99,6 +98,42 @@ const isUpcomingTransaction = (dateValue: string | Date) => {
   return daysDifference >= 2 && daysDifference <= 30;
 };
 
+const formatRelativeTime = (dateValue: string | Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const transactionDate = parseTransactionDate(dateValue);
+  transactionDate.setHours(0, 0, 0, 0);
+
+  const daysDifference = Math.floor(
+    (today.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysDifference === 0) {
+    return "Today";
+  } else if (daysDifference === 1) {
+    return "Yesterday";
+  } else if (daysDifference > 1 && daysDifference < 30) {
+    return `${daysDifference} days ago`;
+  } else if (daysDifference >= 30 && daysDifference < 365) {
+    const months = Math.floor(daysDifference / 30);
+    return `${months} ${months === 1 ? "month" : "months"} ago`;
+  } else if (daysDifference >= 365) {
+    const years = Math.floor(daysDifference / 365);
+    return `${years} ${years === 1 ? "year" : "years"} ago`;
+  } else if (daysDifference === -1) {
+    return "Tomorrow";
+  } else if (daysDifference < -1 && daysDifference > -30) {
+    return `In ${Math.abs(daysDifference)} days`;
+  } else if (daysDifference <= -30 && daysDifference > -365) {
+    const months = Math.floor(Math.abs(daysDifference) / 30);
+    return `In ${months} ${months === 1 ? "month" : "months"}`;
+  } else {
+    const years = Math.floor(Math.abs(daysDifference) / 365);
+    return `In ${years} ${years === 1 ? "year" : "years"}`;
+  }
+};
+
 // Memoized mobile card component
 interface TransactionCardProps {
   transaction: Transaction;
@@ -163,9 +198,18 @@ const TransactionCard = memo(function TransactionCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">
-                {format(date, "MMM d, yyyy")}
-              </span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+                      {format(date, "MMM d, yyyy")}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{formatRelativeTime(transaction.date)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {isUpcoming && (
                 <Badge
                   variant="secondary"
@@ -729,10 +773,21 @@ export function TransactionsTable({
                 )}
                 <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
                   <div className="flex items-center gap-2">
-                    {format(
-                      parseTransactionDate(transaction.date),
-                      "MMM d, yyyy",
-                    )}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-default">
+                            {format(
+                              parseTransactionDate(transaction.date),
+                              "MMM d, yyyy",
+                            )}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatRelativeTime(transaction.date)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {isUpcomingTransaction(transaction.date) && (
                       <TooltipProvider>
                         <Tooltip>

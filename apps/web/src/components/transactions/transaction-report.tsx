@@ -58,6 +58,43 @@ export function TransactionReport() {
     return daysDifference >= 1 && daysDifference <= 10;
   };
 
+  // Helper function to format relative time
+  const formatRelativeTime = (dateValue: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const transactionDate = parseISO(dateValue);
+    transactionDate.setHours(0, 0, 0, 0);
+
+    const daysDifference = Math.floor(
+      (today.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (daysDifference === 0) {
+      return "Today";
+    } else if (daysDifference === 1) {
+      return "Yesterday";
+    } else if (daysDifference > 1 && daysDifference < 30) {
+      return `${daysDifference} days ago`;
+    } else if (daysDifference >= 30 && daysDifference < 365) {
+      const months = Math.floor(daysDifference / 30);
+      return `${months} ${months === 1 ? "month" : "months"} ago`;
+    } else if (daysDifference >= 365) {
+      const years = Math.floor(daysDifference / 365);
+      return `${years} ${years === 1 ? "year" : "years"} ago`;
+    } else if (daysDifference === -1) {
+      return "Tomorrow";
+    } else if (daysDifference < -1 && daysDifference > -30) {
+      return `In ${Math.abs(daysDifference)} days`;
+    } else if (daysDifference <= -30 && daysDifference > -365) {
+      const months = Math.floor(Math.abs(daysDifference) / 30);
+      return `In ${months} ${months === 1 ? "month" : "months"}`;
+    } else {
+      const years = Math.floor(Math.abs(daysDifference) / 365);
+      return `In ${years} ${years === 1 ? "year" : "years"}`;
+    }
+  };
+
   const [filters, setFilters] = useState<TransactionReportFilters>(() => ({
     includeIncome: search.includeIncome ?? false,
     dateFrom: search.dateFrom ? parseISO(search.dateFrom) : defaultDateFrom,
@@ -474,7 +511,21 @@ export function TransactionReport() {
                       {transaction.transactionDetails}
                     </div>
                     <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      {format(parseISO(transaction.date), "MMM d, yyyy")}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-default">
+                              {format(
+                                parseISO(transaction.date),
+                                "MMM d, yyyy",
+                              )}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatRelativeTime(transaction.date)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       {isUpcomingTransaction(transaction.date) && (
                         <TooltipProvider>
                           <Tooltip>
