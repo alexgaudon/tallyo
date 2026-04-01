@@ -49,6 +49,48 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -58,9 +100,21 @@
   --font-sans:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+
+  /* Warm, soft shadows */
+  --shadow-soft:
+    0 1px 2px rgba(68, 55, 43, 0.04), 0 4px 8px rgba(68, 55, 43, 0.03), 0 8px
+    16px rgba(68, 55, 43, 0.02);
   --shadow-soft-lg:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
+    0 2px 4px rgba(68, 55, 43, 0.04), 0 8px 16px rgba(68, 55, 43, 0.03), 0 16px
+    32px rgba(68, 55, 43, 0.02);
+  --shadow-soft-xl:
+    0 4px 8px rgba(68, 55, 43, 0.04), 0 12px 24px rgba(68, 55, 43, 0.03), 0 24px
+    48px rgba(68, 55, 43, 0.02);
+
+  /* Glow effects */
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
+  --shadow-glow-sm: 0 0 12px rgba(139, 92, 246, 0.12);
 }
 
 html,
@@ -74,116 +128,235 @@ body {
   }
 }
 
+/* ==========================================
+   WARM & FRIENDLY THEME - Light Mode
+   ========================================== */
+
 :root {
-  --radius: 0.5rem;
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  /* Border radius - slightly more rounded for friendly feel */
+  --radius: 0.625rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+
+  /* Shadows */
+  --shadow-soft:
+    0 1px 2px rgba(68, 55, 43, 0.04), 0 4px 8px rgba(68, 55, 43, 0.03), 0 8px
+    16px rgba(68, 55, 43, 0.02);
   --shadow-soft-lg:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
+    0 2px 4px rgba(68, 55, 43, 0.04), 0 8px 16px rgba(68, 55, 43, 0.03), 0 16px
+    32px rgba(68, 55, 43, 0.02);
+  --shadow-soft-xl:
+    0 4px 8px rgba(68, 55, 43, 0.04), 0 12px 24px rgba(68, 55, 43, 0.03), 0 24px
+    48px rgba(68, 55, 43, 0.02);
+  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.15);
+  --shadow-glow-sm: 0 0 12px rgba(139, 92, 246, 0.1);
 
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ==========================================
+     BASE COLORS - Warm Neutrals
+     ========================================== */
+
+  /* Background - warm off-white with subtle cream */
+  --background: #faf9f7;
+  --foreground: #1c1917;
+
+  /* Card - pure white with subtle warmth */
   --card: #ffffff;
-  --card-foreground: #171717;
-  --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #171717;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted: #f0f0f0;
-  --muted-foreground: #737373;
-  --accent: #475569;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #475569;
+  --card-foreground: #1c1917;
 
+  /* Popover - white with soft shadow potential */
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  /* ==========================================
+     PRIMARY - Vibrant Violet
+     ========================================== */
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+
+  /* ==========================================
+     SECONDARY - Soft Purple Tint
+     ========================================== */
+  --secondary: #f5f3ff;
+  --secondary-foreground: #5b21b6;
+
+  /* ==========================================
+     MUTED - Soft Warm Gray
+     ========================================== */
+  --muted: #faf9f7;
+  --muted-foreground: #78716c;
+
+  /* ==========================================
+     ACCENT - Vibrant Violet
+     ========================================== */
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
+
+  /* ==========================================
+     DESTRUCTIVE - Soft Red
+     ========================================== */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* ==========================================
+     BORDERS & INPUTS
+     ========================================== */
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #8b5cf6;
+
+  /* ==========================================
+     FINANCE COLORS - Warm & Friendly
+     ========================================== */
   --income: #059669;
   --income-muted: #d1fae5;
   --expense: #dc2626;
   --expense-muted: #fee2e2;
-  --savings: #475569;
-  --savings-muted: #f1f5f9;
+  --savings: #0d9488;
+  --savings-muted: #ccfbf1;
 
+  /* ==========================================
+     CHART COLORS - Vibrant Palette
+     ========================================== */
   --chart-1: #7c3aed;
-  --chart-2: #2563eb;
-  --chart-3: #059669;
-  --chart-4: #d97706;
-  --chart-5: #dc2626;
-  --chart-6: #0891b2;
-  --chart-7: #65a30d;
-  --chart-8: #ea580c;
+  --chart-2: #0d9488;
+  --chart-3: #8b5cf6;
+  --chart-4: #ec4899;
+  --chart-5: #06b6d4;
+  --chart-6: #84cc16;
+  --chart-7: #f43f5e;
+  --chart-8: #6366f1;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #171717;
-  --sidebar-primary: #475569;
+  /* ==========================================
+     SIDEBAR - Vibrant & Modern
+     ========================================== */
+  --sidebar: #faf9f7;
+  --sidebar-foreground: #44403c;
+  --sidebar-primary: #7c3aed;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #475569;
-  --sidebar-border: #e5e5e5;
-  --sidebar-ring: #475569;
+  --sidebar-accent: #f5f3ff;
+  --sidebar-accent-foreground: #5b21b6;
+  --sidebar-border: #e7e5e4;
+  --sidebar-ring: #8b5cf6;
 }
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: #0a0a0a;
-  --card-foreground: #ffffff;
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #0a0a0a;
-  --secondary: #171717;
-  --secondary-foreground: #ffffff;
-  --muted: #171717;
-  --muted-foreground: #a3a3a3;
-  --accent: #94a3b8;
-  --accent-foreground: #0a0a0a;
-  --destructive: #f87171;
-  --border: #262626;
-  --input: #262626;
-  --ring: #94a3b8;
+/* ==========================================
+   WARM & FRIENDLY THEME - Dark Mode
+   ========================================== */
 
+.dark {
+  /* Background - warm dark with subtle brown undertones */
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+
+  /* Card - slightly elevated dark */
+  --card: #1c1917;
+  --card-foreground: #fafaf9;
+
+  /* Popover */
+  --popover: #1c1917;
+  --popover-foreground: #fafaf9;
+
+  /* ==========================================
+     PRIMARY - Vibrant Violet
+     ========================================== */
+  --primary: #a78bfa;
+  --primary-foreground: #0c0a09;
+
+  /* ==========================================
+     SECONDARY - Dark Purple Tint
+     ========================================== */
+  --secondary: #292524;
+  --secondary-foreground: #d6d3d1;
+
+  /* ==========================================
+     MUTED - Warm Dark Gray
+     ========================================== */
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
+
+  /* ==========================================
+     ACCENT - Vibrant Violet
+     ========================================== */
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
+
+  /* ==========================================
+     DESTRUCTIVE - Soft Red
+     ========================================== */
+  --destructive: #f87171;
+  --destructive-foreground: #450a0a;
+
+  /* ==========================================
+     BORDERS & INPUTS
+     ========================================== */
+  --border: #292524;
+  --input: #292524;
+  --ring: #8b5cf6;
+
+  /* ==========================================
+     FINANCE COLORS - Dark Mode
+     ========================================== */
   --income: #34d399;
   --income-muted: #064e3b;
   --expense: #f87171;
   --expense-muted: #450a0a;
-  --savings: #94a3b8;
-  --savings-muted: #334155;
+  --savings: #2dd4bf;
+  --savings-muted: #0f766e;
 
+  /* ==========================================
+     CHART COLORS - Dark Mode (vibrant)
+     ========================================== */
   --chart-1: #a78bfa;
-  --chart-2: #60a5fa;
-  --chart-3: #34d399;
+  --chart-2: #2dd4bf;
+  --chart-3: #f472b6;
   --chart-4: #fbbf24;
-  --chart-5: #f87171;
-  --chart-6: #22d3ee;
-  --chart-7: #a3e635;
-  --chart-8: #fb923c;
+  --chart-5: #22d3ee;
+  --chart-6: #a3e635;
+  --chart-7: #fb7185;
+  --chart-8: #818cf8;
 
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #94a3b8;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #94a3b8;
-  --sidebar-border: #262626;
-  --sidebar-ring: #94a3b8;
+  /* ==========================================
+     SIDEBAR - Dark Vibrant
+     ========================================== */
+  --sidebar: #0c0a09;
+  --sidebar-foreground: #d6d3d1;
+  --sidebar-primary: #a78bfa;
+  --sidebar-primary-foreground: #0c0a09;
+  --sidebar-accent: #292524;
+  --sidebar-accent-foreground: #a78bfa;
+  --sidebar-border: #292524;
+  --sidebar-ring: #8b5cf6;
 
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* Dark mode shadows - warmer tones */
+  --shadow-soft:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25), 0 8px 16px
+    rgba(0, 0, 0, 0.2);
   --shadow-soft-lg:
-    0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 10px 24px -4px rgba(0, 0, 0, 0.2);
+    0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.25), 0 16px 32px
+    rgba(0, 0, 0, 0.2);
+  --shadow-soft-xl:
+    0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.25), 0 24px 48px
+    rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 24px rgba(139, 92, 246, 0.25);
+  --shadow-glow-sm: 0 0 16px rgba(139, 92, 246, 0.15);
 }
 
 @theme inline {
   --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
-  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-soft-lg:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 24px -4px rgba(0, 0, 0, 0.06);
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-soft-lg: var(--shadow-soft-lg);
+  --shadow-soft-xl: var(--shadow-soft-xl);
+  --shadow-glow: var(--shadow-glow);
+  --shadow-glow-sm: var(--shadow-glow-sm);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -199,6 +372,7 @@ body {
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -230,57 +404,128 @@ body {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
+
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-sans font-bold;
+    @apply font-sans font-semibold tracking-tight;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
+
+  h1 {
+    @apply text-3xl leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl leading-tight;
+  }
+
+  h3 {
+    @apply text-xl leading-snug;
+  }
+
+  h4 {
+    @apply text-lg leading-snug;
+  }
+
   button,
   input,
   textarea,
   select {
     @apply font-sans;
   }
+
   code,
   pre,
   .font-mono {
     @apply font-mono;
   }
+
   .font-mono,
   [data-currency] {
     font-variant-numeric: tabular-nums;
   }
 }
 
-.recharts-tooltip-wrapper {
-  z-index: 99999;
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
 }
 
-.recharts-default-tooltip {
-  z-index: 99999;
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
 }
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ==========================================
+   SELECTION & SCROLLBAR
+   ========================================== */
 
 ::selection {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: rgba(139, 92, 246, 0.2);
+  color: inherit;
+}
+
+.dark ::selection {
+  background-color: rgba(139, 92, 246, 0.3);
 }
 
 html,
 body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
 }
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none;
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+/* ==========================================
+   FOCUS STATES
+   ========================================== */
 
 :focus-visible {
   outline: 2px solid var(--ring);
@@ -292,9 +537,55 @@ body::-webkit-scrollbar {
   outline: none;
 }
 
-button,
-input,
-textarea,
-select {
-  font-family: var(--font-sans);
+/* ==========================================
+   RECHARTS OVERRIDES
+   ========================================== */
+
+.recharts-tooltip-wrapper {
+  z-index: 99999;
+}
+
+.recharts-default-tooltip {
+  z-index: 99999;
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-soft-lg) !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--foreground) !important;
+  font-weight: 600 !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--muted-foreground) !important;
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass {
+  background: rgba(28, 25, 23, 0.7);
+}
+
+.gradient-mask-b {
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+.gradient-mask-t {
+  mask-image: linear-gradient(to top, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 60%, transparent 100%);
+}
+
+.text-balance {
+  text-wrap: balance;
 }

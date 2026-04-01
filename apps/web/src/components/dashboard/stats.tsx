@@ -14,7 +14,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-muted p-4 mb-4">
+        <div className="rounded-2xl bg-secondary p-5 mb-4 shadow-soft">
           <CreditCardIcon className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
@@ -37,71 +37,71 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   })();
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-muted">
-            <CreditCardIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+    <div className="grid grid-cols-2 gap-4">
+      <Card className="p-5 group">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+            <CreditCardIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground">
               Transactions
             </div>
             <StatDisplay
               animate
               value={data.stats.totalTransactions}
-              className="text-lg sm:text-xl font-semibold tabular-nums"
+              className="mt-1 text-xl font-semibold tabular-nums"
             />
           </div>
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-income-muted">
-            <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-income" />
+      <Card className="p-5 group">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-income-muted text-income transition-colors">
+            <TrendingUpIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground">
               Income
             </div>
             <CurrencyAmount
               animate
               amount={income}
-              className="text-lg sm:text-xl font-semibold text-income"
+              className="mt-1 text-xl font-semibold text-income"
             />
           </div>
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-expense-muted">
-            <TrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-expense" />
+      <Card className="p-5 group">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-expense-muted text-expense transition-colors">
+            <TrendingDownIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-xs font-medium text-muted-foreground">
               Expenses
             </div>
             <CurrencyAmount
               animate
               amount={Math.abs(expenses)}
-              className="text-lg sm:text-xl font-semibold text-expense"
+              className="mt-1 text-xl font-semibold text-expense"
             />
           </div>
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-5 border-border/80 bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-savings-muted">
-            <PiggyBankIcon className="w-4 h-4 sm:w-5 sm:h-5 text-savings" />
+      <Card className="p-5 group">
+        <div className="flex items-center gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-savings-muted text-savings transition-colors">
+            <PiggyBankIcon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Savings rate
+            <div className="text-xs font-medium text-muted-foreground">
+              Savings Rate
             </div>
-            <div className="text-lg sm:text-xl font-semibold tabular-nums text-savings">
+            <div className="mt-1 text-xl font-semibold tabular-nums text-savings">
               {savingsRate}%
             </div>
           </div>
