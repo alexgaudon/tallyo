@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
+import { IncomeExpenseSankey } from "@/components/dashboard/income-expense-sankey";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
@@ -65,6 +66,11 @@ export const Route = createFileRoute("/dashboard")({
       ),
       context.queryClient.prefetchQuery(
         orpc.dashboard.getTransactionStats.queryOptions({
+          input: dateRangeToApiFormat(dateRange),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        orpc.dashboard.getSankeyData.queryOptions({
           input: dateRangeToApiFormat(dateRange),
         }),
       ),
@@ -141,11 +147,19 @@ function RouteComponent() {
     }),
   );
 
+  const { data: sankeyData, isLoading: isSankeyLoading } = useQuery(
+    orpc.dashboard.getSankeyData.queryOptions({
+      placeholderData: (previousData) => previousData,
+      input: dateRangeToApiFormat(dateRange),
+    }),
+  );
+
   const isLoading =
     isStatsLoading ||
     isCategoryLoading ||
     isMerchantLoading ||
-    isTransactionLoading;
+    isTransactionLoading ||
+    isSankeyLoading;
 
   return (
     <div className="min-h-full overflow-x-hidden">
@@ -179,6 +193,8 @@ function RouteComponent() {
           </div>
 
           <DashboardCharts categoryData={categoryData} />
+
+          <DashboardSankey sankeyData={sankeyData} />
 
           <DashboardDetails
             merchantData={merchantData}
@@ -264,6 +280,29 @@ function DashboardCharts({
       ) : (
         <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
           No category data
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DashboardSankey({
+  sankeyData,
+}: {
+  sankeyData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getSankeyData.call>>
+    | undefined;
+}) {
+  return (
+    <div>
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">Income Flow</h2>
+      </div>
+      {sankeyData && sankeyData.totalIncome > 0 ? (
+        <IncomeExpenseSankey data={sankeyData} />
+      ) : (
+        <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+          No income data
         </div>
       )}
     </div>

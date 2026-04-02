@@ -41,6 +41,10 @@ export type DashboardTransactionStats = InferRouterOutputs<
   typeof dashboardRouter
 >["getTransactionStats"];
 
+export type DashboardSankeyData = InferRouterOutputs<
+  typeof dashboardRouter
+>["getSankeyData"];
+
 export const appRouter = {
   healthCheck: publicProcedure.handler(async () => {
     try {

@@ -2,15 +2,14 @@ import {
   and,
   asc,
   count,
+  desc,
   eq,
   gte,
   inArray,
-  isNotNull,
   isNull,
   lte,
   not,
   or,
-  type SQL,
   sql,
   sum,
 } from "drizzle-orm";
@@ -598,33 +597,89 @@ export const dashboardRouter = {
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
       const dateRange = input || {};
+      const userId = context.session.user.id;
 
-      // Calculate the date 12 months ago from the current date
-      const twelveMonthsAgo = new Date();
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-      const categoryData = await db
+      const result = await db
         .select({
           amount: sum(transaction.amount),
-          count: count(),
           category: {
             id: category.id,
             name: category.name,
-            userId: category.userId,
-            parentCategoryId: category.parentCategoryId,
             icon: category.icon,
-            treatAsIncome: category.treatAsIncome,
-            hideFromInsights: category.hideFromInsights,
-            createdAt: category.createdAt,
-            updatedAt: category.updatedAt,
           },
         })
         .from(transaction)
         .innerJoin(category, eq(transaction.categoryId, category.id))
         .where(
           and(
-            eq(transaction.userId, context.session.user.id),
+            eq(transaction.userId, userId),
             eq(transaction.reviewed, true),
+            eq(category.hideFromInsights, false),
+            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+          ),
+        )
+        .groupBy(category.id, category.name, category.icon)
+        .orderBy(desc(sum(transaction.amount)));
+
+      return result.map((item) => ({
+        amount: Math.abs(Number(item.amount ?? 0)),
+        category: {
+          id: item.category.id,
+          name: item.category.name,
+          icon: item.category.icon,
+          userId,
+          parentCategoryId: null,
+          treatAsIncome: false,
+          hideFromInsights: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      }));
+    }),
+  getSankeyData: protectedProcedure
+    .input(dateRangeSchema.optional())
+    .handler(async ({ context, input }) => {
+      const dateRange = input || {};
+      const userId = context.session.user.id;
+
+      // Get total income
+      const incomeResult = await db
+        .select({ amount: sum(transaction.amount) })
+        .from(transaction)
+        .innerJoin(category, eq(transaction.categoryId, category.id))
+        .where(
+          and(
+            eq(transaction.userId, userId),
+            eq(transaction.reviewed, true),
+            eq(category.treatAsIncome, true),
+            eq(category.hideFromInsights, false),
+            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+          ),
+        );
+
+      const totalIncome = Math.abs(Number(incomeResult[0]?.amount ?? 0));
+
+      // Get expenses by category
+      const expenseResult = await db
+        .select({
+          amount: sum(transaction.amount),
+          category: {
+            id: category.id,
+            name: category.name,
+            icon: category.icon,
+            parentCategoryId: category.parentCategoryId,
+          },
+        })
+        .from(transaction)
+        .innerJoin(category, eq(transaction.categoryId, category.id))
+        .where(
+          and(
+            eq(transaction.userId, userId),
+            eq(transaction.reviewed, true),
+            eq(category.treatAsIncome, false),
+            eq(category.hideFromInsights, false),
             ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
             ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
           ),
@@ -632,67 +687,12 @@ export const dashboardRouter = {
         .groupBy(
           category.id,
           category.name,
-          category.userId,
-          category.parentCategoryId,
           category.icon,
-          category.treatAsIncome,
-          category.hideFromInsights,
-          category.createdAt,
-          category.updatedAt,
+          category.parentCategoryId,
         );
-
-      // Get 12-month averages for each category
-      const categoryAverages = await db
-        .select({
-          categoryId: transaction.categoryId,
-          year: sql<number>`EXTRACT(YEAR FROM ${transaction.date})`,
-          month: sql<number>`EXTRACT(MONTH FROM ${transaction.date})`,
-          monthlyTotal: sum(transaction.amount),
-        })
-        .from(transaction)
-        .innerJoin(category, eq(transaction.categoryId, category.id))
-        .where(
-          and(
-            eq(transaction.userId, context.session.user.id),
-            eq(transaction.reviewed, true),
-            gte(transaction.date, twelveMonthsAgo.toISOString().split("T")[0]),
-          ),
-        )
-        .groupBy(
-          transaction.categoryId,
-          sql`EXTRACT(YEAR FROM ${transaction.date})`,
-          sql`EXTRACT(MONTH FROM ${transaction.date})`,
-        );
-
-      // Calculate averages for each category
-      const categoryAverageMap = new Map<
-        string,
-        { total: number; count: number }
-      >();
-
-      for (const item of categoryAverages) {
-        if (!item.categoryId) continue;
-
-        const existing = categoryAverageMap.get(item.categoryId) || {
-          total: 0,
-          count: 0,
-        };
-        existing.total += Math.abs(Number(item.monthlyTotal));
-        existing.count += 1;
-        categoryAverageMap.set(item.categoryId, existing);
-      }
-
-      // Convert totals to averages
-      const finalAverages = new Map<string, number>();
-      for (const [categoryId, data] of categoryAverageMap.entries()) {
-        finalAverages.set(
-          categoryId,
-          data.count > 0 ? data.total / data.count : 0,
-        );
-      }
 
       // Fetch parent categories for categories that have them
-      const parentCategoryIds = categoryData
+      const parentCategoryIds = expenseResult
         .map((item) => item.category.parentCategoryId)
         .filter(Boolean) as string[];
 
@@ -702,9 +702,9 @@ export const dashboardRouter = {
               .select({
                 id: category.id,
                 name: category.name,
+                icon: category.icon,
                 userId: category.userId,
                 parentCategoryId: category.parentCategoryId,
-                icon: category.icon,
                 treatAsIncome: category.treatAsIncome,
                 hideFromInsights: category.hideFromInsights,
                 createdAt: category.createdAt,
@@ -713,31 +713,47 @@ export const dashboardRouter = {
               .from(category)
               .where(
                 and(
-                  eq(category.userId, context.session.user.id),
+                  eq(category.userId, userId),
                   inArray(category.id, parentCategoryIds),
                 ),
               )
           : [];
 
-      // Create a map of parent categories for quick lookup
       const parentCategoryMap = new Map(
         parentCategories.map((parent) => [parent.id, parent]),
       );
 
-      // Transform the data to include parent category information and 12-month average
-      const transformedData = categoryData.map((item) => ({
-        amount: item.amount,
-        count: item.count,
-        average12Months: finalAverages.get(item.category.id) || 0,
+      // Transform expense data with parent category info
+      const expensesByCategory = expenseResult.map((item) => ({
+        amount: Math.abs(Number(item.amount ?? 0)),
         category: {
           ...item.category,
+          userId: context.session.user.id,
+          treatAsIncome: false,
+          hideFromInsights: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
           parentCategory: item.category.parentCategoryId
-            ? parentCategoryMap.get(item.category.parentCategoryId) || null
+            ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
             : null,
         },
       }));
 
-      return transformedData;
+      // Calculate total expenses
+      const totalExpenses = expensesByCategory.reduce(
+        (sum, item) => sum + item.amount,
+        0,
+      );
+
+      // Calculate saved amount (income - expenses)
+      const savedAmount = Math.max(0, totalIncome - totalExpenses);
+
+      return {
+        totalIncome,
+        totalExpenses,
+        savedAmount,
+        expensesByCategory,
+      };
     }),
   getStatsCounts: protectedProcedure
     .input(dateRangeSchema.optional())
