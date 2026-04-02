@@ -121,7 +121,7 @@ export function StatDisplay({
 	const content = (
 		<span
 			className={cn(
-				"font-mono",
+				"font-mono truncate",
 				isAnimating && "transition-all duration-75 ease-out",
 				className,
 			)}

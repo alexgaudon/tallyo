@@ -50,7 +50,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
             <StatDisplay
               animate
               value={data.stats.totalTransactions}
-              className="mt-1 text-xl font-semibold tabular-nums"
+              className="mt-1 text-base font-semibold tabular-nums"
             />
           </div>
         </div>
@@ -68,7 +68,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
             <CurrencyAmount
               animate
               amount={income}
-              className="mt-1 text-xl font-semibold text-income"
+              className="mt-1 text-base font-semibold text-income"
             />
           </div>
         </div>
@@ -86,7 +86,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
             <CurrencyAmount
               animate
               amount={Math.abs(expenses)}
-              className="mt-1 text-xl font-semibold text-expense"
+              className="mt-1 text-base font-semibold text-expense"
             />
           </div>
         </div>
@@ -101,7 +101,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
             <div className="text-xs font-medium text-muted-foreground">
               Savings Rate
             </div>
-            <div className="mt-1 text-xl font-semibold tabular-nums text-savings">
+            <div className="mt-1 text-base font-semibold tabular-nums text-savings">
               {savingsRate}%
             </div>
           </div>

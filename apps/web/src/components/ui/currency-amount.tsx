@@ -112,7 +112,7 @@ export function CurrencyAmount({
 		<span
 			data-currency
 			className={cn(
-				"font-mono tabular-nums",
+				"font-mono tabular-nums truncate",
 				"flex items-center",
 				showColor && animatedAmount < 0 && "text-[var(--expense)]",
 				showColor && animatedAmount > 0 && "text-[var(--income)]",
