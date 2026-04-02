@@ -14,6 +14,9 @@ export default defineConfig({
   },
   base: process.env.NODE_ENV === "production" ? "/" : "/",
   server: {
+    allowedHosts: process.env.VITE_ALLOWED_HOSTS
+      ? process.env.VITE_ALLOWED_HOSTS.split(",").map((h) => h.trim())
+      : undefined,
     host: true,
     port: 3001,
     proxy: {
