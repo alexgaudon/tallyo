@@ -290,10 +290,10 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
 
     const sankeyGenerator = d3Sankey<SankeyNode, SankeyLink>()
       .nodeWidth(15)
-      .nodePadding(Math.max(10, 18 - Math.max(0, numNodes - 10))) // Reduce padding as nodes increase
+      .nodePadding(Math.max(10, 18 - Math.max(0, numNodes - 10)))
       .extent([
-        [0, 0],
-        [requiredWidth, requiredHeight],
+        [10, 10],
+        [requiredWidth - 10, requiredHeight - 10],
       ])
       .nodeAlign(sankeyLeft)
       .nodeId((d) => d.id);
@@ -306,7 +306,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     return {
       nodes: graph.nodes,
       links: graph.links,
-      width: requiredWidth + 50,
+      width: requiredWidth,
       height: requiredHeight,
     };
   }, [data]);
@@ -346,7 +346,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
           <div className="min-w-[550px] w-full">
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${Math.max(width + 50, 550)} ${height}`}
+              viewBox={`0 0 ${Math.max(width, 550)} ${height}`}
               preserveAspectRatio="xMidYMid meet"
               className="w-full overflow-visible"
               role="img"
