@@ -76,15 +76,27 @@ function RouteComponent() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((category) => {
+      // First find categories that match the search
+      const matchingIds = new Set<string>();
+      filtered.forEach((category) => {
         if (category.name.toLowerCase().includes(query)) {
-          return true;
+          matchingIds.add(category.id);
         }
         if (category.icon?.toLowerCase().includes(query)) {
-          return true;
+          matchingIds.add(category.id);
         }
-        return false;
       });
+
+      // Then include parents of matching children
+      const resultIds = new Set<string>(matchingIds);
+      filtered.forEach((category) => {
+        if (category.parentCategory && matchingIds.has(category.id)) {
+          // This is a child that matches - include its parent
+          resultIds.add(category.parentCategory.id);
+        }
+      });
+
+      filtered = filtered.filter((category) => resultIds.has(category.id));
     }
 
     return filtered;
