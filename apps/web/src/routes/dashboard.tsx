@@ -17,6 +17,7 @@ import type { DateRange } from "react-day-picker";
 import { z } from "zod";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
+import { IncomeExpenseSankeyChart } from "@/components/dashboard/income-expense-sankey-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
@@ -218,6 +219,20 @@ function RouteComponent() {
             categoryData={categoryData}
             dateRange={dateRange}
           />
+
+          {/* Sankey Chart - Money Flow Visualization */}
+          <div>
+            <h2 className="text-sm font-semibold text-foreground mb-3">
+              Money Flow
+            </h2>
+            {categoryData && categoryData.length > 0 ? (
+              <IncomeExpenseSankeyChart data={categoryData} />
+            ) : (
+              <div className="h-[350px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+                No category data available for money flow
+              </div>
+            )}
+          </div>
 
           <DashboardDetails
             merchantData={merchantData}
