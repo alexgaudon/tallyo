@@ -243,16 +243,22 @@ function DashboardHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border/40 bg-gradient-to-b from-card/60 to-card/30">
-      <div className="max-w-screen-2xl mx-auto px-4 py-4 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {greeting}, {userName?.split(" ")[0] ?? "there"}
+    <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                {greeting}
+              </span>
+              <span className="text-foreground">, </span>
+              <span className="text-primary">
+                {userName?.split(" ")[0] ?? "there"}
+              </span>
             </h1>
-            <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
-              {format(new Date(), "EEEE, MMMM d")}
-            </span>
+            <p className="text-sm text-muted-foreground font-medium">
+              {format(new Date(), "EEEE, MMMM d, yyyy")}
+            </p>
           </div>
           <div className="flex items-stretch gap-2 w-full sm:w-auto">
             <div className="flex-1 sm:flex-none min-w-0">
