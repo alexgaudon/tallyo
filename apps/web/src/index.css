@@ -589,3 +589,18 @@ body {
 .text-balance {
   text-wrap: balance;
 }
+
+/* ==========================================
+   MOBILE ZOOM PREVENTION
+   ========================================== */
+
+/* Prevent iOS Safari zoom on focus by ensuring 16px minimum font size */
+@media screen and (max-width: 768px) {
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    font-size: 16px !important;
+  }
+}
