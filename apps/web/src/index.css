@@ -538,33 +538,8 @@ body {
 }
 
 /* ==========================================
-   RECHARTS OVERRIDES
-   ========================================== */
-
-.recharts-tooltip-wrapper {
-  z-index: 99999;
-}
-
-.recharts-default-tooltip {
-  z-index: 99999;
-  background: var(--card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow-soft-lg) !important;
-}
-
-.recharts-tooltip-label {
-  color: var(--foreground) !important;
-  font-weight: 600 !important;
-}
-
-.recharts-tooltip-item {
-  color: var(--muted-foreground) !important;
-}
-
-/* ==========================================
-   UTILITY CLASSES
-   ========================================== */
+    UTILITY CLASSES
+    ========================================== */
 
 .glass {
   background: rgba(255, 255, 255, 0.7);

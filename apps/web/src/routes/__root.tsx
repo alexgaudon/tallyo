@@ -82,7 +82,7 @@ function RootComponent() {
       <ORPCContext.Provider value={orpcUtils}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           {isAuthenticated ? (
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen pt-14">
               <TopNav onMenuClick={() => setMobileDrawerOpen(true)} />
               <MobileNavDrawer
                 open={mobileDrawerOpen}
@@ -95,7 +95,7 @@ function RootComponent() {
               <BottomNav />
             </div>
           ) : (
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen pt-14">
               {location.pathname.startsWith("/sign") ? (
                 <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
                   <Link to="/">

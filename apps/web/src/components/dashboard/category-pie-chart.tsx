@@ -1,6 +1,8 @@
+import type { PieItemIdentifier } from "@mui/x-charts";
+import { PieChart } from "@mui/x-charts/PieChart";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
-import { Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { ChevronDown } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
@@ -15,6 +17,10 @@ const chartColors = [
   "var(--chart-6)",
   "var(--chart-7)",
   "var(--chart-8)",
+  "#f59e0b", // amber
+  "#84cc16", // lime
+  "#06b6d4", // cyan
+  "#8b5cf6", // violet
 ];
 
 function hashString(str: string): number {
@@ -22,7 +28,6 @@ function hashString(str: string): number {
   for (let i = 0; i < str.length; i++) {
     hash = (hash * 33) ^ str.charCodeAt(i);
   }
-
   return hash >>> 0;
 }
 
@@ -31,101 +36,75 @@ function getColorFromCategoryId(categoryId: string): string {
   return chartColors[hash % chartColors.length];
 }
 
-interface TooltipPayloadItem {
-  payload: {
-    name: string;
-    value: number;
-    count: number;
-    average12Months: number;
-    categoryId: string;
-    fill: string;
-  };
-  name?: string;
-  value?: number;
-}
-
-function CustomTooltip(props: {
-  active?: boolean;
-  payload?: TooltipPayloadItem[];
-  chartData: Array<{ value: number }>;
-}) {
-  const { active, payload } = props;
-
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    const total = props.chartData.reduce(
-      (sum: number, item: { value: number }) => sum + item.value,
-      0,
-    );
-    const percentage = ((data.value / total) * 100).toFixed(1);
-
-    return (
-      <div
-        className="bg-popover border border-border/50 rounded-lg shadow-lg p-3 space-y-1.5"
-        style={{ zIndex: 9999, position: "relative" }}
-      >
-        <div className="font-semibold text-sm">{data.name}</div>
-        <div className="space-y-1 text-sm">
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Amount:</span>
-            <span className="font-medium">
-              <CurrencyAmount amount={data.value} />
-            </span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Percentage:</span>
-            <span className="font-medium">{percentage}%</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">Transactions:</span>
-            <span className="font-medium">{data.count}</span>
-          </div>
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">12-Month Avg:</span>
-            <span className="font-medium">
-              <CurrencyAmount amount={data.average12Months} />
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return null;
+interface ChartItem {
+  id: string;
+  value: number;
+  label: string;
+  color: string;
+  count: number;
+  average12Months: number;
+  categoryId: string;
 }
 
 export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  const legendRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Memoize chart data so it only recalculates when data prop changes
-  const chartData = useMemo(() => {
+  // Process all data - no grouping
+  const chartData = useMemo<ChartItem[]>(() => {
     if (!data || data.length === 0) {
       return [];
     }
 
+    // Sort by amount descending (largest first)
     const sortedData = [...data].sort(
-      (a, b) => Number(a.amount) - Number(b.amount),
+      (a, b) => Math.abs(Number(b.amount)) - Math.abs(Number(a.amount)),
     );
 
-    // Filter out income categories and prepare chart data
+    // Filter out income categories and map to chart items
     return sortedData
-      .filter((item) => !item.category.treatAsIncome)
-      .filter((item) => !item.category.hideFromInsights)
+      .filter(
+        (item) =>
+          !item.category.treatAsIncome && !item.category.hideFromInsights,
+      )
       .map((item) => ({
-        name: formatCategoryText(item.category),
+        id: item.category.id,
         value: Math.abs(Number(item.amount)),
-        fill: getColorFromCategoryId(item.category.id),
+        label: formatCategoryText(item.category),
+        color: getColorFromCategoryId(item.category.id),
         count: item.count,
         categoryId: item.category.id,
         average12Months: item.average12Months || 0,
       }));
   }, [data]);
 
-  // Calculate total for percentage calculations
+  // Calculate total
   const totalAmount = useMemo(
     () => chartData.reduce((sum, item) => sum + item.value, 0),
     [chartData],
   );
+
+  // Check if we need scroll indicator (more than 3 rows worth)
+  // Mobile: 2 cols × 3 rows = 6, Desktop: 3 cols × 3 rows = 9
+  const needsScrollIndicator = chartData.length > 6;
+
+  // Handle scroll to detect when at bottom
+  const handleScroll = useCallback(() => {
+    if (legendRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = legendRef.current;
+      // Check if scrolled to bottom (within 2px threshold)
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
+      // Only update state if it changed
+      setIsScrolledToBottom((prev) => {
+        if (prev !== isAtBottom) {
+          return isAtBottom;
+        }
+        return prev;
+      });
+    }
+  }, []);
 
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
@@ -137,37 +116,40 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
     [navigate],
   );
 
-  // Memoize tooltip content to prevent recreation on every render
-  const tooltipContent = useCallback(
-    (props: { active?: boolean; payload?: TooltipPayloadItem[] }) => (
-      <CustomTooltip {...props} chartData={chartData} />
-    ),
-    [chartData],
-  );
-
-  // Memoize mouse event handlers
-  const handleMouseEnter = useCallback((_: unknown, index: number) => {
-    setActiveIndex(index);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setActiveIndex(null);
-  }, []);
-
-  const handlePieClick = useCallback(
-    (data: { categoryId?: string }) => {
-      if (data?.categoryId) {
-        handleCategoryClick(data.categoryId);
+  // Handle item click from pie chart
+  const handleItemClick = useCallback(
+    (_event: React.MouseEvent, params: PieItemIdentifier) => {
+      const item = chartData[params.dataIndex];
+      if (item?.categoryId) {
+        handleCategoryClick(item.categoryId);
       }
     },
-    [handleCategoryClick],
+    [chartData, handleCategoryClick],
+  );
+
+  // Handle highlight change (hover)
+  const handleHighlightChange = useCallback(
+    (
+      highlightedItem: {
+        dataIndex?: number;
+        seriesId?: number | string;
+      } | null,
+    ) => {
+      if (highlightedItem?.dataIndex !== undefined) {
+        const item = chartData[highlightedItem.dataIndex];
+        setActiveItemId(item?.id ?? null);
+      } else {
+        setActiveItemId(null);
+      }
+    },
+    [chartData],
   );
 
   if (!data || data.length === 0) {
     return (
-      <Card>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-4 text-center">
+      <Card className="shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-muted-foreground text-sm">
               No transaction data available to display category breakdown.
             </p>
@@ -179,85 +161,115 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="p-4 sm:p-6">
-        <div
-          className="grid grid-cols-1 lg:grid-cols-3 gap-3"
-          style={{ position: "relative" }}
-        >
-          {/* Pie Chart */}
-          <div className="flex justify-center lg:col-span-1">
-            <div
-              className="w-full max-w-[260px] h-[260px] min-h-[220px] relative"
-              style={{ position: "relative", zIndex: 1 }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="78%"
-                    innerRadius="52%"
-                    isAnimationActive={false}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                    onClick={handlePieClick}
-                    style={{ cursor: "pointer" }}
-                  />
-                  <Tooltip content={tooltipContent} />
-                </PieChart>
-              </ResponsiveContainer>
+      <CardContent className="p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Chart Section */}
+          <div className="flex-shrink-0 flex justify-center">
+            <div className="relative w-[220px] h-[220px]">
+              <PieChart
+                series={[
+                  {
+                    data: chartData,
+                    innerRadius: 50,
+                    outerRadius: 85,
+                    paddingAngle: 0.5,
+                    cornerRadius: 2,
+                    highlightScope: { fade: "global", highlight: "item" },
+                    faded: {
+                      innerRadius: 50,
+                      additionalRadius: -2,
+                      color: "gray",
+                    },
+                    valueFormatter: (item) => {
+                      const dollars = item.value / 100;
+                      return new Intl.NumberFormat("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      }).format(dollars);
+                    },
+                  },
+                ]}
+                width={220}
+                height={220}
+                onItemClick={handleItemClick}
+                onHighlightChange={handleHighlightChange}
+                skipAnimation
+                hideLegend
+              />
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+              {/* Center Text */}
+              <div
+                className="absolute pointer-events-none"
+                style={{
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
                 <div className="text-center">
-                  <div className="text-sm sm:text-base font-semibold leading-tight">
+                  <div className="text-base font-semibold leading-tight whitespace-nowrap">
                     <CurrencyAmount animate amount={totalAmount} />
                   </div>
-                  <div className="mt-0.5 text-[0.65rem] sm:text-xs text-muted-foreground font-medium tracking-wide uppercase">
-                    Total Spend
+                  <div className="mt-0.5 text-[10px] text-muted-foreground font-medium tracking-wide uppercase whitespace-nowrap">
+                    Total
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {chartData.map((item, index) => {
-              const percentage =
-                totalAmount > 0
-                  ? ((item.value / totalAmount) * 100).toFixed(1)
-                  : "0.0";
-              return (
-                <button
-                  key={item.name}
-                  type="button"
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded-md border border-transparent transition-all ${
-                    activeIndex === index
-                      ? "bg-muted/70 border-accent-foreground/10 shadow-sm"
-                      : "bg-card hover:bg-muted/60 hover:border-muted-foreground/10"
-                  } cursor-pointer text-left min-w-0`}
-                  onClick={() => handleCategoryClick(item.categoryId)}
-                  aria-label={`View transactions for ${item.name} category`}
-                >
-                  <div
-                    className="h-3 w-3 rounded-full shrink-0 ring-1 ring-black/5"
-                    style={{ backgroundColor: item.fill }}
-                  />
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-medium text-sm truncate leading-tight">
-                      {item.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground leading-tight">
-                      <CurrencyAmount animate amount={item.value} /> (
-                      {percentage}%)
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+          {/* Custom Legend - Scrollable if many items */}
+          <div className="flex-1 min-h-0 relative">
+            <div
+              ref={legendRef}
+              onScroll={handleScroll}
+              className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-1.5 max-h-[220px] overflow-y-auto pr-1"
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor: "var(--muted-foreground) transparent",
+              }}
+            >
+              {chartData.map((item) => {
+                const percentage =
+                  totalAmount > 0
+                    ? ((item.value / totalAmount) * 100).toFixed(1)
+                    : "0.0";
+                const isActive = activeItemId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors ${
+                      isActive ? "bg-muted" : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => handleCategoryClick(item.categoryId)}
+                    onMouseEnter={() => setActiveItemId(item.id)}
+                    onMouseLeave={() => setActiveItemId(null)}
+                    title={`${item.label}: ${item.count} transactions`}
+                  >
+                    <div
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                      <span className="text-sm font-medium truncate leading-tight">
+                        {item.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        <CurrencyAmount amount={item.value} /> ({percentage}%)
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Scroll indicator - shown when more than 3 rows and not scrolled to bottom */}
+            {needsScrollIndicator && !isScrolledToBottom && (
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent pointer-events-none flex items-end justify-center pb-0.5">
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

@@ -61,7 +61,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
   };
 
   return (
-    <nav className="sticky top-0 left-0 right-0 border-b border-border/60 bg-card/80 backdrop-blur-xl z-50 h-14 shrink-0 shadow-soft">
+    <nav className="fixed top-0 left-0 right-0 border-b border-border/60 bg-card/80 backdrop-blur-xl z-50 h-14 shrink-0 shadow-soft">
       <div className="max-w-screen-2xl mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
