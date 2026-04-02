@@ -113,6 +113,74 @@ function SankeyNode(props: {
   );
 }
 
+// Custom link with wider invisible hit area for better hoverability
+function SankeyLink(props: {
+  sourceX?: number;
+  sourceY?: number;
+  sourceControlX?: number;
+  targetX?: number;
+  targetY?: number;
+  targetControlX?: number;
+  linkWidth?: number;
+  payload?: {
+    source?: SankeyNode;
+    target?: SankeyNode;
+    value: number;
+  };
+  index?: number;
+}): React.ReactElement | null {
+  const {
+    sourceX,
+    sourceY,
+    sourceControlX,
+    targetX,
+    targetY,
+    targetControlX,
+    linkWidth,
+    payload,
+  } = props;
+
+  if (
+    sourceX === undefined ||
+    sourceY === undefined ||
+    sourceControlX === undefined ||
+    targetX === undefined ||
+    targetY === undefined ||
+    targetControlX === undefined ||
+    linkWidth === undefined
+  ) {
+    return null;
+  }
+
+  // Build the path for the link
+  const path = `M${sourceX},${sourceY} C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}`;
+
+  // Calculate minimum hit area width (at least 16px for easier hovering)
+  const minHitWidth = 16;
+  const hitWidth = Math.max(linkWidth, minHitWidth);
+
+  return (
+    <g>
+      {/* Invisible hit area - wider than visible link for easier hovering */}
+      <path
+        d={path}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={hitWidth}
+        style={{ cursor: "pointer" }}
+      />
+      {/* Visible link */}
+      <path
+        d={path}
+        fill="none"
+        stroke="#888"
+        strokeWidth={linkWidth}
+        strokeOpacity={0.4}
+      />
+    </g>
+  );
+}
+
 export const IncomeExpenseSankeyChart = memo(function IncomeExpenseSankeyChart({
   data,
 }: {
@@ -265,7 +333,8 @@ export const IncomeExpenseSankeyChart = memo(function IncomeExpenseSankeyChart({
               data={sankeyData}
               nodePadding={20}
               margin={{ left: 16, right: 16, top: 16, bottom: 16 }}
-              link={{ stroke: "#888", strokeOpacity: 0.3 }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              link={SankeyLink as any}
               node={SankeyNode}
             >
               <Tooltip content={<SankeyTooltip />} />
