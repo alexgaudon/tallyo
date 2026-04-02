@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BarChart3Icon } from "lucide-react";
 import { z } from "zod";
 import { TransactionReport } from "@/components/transactions/transaction-report";
 import { ensureSession } from "@/lib/auth-client";
@@ -35,25 +34,24 @@ export const Route = createFileRoute("/reports")({
 function RouteComponent() {
   return (
     <div className="min-h-full">
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
-        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-accent/10">
-              <BarChart3Icon className="h-5 w-5 sm:h-6 sm:w-6 text-accent" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+      <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Analytics
               </p>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                Reports
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                  Reports
+                </span>
               </h1>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
         <div className="px-1 sm:px-0">
           <TransactionReport />
         </div>
