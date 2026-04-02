@@ -4,20 +4,12 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
-import {
-  endOfMonth,
-  format,
-  parseISO,
-  startOfMonth,
-  subMonths,
-} from "date-fns";
+import { format, parseISO, startOfMonth } from "date-fns";
 import { Plus } from "lucide-react";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
-import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
-import { IncomeExpenseSankeyChart } from "@/components/dashboard/income-expense-sankey-chart";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
@@ -27,7 +19,7 @@ import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { Button } from "@/components/ui/button";
 import { ensureSession, useSession } from "@/lib/auth-client";
-import { dateRangeToApiFormat, isDateRangeOneMonth } from "@/lib/utils";
+import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
 const searchSchema = z.object({
@@ -55,13 +47,6 @@ export const Route = createFileRoute("/dashboard")({
           }
         : defaultDateRange;
 
-    const cashFlowDataInput = isDateRangeOneMonth(dateRange)
-      ? dateRangeToApiFormat({
-          from: subMonths(startOfMonth(new Date()), 3),
-          to: endOfMonth(new Date()),
-        })
-      : dateRangeToApiFormat(dateRange);
-
     await Promise.all([
       context.queryClient.prefetchQuery(
         orpc.dashboard.getStatsCounts.queryOptions({
@@ -81,11 +66,6 @@ export const Route = createFileRoute("/dashboard")({
       context.queryClient.prefetchQuery(
         orpc.dashboard.getTransactionStats.queryOptions({
           input: dateRangeToApiFormat(dateRange),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        orpc.dashboard.getCashFlowData.queryOptions({
-          input: cashFlowDataInput,
         }),
       ),
     ]);
@@ -161,27 +141,11 @@ function RouteComponent() {
     }),
   );
 
-  const cashFlowDataInput = useMemo(() => {
-    return isDateRangeOneMonth(dateRange)
-      ? dateRangeToApiFormat({
-          from: subMonths(startOfMonth(new Date()), 3),
-          to: endOfMonth(new Date()),
-        })
-      : dateRangeToApiFormat(dateRange);
-  }, [dateRange]);
-
-  const { data: cashFlowData, isLoading: isCashFlowLoading } = useQuery(
-    orpc.dashboard.getCashFlowData.queryOptions({
-      input: cashFlowDataInput,
-    }),
-  );
-
   const isLoading =
     isStatsLoading ||
     isCategoryLoading ||
     isMerchantLoading ||
-    isTransactionLoading ||
-    isCashFlowLoading;
+    isTransactionLoading;
 
   return (
     <div className="min-h-full overflow-x-hidden">
@@ -214,25 +178,7 @@ function RouteComponent() {
             <PeriodInsights data={statsData} />
           </div>
 
-          <DashboardCharts
-            cashFlowData={cashFlowData}
-            categoryData={categoryData}
-            dateRange={dateRange}
-          />
-
-          {/* Sankey Chart - Money Flow Visualization */}
-          <div>
-            <h2 className="text-sm font-semibold text-foreground mb-3">
-              Money Flow
-            </h2>
-            {categoryData && categoryData.length > 0 ? (
-              <IncomeExpenseSankeyChart data={categoryData} />
-            ) : (
-              <div className="h-[350px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-                No category data available for money flow
-              </div>
-            )}
-          </div>
+          <DashboardCharts categoryData={categoryData} />
 
           <DashboardDetails
             merchantData={merchantData}
@@ -300,59 +246,26 @@ function DashboardHeader({
 }
 
 function DashboardCharts({
-  cashFlowData,
   categoryData,
-  dateRange,
 }: {
-  cashFlowData:
-    | Awaited<ReturnType<typeof orpc.dashboard.getCashFlowData.call>>
-    | undefined;
   categoryData:
     | Awaited<ReturnType<typeof orpc.dashboard.getCategoryData.call>>
     | undefined;
-  dateRange: DateRange | undefined;
 }) {
-  const hasMultipleMonths = useMemo(() => {
-    if (!dateRange?.from || !dateRange?.to) return false;
-    const from = new Date(dateRange.from);
-    const to = new Date(dateRange.to);
-    return (
-      to.getMonth() !== from.getMonth() ||
-      to.getFullYear() !== from.getFullYear()
-    );
-  }, [dateRange]);
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      {hasMultipleMonths && (
-        <div className="lg:col-span-2">
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold text-foreground">Cash Flow</h2>
-          </div>
-          {cashFlowData && cashFlowData.length > 0 ? (
-            <CashFlowChart data={cashFlowData} />
-          ) : (
-            <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-              No cash flow data
-            </div>
-          )}
+    <div>
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-foreground">
+          Top Categories
+        </h2>
+      </div>
+      {categoryData && categoryData.length > 0 ? (
+        <CategoryPieChart data={categoryData} />
+      ) : (
+        <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+          No category data
         </div>
       )}
-
-      <div className={hasMultipleMonths ? undefined : "lg:col-span-3"}>
-        <div className="mb-3">
-          <h2 className="text-sm font-semibold text-foreground">
-            Top Categories
-          </h2>
-        </div>
-        {categoryData && categoryData.length > 0 ? (
-          <CategoryPieChart data={categoryData} />
-        ) : (
-          <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-            No category data
-          </div>
-        )}
-      </div>
     </div>
   );
 }
