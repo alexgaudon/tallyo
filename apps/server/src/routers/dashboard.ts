@@ -615,6 +615,7 @@ export const dashboardRouter = {
             eq(transaction.userId, userId),
             eq(transaction.reviewed, true),
             eq(category.hideFromInsights, false),
+            eq(category.treatAsIncome, false),
             ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
             ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
           ),
