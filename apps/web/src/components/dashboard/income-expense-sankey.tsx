@@ -369,15 +369,15 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
   }
 
   return (
-    <Card className="shadow-sm w-full">
-      <CardContent className="p-4">
+    <Card className="shadow-sm w-full hidden md:block">
+      <CardContent className="p-2 md:p-4">
         <div className="w-full overflow-x-auto">
-          <div className="min-w-[550px] w-full">
+          <div className="min-w-[400px] w-full md:min-w-[550px]">
             <svg
               ref={svgRef}
-              viewBox={`0 0 ${Math.max(width, 550)} ${height}`}
+              viewBox={`0 0 ${Math.max(width, 400)} ${height}`}
               preserveAspectRatio="xMidYMid meet"
-              className="w-full overflow-visible"
+              className="w-full max-w-[400px] md:max-w-none overflow-visible"
               role="img"
               aria-label="Income and expense flow diagram"
             >
