@@ -278,6 +278,31 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     const rawNodes = Array.from(nodeMap.values());
     const rawLinks = Array.from(linkMap.values());
 
+    const getParentValue = (nodeId: string): number => {
+      for (const link of rawLinks) {
+        const source =
+          typeof link.source === "string"
+            ? link.source
+            : (link.source as { id: string }).id;
+        const target =
+          typeof link.target === "string"
+            ? link.target
+            : (link.target as { id: string }).id;
+        if (target === nodeId) {
+          const sourceNode = rawNodes.find((n) => n.id === source);
+          return sourceNode?.value ?? 0;
+        }
+      }
+      return 0;
+    };
+
+    rawNodes.sort((a, b) => {
+      const aParentVal = getParentValue(a.id);
+      const bParentVal = getParentValue(b.id);
+      if (aParentVal !== bParentVal) return bParentVal - aParentVal;
+      return (b.value ?? 0) - (a.value ?? 0);
+    });
+
     // Calculate dynamic dimensions based on node count
     // Base height + additional height per node to prevent overcrowding
     const baseWidth = 550;
@@ -296,7 +321,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
         [requiredWidth - 10, requiredHeight - 10],
       ])
       .nodeAlign(sankeyLeft)
-      .nodeId((d) => d.id);
+      .nodeId((d) => d.id)
+      .nodeSort(null);
 
     const graph = sankeyGenerator({
       nodes: rawNodes.map((n) => ({ ...n })),
