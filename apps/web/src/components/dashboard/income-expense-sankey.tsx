@@ -9,7 +9,8 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
-import { formatCurrency } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import type { DashboardSankeyData } from "../../../../server/src/routers";
 
 const INCOME_COLOR = "#22c55e";
@@ -68,6 +69,8 @@ interface SankeyLink {
 export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
+  const { data: session } = useSession();
+  const isPrivacyMode = session?.settings?.isPrivacyMode ?? false;
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{
@@ -121,7 +124,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     // Level 0: Income node
     nodeMap.set("income", {
       id: "income",
-      label: "Income",
+      label: `Income`,
       color: INCOME_COLOR,
       value: data.totalIncome,
     });
@@ -130,7 +133,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     if (data.savedAmount > 0) {
       nodeMap.set("saved", {
         id: "saved",
-        label: "Saved",
+        label: `Saved`,
         color: SAVED_COLOR,
         value: data.savedAmount,
       });
@@ -512,41 +515,19 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         onMouseEnter={(e) => {
                           setHoveredNode(node.id);
                           const rect = e.currentTarget.getBoundingClientRect();
-                          let nodeTotal = 0;
-                          if (node.id === "income") {
-                            nodeTotal = data.totalIncome;
-                          } else if (node.id === "saved") {
-                            nodeTotal = data.savedAmount;
-                          } else if (node.id === "expenses") {
-                            nodeTotal = data.totalExpenses;
-                          } else if (node.id.startsWith("parent-")) {
-                            const parentId = node.id.replace("parent-", "");
-                            const parentExpenses =
-                              data.expensesByCategory.filter(
-                                (c) =>
-                                  c.category.parentCategory?.id === parentId,
-                              );
-                            nodeTotal = parentExpenses.reduce(
-                              (sum, c) => sum + c.amount,
-                              0,
-                            );
-                          } else if (node.id.startsWith("child-")) {
-                            const categoryId = node.id.replace("child-", "");
-                            nodeTotal =
-                              data.expensesByCategory.find(
-                                (c) => c.category.id === categoryId,
-                              )?.amount || 0;
-                          } else if (node.id.startsWith("category-")) {
-                            const categoryId = node.id.replace("category-", "");
-                            nodeTotal =
-                              data.expensesByCategory.find(
-                                (c) => c.category.id === categoryId,
-                              )?.amount || 0;
+                          let percentDenom = data.totalIncome;
+                          if (
+                            node.id === "expenses" ||
+                            node.id.startsWith("parent-") ||
+                            node.id.startsWith("child-") ||
+                            node.id.startsWith("category-")
+                          ) {
+                            percentDenom = data.totalExpenses;
                           }
                           setTooltip({
                             x: rect.left + rect.width / 2,
                             y: rect.top - 10,
-                            content: `${formatCurrency(node.value || 0)} (${((nodeTotal / (data.totalIncome || 1)) * 100).toFixed(1)}%)`,
+                            content: `${formatCurrency(node.value || 0)} (${((node.value! / (percentDenom || 1)) * 100).toFixed(1)}%)`,
                           });
                         }}
                         onMouseLeave={() => {
@@ -584,6 +565,15 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         onMouseLeave={() => setHoveredNode(null)}
                       >
                         {node.label}
+                        {node.value != null && (
+                          <tspan className="fill-muted-foreground font-normal">
+                            {" "}
+                            {formatValueWithPrivacy(
+                              formatCurrency(node.value),
+                              isPrivacyMode,
+                            )}
+                          </tspan>
+                        )}
                       </text>
 
                       {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
