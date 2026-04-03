@@ -309,16 +309,16 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     // Calculate dynamic dimensions based on node count
     // Base height + additional height per node to prevent overcrowding
     const baseWidth = 550;
-    const baseHeight = 168;
-    const minNodeHeight = 14; // Minimum space each node needs
+    const baseHeight = 180;
+    const minNodeHeight = 8; // Minimum space each node needs
     const numNodes = rawNodes.length;
     const requiredHeight = Math.max(baseHeight, numNodes * minNodeHeight);
     // Add extra width for many nodes to spread out the columns
     const requiredWidth = baseWidth + Math.max(0, (numNodes - 15) * 20);
 
     const sankeyGenerator = d3Sankey<SankeyNode, SankeyLink>()
-      .nodeWidth(15)
-      .nodePadding(Math.max(10, 18 - Math.max(0, numNodes - 10)))
+      .nodeWidth(10)
+      .nodePadding(Math.max(6, 12 - Math.max(0, numNodes - 8)))
       .extent([
         [10, 10],
         [requiredWidth - 10, requiredHeight - 10],
@@ -548,9 +548,9 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         textAnchor={
                           (node.x0 || 0) < width / 2 ? "start" : "end"
                         }
-                        className="text-xs font-medium fill-foreground cursor-pointer"
+                        className="text-[9px] font-medium fill-foreground cursor-pointer"
                         style={{
-                          fontSize: "11px",
+                          fontSize: "9px",
                           opacity: isDimmed ? 0.3 : 1,
                         }}
                         role="button"
@@ -583,14 +583,14 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                             ? (node.x1 || 0) + 6
                             : (node.x0 || 0) - 6
                         }
-                        y={((node.y0 || 0) + (node.y1 || 0)) / 2 + 12}
+                        y={((node.y0 || 0) + (node.y1 || 0)) / 2 + 8}
                         dy="0.35em"
                         textAnchor={
                           (node.x0 || 0) < width / 2 ? "start" : "end"
                         }
-                        className="text-[10px] fill-muted-foreground cursor-pointer"
+                        className="text-[9px] fill-muted-foreground cursor-pointer"
                         style={{
-                          fontSize: "10px",
+                          fontSize: "9px",
                           opacity: isDimmed ? 0.3 : 1,
                         }}
                         role="button"
