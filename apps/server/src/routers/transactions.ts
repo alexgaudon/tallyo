@@ -493,6 +493,13 @@ export const transactionsRouter = {
 
           for (let i = 0; i < input.splits.length; i++) {
             const split = input.splits[i];
+            // First split keeps original external ID, subsequent splits get -split-N suffix
+            const splitExternalId =
+              i === 0
+                ? originalTransaction.externalId
+                : originalTransaction.externalId
+                  ? `${originalTransaction.externalId}-split-${i}`
+                  : `${originalTransaction.id}-split-${i}`;
 
             const [newTransaction] = await db
               .insert(transaction)
@@ -504,7 +511,7 @@ export const transactionsRouter = {
                 date: originalTransaction.date,
                 transactionDetails: originalTransaction.transactionDetails,
                 notes: originalTransaction.notes,
-                externalId: originalTransaction.externalId,
+                externalId: splitExternalId,
                 reviewed: originalTransaction.reviewed,
                 splitFromId: originalTransaction.id,
                 createdAt: new Date(),
