@@ -233,14 +233,16 @@ export function EntitySelect<T extends Entity>({
 				}}
 				direction="bottom"
 				modal={false}
+				shouldScaleBackground={false}
 			>
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
-						"max-h-[85vh] flex flex-col rounded-t-xl border-t w-full max-w-none",
+						"flex flex-col rounded-t-xl border-t w-full inset-x-0 animate-none max-h-[80dvh]",
 					)}
+					style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
 				>
-					<div className="flex flex-col flex-1 min-h-0 overflow-hidden p-0">
+					<div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-0">
 						{listContent}
 					</div>
 				</DrawerContent>

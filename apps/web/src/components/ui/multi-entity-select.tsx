@@ -267,15 +267,15 @@ export function MultiEntitySelect<T extends Entity>({
 
 	if (isMobile) {
 		return (
-			<Drawer open={open} onOpenChange={setOpen} direction="bottom">
+			<Drawer open={open} onOpenChange={setOpen} direction="bottom" shouldScaleBackground={false}>
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
-						"max-h-[85vh] flex flex-col rounded-t-xl border-t",
-						popoverWidth,
+						"flex flex-col rounded-t-xl border-t w-full animate-none max-h-[80dvh]",
 					)}
+					style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
 				>
-					<div className="flex flex-col flex-1 min-h-0 overflow-hidden p-0">
+					<div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-0">
 						{listContent}
 					</div>
 				</DrawerContent>
