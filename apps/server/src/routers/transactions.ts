@@ -445,6 +445,86 @@ export const transactionsRouter = {
       }, "Error deleting transaction");
     }),
 
+  splitTransaction: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        splits: z
+          .array(
+            z.object({
+              amount: z.number().int(),
+              categoryId: z.string().nullable(),
+            }),
+          )
+          .min(2, "At least 2 splits are required"),
+      }),
+    )
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          const originalTransaction = await validateTransactionOwnership(
+            input.id,
+            context.session?.user?.id,
+          );
+
+          // Check if this is already a split transaction
+          if (originalTransaction.splitFromId) {
+            throw new Error(
+              "Cannot split a transaction that is already a split",
+            );
+          }
+
+          // Validate that split amounts sum to original amount
+          const totalSplitAmount = input.splits.reduce(
+            (sum, split) => sum + split.amount,
+            0,
+          );
+          if (totalSplitAmount !== originalTransaction.amount) {
+            throw new Error(
+              `Split amounts must sum to the original transaction amount (${originalTransaction.amount}), got ${totalSplitAmount}`,
+            );
+          }
+
+          // Delete the original transaction
+          await db.delete(transaction).where(eq(transaction.id, input.id));
+
+          // Create new transactions for each split
+          const createdTransactions = [];
+
+          for (let i = 0; i < input.splits.length; i++) {
+            const split = input.splits[i];
+
+            const [newTransaction] = await db
+              .insert(transaction)
+              .values({
+                userId: context.session?.user?.id,
+                merchantId: originalTransaction.merchantId,
+                categoryId: split.categoryId,
+                amount: split.amount,
+                date: originalTransaction.date,
+                transactionDetails: originalTransaction.transactionDetails,
+                notes: originalTransaction.notes,
+                externalId: originalTransaction.externalId,
+                reviewed: originalTransaction.reviewed,
+                splitFromId: originalTransaction.id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              })
+              .returning();
+
+            createdTransactions.push(newTransaction);
+          }
+
+          return {
+            success: true,
+            transactions: createdTransactions,
+          };
+        },
+        "Error splitting transaction",
+        context.session?.user?.id,
+      );
+    }),
+
   getTransactionReport: protectedProcedure
     .input(
       z.object({

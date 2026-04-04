@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { Check, Trash } from "lucide-react";
+import { Check, Split, Trash } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import {
   CategorySelect,
@@ -41,6 +41,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
+import { SplitTransactionDialog } from "./split-transaction-dialog";
 
 interface TransactionsTableProps {
   transactions: Transaction[];
@@ -55,6 +56,7 @@ interface TransactionsTableProps {
   onCategoryClick?: (categoryId: string) => void;
   onMerchantClick?: (merchantId: string) => void;
   isLoading?: boolean;
+  queryKey?: readonly unknown[];
 }
 
 // Helper functions moved outside component
@@ -96,6 +98,10 @@ const isUpcomingTransaction = (dateValue: string | Date) => {
       (transactionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     ) + 1;
   return daysDifference >= 2 && daysDifference <= 30;
+};
+
+const isSplitTransaction = (transaction: Transaction) => {
+  return !!transaction.splitFromId;
 };
 
 const formatRelativeTime = (dateValue: string | Date) => {
@@ -151,6 +157,8 @@ interface TransactionCardProps {
   onEditMerchant: (merchantId: string) => void;
   onEditCategory: (categoryId: string) => void;
   onCreateCategory: () => void;
+  onSplit?: () => void;
+  isSplit?: boolean;
 }
 
 const TransactionCard = memo(function TransactionCard({
@@ -169,6 +177,8 @@ const TransactionCard = memo(function TransactionCard({
   onEditMerchant,
   onEditCategory,
   onCreateCategory,
+  onSplit,
+  isSplit,
 }: TransactionCardProps) {
   const date = parseTransactionDate(transaction.date);
   const isUpcoming = isUpcomingTransaction(transaction.date);
@@ -238,6 +248,27 @@ const TransactionCard = memo(function TransactionCard({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {!isSplit && !transaction.reviewed && onSplit && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={onSplit}
+                      className="h-10 w-10 text-muted-foreground hover:text-foreground"
+                      aria-label="Split transaction"
+                    >
+                      <Split className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Split transaction</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -351,6 +382,18 @@ const TransactionCard = memo(function TransactionCard({
               ) : (
                 <span className="text-muted-foreground">No category</span>
               )}
+              {isSplit && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Split transaction</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <input
               type="text"
@@ -396,18 +439,32 @@ const TransactionCard = memo(function TransactionCard({
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">
                 Category
               </span>
-              <CategorySelect
-                value={transaction.category?.id}
-                onValueChange={(categoryId) =>
-                  onCategoryChange(transaction.id, categoryId)
-                }
-                placeholder="Select category..."
-                className="w-full"
-                allowNull
-                disabled={isLoading}
-                onEditCategory={onEditCategory}
-                onCreateCategory={onCreateCategory}
-              />
+              <div className="flex items-center gap-2">
+                <CategorySelect
+                  value={transaction.category?.id}
+                  onValueChange={(categoryId) =>
+                    onCategoryChange(transaction.id, categoryId)
+                  }
+                  placeholder="Select category..."
+                  className="w-full"
+                  allowNull
+                  disabled={isLoading}
+                  onEditCategory={onEditCategory}
+                  onCreateCategory={onCreateCategory}
+                />
+                {isSplit && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Split transaction</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -468,6 +525,7 @@ export function TransactionsTable({
   onCategoryClick,
   onMerchantClick,
   isLoading = false,
+  queryKey = [],
 }: TransactionsTableProps) {
   const { data: session } = useSession();
   const isDevMode = session?.settings?.isDevMode ?? false;
@@ -487,6 +545,11 @@ export function TransactionsTable({
   }>({ open: false, categoryId: "" });
 
   const [createCategoryDialog, setCreateCategoryDialog] = useState(false);
+
+  const [splitDialog, setSplitDialog] = useState<{
+    open: boolean;
+    transaction: Transaction | null;
+  }>({ open: false, transaction: null });
 
   const unsavedChanges = useRef<Record<string, string>>({});
   const updateNotesRef = useRef(updateNotes);
@@ -633,6 +696,43 @@ export function TransactionsTable({
     );
   };
 
+  const renderSplitButton = (
+    transaction: Transaction,
+    size: "sm" | "lg" = "sm",
+  ) => {
+    const buttonSizeClass = size === "lg" ? "h-10 w-10" : "h-8 w-8";
+    const iconSizeClass = size === "lg" ? "h-5 w-5" : "h-4 w-4";
+
+    // Hide split button for already split or reviewed transactions
+    if (isSplitTransaction(transaction) || transaction.reviewed) {
+      return null;
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSplitDialog({ open: true, transaction })}
+              className={cn(
+                "text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors",
+                buttonSizeClass,
+              )}
+              aria-label="Split transaction"
+            >
+              <Split className={iconSizeClass} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Split transaction</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   const renderMerchantField = (
     transaction: Transaction,
     isMobileView: boolean,
@@ -683,40 +783,62 @@ export function TransactionsTable({
     transaction: Transaction,
     isMobileView: boolean,
   ) => {
+    const splitIndicator = isSplitTransaction(transaction) ? (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Split transaction</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : null;
+
     if (transaction.reviewed) {
-      return transaction.category ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          onClick={() =>
-            transaction.category && onCategoryClick?.(transaction.category.id)
-          }
-        >
-          {formatCategory(transaction.category)}
-        </Button>
-      ) : (
-        <span className="text-muted-foreground truncate">No category</span>
+      return (
+        <div className="flex items-center gap-2">
+          {transaction.category ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              onClick={() =>
+                transaction.category &&
+                onCategoryClick?.(transaction.category.id)
+              }
+            >
+              {formatCategory(transaction.category)}
+            </Button>
+          ) : (
+            <span className="text-muted-foreground truncate">No category</span>
+          )}
+          {splitIndicator}
+        </div>
       );
     }
 
     return (
-      <CategorySelect
-        value={transaction.category?.id}
-        onValueChange={(categoryId) =>
-          updateCategory({ id: transaction.id, categoryId })
-        }
-        placeholder={isMobileView ? "Select category..." : "Select category"}
-        className={
-          isMobileView ? "w-full" : "w-full min-w-[180px] sm:min-w-[200px]"
-        }
-        allowNull
-        disabled={isLoading}
-        onEditCategory={(categoryId) =>
-          setEditCategoryDialog({ open: true, categoryId })
-        }
-        onCreateCategory={() => setCreateCategoryDialog(true)}
-      />
+      <div className={cn("flex items-center gap-2", isMobileView && "w-full")}>
+        <CategorySelect
+          value={transaction.category?.id}
+          onValueChange={(categoryId) =>
+            updateCategory({ id: transaction.id, categoryId })
+          }
+          placeholder={isMobileView ? "Select category..." : "Select category"}
+          className={
+            isMobileView ? "w-full" : "w-full min-w-[180px] sm:min-w-[200px]"
+          }
+          allowNull
+          disabled={isLoading}
+          onEditCategory={(categoryId) =>
+            setEditCategoryDialog({ open: true, categoryId })
+          }
+          onCreateCategory={() => setCreateCategoryDialog(true)}
+        />
+        {splitIndicator}
+      </div>
     );
   };
 
@@ -859,6 +981,7 @@ export function TransactionsTable({
                 </TableCell>
                 <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
                   <div className="flex items-center justify-center gap-1">
+                    {renderSplitButton(transaction, "sm")}
                     {renderDeleteButton(transaction, "sm")}
                   </div>
                 </TableCell>
@@ -892,6 +1015,8 @@ export function TransactionsTable({
               setEditCategoryDialog({ open: true, categoryId })
             }
             onCreateCategory={() => setCreateCategoryDialog(true)}
+            onSplit={() => setSplitDialog({ open: true, transaction })}
+            isSplit={isSplitTransaction(transaction)}
           />
         ))}
       </div>
@@ -929,6 +1054,13 @@ export function TransactionsTable({
         open={createCategoryDialog}
         onOpenChange={setCreateCategoryDialog}
         onSuccess={(categoryId) => console.log("Category created:", categoryId)}
+      />
+
+      <SplitTransactionDialog
+        open={splitDialog.open}
+        onOpenChange={(open) => setSplitDialog({ open, transaction: null })}
+        transaction={splitDialog.transaction}
+        queryKey={queryKey}
       />
     </div>
   );

@@ -486,6 +486,9 @@ function RouteComponent() {
             onCategoryClick={handleCategoryClick}
             onMerchantClick={handleMerchantClick}
             isLoading={false}
+            queryKey={[
+              ...createTransactionQueryOptions(effectiveSearch).queryKey,
+            ]}
           />
         </div>
       </div>

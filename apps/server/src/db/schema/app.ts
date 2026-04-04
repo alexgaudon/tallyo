@@ -144,6 +144,7 @@ export const transaction = pgTable(
     notes: text("notes"),
     externalId: text("external_id"),
     reviewed: boolean("reviewed").notNull().default(false),
+    splitFromId: text("split_from_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
