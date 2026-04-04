@@ -180,7 +180,12 @@ export function MultiEntitySelect<T extends Entity>({
 
 	const listContent = (
 		<>
-			<Command className="w-full flex flex-col min-h-0">
+			<Command
+				className={cn(
+					"w-full flex flex-col min-h-0",
+					isMobile && "bg-transparent rounded-none shadow-none",
+				)}
+			>
 				<CommandInput
 					placeholder={searchPlaceholder}
 					className={cn("h-10 shrink-0", isMobile && "text-base")}
@@ -271,7 +276,8 @@ export function MultiEntitySelect<T extends Entity>({
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
-						"flex flex-col rounded-t-xl border-t w-full animate-none max-h-[80dvh]",
+						"flex flex-col rounded-t-xl border-t border-border w-full animate-none max-h-[80dvh]",
+						"bg-popover text-popover-foreground",
 					)}
 					style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
 				>
