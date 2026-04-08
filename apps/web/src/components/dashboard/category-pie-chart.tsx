@@ -239,7 +239,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   <button
                     key={item.id}
                     type="button"
-                    className={`flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors ${
+                    className={`flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
                       isActive ? "bg-muted" : "hover:bg-muted/50"
                     }`}
                     onClick={() => handleCategoryClick(item.categoryId)}
