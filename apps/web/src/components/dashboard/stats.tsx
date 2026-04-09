@@ -1,6 +1,7 @@
 import {
-  CreditCardIcon,
+  Minus,
   PiggyBankIcon,
+  Plus,
   TrendingDownIcon,
   TrendingUpIcon,
 } from "lucide-react";
@@ -8,14 +9,13 @@ import { Card } from "@/components/ui/card";
 import type { DashboardStats } from "../../../../server/src/routers";
 
 import { CurrencyAmount } from "../ui/currency-amount";
-import { StatDisplay } from "../ui/stat-display";
 
 export function Stats({ data }: { data: DashboardStats | undefined }) {
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <div className="rounded-2xl bg-secondary p-5 mb-4 shadow-soft">
-          <CreditCardIcon className="h-10 w-10 text-muted-foreground" />
+          <TrendingUpIcon className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
@@ -28,6 +28,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 
   const income = Number(data.stats.totalIncome) || 0;
   const expenses = Number(data.stats.totalExpenses) || 0;
+  const netIncome = income + expenses; // expenses are negative
   const savingsRate = (() => {
     const absIncome = Math.abs(income);
     const absExpenses = Math.abs(expenses);
@@ -37,76 +38,75 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   })();
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <Card className="p-5 group">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-            <CreditCardIcon className="h-5 w-5" />
+    <Card className="p-4 sm:p-5">
+      <div className="space-y-3">
+        {/* Income Line Item */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUpIcon className="h-4 w-4 text-income" />
+            <span className="text-sm text-muted-foreground">Income</span>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground">
-              Transactions
-            </div>
-            <StatDisplay
-              animate
-              value={data.stats.totalTransactions}
-              className="mt-1 text-base font-semibold tabular-nums"
-            />
-          </div>
+          <CurrencyAmount
+            animate
+            amount={income}
+            className="text-base font-semibold text-income tabular-nums"
+          />
         </div>
-      </Card>
 
-      <Card className="p-5 group">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-income-muted text-income transition-colors">
-            <TrendingUpIcon className="h-5 w-5" />
+        {/* Expenses Line Item */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingDownIcon className="h-4 w-4 text-expense" />
+            <span className="text-sm text-muted-foreground">Expenses</span>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground">
-              Income
-            </div>
-            <CurrencyAmount
-              animate
-              amount={income}
-              className="mt-1 text-base font-semibold text-income"
-            />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="p-5 group">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-expense-muted text-expense transition-colors">
-            <TrendingDownIcon className="h-5 w-5" />
-          </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground">
-              Expenses
-            </div>
+          <div className="flex items-center gap-1.5">
+            <Minus className="h-3 w-3 text-muted-foreground" />
             <CurrencyAmount
               animate
               amount={Math.abs(expenses)}
-              className="mt-1 text-base font-semibold text-expense"
+              className="text-base font-semibold text-expense tabular-nums"
             />
           </div>
         </div>
-      </Card>
 
-      <Card className="p-5 group">
-        <div className="flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-savings-muted text-savings transition-colors">
-            <PiggyBankIcon className="h-5 w-5" />
+        {/* Divider */}
+        <div className="border-t border-border/60" />
+
+        {/* Net Income Line Item */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {netIncome >= 0 ? (
+              <Plus className="h-4 w-4 text-income" />
+            ) : (
+              <Minus className="h-4 w-4 text-expense" />
+            )}
+            <span className="text-sm font-medium text-foreground">
+              Net Income
+            </span>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-muted-foreground">
-              Savings Rate
-            </div>
-            <div className="mt-1 text-base font-semibold tabular-nums text-savings">
+          <CurrencyAmount
+            animate
+            amount={netIncome}
+            showColor
+            className="text-lg font-bold tabular-nums"
+          />
+        </div>
+
+        {/* Savings Rate Line Item */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <PiggyBankIcon className="h-4 w-4 text-savings" />
+            <span className="text-sm text-muted-foreground">Savings Rate</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-base font-semibold tabular-nums ${savingsRate >= 20 ? "text-savings" : savingsRate >= 10 ? "text-amber-500" : "text-muted-foreground"}`}
+            >
               {savingsRate}%
-            </div>
+            </span>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </Card>
   );
 }

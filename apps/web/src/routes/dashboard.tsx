@@ -182,14 +182,19 @@ function RouteComponent() {
             }
           />
 
-          <div className="grid gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div>
               <h2 className="text-sm font-semibold text-foreground mb-3">
                 Overview
               </h2>
               <Stats data={statsData} />
             </div>
-            <PeriodInsights data={statsData} />
+            <div>
+              <h2 className="text-sm font-semibold text-foreground mb-3">
+                Insights
+              </h2>
+              <PeriodInsights data={statsData} />
+            </div>
           </div>
 
           <DashboardCharts categoryData={categoryData} />

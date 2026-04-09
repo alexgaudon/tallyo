@@ -1,6 +1,7 @@
 import {
   ArrowDownRight,
   ArrowUpRight,
+  CreditCardIcon,
   Minus,
   TrendingDownIcon,
   TrendingUpIcon,
@@ -139,78 +140,88 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
             : "Compared to your typical rate over this length of time"}
         </p>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+
+      {/* Compact list-style layout */}
+      <div className="space-y-2.5">
+        {/* Income comparison */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <TrendingUpIcon className="h-3.5 w-3.5 text-income" />
             <span className="text-xs font-medium">Income</span>
           </div>
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <CurrencyAmount
               amount={incomeCur}
-              className="text-sm font-semibold text-income"
+              className="text-sm font-semibold text-income tabular-nums"
             />
             {incomeChange !== null && <ComparisonBadge change={incomeChange} />}
+            <span className="text-xs text-muted-foreground tabular-nums">
+              avg{" "}
+              <CurrencyAmount
+                amount={Math.round(expectedIncome)}
+                className="text-xs"
+              />
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg{" "}
-            <CurrencyAmount
-              amount={Math.round(expectedIncome)}
-              className="text-xs"
-            />
-          </p>
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+
+        {/* Expenses comparison */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
             <TrendingDownIcon className="h-3.5 w-3.5 text-expense" />
             <span className="text-xs font-medium">Expenses</span>
           </div>
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <CurrencyAmount
               amount={-expensesCur}
-              className="text-sm font-semibold text-expense"
+              className="text-sm font-semibold text-expense tabular-nums"
             />
             {expensesChange !== null && (
               <ComparisonBadge change={expensesChange} invertColor />
             )}
+            <span className="text-xs text-muted-foreground tabular-nums">
+              avg{" "}
+              <CurrencyAmount
+                amount={Math.round(expectedExpenses)}
+                className="text-xs"
+              />
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg{" "}
-            <CurrencyAmount
-              amount={Math.round(expectedExpenses)}
-              className="text-xs"
-            />
-          </p>
         </div>
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-muted-foreground mb-0.5">
-            Transactions
+
+        {/* Transactions comparison */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <CreditCardIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium">Transactions</span>
           </div>
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-semibold tabular-nums">
               {s.totalTransactions}
             </span>
             {txChange !== null && <ComparisonBadge change={txChange} />}
+            <span className="text-xs text-muted-foreground tabular-nums">
+              avg {expectedTxScaled}
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg {expectedTxScaled}
-          </p>
         </div>
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-muted-foreground mb-0.5">
-            Savings rate
+
+        {/* Savings rate comparison */}
+        <div className="flex items-center justify-between pt-1 border-t border-border/40">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="text-xs font-medium">Savings Rate</span>
           </div>
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-semibold tabular-nums text-savings">
               {savingsCur}%
             </span>
             {savingsChange !== null && (
               <ComparisonBadge change={savingsChange} />
             )}
+            <span className="text-xs text-muted-foreground tabular-nums">
+              avg {expectedSavingsRate}%
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-1 tabular-nums">
-            avg {expectedSavingsRate}%
-          </p>
         </div>
       </div>
     </Card>
