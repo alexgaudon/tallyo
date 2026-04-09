@@ -2,7 +2,7 @@ import type { PieItemIdentifier } from "@mui/x-charts";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardCategoryData } from "../../../../server/src/routers";
@@ -48,6 +48,7 @@ interface ChartItem {
 
 export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -86,25 +87,36 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
     [chartData],
   );
 
-  // Check if we need scroll indicator (more than 3 rows worth)
-  // Mobile: 2 cols × 3 rows = 6, Desktop: 3 cols × 3 rows = 9
-  const needsScrollIndicator = chartData.length > 6;
+  const updateLegendOverflowState = useCallback(() => {
+    if (legendRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = legendRef.current;
+      const hasOverflow = scrollHeight > clientHeight + 2;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
+      setHasLegendOverflow(hasOverflow);
+      setIsScrolledToBottom(!hasOverflow || isAtBottom);
+    }
+  }, []);
 
   // Handle scroll to detect when at bottom
   const handleScroll = useCallback(() => {
-    if (legendRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = legendRef.current;
-      // Check if scrolled to bottom (within 2px threshold)
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 2;
-      // Only update state if it changed
-      setIsScrolledToBottom((prev) => {
-        if (prev !== isAtBottom) {
-          return isAtBottom;
-        }
-        return prev;
-      });
-    }
-  }, []);
+    updateLegendOverflowState();
+  }, [updateLegendOverflowState]);
+
+  useEffect(() => {
+    updateLegendOverflowState();
+
+    const node = legendRef.current;
+    if (!node) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateLegendOverflowState();
+    });
+    resizeObserver.observe(node);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [updateLegendOverflowState]);
 
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
@@ -264,8 +276,8 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
               })}
             </div>
 
-            {/* Scroll indicator - shown when more than 3 rows and not scrolled to bottom */}
-            {needsScrollIndicator && !isScrolledToBottom && (
+            {/* Scroll indicator - shown only when legend actually overflows */}
+            {hasLegendOverflow && !isScrolledToBottom && (
               <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent pointer-events-none flex items-end justify-center pb-0.5">
                 <ChevronDown className="w-4 h-4 text-muted-foreground" />
               </div>

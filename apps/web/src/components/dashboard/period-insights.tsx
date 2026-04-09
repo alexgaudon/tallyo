@@ -6,11 +6,13 @@ import {
   TrendingDownIcon,
   TrendingUpIcon,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import type { DashboardStats } from "../../../../server/src/routers";
 
 const DAYS_PER_MONTH = 30;
+const INSIGHTS_TABLE_COLUMNS = "grid-cols-[minmax(0,1fr)_130px_110px]";
 
 function percentChange(current: number, expected: number): number | null {
   if (expected === 0) return current > 0 ? 100 : current < 0 ? -100 : 0;
@@ -28,16 +30,15 @@ function ComparisonBadge({
   const isNegative = change < 0;
   const isNeutral = change === 0;
   const good = invertColor ? isNegative : isPositive;
-
   const colorClasses = isNeutral
-    ? "bg-muted text-muted-foreground"
+    ? "text-muted-foreground"
     : good
-      ? "bg-income/15 text-income"
-      : "bg-expense/15 text-expense";
+      ? "text-income"
+      : "text-expense";
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${colorClasses}`}
+      className={`inline-flex items-center gap-1 text-xs font-medium tabular-nums ${colorClasses}`}
       title="vs your average"
     >
       {isNeutral && <Minus className="h-3 w-3" />}
@@ -46,6 +47,49 @@ function ComparisonBadge({
       {change > 0 ? "+" : ""}
       {change}%
     </span>
+  );
+}
+
+function InsightsRow({
+  icon,
+  label,
+  current,
+  badge,
+  currentClassName,
+}: {
+  icon: ReactNode;
+  label: string;
+  current: ReactNode;
+  badge: ReactNode;
+  currentClassName?: string;
+}) {
+  return (
+    <div className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2.5`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="shrink-0">{icon}</span>
+        <span className="text-sm text-foreground/90 whitespace-nowrap">
+          {label}
+        </span>
+      </div>
+      <span
+        className={`text-sm font-semibold tabular-nums text-right whitespace-nowrap ${currentClassName ?? ""}`}
+      >
+        {current}
+      </span>
+      <span className="text-right whitespace-nowrap">{badge}</span>
+    </div>
+  );
+}
+
+function InsightsHeaderRow() {
+  return (
+    <div
+      className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground border-b border-border/40`}
+    >
+      <span>Metric</span>
+      <span className="text-right">Current</span>
+      <span className="text-right">Change</span>
+    </div>
   );
 }
 
@@ -129,101 +173,87 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
   }
 
   return (
-    <Card className="border-border/80 bg-card p-4 sm:p-5 shadow-sm">
+    <Card className="border-border/80 bg-card/90 p-4 sm:p-5 shadow-sm">
       <div className="mb-3">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">
           Vs your average
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          {useWindow
-            ? "Compared to your typical for this many days in a month"
-            : "Compared to your typical rate over this length of time"}
+          Snapshot for this selected period
         </p>
       </div>
 
-      {/* Compact list-style layout */}
-      <div className="space-y-2.5">
-        {/* Income comparison */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <TrendingUpIcon className="h-3.5 w-3.5 text-income" />
-            <span className="text-xs font-medium">Income</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CurrencyAmount
-              amount={incomeCur}
-              className="text-sm font-semibold text-income tabular-nums"
-            />
-            {incomeChange !== null && <ComparisonBadge change={incomeChange} />}
-            <span className="text-xs text-muted-foreground tabular-nums">
-              avg{" "}
+      <div className="border-y border-border/40">
+        <div className="divide-y divide-border/40">
+          <InsightsHeaderRow />
+
+          <InsightsRow
+            icon={<TrendingUpIcon className="h-3.5 w-3.5 text-income" />}
+            label="Income"
+            current={
               <CurrencyAmount
-                amount={Math.round(expectedIncome)}
-                className="text-xs"
+                amount={incomeCur}
+                className="w-full justify-end tabular-nums"
               />
-            </span>
-          </div>
-        </div>
+            }
+            badge={
+              incomeChange !== null ? (
+                <ComparisonBadge change={incomeChange} />
+              ) : null
+            }
+            currentClassName="text-income"
+          />
 
-        {/* Expenses comparison */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <TrendingDownIcon className="h-3.5 w-3.5 text-expense" />
-            <span className="text-xs font-medium">Expenses</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CurrencyAmount
-              amount={-expensesCur}
-              className="text-sm font-semibold text-expense tabular-nums"
-            />
-            {expensesChange !== null && (
-              <ComparisonBadge change={expensesChange} invertColor />
-            )}
-            <span className="text-xs text-muted-foreground tabular-nums">
-              avg{" "}
+          <InsightsRow
+            icon={<TrendingDownIcon className="h-3.5 w-3.5 text-expense" />}
+            label="Expenses"
+            current={
               <CurrencyAmount
-                amount={Math.round(expectedExpenses)}
-                className="text-xs"
+                amount={-expensesCur}
+                className="w-full justify-end tabular-nums"
               />
-            </span>
-          </div>
-        </div>
+            }
+            badge={
+              expensesChange !== null ? (
+                <ComparisonBadge change={expensesChange} invertColor />
+              ) : null
+            }
+            currentClassName="text-expense"
+          />
 
-        {/* Transactions comparison */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <CreditCardIcon className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs font-medium">Transactions</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tabular-nums">
-              {s.totalTransactions}
-            </span>
-            {txChange !== null && <ComparisonBadge change={txChange} />}
-            <span className="text-xs text-muted-foreground tabular-nums">
-              avg {expectedTxScaled}
-            </span>
-          </div>
-        </div>
+          <InsightsRow
+            icon={
+              <CreditCardIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            }
+            label="Transactions"
+            current={s.totalTransactions}
+            badge={
+              txChange !== null ? <ComparisonBadge change={txChange} /> : null
+            }
+            currentClassName="text-foreground"
+          />
 
-        {/* Savings rate comparison */}
-        <div className="flex items-center justify-between pt-1 border-t border-border/40">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="text-xs font-medium">Savings Rate</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tabular-nums text-savings">
-              {savingsCur}%
-            </span>
-            {savingsChange !== null && (
-              <ComparisonBadge change={savingsChange} />
-            )}
-            <span className="text-xs text-muted-foreground tabular-nums">
-              avg {expectedSavingsRate}%
-            </span>
-          </div>
+          <InsightsRow
+            icon={
+              <span className="h-3.5 w-3.5 rounded-full bg-savings/60 inline-block" />
+            }
+            label="Savings Rate"
+            current={`${savingsCur}%`}
+            badge={
+              savingsChange !== null ? (
+                <ComparisonBadge change={savingsChange} />
+              ) : null
+            }
+            currentClassName="text-savings"
+          />
         </div>
       </div>
+
+      <p className="text-[11px] text-muted-foreground mt-2">
+        {useWindow
+          ? "Based on your typical results for a similar window."
+          : "Based on your average monthly pace."}
+      </p>
     </Card>
   );
 }

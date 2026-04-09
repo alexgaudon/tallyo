@@ -309,7 +309,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     // Calculate dynamic dimensions based on node count
     // Base height + additional height per node to prevent overcrowding
     const baseWidth = 550;
-    const baseHeight = 180;
+    const baseHeight = 240;
     const minNodeHeight = 8; // Minimum space each node needs
     const numNodes = rawNodes.length;
     const requiredHeight = Math.max(baseHeight, numNodes * minNodeHeight);

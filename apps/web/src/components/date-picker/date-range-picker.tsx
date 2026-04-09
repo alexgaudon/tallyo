@@ -4,6 +4,7 @@ import {
   endOfMonth,
   endOfYear,
   format,
+  isSameMonth,
   startOfDay,
   startOfMonth,
   startOfYear,
@@ -118,10 +119,14 @@ export default function DateRangePicker({
       direction === "prev"
         ? subMonths(currentMonth, 1)
         : addMonths(currentMonth, 1);
+    const today = startOfDay(new Date());
+    const toDate = isSameMonth(newMonth, today)
+      ? today
+      : startOfDay(endOfMonth(newMonth));
 
     const newDateRange: DateRange = {
       from: startOfDay(startOfMonth(newMonth)),
-      to: startOfDay(endOfMonth(newMonth)),
+      to: toDate,
     };
 
     setDate(newDateRange);

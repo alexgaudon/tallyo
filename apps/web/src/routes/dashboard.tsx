@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { format, parseISO, startOfMonth } from "date-fns";
 import { Plus } from "lucide-react";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
@@ -182,24 +182,23 @@ function RouteComponent() {
             }
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground mb-3">
-                Overview
-              </h2>
+          <div className="grid grid-cols-1 xl:grid-cols-10 gap-5 items-stretch">
+            <SectionPanel className="xl:col-span-3" title="Period Summary">
               <Stats data={statsData} />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-foreground mb-3">
-                Insights
-              </h2>
+            </SectionPanel>
+
+            <SectionPanel className="xl:col-span-7" title="Spending Breakdown">
+              <DashboardCharts categoryData={categoryData} />
+            </SectionPanel>
+
+            <SectionPanel className="xl:col-span-3" title="Period Insights">
               <PeriodInsights data={statsData} />
-            </div>
+            </SectionPanel>
+
+            <SectionPanel className="xl:col-span-7" title="Income Flow">
+              <DashboardSankey sankeyData={sankeyData} />
+            </SectionPanel>
           </div>
-
-          <DashboardCharts categoryData={categoryData} />
-
-          <DashboardSankey sankeyData={sankeyData} />
 
           <DashboardDetails
             merchantData={merchantData}
@@ -207,6 +206,33 @@ function RouteComponent() {
           />
         </div>
       </DelayedLoading>
+    </div>
+  );
+}
+
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="text-[11px] font-semibold tracking-[0.08em] uppercase text-muted-foreground">
+      {children}
+    </h2>
+  );
+}
+
+function SectionPanel({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`flex h-full min-h-0 flex-col ${className ?? ""}`}>
+      <div className="mb-3">
+        <SectionTitle>{title}</SectionTitle>
+      </div>
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
@@ -229,17 +255,11 @@ function DashboardHeader({
       <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-                {greeting}
-              </span>
-              <span className="text-foreground">, </span>
-              <span className="text-primary">
-                {userName?.split(" ")[0] ?? "there"}
-              </span>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              Welcome {userName?.split(" ")[0] ?? "there"}!
             </h1>
             <p className="text-sm text-muted-foreground font-medium">
-              {format(new Date(), "EEEE, MMMM d, yyyy")}
+              {greeting} - {format(new Date(), "EEEE, MMM d, yyyy")}
             </p>
           </div>
           <div className="flex items-stretch gap-2 w-full sm:w-auto">
@@ -274,12 +294,7 @@ function DashboardCharts({
     | undefined;
 }) {
   return (
-    <div>
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-foreground">
-          Top Categories
-        </h2>
-      </div>
+    <>
       {categoryData && categoryData.length > 0 ? (
         <CategoryPieChart data={categoryData} />
       ) : (
@@ -287,7 +302,7 @@ function DashboardCharts({
           No category data
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -299,10 +314,7 @@ function DashboardSankey({
     | undefined;
 }) {
   return (
-    <div>
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-foreground">Income Flow</h2>
-      </div>
+    <>
       {sankeyData && sankeyData.totalIncome > 0 ? (
         <IncomeExpenseSankey data={sankeyData} />
       ) : (
@@ -310,7 +322,7 @@ function DashboardSankey({
           No income data
         </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -328,9 +340,9 @@ function DashboardDetails({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div>
-        <h2 className="text-sm font-semibold text-foreground mb-3">
-          Top Merchants
-        </h2>
+        <div className="mb-3">
+          <SectionTitle>Top Merchants</SectionTitle>
+        </div>
         {merchantData && merchantData.length > 0 ? (
           <MerchantStats data={merchantData} />
         ) : (
@@ -341,9 +353,9 @@ function DashboardDetails({
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-foreground mb-3">
-          Largest Transactions
-        </h2>
+        <div className="mb-3">
+          <SectionTitle>Largest Transactions</SectionTitle>
+        </div>
         {transactionData && transactionData.length > 0 ? (
           <TransactionStats data={transactionData} />
         ) : (
