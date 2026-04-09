@@ -85,6 +85,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
 
     if (nodeId.startsWith("parent-")) {
       categoryId = nodeId.replace("parent-", "");
+    } else if (nodeId.startsWith("child-direct-")) {
+      categoryId = nodeId.replace("child-direct-", "");
     } else if (nodeId.startsWith("child-")) {
       categoryId = nodeId.replace("child-", "");
     } else if (nodeId.startsWith("category-")) {
@@ -250,6 +252,37 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
           color: getColorFromCategoryId(expense.category.id),
         });
       }
+    }
+
+    // When some spend is categorized on the parent (not a subcategory), it is
+    // included in parentTotals but has no parent→child link. Add a "direct"
+    // branch so flows sum and d3-sankey lays out ribbons correctly.
+    const FLOW_EPSILON = 0.005;
+    for (const [, parent] of parentTotals) {
+      const parentNodeId = `parent-${parent.id}`;
+      let childrenSum = 0;
+      for (const link of linkMap.values()) {
+        if (link.source === parentNodeId) {
+          childrenSum += link.value;
+        }
+      }
+      const remainder = parent.amount - childrenSum;
+      if (remainder <= FLOW_EPSILON) continue;
+
+      const directChildId = `child-direct-${parent.id}`;
+      if (!nodeMap.has(directChildId)) {
+        nodeMap.set(directChildId, {
+          id: directChildId,
+          label: `${parent.name} (direct)`,
+          color: getColorFromCategoryId(parent.id),
+        });
+      }
+      linkMap.set(`${parentNodeId}->${directChildId}`, {
+        source: parentNodeId,
+        target: directChildId,
+        value: remainder,
+        color: getColorFromCategoryId(parent.id),
+      });
     }
 
     // Level 2/3: Categories without parents (connect directly from Expenses)
