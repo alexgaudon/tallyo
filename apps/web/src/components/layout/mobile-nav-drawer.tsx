@@ -50,8 +50,14 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
-      <DrawerContent>
+    <Drawer
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      direction="bottom"
+      modal={false}
+      shouldScaleBackground={false}
+    >
+      <DrawerContent className="animate-none will-change-transform">
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="flex items-center gap-3">
