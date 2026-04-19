@@ -602,6 +602,7 @@ export const dashboardRouter = {
       const result = await db
         .select({
           amount: sum(transaction.amount),
+          transactionCount: count(),
           category: {
             id: category.id,
             name: category.name,
@@ -625,6 +626,7 @@ export const dashboardRouter = {
 
       return result.map((item) => ({
         amount: Math.abs(Number(item.amount ?? 0)),
+        count: Number(item.transactionCount ?? 0),
         category: {
           id: item.category.id,
           name: item.category.name,
