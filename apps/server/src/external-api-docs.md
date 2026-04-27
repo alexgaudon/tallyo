@@ -154,40 +154,6 @@ Returns `400` if `q` is missing or empty.
 
 ---
 
-## GET /api/transactions/:id
-
-Get a single transaction by ID.
-
-### Request Headers
-- `Authorization: Bearer <token>` (required)
-
-### Response
-```json
-{
-  "transaction": {
-    "id": "txn-uuid",
-    "userId": "user-uuid",
-    "merchantId": "merchant-uuid",
-    "categoryId": "category-uuid",
-    "amount": -1250,
-    "date": "2024-01-15",
-    "transactionDetails": "WHOLEFDS",
-    "notes": null,
-    "externalId": "unique-id-123",
-    "reviewed": false,
-    "splitFromId": null,
-    "createdAt": "2024-01-15T10:00:00.000Z",
-    "updatedAt": "2024-01-15T10:00:00.000Z",
-    "merchant": { ... },
-    "category": { ..., "parentCategory": null }
-  }
-}
-```
-
-Returns `404` if the transaction does not exist or does not belong to the authenticated user.
-
----
-
 ## GET /api/categories
 
 List all categories for the authenticated user.

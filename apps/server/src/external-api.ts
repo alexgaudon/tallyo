@@ -239,50 +239,6 @@ externalApi.get("/transactions", async (c) => {
   }
 });
 
-// GET /transactions/:id - Get a single transaction
-externalApi.get("/transactions/:id", async (c) => {
-  try {
-    const userId = await getUserIdFromBearerToken(c);
-    if (!userId) {
-      return c.json(
-        { error: "Missing, invalid, or expired Authorization header" },
-        401,
-      );
-    }
-
-    const id = c.req.param("id");
-    if (!id) {
-      return c.json({ error: "Transaction ID is required" }, 400);
-    }
-
-    const txn = await db.query.transaction.findFirst({
-      where: and(eq(transaction.id, id), eq(transaction.userId, userId)),
-      with: {
-        merchant: true,
-        category: { with: { parentCategory: true } },
-      },
-    });
-
-    if (!txn) {
-      return c.json({ error: "Transaction not found" }, 404);
-    }
-
-    return c.json({ transaction: txn });
-  } catch (error) {
-    logger.error("API transaction fetch failed", {
-      error,
-      metadata: {
-        method: c.req.method,
-        url: c.req.url,
-      },
-    });
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
-
 // GET /transactions/search - Broad search across transaction details, notes, merchant name, and category name
 externalApi.get("/transactions/search", async (c) => {
   try {
