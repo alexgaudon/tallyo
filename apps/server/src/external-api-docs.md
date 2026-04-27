@@ -107,6 +107,53 @@ Results are sorted by `date` descending, then `amount` descending. Transactions 
 
 ---
 
+## GET /api/transactions/search
+
+Broad search across transactions. Matches when the query appears in `transactionDetails`, `notes`, `merchant.name`, or `category.name`.
+
+### Request Headers
+- `Authorization: Bearer <token>` (required)
+
+### Query Parameters
+- `q` (string, required): Search query.
+- `page` (number, default: `1`): Page number.
+- `pageSize` (number, default: `50`, max: `100`): Items per page.
+
+### Response
+```json
+{
+  "transactions": [
+    {
+      "id": "txn-uuid",
+      "userId": "user-uuid",
+      "merchantId": "merchant-uuid",
+      "categoryId": "category-uuid",
+      "amount": -1250,
+      "date": "2024-01-15",
+      "transactionDetails": "SHELL OIL",
+      "notes": null,
+      "externalId": "unique-id-123",
+      "reviewed": false,
+      "splitFromId": null,
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z",
+      "merchant": { "id": "...", "name": "Shell", ... },
+      "category": { "id": "...", "name": "Gas", ..., "parentCategory": null }
+    }
+  ],
+  "pagination": {
+    "total": 42,
+    "page": 1,
+    "pageSize": 50,
+    "totalPages": 1
+  }
+}
+```
+
+Returns `400` if `q` is missing or empty.
+
+---
+
 ## GET /api/transactions/:id
 
 Get a single transaction by ID.

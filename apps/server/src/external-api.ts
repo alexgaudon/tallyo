@@ -283,6 +283,99 @@ externalApi.get("/transactions/:id", async (c) => {
   }
 });
 
+// GET /transactions/search - Broad search across transaction details, notes, merchant name, and category name
+externalApi.get("/transactions/search", async (c) => {
+  try {
+    const userId = await getUserIdFromBearerToken(c);
+    if (!userId) {
+      return c.json(
+        { error: "Missing, invalid, or expired Authorization header" },
+        401,
+      );
+    }
+
+    const q = c.req.query("q");
+    if (!q || q.trim().length === 0) {
+      return c.json({ error: "Search query 'q' is required" }, 400);
+    }
+
+    const page = Math.max(1, Number(c.req.query("page") || "1"));
+    const pageSize = Math.min(
+      100,
+      Math.max(1, Number(c.req.query("pageSize") || "50")),
+    );
+
+    const searchPattern = `%${q}%`;
+
+    const searchConditions = [
+      eq(transaction.userId, userId),
+      or(
+        ilike(transaction.transactionDetails, searchPattern),
+        ilike(transaction.notes, searchPattern),
+        ilike(merchant.name, searchPattern),
+        ilike(category.name, searchPattern),
+      ),
+    ];
+
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(distinct ${transaction.id})` })
+      .from(transaction)
+      .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
+      .leftJoin(category, eq(transaction.categoryId, category.id))
+      .where(and(...searchConditions));
+
+    const matchingIdsResult = await db
+      .select({ id: transaction.id })
+      .from(transaction)
+      .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
+      .leftJoin(category, eq(transaction.categoryId, category.id))
+      .where(and(...searchConditions))
+      .orderBy(desc(transaction.date), desc(transaction.amount))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize);
+
+    const ids = matchingIdsResult.map((r) => r.id);
+
+    let userTransactions: any[] = [];
+    if (ids.length > 0) {
+      userTransactions = await db.query.transaction.findMany({
+        where: inArray(transaction.id, ids),
+        with: {
+          merchant: true,
+          category: { with: { parentCategory: true } },
+        },
+      });
+
+      const orderMap = new Map(ids.map((id, index) => [id, index]));
+      userTransactions.sort(
+        (a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0),
+      );
+    }
+
+    return c.json({
+      transactions: userTransactions,
+      pagination: {
+        total: count,
+        page,
+        pageSize,
+        totalPages: Math.ceil(count / pageSize),
+      },
+    });
+  } catch (error) {
+    logger.error("API transaction search failed", {
+      error,
+      metadata: {
+        method: c.req.method,
+        url: c.req.url,
+      },
+    });
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 // GET /categories - List categories for the authenticated user
 externalApi.get("/categories", async (c) => {
   try {
