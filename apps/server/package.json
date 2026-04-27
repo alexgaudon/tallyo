@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "docker:build": "docker build -f apps/server/Dockerfile .",
-    "build": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias && cp src/external-api-docs.md dist/src/external-api-docs.md",
     "build:full": "npm run build && cd ../web && npm run build && mkdir -p ../server/public && cp -r dist/* ../server/public/",
     "check-types": "tsc --noEmit",
     "dev": "tsx watch src/start.ts",

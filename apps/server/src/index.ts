@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { z } from "zod";
 import { healthCheck } from "./db";
+import externalApi from "./external-api";
 import {
   deleteSession,
   getDiscordAuthUrl,
@@ -18,11 +18,6 @@ import {
 import { createContext } from "./lib/context";
 import { parseCookie, parseSessionToken } from "./lib/cookies";
 import { logger } from "./lib/logger";
-import {
-  createOpenAPIGenerator,
-  generateOpenAPISpec,
-  getScalarHTML,
-} from "./lib/openapi";
 import { appRouter } from "./routers/index";
 
 const app = new Hono();
@@ -306,105 +301,7 @@ app.post("/api/auth/signout", async (c) => {
   }
 });
 
-// API route for creating transactions with custom auth token
-app.post("/api/transactions", async (c) => {
-  try {
-    const authHeader = c.req.header("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return c.json({ error: "Missing or invalid Authorization header" }, 401);
-    }
-
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
-
-    // Validate the custom auth token
-    const { validateAuthToken } = await import("./lib/auth-token");
-    const userId = await validateAuthToken(token);
-
-    if (!userId) {
-      return c.json({ error: "Invalid or expired token" }, 401);
-    }
-
-    // Parse and validate request body with Zod
-    const body = await c.req.json();
-
-    const transactionSchema = z.object({
-      amount: z.number().int(),
-      date: z.string().or(z.date()),
-      transactionDetails: z.string(),
-      merchantId: z.string().optional(),
-      categoryId: z.string().optional(),
-      notes: z.string().optional(),
-      externalId: z.string(),
-    });
-
-    const requestSchema = z.object({
-      transactions: z.array(transactionSchema).min(1).max(100),
-    });
-
-    const validationResult = requestSchema.safeParse(body);
-    if (!validationResult.success) {
-      return c.json(
-        {
-          error: "Invalid request format",
-          details: validationResult.error.issues,
-        },
-        400,
-      );
-    }
-
-    const { transactions } = validationResult.data;
-
-    console.log("Transaction Count:", transactions.length);
-    const { getMerchantFromVendor } = await import("./routers/merchants");
-    const { transaction } = await import("./db/schema");
-    const { db } = await import("./db");
-
-    // Prepare all transaction data
-    const transactionData = await Promise.all(
-      transactions.map(async (newTransaction) => {
-        const merchant = await getMerchantFromVendor(
-          newTransaction.transactionDetails,
-          userId,
-        );
-
-        return {
-          ...newTransaction,
-          merchantId: merchant?.id,
-          categoryId: merchant?.recommendedCategoryId,
-          userId: userId,
-          date: new Date(newTransaction.date).toISOString().split("T")[0],
-        };
-      }),
-    );
-
-    // Single bulk insert
-    const insertedTransactions = await db
-      .insert(transaction)
-      .values(transactionData)
-      .onConflictDoNothing()
-      .returning();
-
-    const addedCount = insertedTransactions.length;
-
-    return c.json({
-      message: "Transactions received",
-      count: addedCount,
-    });
-  } catch (error) {
-    logger.error("API transaction creation failed", {
-      error,
-      metadata: {
-        method: c.req.method,
-        url: c.req.url,
-      },
-    });
-
-    if (error instanceof Error) {
-      return c.json({ error: error.message }, 500);
-    }
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
+app.route("/api", externalApi);
 
 const handler = new RPCHandler(appRouter);
 app.use("/rpc/*", async (c, next) => {
@@ -432,47 +329,6 @@ app.use("/rpc/*", async (c, next) => {
   }
 });
 
-// OpenAPI / Swagger UI Documentation
-const openAPIGenerator = createOpenAPIGenerator();
-
-app.get("/api-docs/spec.json", async (c) => {
-  try {
-    const url = new URL(c.req.url);
-    const baseUrl = `${url.protocol}//${url.host}/rpc`;
-    const spec = await generateOpenAPISpec(
-      openAPIGenerator,
-      appRouter,
-      baseUrl,
-    );
-    return c.json(spec);
-  } catch (error) {
-    logger.error("OpenAPI spec generation failed", {
-      error,
-      metadata: {
-        url: c.req.url,
-      },
-    });
-    return c.json({ error: "Failed to generate OpenAPI spec" }, 500);
-  }
-});
-
-app.get("/api-docs", async (c) => {
-  try {
-    const url = new URL(c.req.url);
-    const specUrl = `${url.protocol}//${url.host}/api-docs/spec.json`;
-    const html = getScalarHTML(specUrl);
-    return c.html(html);
-  } catch (error) {
-    logger.error("OpenAPI docs page failed", {
-      error,
-      metadata: {
-        url: c.req.url,
-      },
-    });
-    return c.json({ error: "Failed to load API documentation" }, 500);
-  }
-});
-
 app.get("/", async (c) => {
   try {
     const url = new URL(c.req.url);
@@ -487,12 +343,6 @@ app.get("/", async (c) => {
       return c.html(
         await readFile(join(process.cwd(), "public", "index.html"), "utf-8"),
       );
-    }
-    if (
-      c.req.header("accept")?.includes("text/html") ||
-      c.req.header("accept")?.includes("application/xhtml+xml")
-    ) {
-      return c.redirect("/api-docs");
     }
     return c.text("OK");
   } catch (error) {
@@ -514,11 +364,7 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", async (c) => {
     const url = new URL(c.req.url);
     // Don't serve index.html for API routes
-    if (
-      url.pathname.startsWith("/api/") ||
-      url.pathname.startsWith("/rpc/") ||
-      url.pathname.startsWith("/api-docs")
-    ) {
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/rpc/")) {
       return c.notFound();
     }
     return c.html(
