@@ -1,3 +1,35 @@
+const IS_PROD = process.env.NODE_ENV === "production";
+
+/**
+ * Build a Set-Cookie header string with secure defaults.
+ */
+export function buildCookieString(
+  name: string,
+  value: string,
+  maxAge: number,
+  opts: {
+    httpOnly?: boolean;
+    secure?: boolean;
+    sameSite?: "Lax" | "Strict";
+  } = {},
+): string {
+  const parts = [`${name}=${value}`, `Path=/`, `Max-Age=${maxAge}`];
+  if (opts.httpOnly !== false) parts.push("HttpOnly");
+  if (opts.secure !== false && IS_PROD) parts.push("Secure");
+  parts.push(`SameSite=${opts.sameSite || "Lax"}`);
+  return parts.join("; ");
+}
+
+/** Set-Cookie string that clears a cookie (max-age=0). */
+export function clearCookieString(name: string): string {
+  return buildCookieString(name, "", 0);
+}
+
+/** Set-Cookie string for the session cookie (30-day expiry). */
+export function sessionCookieString(token: string): string {
+  return buildCookieString("session", token, 30 * 24 * 60 * 60);
+}
+
 /**
  * Parse a cookie value from cookie header by name
  */

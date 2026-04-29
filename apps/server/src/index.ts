@@ -7,53 +7,34 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { healthCheck } from "./db";
 import externalApi from "./external-api";
-import {
-  deleteSession,
-  getDiscordAuthUrl,
-  getSession,
-  handleDiscordCallback,
-  hasUsers,
-  validateState,
-} from "./lib/auth";
 import { createContext } from "./lib/context";
-import { parseCookie, parseSessionToken } from "./lib/cookies";
 import { logger } from "./lib/logger";
 import { appRouter } from "./routers/index";
+import authRoutes from "./routes/auth";
 
+// ---- constants ----
+const IS_PROD = process.env.NODE_ENV === "production";
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "";
+
+// ---- app ----
 const app = new Hono();
 
-// app.use(honoLogger());
+// ---- middleware ----
 
 if (process.env.NODE_ENV === "development") {
   app.use(async (_c, next) => {
-    const delay = Math.floor(Math.random() * 40);
-    await new Promise((resolve) => setTimeout(resolve, delay));
+    await new Promise((r) => setTimeout(r, Math.random() * 40));
     await next();
   });
 }
 
-// Log slow requests and errors
 app.use(async (c, next) => {
   const start = Date.now();
-  try {
-    await next();
-  } catch (error) {
-    logger.error("Request failed", {
-      error,
-      metadata: {
-        method: c.req.method,
-        url: c.req.url,
-        path: new URL(c.req.url).pathname,
-      },
-    });
-    throw error;
-  }
-
+  await next();
   const ms = Date.now() - start;
-  // Only log requests that take longer than 100ms
   if (ms > 100) {
     logger.warn(
-      `Slow request detected: ${c.req.method} ${c.req.url} - ${ms}ms`,
+      `Slow request: ${c.req.method} ${new URL(c.req.url).pathname} - ${ms}ms`,
       {
         metadata: {
           method: c.req.method,
@@ -65,252 +46,47 @@ app.use(async (c, next) => {
   }
 });
 
-// Log CORS errors
-app.use("*", async (c, next) => {
-  try {
-    await next();
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("CORS")) {
-      logger.error("CORS error", {
-        error,
-        metadata: {
-          origin: c.req.header("Origin"),
-          url: c.req.url,
-        },
-      });
-    }
-    throw error;
-  }
-});
-
 app.use(
   "/*",
   cors({
-    origin: process.env.CORS_ORIGIN || "",
+    origin: CORS_ORIGIN,
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
 );
 
-// Check if users exist
-app.get("/api/auth/has-users", async (c) => {
-  try {
-    const usersExist = await hasUsers();
-    return c.json({ hasUsers: usersExist });
-  } catch (error) {
-    logger.error("Failed to check users", { error });
-    return c.json({ error: "Failed to check users" }, 500);
+app.onError((err, c) => {
+  const pathname = new URL(c.req.url).pathname;
+
+  if (err instanceof Error && err.message.includes("CORS")) {
+    logger.error("CORS error", {
+      error: err,
+      metadata: { origin: c.req.header("Origin"), url: c.req.url },
+    });
+  } else {
+    logger.error("Request failed", {
+      error: err,
+      metadata: { method: c.req.method, url: c.req.url, path: pathname },
+    });
   }
+
+  return c.json({ error: "Internal server error" }, 500);
 });
 
-/**
- * Build secure cookie string
- */
-function buildCookieString(
-  name: string,
-  value: string,
-  maxAge: number,
-  options: {
-    httpOnly?: boolean;
-    secure?: boolean;
-    sameSite?: "Lax" | "Strict";
-  } = {},
-): string {
-  const isProduction = process.env.NODE_ENV === "production";
-  const parts = [`${name}=${value}`, `Path=/`, `Max-Age=${maxAge}`];
-
-  if (options.httpOnly !== false) {
-    parts.push("HttpOnly");
-  }
-
-  if (options.secure !== false && isProduction) {
-    parts.push("Secure");
-  }
-
-  parts.push(`SameSite=${options.sameSite || "Lax"}`);
-
-  return parts.join("; ");
-}
-
-// Get session
-app.get("/api/auth/session", async (c) => {
-  try {
-    const sessionToken = parseSessionToken(c.req.header("Cookie"));
-    const session = await getSession(sessionToken);
-
-    if (!session) {
-      return c.json({ session: null }, 200);
-    }
-
-    return c.json({ session }, 200);
-  } catch (error) {
-    logger.error("Failed to get session", { error });
-    return c.json({ error: "Failed to get session" }, 500);
-  }
-});
-
-// Discord OAuth - initiate (sets cookie and redirects)
-// This endpoint is kept as REST because it needs to set cookies and redirect
-app.get("/api/auth/discord/authorize", async (c) => {
-  try {
-    const stateParam = c.req.query("state");
-    if (!stateParam) {
-      return c.json({ error: "State parameter required" }, 400);
-    }
-
-    // Validate state format
-    if (!validateState(stateParam)) {
-      return c.json({ error: "Invalid state parameter" }, 400);
-    }
-
-    const authUrl = getDiscordAuthUrl(stateParam);
-
-    // Store state in cookie for CSRF protection (10 minutes expiration)
-    const isProduction = process.env.NODE_ENV === "production";
-    const stateCookie = buildCookieString("oauth_state", stateParam, 600, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: "Lax",
-    });
-
-    const response = c.redirect(authUrl);
-    response.headers.set("Set-Cookie", stateCookie);
-    return response;
-  } catch (error) {
-    logger.error("Failed to initiate Discord auth", { error });
-    return c.json({ error: "Failed to initiate authentication" }, 500);
-  }
-});
-
-// Discord OAuth - callback
-app.get("/api/auth/callback/discord", async (c) => {
-  try {
-    const code = c.req.query("code");
-    const state = c.req.query("state");
-    const error = c.req.query("error");
-
-    if (error) {
-      return c.redirect(
-        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
-      );
-    }
-
-    // Validate state parameter for CSRF protection
-    if (!validateState(state)) {
-      logger.warn("Invalid state parameter format in OAuth callback", {
-        metadata: { hasState: !!state },
-      });
-      return c.redirect(
-        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
-      );
-    }
-
-    // Validate state cookie matches query parameter (CSRF protection)
-    const cookieHeader = c.req.header("Cookie");
-    const stateCookie = parseCookie(cookieHeader, "oauth_state");
-    if (!stateCookie || stateCookie !== state) {
-      logger.warn("State cookie mismatch in OAuth callback", {
-        metadata: {
-          hasStateCookie: !!stateCookie,
-          stateMatches: stateCookie === state,
-        },
-      });
-      return c.redirect(
-        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
-      );
-    }
-
-    // Clear state cookie after validation (prevent reuse)
-    const clearStateCookie = buildCookieString("oauth_state", "", 0, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
-    });
-
-    if (!code) {
-      return c.redirect(
-        `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
-      );
-    }
-
-    // Determine if this is a register or sign-in
-    const usersExist = await hasUsers();
-    const isRegister = !usersExist;
-
-    const { sessionToken } = await handleDiscordCallback(code, isRegister);
-
-    // Set session cookie and redirect to dashboard
-    const redirectUrl = `${process.env.CORS_ORIGIN}/dashboard`;
-
-    // Build session cookie
-    const isProduction = process.env.NODE_ENV === "production";
-    const sessionCookie = buildCookieString(
-      "session",
-      sessionToken,
-      30 * 24 * 60 * 60,
-      {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: "Lax",
-      },
-    );
-
-    // Create response with cookies (session + cleared state)
-    const response = c.redirect(redirectUrl);
-    response.headers.append("Set-Cookie", sessionCookie);
-    response.headers.append("Set-Cookie", clearStateCookie);
-    return response;
-  } catch (error) {
-    logger.error("Discord callback failed", { error });
-    // Clear state cookie on error
-    const clearStateCookie = buildCookieString("oauth_state", "", 0, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
-    });
-    const response = c.redirect(
-      `${process.env.CORS_ORIGIN}/signin?error=${encodeURIComponent("Authentication failed")}`,
-    );
-    response.headers.append("Set-Cookie", clearStateCookie);
-    return response;
-  }
-});
-
-// Sign out
-app.post("/api/auth/signout", async (c) => {
-  try {
-    const sessionToken = parseSessionToken(c.req.header("Cookie"));
-
-    if (sessionToken) {
-      await deleteSession(sessionToken);
-    }
-
-    const clearCookie = buildCookieString("session", "", 0, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Lax",
-    });
-
-    return c.json({ success: true }, 200, {
-      "Set-Cookie": clearCookie,
-    });
-  } catch (error) {
-    logger.error("Failed to sign out", { error });
-    return c.json({ error: "Failed to sign out" }, 500);
-  }
-});
-
+// ---- routes ----
+app.route("/api/auth", authRoutes);
 app.route("/api", externalApi);
 
-const handler = new RPCHandler(appRouter);
+// ---- RPC ----
+const rpcHandler = new RPCHandler(appRouter);
 app.use("/rpc/*", async (c, next) => {
   const context = await createContext({ context: c });
 
   try {
-    const { matched, response } = await handler.handle(c.req.raw, {
+    const { matched, response } = await rpcHandler.handle(c.req.raw, {
       prefix: "/rpc",
-      context: context,
+      context,
     });
     if (matched) {
       return c.newResponse(response.body, response);
@@ -325,21 +101,19 @@ app.use("/rpc/*", async (c, next) => {
         userId: context.session?.user?.id,
       },
     });
-    throw error;
+    return c.json({ error: "Internal server error" }, 500);
   }
 });
 
+// ---- root ----
 app.get("/", async (c) => {
   try {
     const url = new URL(c.req.url);
-    if (
-      process.env.NODE_ENV === "development" &&
-      url.hostname === "localhost"
-    ) {
+    if (!IS_PROD && url.hostname === "localhost") {
       return c.redirect("http://localhost:3001");
     }
     await healthCheck();
-    if (process.env.NODE_ENV === "production") {
+    if (IS_PROD) {
       return c.html(
         await readFile(join(process.cwd(), "public", "index.html"), "utf-8"),
       );
@@ -348,22 +122,18 @@ app.get("/", async (c) => {
   } catch (error) {
     logger.error("Health check failed", {
       error,
-      metadata: {
-        url: c.req.url,
-      },
+      metadata: { url: c.req.url },
     });
     return c.text("DB Not OK", 500);
   }
 });
 
-// Serve static files in production
-if (process.env.NODE_ENV === "production") {
+// ---- production: static files + SPA fallback ----
+if (IS_PROD) {
   app.use("/*", serveStatic({ root: "./public" }));
 
-  // Handle client-side routing for SPA
   app.get("*", async (c) => {
     const url = new URL(c.req.url);
-    // Don't serve index.html for API routes
     if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/rpc/")) {
       return c.notFound();
     }
@@ -373,7 +143,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Log application startup errors (include full error so message/stack are visible)
+// ---- process error handlers ----
 process.on("uncaughtException", (error) => {
   logger.error("Uncaught exception", { error });
   console.error(error);
