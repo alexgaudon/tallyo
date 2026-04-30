@@ -560,7 +560,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                           setTooltip({
                             x: rect.left + rect.width / 2,
                             y: rect.top - 10,
-                            content: `${formatCurrency(node.value || 0)} (${((node.value! / (percentDenom || 1)) * 100).toFixed(1)}%)`,
+                            content: `${formatCurrency(node.value || 0)} (${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%)`,
                           });
                         }}
                         onMouseLeave={() => {

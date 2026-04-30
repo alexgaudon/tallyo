@@ -281,7 +281,14 @@ externalApi.get("/transactions/search", async (c) => {
 
     const ids = matchingIdsResult.map((r) => r.id);
 
-    let userTransactions: any[] = [];
+    let userTransactions: (typeof transaction.$inferSelect & {
+      merchant: typeof merchant.$inferSelect | null;
+      category:
+        | (typeof category.$inferSelect & {
+            parentCategory: typeof category.$inferSelect | null;
+          })
+        | null;
+    })[] = [];
     if (ids.length > 0) {
       userTransactions = await db.query.transaction.findMany({
         where: inArray(transaction.id, ids),
