@@ -24,11 +24,11 @@
 		"db:seed": "turbo -F server db:seed"
 	},
 	"dependencies": {
-		"@tanstack/react-hotkeys": "^0.3.1",
+		"@tanstack/react-hotkeys": "^0.10.0",
 		"csv-parse": "^6.1.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.4",
+		"@biomejs/biome": "^2.4.13",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
 		"turbo": "^2.8.13"

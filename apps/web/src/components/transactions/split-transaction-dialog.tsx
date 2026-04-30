@@ -66,7 +66,7 @@ export function SplitTransactionDialog({
       ]);
       setError(null);
     }
-  }, [open, transaction?.id]);
+  }, [open, transaction?.id, transaction]);
 
   const totalSplitCents = useMemo(
     () => splits.reduce((sum, split) => sum + formatCents(split.amount), 0),
