@@ -31,7 +31,9 @@ export const formatCategory = (category: Category) => {
   return category.name;
 };
 
-export const formatCategoryText = (category: Category) => {
+type CategoryText = { name: string; parentCategory?: { name: string } | null };
+
+export const formatCategoryText = (category: CategoryText) => {
   if (category.parentCategory) {
     return `${category.parentCategory.name} → ${category.name}`;
   }

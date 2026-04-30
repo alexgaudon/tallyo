@@ -42,7 +42,6 @@ interface ChartItem {
   label: string;
   color: string;
   count: number;
-  average12Months: number;
   categoryId: string;
 }
 
@@ -77,7 +76,6 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
         color: getColorFromCategoryId(item.category.id),
         count: item.count,
         categoryId: item.category.id,
-        average12Months: item.average12Months || 0,
       }));
   }, [data]);
 

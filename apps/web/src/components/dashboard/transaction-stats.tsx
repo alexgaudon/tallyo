@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { TransactionStatsData } from "../../../../server/src/routers";
+import type { DashboardTransactionStats } from "../../../../server/src/routers";
 import { Card } from "../ui/card";
 import { CardListEmpty } from "../ui/card-list";
 import { CurrencyAmount } from "../ui/currency-amount";
@@ -50,7 +50,7 @@ const formatRelativeTime = (dateValue: string | Date) => {
 export function TransactionStats({
   data,
 }: {
-  data: TransactionStatsData | undefined;
+  data: DashboardTransactionStats | undefined;
 }) {
   const navigate = useNavigate();
 
