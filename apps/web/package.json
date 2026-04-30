@@ -31,7 +31,7 @@
 		"@mui/material": "^7.3.9",
 		"@mui/x-charts": "^8.28.2",
 		"@orpc/client": "^1.13.6",
-		"@orpc/openapi": "^1.13.6",
+		"@orpc/openapi": "^1.13.9",
 		"@orpc/react-query": "^1.13.6",
 		"@orpc/server": "^1.13.6",
 		"@orpc/zod": "^1.13.6",
