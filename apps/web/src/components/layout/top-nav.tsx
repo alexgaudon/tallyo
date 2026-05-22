@@ -74,9 +74,11 @@ export function TopNav({ onMenuClick }: TopNavProps) {
             <Menu className="h-5 w-5" />
           </Button>
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-soft">
-              <BlocksIcon className="h-4 w-4" />
-            </div>
+            <img
+              src="/favicon.ico"
+              alt="Tallyo"
+              className="h-8 w-8 rounded-lg shadow-soft"
+            />
             <span className="font-semibold text-lg tracking-tight text-foreground">
               Tallyo
             </span>
