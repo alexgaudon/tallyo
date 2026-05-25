@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EntityPickerProvider } from "@/components/ui/entity-picker-sheet";
 import { useLocalPageSize } from "@/hooks/use-local-page-size";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
@@ -427,86 +428,89 @@ function RouteComponent() {
   };
 
   return (
-    <div className="min-h-full">
-      <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Your activity
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-                  Transactions
-                </span>
-              </h1>
+    <EntityPickerProvider>
+      <div className="min-h-full">
+        <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
+          <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Your activity
+                </p>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                  <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                    Transactions
+                  </span>
+                </h1>
+              </div>
+              <Dialog
+                open={isCreateFormOpen}
+                onOpenChange={(open) => {
+                  setIsCreateFormOpen(open);
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add transaction
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[620px]">
+                  <DialogHeader>
+                    <DialogTitle>Create New Transaction</DialogTitle>
+                    <DialogDescription>
+                      Add a new transaction to your records.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CreateTransactionForm
+                    callback={() => {
+                      queryClient.invalidateQueries({
+                        queryKey:
+                          createTransactionQueryOptions(effectiveSearch)
+                            .queryKey,
+                      });
+                      setIsCreateFormOpen(false);
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
-            <Dialog
-              open={isCreateFormOpen}
-              onOpenChange={(open) => {
-                setIsCreateFormOpen(open);
+          </div>
+        </header>
+
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
+          {/* Search */}
+          <div className="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+            <Search />
+          </div>
+
+          {/* Table */}
+          <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-sm">
+            <TransactionsTable
+              transactions={transactionsData?.transactions ?? []}
+              pagination={{
+                total: transactionsData?.pagination.total ?? 0,
+                page: transactionsData?.pagination.page ?? 1,
+                pageSize: search.pageSize ?? localPageSize,
+                totalPages: transactionsData?.pagination.totalPages ?? 1,
               }}
-            >
-              <DialogTrigger asChild>
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add transaction
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[620px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Transaction</DialogTitle>
-                  <DialogDescription>
-                    Add a new transaction to your records.
-                  </DialogDescription>
-                </DialogHeader>
-                <CreateTransactionForm
-                  callback={() => {
-                    queryClient.invalidateQueries({
-                      queryKey:
-                        createTransactionQueryOptions(effectiveSearch).queryKey,
-                    });
-                    setIsCreateFormOpen(false);
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              updateCategory={updateCategory}
+              updateMerchant={updateMerchant}
+              updateNotes={updateNotes}
+              toggleReviewed={toggleReviewed}
+              deleteTransaction={deleteTransaction}
+              onCategoryClick={handleCategoryClick}
+              onMerchantClick={handleMerchantClick}
+              isLoading={false}
+              queryKey={[
+                ...createTransactionQueryOptions(effectiveSearch).queryKey,
+              ]}
+            />
           </div>
         </div>
-      </header>
-
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Search */}
-        <div className="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
-          <Search />
-        </div>
-
-        {/* Table */}
-        <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-sm">
-          <TransactionsTable
-            transactions={transactionsData?.transactions ?? []}
-            pagination={{
-              total: transactionsData?.pagination.total ?? 0,
-              page: transactionsData?.pagination.page ?? 1,
-              pageSize: search.pageSize ?? localPageSize,
-              totalPages: transactionsData?.pagination.totalPages ?? 1,
-            }}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            updateCategory={updateCategory}
-            updateMerchant={updateMerchant}
-            updateNotes={updateNotes}
-            toggleReviewed={toggleReviewed}
-            deleteTransaction={deleteTransaction}
-            onCategoryClick={handleCategoryClick}
-            onMerchantClick={handleMerchantClick}
-            isLoading={false}
-            queryKey={[
-              ...createTransactionQueryOptions(effectiveSearch).queryKey,
-            ]}
-          />
-        </div>
       </div>
-    </div>
+    </EntityPickerProvider>
   );
 }
