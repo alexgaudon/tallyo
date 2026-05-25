@@ -56,24 +56,75 @@ export function Search() {
 
   return (
     <div className="flex flex-col gap-2.5 w-full">
-      {/* Mobile layout: Two rows */}
+      {/* Mobile: search + filters drawer (merchant/category live in drawer) */}
       <div className="flex lg:hidden flex-col gap-2.5 w-full">
-        {/* First row: Search input and filters dropdown */}
         <div className="flex gap-2 w-full">
           <Input
             value={filter}
             onChange={handleChange}
             placeholder="Search transactions..."
-            className="flex-1 h-9"
+            className="flex-1 h-10 text-base"
           />
           <DropdownMenu open={isOpenMobile} onOpenChange={setIsOpenMobile}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-9 w-9">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 shrink-0"
+              >
                 <SlidersHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuContent
+              align="end"
+              className="w-[min(100vw-2rem,320px)] p-3"
+            >
               <DropdownMenuLabel>Filters</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="space-y-2 py-1">
+                <p className="text-xs font-medium text-muted-foreground px-1">
+                  Merchant
+                </p>
+                <MerchantSelect
+                  allowNull
+                  onValueChange={(value) => {
+                    if (value === null) {
+                      updateSearchParams({
+                        merchant: undefined,
+                        onlyWithoutMerchant: false,
+                      });
+                    } else {
+                      updateSearchParams({
+                        merchant: value,
+                        onlyWithoutMerchant: false,
+                      });
+                    }
+                  }}
+                  value={params.merchant ?? null}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2 py-1">
+                <p className="text-xs font-medium text-muted-foreground px-1">
+                  Category
+                </p>
+                <CategorySelect
+                  allowNull
+                  onValueChange={(value) => {
+                    if (value === null) {
+                      updateSearchParams({
+                        category: undefined,
+                      });
+                    } else {
+                      updateSearchParams({
+                        category: value,
+                      });
+                    }
+                  }}
+                  value={params.category ?? null}
+                  className="w-full"
+                />
+              </div>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem
                 checked={params.onlyUnreviewed ?? false}
@@ -84,7 +135,7 @@ export function Search() {
                   });
                 }}
               >
-                Show Unreviewed Only
+                Unreviewed only
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={params.onlyWithoutMerchant ?? false}
@@ -96,51 +147,19 @@ export function Search() {
                   });
                 }}
               >
-                Show Without Merchant Only
+                Without merchant only
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {/* Second row: Merchant select */}
-        <div className="w-full">
-          <MerchantSelect
-            allowNull
-            onValueChange={(value) => {
-              if (value === null) {
-                updateSearchParams({
-                  merchant: undefined,
-                  onlyWithoutMerchant: false,
-                });
-              } else {
-                updateSearchParams({
-                  merchant: value,
-                  onlyWithoutMerchant: false,
-                });
-              }
-            }}
-            value={params.merchant ?? null}
-            className="w-full"
-          />
-        </div>
-        {/* Third row: Category select */}
-        <div className="w-full">
-          <CategorySelect
-            allowNull
-            onValueChange={(value) => {
-              if (value === null) {
-                updateSearchParams({
-                  category: undefined,
-                });
-              } else {
-                updateSearchParams({
-                  category: value,
-                });
-              }
-            }}
-            value={params.category ?? null}
-            className="w-full"
-          />
-        </div>
+        {(params.onlyUnreviewed ||
+          params.onlyWithoutMerchant ||
+          params.merchant ||
+          params.category) && (
+          <p className="text-xs text-muted-foreground px-0.5">
+            Filters active — open sliders menu to change
+          </p>
+        )}
       </div>
 
       {/* Desktop layout: Single row */}

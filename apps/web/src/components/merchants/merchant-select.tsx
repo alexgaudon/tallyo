@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { EditIcon, PlusIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { findMerchantsMatchingDetails } from "@/lib/merchant-suggestions";
 import { orpc } from "@/utils/orpc";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { EntitySelect } from "../ui/entity-select";
@@ -36,6 +37,14 @@ export function MerchantSelect({
 
   const merchants: MerchantWithKeywordsAndCategory[] = data ?? [];
   const entities = merchants.map(({ id, name }) => ({ id, name }));
+
+  const matchingMerchantIds = useMemo(
+    () =>
+      findMerchantsMatchingDetails(merchants, transactionDetails).map(
+        (m) => m.id,
+      ),
+    [merchants, transactionDetails],
+  );
 
   const formatEntityWithDetails = (entity: { id: string; name: string }) => (
     <div className="flex flex-col">
@@ -92,6 +101,13 @@ export function MerchantSelect({
         disabled={disabled}
         showActionButtons={showActionButtons || actionButtons.length > 0}
         actionButtons={actionButtons}
+        drawerTitle="Choose merchant"
+        prioritizeEntityIds={matchingMerchantIds}
+        searchPlaceholder={
+          transactionDetails
+            ? `Search merchants (${transactionDetails})`
+            : "Search merchants..."
+        }
       />
       <CreateMerchantDialog
         open={createDialogOpen}

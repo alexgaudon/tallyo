@@ -245,6 +245,19 @@ function RouteComponent() {
                   )
                 : null;
 
+            const categoriesData = queryClient.getQueryData(
+              orpc.categories.getUserCategories.queryOptions().queryKey,
+            );
+
+            const autoCategoryId =
+              selectedMerchant?.recommendedCategoryId ?? null;
+            const autoCategory =
+              autoCategoryId && categoriesData
+                ? ((
+                    categoriesData as { categories: Category[] }
+                  ).categories?.find((c) => c.id === autoCategoryId) ?? null)
+                : null;
+
             return {
               ...old,
               transactions: old.transactions.map((transaction) =>
@@ -253,6 +266,8 @@ function RouteComponent() {
                       ...transaction,
                       merchantId,
                       merchant: selectedMerchant || null,
+                      categoryId: autoCategoryId,
+                      category: autoCategory,
                     }
                   : transaction,
               ),

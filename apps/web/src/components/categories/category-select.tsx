@@ -103,6 +103,8 @@ export function CategorySelect({
       disabled={disabled}
       showActionButtons={showActionButtons || actionButtons.length > 0}
       actionButtons={actionButtons}
+      drawerTitle="Choose category"
+      searchPlaceholder="Search categories..."
     />
   );
 }

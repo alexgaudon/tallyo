@@ -1,6 +1,14 @@
+import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { Check, Split, Trash } from "lucide-react";
-import { memo, useEffect, useRef, useState } from "react";
+import {
+  memo,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CategorySelect,
   formatCategory,
@@ -27,7 +35,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
+import { findMerchantsMatchingDetails } from "@/lib/merchant-suggestions";
 import { cn } from "@/lib/utils";
+import { orpc } from "@/utils/orpc";
+import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import type { Transaction } from "../../../../server/src/routers/index";
 import {
   AlertDialog,
@@ -152,13 +163,12 @@ interface TransactionCardProps {
   onDelete: (id: string) => void;
   onCategoryChange: (id: string, categoryId: string | null) => void;
   onMerchantChange: (id: string, merchantId: string | null) => void;
-  onMerchantClick?: (merchantId: string) => void;
-  onCategoryClick?: (categoryId: string) => void;
   onEditMerchant: (merchantId: string) => void;
   onEditCategory: (categoryId: string) => void;
   onCreateCategory: () => void;
   onSplit?: () => void;
   isSplit?: boolean;
+  suggestedMerchant?: MerchantWithKeywordsAndCategory | null;
 }
 
 const TransactionCard = memo(function TransactionCard({
@@ -172,54 +182,46 @@ const TransactionCard = memo(function TransactionCard({
   onDelete,
   onCategoryChange,
   onMerchantChange,
-  onMerchantClick,
-  onCategoryClick,
   onEditMerchant,
   onEditCategory,
   onCreateCategory,
   onSplit,
   isSplit,
+  suggestedMerchant,
 }: TransactionCardProps) {
   const date = parseTransactionDate(transaction.date);
   const isUpcoming = isUpcomingTransaction(transaction.date);
-  const needsReview = !transaction.reviewed;
-  const needsCategory = !transaction.category && !transaction.reviewed;
-  const needsMerchant = !transaction.merchant && !transaction.reviewed;
 
   const isReviewDisabled =
     !transaction.reviewed && (!transaction.category || !transaction.merchant);
 
+  const reviewHint =
+    !transaction.category && !transaction.merchant
+      ? "Choose a merchant and category to finish review"
+      : !transaction.category
+        ? "Choose a category to finish review"
+        : !transaction.merchant
+          ? "Choose a merchant to finish review"
+          : null;
+
+  const showSuggestedMerchant =
+    suggestedMerchant && !transaction.merchant && !transaction.reviewed;
+
   return (
     <div
       className={cn(
-        "relative bg-card rounded-lg overflow-hidden",
+        "relative bg-card rounded-lg overflow-hidden border border-border/60",
         isLoading && "opacity-50",
+        !transaction.reviewed && "border-l-2 border-l-accent",
       )}
     >
-      {/* Status bar at top - orange for unreviewed, green for reviewed */}
-      <div
-        className={cn(
-          "absolute top-0 left-0 right-0 h-1 z-10",
-          transaction.reviewed ? "bg-income/30" : "bg-accent",
-        )}
-      />
-
-      <div className="p-4">
+      <div className="p-4 space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
-                      {format(date, "MMM d, yyyy")}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{formatRelativeTime(transaction.date)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {format(date, "MMM d, yyyy")}
+              </span>
               {isUpcoming && (
                 <Badge
                   variant="secondary"
@@ -233,78 +235,41 @@ const TransactionCard = memo(function TransactionCard({
                   variant="secondary"
                   className="text-xs bg-accent/20 text-accent-foreground"
                 >
-                  Needs Review
+                  To review
+                </Badge>
+              )}
+              {isSplit && (
+                <Badge variant="outline" className="text-xs">
+                  Split
                 </Badge>
               )}
             </div>
 
-            <div className="mt-2">
-              <CurrencyAmount
-                amount={transaction.amount}
-                showColor
-                className="text-lg font-semibold"
-              />
-            </div>
+            {transaction.transactionDetails ? (
+              <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">
+                {transaction.transactionDetails}
+              </p>
+            ) : null}
+
+            <CurrencyAmount
+              amount={transaction.amount}
+              showColor
+              className="text-xl font-semibold"
+            />
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
             {!isSplit && !transaction.reviewed && onSplit && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={onSplit}
-                      className="h-10 w-10 text-muted-foreground hover:text-foreground"
-                      aria-label="Split transaction"
-                    >
-                      <Split className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Split transaction</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onSplit}
+                className="h-10 w-10 text-muted-foreground hover:text-foreground"
+                aria-label="Split transaction"
+              >
+                <Split className="h-5 w-5" />
+              </Button>
             )}
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onToggleReviewed(transaction.id)}
-                    className={cn(
-                      "rounded-full border border-transparent bg-background hover:border-muted-foreground/30 hover:bg-muted/60 transition-colors h-10 w-10",
-                      transaction.reviewed
-                        ? "text-income"
-                        : "text-muted-foreground",
-                    )}
-                    disabled={isReviewDisabled || isLoading}
-                    aria-label={
-                      transaction.reviewed
-                        ? "Mark as unreviewed"
-                        : "Mark as reviewed"
-                    }
-                  >
-                    <Check className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                {isReviewDisabled && (
-                  <TooltipContent>
-                    <p>
-                      {!transaction.category && !transaction.merchant
-                        ? "Assign a category and merchant before reviewing"
-                        : !transaction.category
-                          ? "Assign a category before reviewing"
-                          : "Assign a merchant before reviewing"}
-                    </p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -335,161 +300,118 @@ const TransactionCard = memo(function TransactionCard({
           </div>
         </div>
 
-        {needsReview && (needsCategory || needsMerchant) && (
-          <div className="mt-2 text-xs text-muted-foreground bg-muted/50 rounded px-2 py-1.5">
-            {needsCategory && needsMerchant
-              ? "Assign category and merchant to review"
-              : needsCategory
-                ? "Assign category to review"
-                : "Assign merchant to review"}
-          </div>
+        {showSuggestedMerchant && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full h-11 justify-start text-left font-normal"
+            disabled={isLoading}
+            onClick={() =>
+              onMerchantChange(transaction.id, suggestedMerchant.id)
+            }
+          >
+            <span className="truncate">
+              Use suggested merchant:{" "}
+              <span className="font-medium">{suggestedMerchant.name}</span>
+            </span>
+          </Button>
         )}
-      </div>
 
-      <div
-        className={cn("px-4 pb-4 space-y-4", transaction.reviewed && "pt-0")}
-      >
-        {transaction.reviewed ? (
-          // Compact view for reviewed transactions
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-sm flex-wrap">
-              {transaction.merchant ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    transaction.merchant &&
-                    onMerchantClick?.(transaction.merchant.id)
-                  }
-                  className="text-foreground hover:underline font-medium"
-                >
-                  {transaction.merchant.name}
-                </button>
-              ) : (
-                <span className="text-muted-foreground">No merchant</span>
-              )}
-              <span className="text-muted-foreground">•</span>
-              {transaction.category ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    transaction.category &&
-                    onCategoryClick?.(transaction.category.id)
-                  }
-                  className="text-muted-foreground hover:text-foreground hover:underline"
-                >
-                  {formatCategory(transaction.category)}
-                </button>
-              ) : (
-                <span className="text-muted-foreground">No category</span>
-              )}
-              {isSplit && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Split transaction</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+        <div className="space-y-3">
+          <MobileAssignmentField
+            label="Merchant"
+            complete={!!transaction.merchant}
+          >
+            <MerchantSelect
+              value={transaction.merchant?.id}
+              onValueChange={(merchantId) =>
+                onMerchantChange(transaction.id, merchantId)
+              }
+              placeholder="Tap to choose merchant"
+              className="w-full min-h-11"
+              allowNull
+              disabled={isLoading || transaction.reviewed}
+              transactionDetails={transaction.transactionDetails}
+              onEditMerchant={transaction.reviewed ? undefined : onEditMerchant}
+            />
+          </MobileAssignmentField>
+
+          <MobileAssignmentField
+            label="Category"
+            complete={!!transaction.category}
+          >
+            <div className="flex items-center gap-2">
+              <CategorySelect
+                value={transaction.category?.id}
+                onValueChange={(categoryId) =>
+                  onCategoryChange(transaction.id, categoryId)
+                }
+                placeholder="Tap to choose category"
+                className="w-full min-h-11"
+                allowNull
+                disabled={isLoading || transaction.reviewed}
+                onEditCategory={
+                  transaction.reviewed ? undefined : onEditCategory
+                }
+                onCreateCategory={
+                  transaction.reviewed ? undefined : onCreateCategory
+                }
+              />
             </div>
+          </MobileAssignmentField>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor={`notes-${transaction.id}`}
+              className="text-xs font-medium text-muted-foreground"
+            >
+              Notes
+            </label>
             <input
               type="text"
               id={`notes-${transaction.id}`}
               value={localNote}
               onChange={(e) => onNoteChange(transaction.id, e.target.value)}
               onBlur={(e) => onNoteBlur(transaction.id, e.target.value)}
-              placeholder="Add notes..."
-              className="w-full border-input rounded-md border bg-background/80 px-2 focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-10 text-base py-2"
+              placeholder="Optional note"
+              className="w-full border-input rounded-md border bg-background/80 px-3 focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-11 text-base"
               disabled={isLoading}
               aria-label="Transaction notes"
             />
           </div>
+        </div>
+
+        {transaction.reviewed ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full h-8 text-xs text-muted-foreground font-normal hover:text-foreground"
+            disabled={isLoading}
+            onClick={() => onToggleReviewed(transaction.id)}
+          >
+            Mark as needs review
+          </Button>
         ) : (
-          // Full editing view for unreviewed transactions
-          <>
-            <div className="space-y-1.5">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">
-                Merchant
-              </span>
-              <div className="w-full">
-                <MerchantSelect
-                  value={transaction.merchant?.id}
-                  onValueChange={(merchantId) =>
-                    onMerchantChange(transaction.id, merchantId)
-                  }
-                  placeholder="Select merchant..."
-                  className="w-full"
-                  allowNull
-                  disabled={isLoading}
-                  transactionDetails={transaction.transactionDetails}
-                  onEditMerchant={onEditMerchant}
-                />
-                {transaction.transactionDetails && (
-                  <span className="block mt-1 text-[10px] text-muted-foreground truncate leading-none">
-                    {transaction.transactionDetails}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider block">
-                Category
-              </span>
-              <div className="flex items-center gap-2">
-                <CategorySelect
-                  value={transaction.category?.id}
-                  onValueChange={(categoryId) =>
-                    onCategoryChange(transaction.id, categoryId)
-                  }
-                  placeholder="Select category..."
-                  className="w-full"
-                  allowNull
-                  disabled={isLoading}
-                  onEditCategory={onEditCategory}
-                  onCreateCategory={onCreateCategory}
-                />
-                {isSplit && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Split transaction</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                htmlFor={`notes-${transaction.id}`}
-                className="text-xs font-medium text-muted-foreground uppercase tracking-wider block"
-              >
-                Notes
-              </label>
-              <input
-                type="text"
-                id={`notes-${transaction.id}`}
-                value={localNote}
-                onChange={(e) => onNoteChange(transaction.id, e.target.value)}
-                onBlur={(e) => onNoteBlur(transaction.id, e.target.value)}
-                placeholder="Add notes..."
-                className="w-full border-input rounded-md border bg-background/80 px-2 focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors h-10 text-base py-2"
-                disabled={isLoading}
-                aria-label="Transaction notes"
-              />
-            </div>
-          </>
+          <div className="space-y-2">
+            {reviewHint && (
+              <p className="text-xs text-muted-foreground text-center px-1">
+                {reviewHint}
+              </p>
+            )}
+            <Button
+              type="button"
+              className="w-full h-12 text-base font-medium"
+              disabled={isReviewDisabled || isLoading}
+              onClick={() => onToggleReviewed(transaction.id)}
+            >
+              <Check className="h-5 w-5 mr-2" />
+              Mark as reviewed
+            </Button>
+          </div>
         )}
 
-        {isDevMode && (
+        {isDevMode ? (
           <div className="pt-3 border-t border-border space-y-1">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">ID:</span>
@@ -506,11 +428,35 @@ const TransactionCard = memo(function TransactionCard({
               </div>
             )}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 });
+
+function MobileAssignmentField({
+  label,
+  complete,
+  children,
+}: {
+  label: string;
+  complete: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-muted-foreground">
+          {label}
+        </span>
+        {complete ? (
+          <Check className="h-3.5 w-3.5 text-income shrink-0" aria-hidden />
+        ) : null}
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export function TransactionsTable({
   transactions,
@@ -529,6 +475,26 @@ export function TransactionsTable({
 }: TransactionsTableProps) {
   const { data: session } = useSession();
   const isDevMode = session?.settings?.isDevMode ?? false;
+
+  const { data: merchantsData } = useQuery(
+    orpc.merchants.getUserMerchants.queryOptions(),
+  );
+
+  const merchants = merchantsData ?? [];
+
+  const suggestedMerchantByTransactionId = useMemo(() => {
+    const map = new Map<string, MerchantWithKeywordsAndCategory>();
+    for (const transaction of transactions) {
+      const matches = findMerchantsMatchingDetails(
+        merchants,
+        transaction.transactionDetails,
+      );
+      if (matches[0]) {
+        map.set(transaction.id, matches[0]);
+      }
+    }
+    return map;
+  }, [transactions, merchants]);
 
   const [localNotes, setLocalNotes] = useState<Record<string, string>>(() =>
     Object.fromEntries(transactions.map((t) => [t.id, t.notes ?? ""])),
@@ -1006,8 +972,6 @@ export function TransactionsTable({
             onDelete={handleDelete}
             onCategoryChange={handleCategoryChange}
             onMerchantChange={handleMerchantChange}
-            onMerchantClick={onMerchantClick}
-            onCategoryClick={onCategoryClick}
             onEditMerchant={(merchantId) =>
               setEditMerchantDialog({ open: true, merchantId })
             }
@@ -1017,6 +981,9 @@ export function TransactionsTable({
             onCreateCategory={() => setCreateCategoryDialog(true)}
             onSplit={() => setSplitDialog({ open: true, transaction })}
             isSplit={isSplitTransaction(transaction)}
+            suggestedMerchant={
+              suggestedMerchantByTransactionId.get(transaction.id) ?? null
+            }
           />
         ))}
       </div>

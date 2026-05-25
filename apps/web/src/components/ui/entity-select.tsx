@@ -13,6 +13,8 @@ import {
 import {
 	Drawer,
 	DrawerContent,
+	DrawerHeader,
+	DrawerTitle,
 	DrawerTrigger,
 } from "@/components/ui/drawer";
 import {
@@ -69,6 +71,8 @@ interface EntitySelectProps<T extends Entity> {
 	showActionButtons?: boolean;
 	// Popover width customization
 	popoverWidth?: string;
+	drawerTitle?: string;
+	prioritizeEntityIds?: string[];
 }
 
 export function EntitySelect<T extends Entity>({
@@ -90,6 +94,8 @@ export function EntitySelect<T extends Entity>({
 	showActionButtons = false,
 	// New props for popover width
 	popoverWidth = "w-[400px]",
+	drawerTitle,
+	prioritizeEntityIds = [],
 }: EntitySelectProps<T>) {
 	const [open, setOpen] = useState(false);
 	const [searchValue, setSearchValue] = useState("");
@@ -98,6 +104,14 @@ export function EntitySelect<T extends Entity>({
 	const selectedEntity = value
 		? entities.find((entity) => entity.id === value)
 		: null;
+
+	const sortedEntities =
+		prioritizeEntityIds.length > 0
+			? [
+					...entities.filter((e) => prioritizeEntityIds.includes(e.id)),
+					...entities.filter((e) => !prioritizeEntityIds.includes(e.id)),
+				]
+			: entities;
 
 	const handleSearchChange = useCallback((value: string) => {
 		setSearchValue(value);
@@ -169,7 +183,7 @@ export function EntitySelect<T extends Entity>({
 							</CommandItem>
 						)}
 
-						{entities.map((entity) => (
+						{sortedEntities.map((entity) => (
 							<CommandItem
 								key={entity.id}
 								value={entity.name}
@@ -237,17 +251,21 @@ export function EntitySelect<T extends Entity>({
 					}
 				}}
 				direction="bottom"
-				modal={false}
 				shouldScaleBackground={false}
 			>
 				<DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
 				<DrawerContent
 					className={cn(
-						"flex flex-col rounded-t-xl border-t border-border w-full inset-x-0 animate-none max-h-[80dvh]",
+						"flex flex-col rounded-t-xl border-t border-border w-full inset-x-0 animate-none max-h-[85dvh]",
 						"bg-popover text-popover-foreground",
 					)}
 					style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
 				>
+					{drawerTitle ? (
+						<DrawerHeader className="pb-2 pt-3 text-left shrink-0">
+							<DrawerTitle className="text-base">{drawerTitle}</DrawerTitle>
+						</DrawerHeader>
+					) : null}
 					<div className="flex flex-col flex-1 min-h-0 overflow-y-auto p-0">
 						{listContent}
 					</div>
