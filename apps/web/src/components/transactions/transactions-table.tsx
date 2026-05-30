@@ -68,6 +68,8 @@ interface TransactionsTableProps {
   onMerchantClick?: (merchantId: string) => void;
   isLoading?: boolean;
   queryKey?: readonly unknown[];
+  hasActiveFilters?: boolean;
+  onlyUnreviewed?: boolean;
 }
 
 // Helper functions moved outside component
@@ -472,6 +474,8 @@ export function TransactionsTable({
   onMerchantClick,
   isLoading = false,
   queryKey = [],
+  hasActiveFilters = false,
+  onlyUnreviewed = false,
 }: TransactionsTableProps) {
   const { data: session } = useSession();
   const isDevMode = session?.settings?.isDevMode ?? false;
@@ -845,147 +849,224 @@ export function TransactionsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow
-                key={transaction.id}
-                className={cn(
-                  "hover:bg-muted/50 transition-colors border-l-2 border-l-transparent",
-                  !transaction.reviewed && "border-l-accent",
-                  isLoading && "opacity-50",
-                )}
-              >
-                {isDevMode && (
-                  <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
-                    {transaction.id}
-                  </TableCell>
-                )}
-                <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
-                  <div className="flex items-center gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="cursor-default">
-                            {format(
-                              parseTransactionDate(transaction.date),
-                              "MMM d, yyyy",
-                            )}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{formatRelativeTime(transaction.date)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {isUpcomingTransaction(transaction.date) && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Upcoming transaction</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="px-2 sm:px-3 h-14 align-middle">
-                  <div className="relative flex items-center h-full">
-                    {renderMerchantField(transaction, false)}
-                  </div>
-                </TableCell>
-                <TableCell className="px-2 sm:px-3 h-10 align-middle">
-                  <div className="flex items-center h-full">
-                    {renderCategoryField(transaction, false)}
-                  </div>
-                </TableCell>
-                <TableCell className="px-2 sm:px-3 h-10 align-middle">
-                  <input
-                    type="text"
-                    value={localNotes[transaction.id] ?? ""}
-                    onChange={(e) =>
-                      handleNoteChange(transaction.id, e.target.value)
-                    }
-                    onBlur={(e) =>
-                      handleNoteBlur(transaction.id, e.target.value)
-                    }
-                    placeholder="Add notes..."
-                    className="w-full border-input rounded-md border bg-background/80 px-2 h-8 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    disabled={isLoading}
-                    aria-label="Transaction notes"
-                  />
-                </TableCell>
-                <TableCell className="text-right font-medium px-2 sm:px-3 h-10 align-middle">
-                  <CurrencyAmount
-                    amount={transaction.amount}
-                    showColor
-                    className="transition-colors"
-                  />
-                </TableCell>
-                {isDevMode && (
-                  <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
-                    {transaction.externalId &&
-                    transaction.externalId.length > 30 ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span>{transaction.externalId.slice(0, 30)}…</span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <span>{transaction.externalId}</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    ) : (
-                      transaction.externalId
-                    )}
-                  </TableCell>
-                )}
-                <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
-                  {renderReviewButton(transaction, "sm")}
-                </TableCell>
-                <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
-                  <div className="flex items-center justify-center gap-1">
-                    {renderSplitButton(transaction, "sm")}
-                    {renderDeleteButton(transaction, "sm")}
+            {transactions.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={isDevMode ? 9 : 7}
+                  className="h-32 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <p className="text-sm font-medium">
+                      {onlyUnreviewed
+                        ? "All caught up"
+                        : hasActiveFilters
+                          ? "No transactions match your filters"
+                          : "No transactions yet"}
+                    </p>
+                    <p className="text-xs">
+                      {onlyUnreviewed
+                        ? "Every transaction has been reviewed."
+                        : hasActiveFilters
+                          ? "Try adjusting or clearing your search criteria."
+                          : "Import or add a transaction to get started."}
+                    </p>
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              transactions.map((transaction) => (
+                <TableRow
+                  key={transaction.id}
+                  className={cn(
+                    "hover:bg-muted/50 transition-colors border-l-2 border-l-transparent",
+                    !transaction.reviewed && "border-l-accent",
+                    isLoading && "opacity-50",
+                  )}
+                >
+                  {isDevMode && (
+                    <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+                      {transaction.id}
+                    </TableCell>
+                  )}
+                  <TableCell className="whitespace-nowrap px-2 sm:px-3 h-10 align-middle">
+                    <div className="flex items-center gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-default">
+                              {format(
+                                parseTransactionDate(transaction.date),
+                                "MMM d, yyyy",
+                              )}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatRelativeTime(transaction.date)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {isUpcomingTransaction(transaction.date) && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Upcoming transaction</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-2 sm:px-3 align-middle">
+                    <div className="relative flex flex-col gap-1 py-0.5">
+                      {suggestedMerchantByTransactionId.get(transaction.id) &&
+                        !transaction.merchant &&
+                        !transaction.reviewed && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="w-full justify-start text-left font-normal text-xs h-7"
+                            disabled={isLoading}
+                            onClick={() =>
+                              handleMerchantChange(
+                                transaction.id,
+                                suggestedMerchantByTransactionId.get(
+                                  transaction.id,
+                                )!.id,
+                              )
+                            }
+                          >
+                            <span className="truncate">
+                              Use suggested merchant:{" "}
+                              <span className="font-medium">
+                                {
+                                  suggestedMerchantByTransactionId.get(
+                                    transaction.id,
+                                  )!.name
+                                }
+                              </span>
+                            </span>
+                          </Button>
+                        )}
+                      {renderMerchantField(transaction, false)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-2 sm:px-3 h-10 align-middle">
+                    <div className="flex items-center h-full">
+                      {renderCategoryField(transaction, false)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-2 sm:px-3 h-10 align-middle">
+                    <input
+                      type="text"
+                      value={localNotes[transaction.id] ?? ""}
+                      onChange={(e) =>
+                        handleNoteChange(transaction.id, e.target.value)
+                      }
+                      onBlur={(e) =>
+                        handleNoteBlur(transaction.id, e.target.value)
+                      }
+                      placeholder="Add notes..."
+                      className="w-full border-input rounded-md border bg-background/80 px-2 h-8 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-ring/70 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      disabled={isLoading}
+                      aria-label="Transaction notes"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right font-medium px-2 sm:px-3 h-10 align-middle">
+                    <CurrencyAmount
+                      amount={transaction.amount}
+                      showColor
+                      className="transition-colors"
+                    />
+                  </TableCell>
+                  {isDevMode && (
+                    <TableCell className="font-mono text-xs text-muted-foreground px-2 sm:px-4 h-10 align-middle">
+                      {transaction.externalId &&
+                      transaction.externalId.length > 30 ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span>
+                                {transaction.externalId.slice(0, 30)}…
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <span>{transaction.externalId}</span>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        transaction.externalId
+                      )}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
+                    {renderReviewButton(transaction, "sm")}
+                  </TableCell>
+                  <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
+                    <div className="flex items-center justify-center gap-1">
+                      {renderSplitButton(transaction, "sm")}
+                      {renderDeleteButton(transaction, "sm")}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {transactions.map((transaction) => (
-          <TransactionCard
-            key={transaction.id}
-            transaction={transaction}
-            localNote={localNotes[transaction.id] ?? ""}
-            isLoading={isLoading}
-            isDevMode={isDevMode}
-            onNoteChange={handleNoteChange}
-            onNoteBlur={handleNoteBlur}
-            onToggleReviewed={handleToggleReviewed}
-            onDelete={handleDelete}
-            onCategoryChange={handleCategoryChange}
-            onMerchantChange={handleMerchantChange}
-            onEditMerchant={(merchantId) =>
-              setEditMerchantDialog({ open: true, merchantId })
-            }
-            onEditCategory={(categoryId) =>
-              setEditCategoryDialog({ open: true, categoryId })
-            }
-            onCreateCategory={() => setCreateCategoryDialog(true)}
-            onSplit={() => setSplitDialog({ open: true, transaction })}
-            isSplit={isSplitTransaction(transaction)}
-            suggestedMerchant={
-              suggestedMerchantByTransactionId.get(transaction.id) ?? null
-            }
-          />
-        ))}
+        {transactions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <p className="text-sm font-medium">
+              {onlyUnreviewed
+                ? "All caught up"
+                : hasActiveFilters
+                  ? "No transactions match your filters"
+                  : "No transactions yet"}
+            </p>
+            <p className="text-xs mt-1">
+              {onlyUnreviewed
+                ? "Every transaction has been reviewed."
+                : hasActiveFilters
+                  ? "Try adjusting or clearing your search criteria."
+                  : "Import or add a transaction to get started."}
+            </p>
+          </div>
+        ) : (
+          transactions.map((transaction) => (
+            <TransactionCard
+              key={transaction.id}
+              transaction={transaction}
+              localNote={localNotes[transaction.id] ?? ""}
+              isLoading={isLoading}
+              isDevMode={isDevMode}
+              onNoteChange={handleNoteChange}
+              onNoteBlur={handleNoteBlur}
+              onToggleReviewed={handleToggleReviewed}
+              onDelete={handleDelete}
+              onCategoryChange={handleCategoryChange}
+              onMerchantChange={handleMerchantChange}
+              onEditMerchant={(merchantId) =>
+                setEditMerchantDialog({ open: true, merchantId })
+              }
+              onEditCategory={(categoryId) =>
+                setEditCategoryDialog({ open: true, categoryId })
+              }
+              onCreateCategory={() => setCreateCategoryDialog(true)}
+              onSplit={() => setSplitDialog({ open: true, transaction })}
+              isSplit={isSplitTransaction(transaction)}
+              suggestedMerchant={
+                suggestedMerchantByTransactionId.get(transaction.id) ?? null
+              }
+            />
+          ))
+        )}
       </div>
 
       <Paginator

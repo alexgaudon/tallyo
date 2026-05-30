@@ -143,6 +143,14 @@ function RouteComponent() {
     }
   }, [search.create, navigate, search]);
 
+  const hasActiveFilters = !!(
+    search.filter ||
+    search.category ||
+    search.merchant ||
+    search.onlyUnreviewed ||
+    search.onlyWithoutMerchant
+  );
+
   const { data } = useQuery(
     createTransactionQueryOptions(effectiveSearch, {
       keepPreviousData: true,
@@ -507,6 +515,8 @@ function RouteComponent() {
               queryKey={[
                 ...createTransactionQueryOptions(effectiveSearch).queryKey,
               ]}
+              hasActiveFilters={hasActiveFilters}
+              onlyUnreviewed={!!search.onlyUnreviewed}
             />
           </div>
         </div>
