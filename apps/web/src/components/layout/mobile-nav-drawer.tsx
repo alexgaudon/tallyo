@@ -61,7 +61,7 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-accent flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-soft">
                 <span className="text-accent-foreground font-mono font-bold text-sm">
                   T
                 </span>

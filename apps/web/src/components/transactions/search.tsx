@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { SlidersHorizontal } from "lucide-react";
-import { type ChangeEvent, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySelect } from "../categories/category-select";
 import { MerchantSelect } from "../merchants/merchant-select";
@@ -39,12 +39,14 @@ export function Search() {
   const debouncedFilter = useDebounce(filter, 300);
 
   // Update URL when debounced filter changes
-  if (debouncedFilter !== previousDebouncedFilterRef.current) {
-    previousDebouncedFilterRef.current = debouncedFilter;
-    if (debouncedFilter !== (params.filter ?? "")) {
-      updateSearchParams({ filter: debouncedFilter });
+  useEffect(() => {
+    if (debouncedFilter !== previousDebouncedFilterRef.current) {
+      previousDebouncedFilterRef.current = debouncedFilter;
+      if (debouncedFilter !== (params.filter ?? "")) {
+        updateSearchParams({ filter: debouncedFilter });
+      }
     }
-  }
+  }, [debouncedFilter, params.filter]);
 
   // UI state
   const [isOpenMobile, setIsOpenMobile] = useState(false);

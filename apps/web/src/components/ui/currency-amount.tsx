@@ -90,7 +90,7 @@ export function CurrencyAmount({
 			const progress = Math.min(elapsed / animationDuration, 1);
 
 			// Easing function for smooth animation
-			const easeOutQuart = 1 - (1 - progress) ** 64;
+			const easeOutQuart = 1 - (1 - progress) ** 4;
 			const currentAmount = Math.round(startAmount + difference * easeOutQuart);
 
 			setAnimatedAmount(currentAmount);
@@ -125,7 +125,12 @@ export function CurrencyAmount({
 	);
 
 	if (as) {
-		return <>{as}</>;
+		return (
+			<span className="contents">
+				{as}
+				{content}
+			</span>
+		);
 	}
 
 	return content;

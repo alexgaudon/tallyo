@@ -251,12 +251,12 @@ body {
   --background: #0c0a09;
   --foreground: #fafaf9;
 
-  /* Card - slightly elevated dark */
-  --card: #1c1917;
+  /* Card - elevated dark for clearer boundaries */
+  --card: #24201e;
   --card-foreground: #fafaf9;
 
   /* Popover */
-  --popover: #1c1917;
+  --popover: #24201e;
   --popover-foreground: #fafaf9;
 
   /* ==========================================

@@ -5,6 +5,17 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateMerchantForm } from "@/components/merchants/create-merchant-form";
 import { MerchantList } from "@/components/merchants/merchant-list";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -106,16 +117,37 @@ function RouteComponent() {
               </h1>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleApplyAllMerchants}
-                disabled={
-                  isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
-                }
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Apply all
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    disabled={
+                      isApplyingAll ||
+                      isLoading ||
+                      (merchants?.length ?? 0) === 0
+                    }
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    Apply all
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Apply All Merchants</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will attempt to automatically match all unreviewed
+                      transactions to merchants based on their keywords. This
+                      action may modify many transactions at once.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleApplyAllMerchants}>
+                      Apply all
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">

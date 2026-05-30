@@ -189,18 +189,24 @@ function RouteComponent() {
         </DialogContent>
       </Dialog>
 
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-sm shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-5 lg:px-8">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
-            Account
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Settings
-          </h1>
+      <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Account
+              </p>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                  Settings
+                </span>
+              </h1>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
+      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-8">
         <div className="space-y-8">
           {/* API Token */}
           <Section>

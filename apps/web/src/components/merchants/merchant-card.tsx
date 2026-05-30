@@ -80,6 +80,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                aria-label={`Edit ${merchant.name}`}
               >
                 <PencilIcon className="h-4 w-4" />
               </Button>
@@ -100,6 +101,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-orange-600"
+                aria-label={`Merge ${merchant.name}`}
               >
                 <GitMergeIcon className="h-4 w-4" />
               </Button>
@@ -121,6 +123,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
             onClick={handleApplyMerchant}
             disabled={isApplying}
             title="Apply merchant to matching unreviewed transactions"
+            aria-label={`Apply ${merchant.name} to matching transactions`}
           >
             <ZapIcon className="h-4 w-4" />
           </Button>
@@ -130,6 +133,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                aria-label={`Delete ${merchant.name}`}
               >
                 <XIcon className="h-4 w-4" />
               </Button>

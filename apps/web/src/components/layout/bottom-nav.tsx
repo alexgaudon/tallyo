@@ -63,14 +63,14 @@ export function BottomNav() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] rounded-lg transition-colors duration-200 active:scale-95",
                   isActive
-                    ? "text-accent"
+                    ? "text-primary"
                     : "text-muted-foreground active:bg-muted/80",
                 )}
               >
                 <span
                   className={cn(
                     "flex items-center justify-center w-9 h-9 rounded-full transition-colors",
-                    isActive && "bg-accent/10",
+                    isActive && "bg-primary/10",
                   )}
                 >
                   <item.icon className="w-5 h-5 shrink-0" />
@@ -109,7 +109,7 @@ export function BottomNav() {
             </DialogContent>
           </Dialog>
 
-          {secondaryNavItems.slice(0, 2).map((item) => {
+          {secondaryNavItems.map((item) => {
             const isActive = location.pathname === item.to;
 
             return (
@@ -119,14 +119,14 @@ export function BottomNav() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] rounded-lg transition-colors duration-200 active:scale-95",
                   isActive
-                    ? "text-accent"
+                    ? "text-primary"
                     : "text-muted-foreground active:bg-muted/80",
                 )}
               >
                 <span
                   className={cn(
                     "flex items-center justify-center w-9 h-9 rounded-full transition-colors",
-                    isActive && "bg-accent/10",
+                    isActive && "bg-primary/10",
                   )}
                 >
                   <item.icon className="w-5 h-5 shrink-0" />

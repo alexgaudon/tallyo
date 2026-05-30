@@ -68,13 +68,13 @@ export function CategoryCard({
           <span className="font-medium">{category.name}</span>
           <div className="flex items-center gap-1">
             {category.treatAsIncome && (
-              <div className="flex items-center gap-1 px-2 py-0.5 text-xs border border-green-500/30 text-green-600">
+              <div className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border border-green-500/30 text-green-600">
                 <DollarSignIcon className="h-3 w-3" />
                 <span>Income</span>
               </div>
             )}
             {category.hideFromInsights && (
-              <div className="flex items-center gap-1 px-2 py-0.5 text-xs border border-orange-500/30 text-orange-600">
+              <div className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border border-orange-500/30 text-orange-600">
                 <EyeOffIcon className="h-3 w-3" />
                 <span>Hidden</span>
               </div>
@@ -88,6 +88,7 @@ export function CategoryCard({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                aria-label={`Edit ${category.name}`}
               >
                 <PencilIcon className="h-4 w-4" />
               </Button>
@@ -108,6 +109,7 @@ export function CategoryCard({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                aria-label={`Delete ${category.name}`}
               >
                 <XIcon className="h-4 w-4" />
               </Button>

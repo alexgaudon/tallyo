@@ -15,7 +15,7 @@ export function UnreviewedTransactionsBanner({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border p-4 shadow-soft",
+        "relative overflow-hidden rounded-xl border p-4 shadow-soft animate-slide-up",
         "bg-primary/5 border-primary/20",
       )}
     >
