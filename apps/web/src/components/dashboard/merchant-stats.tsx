@@ -47,7 +47,7 @@ export function MerchantStats({
                 <p className="font-medium text-xs sm:text-sm">
                   {merchant.merchantName}
                 </p>
-                <p className="text-[0.7rem] sm:text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {merchant.count} transaction{merchant.count !== 1 ? "s" : ""}
                 </p>
               </div>

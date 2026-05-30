@@ -96,7 +96,7 @@ export function TransactionStats({
                 <p className="font-medium text-xs sm:text-sm">
                   {transaction.transactionDetails}
                 </p>
-                <p className="text-[0.7rem] sm:text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {`${
                     transaction.merchantName
                       ? transaction.merchantName

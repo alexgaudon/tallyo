@@ -191,10 +191,7 @@ function RouteComponent() {
               <DashboardCharts categoryData={categoryData} />
             </SectionPanel>
 
-            <SectionPanel
-              className="hidden md:flex xl:col-span-3"
-              title="Period Insights"
-            >
+            <SectionPanel className="xl:col-span-3" title="Period Insights">
               <PeriodInsights data={statsData} />
             </SectionPanel>
 

@@ -402,7 +402,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
   }
 
   return (
-    <Card className="shadow-sm w-full hidden md:block">
+    <Card className="shadow-sm w-full">
       <CardContent className="p-2 md:p-4">
         <div className="w-full overflow-x-auto">
           <div className="min-w-[400px] w-full md:min-w-[550px]">
