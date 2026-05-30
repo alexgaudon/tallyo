@@ -1,18 +1,20 @@
 import type { MerchantWithKeywordsAndCategory } from "../../../server/src/routers";
+import {
+  findAllMatchingMerchants,
+  type MatchableMerchant,
+} from "./merchant-matching";
 
-/** Merchants whose keywords match the bank/import description. */
+/** Merchants whose name or keywords match the bank/import description. */
 export function findMerchantsMatchingDetails(
   merchants: MerchantWithKeywordsAndCategory[],
   transactionDetails?: string | null,
 ): MerchantWithKeywordsAndCategory[] {
   if (!transactionDetails?.trim()) return [];
 
-  const details = transactionDetails.toLowerCase().trim();
-
-  return merchants.filter((m) =>
-    m.keywords?.some((k) => {
-      const kw = k.keyword.toLowerCase().trim();
-      return kw.length > 0 && (details.includes(kw) || kw === details);
-    }),
+  const matches = findAllMatchingMerchants(
+    merchants as MatchableMerchant[],
+    transactionDetails,
   );
+
+  return matches.map((m) => m.merchant as MerchantWithKeywordsAndCategory);
 }

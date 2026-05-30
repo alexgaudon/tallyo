@@ -1,29 +1,42 @@
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import { db } from "../db";
 import { logger } from "../lib/logger";
+import {
+  findBestMatchingMerchant,
+  type MatchableMerchant,
+} from "../lib/merchant-matching";
 import { protectedProcedure } from "../lib/orpc";
 
 export async function getMerchantFromVendor(vendor: string, userId: string) {
   try {
-    const keyword = await db.query.merchantKeyword.findFirst({
-      where: and(
-        eq(merchantKeyword.userId, userId),
-        eq(merchantKeyword.keyword, vendor),
-      ),
+    // Fetch all merchants with keywords for the user and score them
+    const userMerchants = await db.query.merchant.findMany({
+      where: eq(merchant.userId, userId),
       with: {
-        merchant: {
+        keywords: {
           columns: {
-            id: true,
-            name: true,
-            recommendedCategoryId: true,
+            keyword: true,
           },
         },
       },
     });
 
-    return keyword?.merchant || null;
+    const bestMatch = findBestMatchingMerchant(
+      userMerchants as MatchableMerchant[],
+      vendor,
+    );
+
+    return bestMatch
+      ? {
+          id: bestMatch.id,
+          name: bestMatch.name,
+          recommendedCategoryId:
+            (bestMatch as { recommendedCategoryId?: string | null })
+              .recommendedCategoryId ?? null,
+        }
+      : null;
   } catch (error) {
     logger.error(
       `Error fetching merchant for vendor "${vendor}" for user ${userId}:`,
@@ -31,6 +44,19 @@ export async function getMerchantFromVendor(vendor: string, userId: string) {
     );
     throw error;
   }
+}
+
+/** Build a SQL condition for matching a keyword/term against transaction details.
+ *  Short terms (< 4 chars) require exact equality to prevent false positives.
+ *  Longer terms use case-insensitive substring matching (ilike).
+ */
+function buildMatchCondition(term: string) {
+  const trimmed = term.trim();
+  if (trimmed.length === 0) return undefined;
+  if (trimmed.length < 4) {
+    return eq(transaction.transactionDetails, trimmed);
+  }
+  return ilike(transaction.transactionDetails, `%${trimmed}%`);
 }
 
 export const merchantsRouter = {
@@ -182,9 +208,9 @@ export const merchantsRouter = {
 
         // Update unreviewed transactions that match the keywords with the merchant and recommended category
         if (keywords && keywords.length > 0) {
-          const keywordConditions = keywords.map((keyword) =>
-            eq(transaction.transactionDetails, keyword),
-          );
+          const keywordConditions = keywords
+            .map((keyword) => buildMatchCondition(keyword))
+            .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
           const updateData: {
             merchantId: string;
@@ -259,7 +285,13 @@ export const merchantsRouter = {
           throw new Error("Merchant not found");
         }
 
-        if (!merchantData.keywords || merchantData.keywords.length === 0) {
+        // Use merchant name + keywords as search terms
+        const searchTerms = [
+          merchantData.name,
+          ...(merchantData.keywords?.map((k) => k.keyword) ?? []),
+        ].filter(Boolean);
+
+        if (searchTerms.length === 0) {
           return {
             message:
               "No keywords found for this merchant. Add keywords to apply this merchant to transactions.",
@@ -267,10 +299,9 @@ export const merchantsRouter = {
           };
         }
 
-        const keywords = merchantData.keywords.map((k) => k.keyword);
-        const keywordConditions = keywords.map((keyword) =>
-          eq(transaction.transactionDetails, keyword),
-        );
+        const keywordConditions = searchTerms
+          .map((term) => buildMatchCondition(term))
+          .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
         const updateData: {
           merchantId: string;
@@ -350,16 +381,28 @@ export const merchantsRouter = {
           updatedCount: number;
         }> = [];
 
+        // Sort merchants by specificity (longest search term) so more specific
+        // merchants are applied first, reducing overwrite issues
+        const specificity = (m: (typeof userMerchants)[number]) => {
+          const terms = [m.name, ...(m.keywords?.map((k) => k.keyword) ?? [])];
+          return Math.max(...terms.map((t) => t.trim().length), 0);
+        };
+        userMerchants.sort((a, b) => specificity(b) - specificity(a));
+
         // Apply each merchant to matching transactions
         for (const merchantData of userMerchants) {
-          if (!merchantData.keywords || merchantData.keywords.length === 0) {
-            continue; // Skip merchants without keywords
+          const searchTerms = [
+            merchantData.name,
+            ...(merchantData.keywords?.map((k) => k.keyword) ?? []),
+          ].filter(Boolean);
+
+          if (searchTerms.length === 0) {
+            continue; // Skip merchants without any search terms
           }
 
-          const keywords = merchantData.keywords.map((k) => k.keyword);
-          const keywordConditions = keywords.map((keyword) =>
-            eq(transaction.transactionDetails, keyword),
-          );
+          const keywordConditions = searchTerms
+            .map((term) => buildMatchCondition(term))
+            .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
           const updateData: {
             merchantId: string;
