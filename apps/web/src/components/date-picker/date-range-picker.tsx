@@ -193,8 +193,8 @@ export default function DateRangePicker({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="flex flex-col sm:flex-row">
+        <PopoverContent className="w-auto p-0 max-w-[100vw]" align="start">
+          <div className="flex flex-row max-w-[100vw] overflow-auto">
             <Calendar
               autoFocus
               mode="range"
@@ -212,7 +212,7 @@ export default function DateRangePicker({
               }}
               numberOfMonths={1}
             />
-            <div className="p-3 border-b">
+            <div className="p-3 border-l min-w-[130px]">
               <div className="grid grid-cols-1 gap-2">
                 {presets.map((preset) => {
                   const value = preset.value();
