@@ -14,7 +14,6 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Footer from "@/components/footer";
-import { BottomNav } from "@/components/layout/bottom-nav";
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
 import { TopNav } from "@/components/layout/top-nav";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -92,7 +91,6 @@ function RootComponent() {
                 <Outlet />
               </main>
               <Footer />
-              <BottomNav />
             </div>
           ) : (
             <div className="flex flex-col min-h-screen pt-14">

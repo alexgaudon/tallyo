@@ -53,7 +53,7 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
     <Drawer
       open={isOpen}
       onOpenChange={handleOpenChange}
-      direction="bottom"
+      direction="left"
       modal={false}
       shouldScaleBackground={false}
     >
