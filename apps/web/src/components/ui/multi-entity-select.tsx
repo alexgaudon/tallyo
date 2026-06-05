@@ -207,7 +207,7 @@ export function MultiEntitySelect<T extends Entity>({
 									setOpen(false);
 								}}
 								className={cn(
-									"flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700",
+									"flex items-center gap-2 text-sm text-primary hover:text-primary/80",
 									isMobile ? "min-h-12 py-3 text-base" : "h-9",
 								)}
 							>

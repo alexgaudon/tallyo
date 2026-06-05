@@ -57,9 +57,9 @@ export function Search() {
   };
 
   return (
-    <div className="flex flex-col gap-2.5 w-full">
+    <div className="flex flex-col gap-2 w-full">
       {/* Mobile: search + filters drawer (merchant/category live in drawer) */}
-      <div className="flex lg:hidden flex-col gap-2.5 w-full">
+      <div className="flex lg:hidden flex-col gap-2 w-full">
         <div className="flex gap-2 w-full">
           <Input
             value={filter}
@@ -158,14 +158,14 @@ export function Search() {
           params.onlyWithoutMerchant ||
           params.merchant ||
           params.category) && (
-          <p className="text-xs text-muted-foreground px-0.5">
+          <p className="text-xs text-muted-foreground">
             Filters active — open sliders menu to change
           </p>
         )}
       </div>
 
       {/* Desktop layout: Single row */}
-      <div className="hidden lg:flex gap-2.5 w-full items-center">
+      <div className="hidden lg:flex gap-2 w-full items-center">
         <Input
           value={filter}
           onChange={handleChange}

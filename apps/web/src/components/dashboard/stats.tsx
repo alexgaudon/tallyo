@@ -14,7 +14,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-2xl bg-secondary p-5 mb-4 shadow-soft">
+        <div className="rounded-2xl bg-secondary p-5 mb-4 shadow-sm">
           <TrendingUpIcon className="h-10 w-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
@@ -41,7 +41,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
     <Card className="border-border/80 bg-card/90 p-4 sm:p-5">
       <div className="space-y-4">
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-muted-foreground">
+          <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
             Income
           </p>
           <div className="mt-2 space-y-2">
@@ -62,7 +62,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
         </div>
 
         <div className="border-t border-border/60 pt-3">
-          <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-muted-foreground">
+          <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
             Expenses
           </p>
           <div className="mt-2 space-y-2">

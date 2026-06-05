@@ -443,45 +443,45 @@ export function TransactionReport() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row justify-between items-stretch gap-4">
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
-                <div className="text-3xl font-extrabold text-primary mb-1">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6">
+                <div className="text-3xl font-bold text-foreground mb-1">
                   {reportData.summary.totalCount}
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Total Transactions
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
-                <div className="text-3xl font-extrabold text-primary mb-1">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6">
+                <div className="text-3xl font-bold text-foreground mb-1">
                   <CurrencyAmount
                     amount={reportData.summary.totalAmount}
                     animate
                   />
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Total Amount
                 </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
-                <div className="text-3xl font-extrabold text-primary mb-1">
+              <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6">
+                <div className="text-3xl font-bold text-foreground mb-1">
                   <CurrencyAmount
                     amount={reportData.summary.averageAmount}
                     animate
                   />
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
                   Average Amount
                 </div>
               </div>
               {reportData.summary.monthlyAverage !== undefined && (
-                <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6 shadow-sm border">
-                  <div className="text-3xl font-extrabold text-primary mb-1">
+                <div className="flex-1 flex flex-col items-center justify-center bg-muted/50 rounded-md p-6">
+                  <div className="text-3xl font-bold text-foreground mb-1">
                     <CurrencyAmount
                       amount={reportData.summary.monthlyAverage}
                       animate
                     />
                   </div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
                     Monthly Average
                   </div>
                 </div>
@@ -504,7 +504,7 @@ export function TransactionReport() {
               {reportData.transactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between p-3 border rounded-md"
+                  className="flex items-center justify-between p-4 border rounded-md"
                 >
                   <div>
                     <div className="font-medium">
@@ -530,7 +530,7 @@ export function TransactionReport() {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0" />
+                              <div className="w-2 h-2 bg-primary rounded-full shrink-0" />
                             </TooltipTrigger>
                             <TooltipContent>
                               <p>Upcoming transaction</p>

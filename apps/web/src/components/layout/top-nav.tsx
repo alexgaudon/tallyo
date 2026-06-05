@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -73,11 +74,11 @@ export function TopNav({ onMenuClick }: TopNavProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2">
             <img
               src="/favicon.ico"
               alt="Tallyo"
-              className="h-8 w-8 rounded-lg shadow-soft"
+              className="h-8 w-8 rounded-lg"
             />
             <span className="font-semibold text-lg tracking-tight text-foreground">
               Tallyo
@@ -98,7 +99,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors",
                   isActive
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary",
@@ -118,7 +119,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
           <button
             type="button"
             onClick={handleTriggerWebhooks}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title="Trigger Webhooks"
           >
             <RefreshCw className="w-4 h-4" />
@@ -130,12 +131,28 @@ export function TopNav({ onMenuClick }: TopNavProps) {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
+                className="flex h-9 w-9 items-center justify-center rounded-full overflow-hidden ring-1 ring-border hover:ring-2 transition-all"
               >
-                <Settings className="w-4 h-4" />
+                <Avatar className="h-8 w-8">
+                  {session?.user?.image ? (
+                    <img
+                      alt={session.user.name ?? ""}
+                      src={session.user.image}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="text-xs bg-secondary">
+                      {session?.user?.name?.substring(0, 1).toUpperCase() ??
+                        "U"}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5 text-sm font-medium">
+                {session?.user?.name ?? "User"}
+              </div>
               <DropdownMenuItem asChild>
                 <Link
                   to="/settings"
@@ -146,7 +163,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
                 onClick={async () => {
                   await signOut();
                   queryClient.invalidateQueries({ queryKey: ["session"] });

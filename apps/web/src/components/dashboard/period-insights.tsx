@@ -64,7 +64,7 @@ function InsightsRow({
   currentClassName?: string;
 }) {
   return (
-    <div className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2.5`}>
+    <div className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2`}>
       <div className="flex items-center gap-2 min-w-0">
         <span className="shrink-0">{icon}</span>
         <span className="text-sm text-foreground/90 whitespace-nowrap">
@@ -84,7 +84,7 @@ function InsightsRow({
 function InsightsHeaderRow() {
   return (
     <div
-      className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground border-b border-border/40`}
+      className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2 text-xs uppercase tracking-widest text-muted-foreground border-b border-border/40`}
     >
       <span>Metric</span>
       <span className="text-right">Current</span>
@@ -175,7 +175,7 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
   return (
     <Card className="border-border/80 bg-card/90 p-4 sm:p-5 shadow-sm">
       <div className="mb-3">
-        <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Vs your average
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
@@ -249,7 +249,7 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
         </div>
       </div>
 
-      <p className="text-[11px] text-muted-foreground mt-2">
+      <p className="text-xs text-muted-foreground mt-2">
         {useWindow
           ? "Based on your typical results for a similar window."
           : "Based on your average monthly pace."}

@@ -22,20 +22,19 @@ export function StatCard({
   icon,
 }: StatCardProps) {
   const changeIcon = {
-    increase: <TrendingUp className="size-3.5" />,
-    decrease: <TrendingDown className="size-3.5" />,
-    neutral: <Minus className="size-3.5" />,
+    increase: <TrendingUp className="w-4 h-4" />,
+    decrease: <TrendingDown className="w-4 h-4" />,
+    neutral: <Minus className="w-4 h-4" />,
   };
 
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-soft transition-all duration-300 hover:shadow-soft-lg",
+        "relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow duration-300 hover:shadow-md",
         className
       )}
     >
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
       
       <div className="relative">
         <div className="flex items-center justify-between">
@@ -55,7 +54,7 @@ export function StatCard({
           <div className="mt-3 flex items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
                 change.type === "increase" && "bg-income/10 text-income",
                 change.type === "decrease" && "bg-destructive/10 text-destructive",
                 change.type === "neutral" && "bg-muted text-muted-foreground"

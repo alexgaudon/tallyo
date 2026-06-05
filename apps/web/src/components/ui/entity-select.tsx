@@ -146,7 +146,7 @@ function MobileEntityList<T extends Entity>({
 				{showCreateOption && onCreateClick ? (
 					<button
 						type="button"
-						className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-blue-600 hover:bg-muted/60 active:bg-muted"
+						className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-primary hover:bg-muted/60 active:bg-muted"
 						onClick={() => onCreateClick()}
 					>
 						<PlusIcon className="h-4 w-4 shrink-0" />

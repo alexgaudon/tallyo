@@ -100,7 +100,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-orange-600"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
                 aria-label={`Merge ${merchant.name}`}
               >
                 <GitMergeIcon className="h-4 w-4" />
@@ -119,7 +119,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+            className="h-8 w-8 text-muted-foreground hover:text-primary"
             onClick={handleApplyMerchant}
             disabled={isApplying}
             title="Apply merchant to matching unreviewed transactions"
@@ -157,7 +157,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
         </div>
       </div>
       {merchant.keywords && merchant.keywords.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap gap-2">
           {merchant.keywords.map((keyword) => (
             <span
               key={keyword.id}

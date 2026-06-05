@@ -108,7 +108,7 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
+      <header className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-1">
@@ -116,9 +116,7 @@ function RouteComponent() {
                 Organization
               </p>
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-                  Categories
-                </span>
+                Categories
               </h1>
             </div>
             <Dialog open={open} onOpenChange={setOpen}>

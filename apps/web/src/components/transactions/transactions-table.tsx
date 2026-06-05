@@ -741,7 +741,7 @@ export function TransactionsTable({
           }
         />
         {!transaction.reviewed && transaction.transactionDetails && (
-          <span className="block mt-1 text-[10px] text-muted-foreground truncate leading-none">
+          <span className="block mt-1 text-xs text-muted-foreground truncate leading-none">
             {transaction.transactionDetails}
           </span>
         )}
@@ -757,7 +757,7 @@ export function TransactionsTable({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="w-2 h-2 bg-orange-500 rounded-full shrink-0" />
+            <div className="w-2 h-2 bg-accent rounded-full shrink-0" />
           </TooltipTrigger>
           <TooltipContent>
             <p>Split transaction</p>
@@ -920,7 +920,7 @@ export function TransactionsTable({
                     </div>
                   </TableCell>
                   <TableCell className="px-2 sm:px-3 align-middle">
-                    <div className="relative flex flex-col gap-1 py-0.5">
+                    <div className="relative flex flex-col gap-1 py-1">
                       {suggestedMerchantByTransactionId.get(transaction.id) &&
                         !transaction.merchant &&
                         !transaction.reviewed && (

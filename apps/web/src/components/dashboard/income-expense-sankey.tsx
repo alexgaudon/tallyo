@@ -483,7 +483,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         stroke={`url(#${gradientId})`}
                         strokeWidth={link.width || 0}
                         strokeOpacity={isDimmed ? 0.1 : isHovered ? 0.7 : 0.4}
-                        className="transition-all duration-200"
+                        className="transition-opacity duration-200"
                         onMouseEnter={() => setHoveredLink(linkId)}
                         onMouseLeave={() => setHoveredLink(null)}
                       />
@@ -527,7 +527,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         height={nodeHeight}
                         fill={node.color}
                         rx={2}
-                        className="transition-all duration-200"
+                        className="transition-opacity duration-200"
                         opacity={isDimmed ? 0.3 : 1}
                         stroke={isHovered ? "#000" : "none"}
                         strokeWidth={isHovered ? 2 : 0}
@@ -581,9 +581,9 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         textAnchor={
                           (node.x0 || 0) < width / 2 ? "start" : "end"
                         }
-                        className="text-[9px] font-medium fill-foreground cursor-pointer"
+                        className="font-medium fill-foreground cursor-pointer"
                         style={{
-                          fontSize: "9px",
+                          fontSize: "10px",
                           opacity: isDimmed ? 0.3 : 1,
                         }}
                         role="button"
@@ -621,9 +621,9 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         textAnchor={
                           (node.x0 || 0) < width / 2 ? "start" : "end"
                         }
-                        className="text-[9px] fill-muted-foreground cursor-pointer"
+                        className="fill-muted-foreground cursor-pointer"
                         style={{
-                          fontSize: "9px",
+                          fontSize: "10px",
                           opacity: isDimmed ? 0.3 : 1,
                         }}
                         role="button"

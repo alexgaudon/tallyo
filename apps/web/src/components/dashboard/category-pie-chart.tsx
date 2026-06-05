@@ -220,7 +220,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                   <div className="text-base font-semibold leading-tight whitespace-nowrap">
                     <CurrencyAmount animate amount={totalAmount} />
                   </div>
-                  <div className="mt-0.5 text-[10px] text-muted-foreground font-medium tracking-wide uppercase whitespace-nowrap">
+                  <div className="mt-1 text-xs text-muted-foreground font-medium tracking-wide uppercase whitespace-nowrap">
                     Total
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
             <div
               ref={legendRef}
               onScroll={handleScroll}
-              className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-1.5 max-h-[220px] overflow-y-auto pr-1"
+              className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 max-h-[220px] overflow-y-auto pr-1"
               style={{
                 scrollbarWidth: "thin",
                 scrollbarColor: "var(--muted-foreground) transparent",

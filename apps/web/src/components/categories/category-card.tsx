@@ -62,19 +62,19 @@ export function CategoryCard({
           <Icon
             className={cn(
               "h-4 w-4 text-muted-foreground",
-              category.treatAsIncome && "text-green-500",
+              category.treatAsIncome && "text-income",
             )}
           />
           <span className="font-medium">{category.name}</span>
           <div className="flex items-center gap-1">
             {category.treatAsIncome && (
-              <div className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border border-green-500/30 text-green-600">
+              <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-income/20 bg-income/10 text-income">
                 <DollarSignIcon className="h-3 w-3" />
                 <span>Income</span>
               </div>
             )}
             {category.hideFromInsights && (
-              <div className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-md border border-orange-500/30 text-orange-600">
+              <div className="flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-border bg-muted text-muted-foreground">
                 <EyeOffIcon className="h-3 w-3" />
                 <span>Hidden</span>
               </div>

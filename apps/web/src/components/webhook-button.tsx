@@ -79,7 +79,7 @@ export function WebhookButton(props: React.ComponentProps<typeof Button>) {
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         {result.success ? (
-                          <Badge variant="default" className="bg-green-600">
+                          <Badge variant="default">
                             <CheckCircle2 className="h-3 w-3" />
                             Success
                           </Badge>

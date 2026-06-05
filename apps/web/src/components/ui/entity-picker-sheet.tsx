@@ -171,7 +171,7 @@ export function EntityPickerProvider({ children }: { children: ReactNode }) {
               {config.showCreateOption && config.onCreateClick ? (
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-blue-600 hover:bg-muted/60 active:bg-muted"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-primary hover:bg-muted/60 active:bg-muted"
                   onClick={() => {
                     config.onCreateClick?.();
                     close();

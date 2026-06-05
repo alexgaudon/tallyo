@@ -50,14 +50,14 @@ export function SubCategoryItem({ category, onDelete }: SubCategoryItemProps) {
         <span className="text-sm">{category.name}</span>
         <div className="flex items-center gap-1">
           {category.treatAsIncome && (
-            <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs border border-green-500/30 text-green-600">
-              <DollarSignIcon className="h-2.5 w-2.5" />
+            <div className="flex items-center gap-1 px-2 py-1 text-xs border border-income/20 bg-income/10 text-income">
+              <DollarSignIcon className="h-3 w-3" />
               <span>Income</span>
             </div>
           )}
           {category.hideFromInsights && (
-            <div className="flex items-center gap-1 px-1.5 py-0.5 text-xs border border-orange-500/30 text-orange-600">
-              <EyeOffIcon className="h-2.5 w-2.5" />
+            <div className="flex items-center gap-1 px-2 py-1 text-xs border border-border bg-muted text-muted-foreground">
+              <EyeOffIcon className="h-3 w-3" />
               <span>Hidden</span>
             </div>
           )}

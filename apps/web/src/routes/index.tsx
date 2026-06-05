@@ -41,72 +41,63 @@ function HomeComponent() {
       title: "Transaction Logging",
       description:
         "Easily upload transactions from any financial provider via API or manual entry. Support for bulk imports and real-time synchronization.",
-      color: "text-blue-600",
     },
     {
       icon: <CheckCircle className="h-6 w-6" />,
       title: "Automatic Categorization",
       description:
         "Smart categorization system that automatically organizes your transactions for streamlined analysis and reporting.",
-      color: "text-green-600",
     },
     {
       icon: <Store className="h-6 w-6" />,
       title: "Vendor Normalization",
       description:
         "Intelligent vendor matching that normalizes different transaction names to a single merchant entity for better analysis.",
-      color: "text-purple-600",
     },
     {
       icon: <BarChart3 className="h-6 w-6" />,
       title: "Insights & Analytics",
       description:
         "Comprehensive dashboard with interactive charts, spending patterns, and key financial metrics to track your progress.",
-      color: "text-orange-600",
     },
     {
       icon: <Search className="h-6 w-6" />,
       title: "Advanced Filtering",
       description:
         "Powerful search and filter capabilities to find specific transactions, merchants, or categories quickly.",
-      color: "text-indigo-600",
     },
     {
       icon: <Calendar className="h-6 w-6" />,
       title: "Date Range Analysis",
       description:
         "Flexible date range filtering to analyze your finances over any time period - daily, monthly, or custom ranges.",
-      color: "text-pink-600",
     },
     {
       icon: <Eye className="h-6 w-6" />,
       title: "Privacy Mode",
       description:
         "Built-in privacy controls to hide sensitive financial data when sharing your screen or working in public spaces.",
-      color: "text-gray-600",
     },
     {
       icon: <Zap className="h-6 w-6" />,
       title: "API Integration",
       description:
         "RESTful API for seamless integration with your existing financial tools and automated transaction imports.",
-      color: "text-yellow-600",
     },
     {
       icon: <TrendingUp className="h-6 w-6" />,
       title: "Savings Rate Tracking",
       description:
         "Monitor your savings rate over time and visualize your progress toward financial goals with clear, actionable insights.",
-      color: "text-teal-600",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/50">
+      <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 py-20 sm:py-24 relative z-10">
+        <div className="max-w-screen-2xl mx-auto px-4 py-20 sm:py-24 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <div className="flex items-center justify-center mb-6">
               <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center ring-1 ring-accent/20">
@@ -138,7 +129,7 @@ function HomeComponent() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16 sm:py-20">
+      <section className="max-w-screen-2xl mx-auto px-4 py-16 sm:py-20 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
             Built for clarity
@@ -156,9 +147,7 @@ function HomeComponent() {
               className="group border-border/80 bg-card shadow-sm hover:shadow-md transition-shadow"
             >
               <CardHeader>
-                <div
-                  className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3 ${feature.color}`}
-                >
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3 text-muted-foreground">
                   {feature.icon}
                 </div>
                 <CardTitle className="text-base font-semibold">
@@ -176,8 +165,8 @@ function HomeComponent() {
       </section>
 
       {/* CTA Section */}
-      <section className="border-t border-border/50 bg-muted/30 py-16">
-        <div className="container mx-auto px-4 text-center">
+      <section className="border-t border-border/60 bg-muted/30 py-16">
+        <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 text-center">
           <h2 className="text-2xl font-bold mb-2 text-foreground">
             Start tracking today
           </h2>

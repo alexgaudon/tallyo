@@ -34,7 +34,7 @@ export function MerchantStats({
       {data.map((merchant) => (
         <Card
           key={merchant.merchantId}
-          className="px-3 py-2.5 sm:px-3.5 sm:py-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
+          className="px-3 py-2 sm:px-4 sm:py-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => handleMerchantClick(merchant.merchantId)}
           aria-label={`View transactions for ${merchant.merchantName}`}
         >

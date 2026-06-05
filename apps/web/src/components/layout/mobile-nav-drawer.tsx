@@ -61,12 +61,12 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shadow-soft">
-                <span className="text-accent-foreground font-mono font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <span className="text-accent-foreground font-bold text-sm">
                   T
                 </span>
               </div>
-              <span className="font-mono font-bold">TALLYO</span>
+              <span className="font-semibold text-base">Tallyo</span>
             </DrawerTitle>
           </div>
         </DrawerHeader>
@@ -84,9 +84,9 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
                 to={item.to}
                 onClick={handleNavigation}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors border border-transparent",
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
                   isActive
-                    ? "bg-accent/10 text-accent border-accent/20"
+                    ? "bg-accent/10 text-accent border border-accent/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                 )}
               >
@@ -102,10 +102,10 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
             to="/settings"
             onClick={handleNavigation}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
               location.pathname === "/settings"
-                ? "text-accent"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                ? "bg-accent/10 text-accent border border-accent/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
             )}
           >
             <Settings className="w-5 h-5" />
@@ -121,7 +121,7 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
                 navigate({ to: "/" });
               }, 500);
             }}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary w-full transition-colors"
+            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 w-full transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span>Log out</span>

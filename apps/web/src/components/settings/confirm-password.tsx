@@ -33,7 +33,9 @@ export function ConfirmPassword({
         <h2 className="text-xl font-semibold">
           This will revoke your old token!
         </h2>
-        <p>Are you sure you want to continue?</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Are you sure you want to continue?
+        </p>
       </div>
 
       <div className="flex gap-3">
@@ -42,7 +44,8 @@ export function ConfirmPassword({
         </Button>
         <Button
           type="button"
-          variant="destructive"
+          variant="outline"
+          className="flex-1"
           onClick={() => {
             onCancel();
           }}

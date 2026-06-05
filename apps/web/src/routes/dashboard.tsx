@@ -212,7 +212,7 @@ function RouteComponent() {
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="text-[11px] font-semibold tracking-[0.08em] uppercase text-muted-foreground">
+    <h2 className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
       {children}
     </h2>
   );
@@ -258,7 +258,7 @@ function DashboardHeader({
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
               Welcome {userName?.split(" ")[0] ?? "there"}!
             </h1>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-muted-foreground">
               {greeting} - {format(new Date(), "EEEE, MMM d, yyyy")}
             </p>
           </div>
@@ -298,7 +298,7 @@ function DashboardCharts({
       {categoryData && categoryData.length > 0 ? (
         <CategoryPieChart data={categoryData} />
       ) : (
-        <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+        <div className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
           No category data
         </div>
       )}
@@ -318,7 +318,7 @@ function DashboardSankey({
       {sankeyData && sankeyData.totalIncome > 0 ? (
         <IncomeExpenseSankey data={sankeyData} />
       ) : (
-        <div className="h-[250px] sm:h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
+        <div className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
           No income data
         </div>
       )}
