@@ -36,7 +36,7 @@ const withErrorHandling = <T>(
   });
 };
 
-const getTransactionWithRelations = async (transactionId: string) => {
+export const getTransactionWithRelations = async (transactionId: string) => {
   return await db.query.transaction.findFirst({
     where: eq(transaction.id, transactionId),
     with: {
@@ -50,7 +50,7 @@ const getTransactionWithRelations = async (transactionId: string) => {
   });
 };
 
-const validateTransactionOwnership = async (
+export const validateTransactionOwnership = async (
   transactionId: string,
   userId: string,
 ) => {
@@ -69,7 +69,7 @@ const validateTransactionOwnership = async (
   return currentTransaction;
 };
 
-const updateTransactionField = async (
+export const updateTransactionField = async (
   transactionId: string,
   updates: Record<string, unknown>,
   _errorContext: string,
@@ -94,7 +94,7 @@ const updateTransactionField = async (
   return updatedTransaction[0];
 };
 
-const handleKeywordRemoval = async (
+export const handleKeywordRemoval = async (
   currentTransaction: { transactionDetails: string },
   currentMerchantId: string,
   _transactionId: string,
@@ -127,7 +127,7 @@ const handleKeywordRemoval = async (
   }
 };
 
-const handleKeywordAddition = async (
+export const handleKeywordAddition = async (
   currentTransaction: { transactionDetails: string },
   newMerchantId: string,
   userId: string,

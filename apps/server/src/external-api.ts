@@ -9,6 +9,13 @@ import { db } from "./db";
 import { category, merchant, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
+import {
+  getTransactionWithRelations,
+  handleKeywordAddition,
+  handleKeywordRemoval,
+  updateTransactionField,
+  validateTransactionOwnership,
+} from "./routers/transactions";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_DOCS_MD = readFileSync(
@@ -322,6 +329,157 @@ externalApi.get("/transactions/search", async (c) => {
       },
     });
     if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+// PATCH /transactions/:id - Update reviewed status, merchant, and/or category
+externalApi.patch("/transactions/:id", async (c) => {
+  try {
+    const userId = await getUserIdFromBearerToken(c);
+    if (!userId) {
+      return c.json(
+        { error: "Missing, invalid, or expired Authorization header" },
+        401,
+      );
+    }
+
+    const transactionId = c.req.param("id");
+    const body = await c.req.json();
+
+    const updateSchema = z
+      .object({
+        reviewed: z.boolean().optional(),
+        merchantId: z.string().nullable().optional(),
+        categoryId: z.string().nullable().optional(),
+      })
+      .refine(
+        (data) =>
+          data.reviewed !== undefined ||
+          data.merchantId !== undefined ||
+          data.categoryId !== undefined,
+        {
+          message:
+            "At least one of reviewed, merchantId, or categoryId is required",
+        },
+      );
+
+    const validationResult = updateSchema.safeParse(body);
+    if (!validationResult.success) {
+      return c.json(
+        {
+          error: "Invalid request format",
+          details: validationResult.error.issues,
+        },
+        400,
+      );
+    }
+
+    const { reviewed, merchantId, categoryId } = validationResult.data;
+
+    const currentTransaction = await validateTransactionOwnership(
+      transactionId,
+      userId,
+    );
+
+    if (merchantId) {
+      const merchantRecord = await db.query.merchant.findFirst({
+        where: and(eq(merchant.id, merchantId), eq(merchant.userId, userId)),
+      });
+      if (!merchantRecord) {
+        return c.json({ error: "Merchant not found" }, 404);
+      }
+    }
+
+    if (categoryId) {
+      const categoryRecord = await db.query.category.findFirst({
+        where: and(eq(category.id, categoryId), eq(category.userId, userId)),
+      });
+      if (!categoryRecord) {
+        return c.json({ error: "Category not found" }, 404);
+      }
+    }
+
+    const updates: Record<string, unknown> = {};
+
+    if (reviewed !== undefined) {
+      updates.reviewed = reviewed;
+    }
+
+    if (merchantId !== undefined) {
+      if (
+        currentTransaction.merchantId &&
+        currentTransaction.merchantId !== merchantId
+      ) {
+        await handleKeywordRemoval(
+          currentTransaction,
+          currentTransaction.merchantId,
+          transactionId,
+        );
+      }
+
+      const newMerchantRecord = merchantId
+        ? await db.query.merchant.findFirst({
+            where: eq(merchant.id, merchantId),
+            with: { keywords: true },
+          })
+        : null;
+
+      updates.merchantId = merchantId;
+
+      if (categoryId === undefined) {
+        updates.categoryId = newMerchantRecord?.recommendedCategoryId ?? null;
+      } else {
+        updates.categoryId = categoryId;
+      }
+
+      await updateTransactionField(
+        transactionId,
+        updates,
+        "updating transaction",
+        userId,
+      );
+
+      if (merchantId) {
+        await handleKeywordAddition(currentTransaction, merchantId, userId);
+      }
+    } else if (Object.keys(updates).length > 0 || categoryId !== undefined) {
+      if (categoryId !== undefined) {
+        updates.categoryId = categoryId;
+      }
+
+      await updateTransactionField(
+        transactionId,
+        updates,
+        "updating transaction",
+        userId,
+      );
+    }
+
+    const updatedTransaction = await getTransactionWithRelations(transactionId);
+    if (!updatedTransaction) {
+      return c.json({ error: "Transaction not found" }, 404);
+    }
+
+    return c.json({ transaction: updatedTransaction });
+  } catch (error) {
+    logger.error("API transaction update failed", {
+      error,
+      metadata: {
+        method: c.req.method,
+        url: c.req.url,
+      },
+    });
+
+    if (error instanceof Error) {
+      if (error.message === "Transaction not found") {
+        return c.json({ error: error.message }, 404);
+      }
+      if (error.message === "Unauthorized to update this transaction") {
+        return c.json({ error: error.message }, 403);
+      }
       return c.json({ error: error.message }, 500);
     }
     return c.json({ error: "Internal server error" }, 500);

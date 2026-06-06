@@ -107,6 +107,63 @@ Results are sorted by `date` descending, then `amount` descending. Transactions 
 
 ---
 
+## PATCH /api/transactions/:id
+
+Update a transaction's reviewed status, merchant, and/or category.
+
+### Request Headers
+- `Authorization: Bearer <token>` (required)
+- `Content-Type: application/json`
+
+### Path Parameters
+- `id` (string, required): Transaction UUID.
+
+### Request Body
+At least one field is required.
+
+```json
+{
+  "reviewed": true,
+  "merchantId": "merchant-uuid",
+  "categoryId": "category-uuid"
+}
+```
+
+- `reviewed` (boolean, optional): Set reviewed status explicitly (`true` or `false`).
+- `merchantId` (string | null, optional): Assign or clear the merchant. Pass `null` to remove the merchant.
+- `categoryId` (string | null, optional): Assign or clear the category. Pass `null` to remove the category.
+
+When `merchantId` is updated without `categoryId`, the category is automatically set to the merchant's recommended category (or cleared if the merchant has none). If both are provided, `categoryId` takes precedence.
+
+Merchant and category IDs must belong to the authenticated user.
+
+### Response
+```json
+{
+  "transaction": {
+    "id": "txn-uuid",
+    "userId": "user-uuid",
+    "merchantId": "merchant-uuid",
+    "categoryId": "category-uuid",
+    "amount": -1250,
+    "date": "2024-01-15",
+    "transactionDetails": "WHOLEFDS",
+    "notes": null,
+    "externalId": "unique-id-123",
+    "reviewed": true,
+    "splitFromId": null,
+    "createdAt": "2024-01-15T10:00:00.000Z",
+    "updatedAt": "2024-01-15T10:05:00.000Z",
+    "merchant": { "id": "...", "name": "Whole Foods", ... },
+    "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null }
+  }
+}
+```
+
+Returns `404` if the transaction, merchant, or category is not found. Returns `403` if the transaction belongs to another user.
+
+---
+
 ## GET /api/transactions/search
 
 Broad search across transactions. Matches when the query appears in `transactionDetails`, `notes`, `merchant.name`, or `category.name`.
