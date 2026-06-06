@@ -135,6 +135,8 @@ At least one field is required.
 
 When `merchantId` is updated without `categoryId`, the category is automatically set to the merchant's recommended category (or cleared if the merchant has none). If both are provided, `categoryId` takes precedence.
 
+Setting `reviewed` to `true` requires both a merchant and a category to be assigned (either already on the transaction or provided in the same request). Returns `400` if either is missing.
+
 Merchant and category IDs must belong to the authenticated user.
 
 ### Response
@@ -160,7 +162,7 @@ Merchant and category IDs must belong to the authenticated user.
 }
 ```
 
-Returns `404` if the transaction, merchant, or category is not found. Returns `403` if the transaction belongs to another user.
+Returns `404` if the transaction, merchant, or category is not found. Returns `403` if the transaction belongs to another user. Returns `400` if marking as reviewed without both a merchant and category assigned.
 
 ---
 

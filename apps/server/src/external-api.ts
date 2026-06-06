@@ -402,6 +402,40 @@ externalApi.patch("/transactions/:id", async (c) => {
       }
     }
 
+    let effectiveMerchantId = currentTransaction.merchantId;
+    let effectiveCategoryId = currentTransaction.categoryId;
+
+    if (merchantId !== undefined) {
+      effectiveMerchantId = merchantId;
+      if (categoryId === undefined) {
+        const newMerchantRecord = merchantId
+          ? await db.query.merchant.findFirst({
+              where: eq(merchant.id, merchantId),
+            })
+          : null;
+        effectiveCategoryId = newMerchantRecord?.recommendedCategoryId ?? null;
+      }
+    }
+
+    if (categoryId !== undefined) {
+      effectiveCategoryId = categoryId;
+    }
+
+    if (reviewed === true) {
+      if (!effectiveMerchantId && !effectiveCategoryId) {
+        return c.json(
+          { error: "Assign a category and merchant before reviewing" },
+          400,
+        );
+      }
+      if (!effectiveCategoryId) {
+        return c.json({ error: "Assign a category before reviewing" }, 400);
+      }
+      if (!effectiveMerchantId) {
+        return c.json({ error: "Assign a merchant before reviewing" }, 400);
+      }
+    }
+
     const updates: Record<string, unknown> = {};
 
     if (reviewed !== undefined) {
