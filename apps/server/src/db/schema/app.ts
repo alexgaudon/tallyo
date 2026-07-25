@@ -171,6 +171,32 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   }),
 }));
 
+// A recurring rule is a projection source, not a posted transaction.
+export const recurringTransaction = pgTable(
+  "recurring_transactions",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn((): string => crypto.randomUUID()),
+    userId: text("user_id").notNull(),
+    sourceTransactionId: text("source_transaction_id").notNull(),
+    merchantId: text("merchant_id"),
+    categoryId: text("category_id"),
+    amount: integer("amount").notNull(),
+    transactionDetails: text("transaction_details").notNull(),
+    startDate: date("start_date").notNull(),
+    dayOfMonth: integer("day_of_month").notNull(),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("recurring_transactions_source_transaction_unique").on(
+      table.sourceTransactionId,
+    ),
+  ],
+);
+
 export const authToken = pgTable(
   "auth_token",
   {

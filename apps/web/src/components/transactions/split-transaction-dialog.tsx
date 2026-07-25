@@ -85,6 +85,9 @@ export function SplitTransactionDialog({
     orpc.transactions.splitTransaction.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey });
+        queryClient.invalidateQueries({
+          queryKey: ["dashboard", "getStatsCounts"],
+        });
         onOpenChange(false);
         resetSplits();
       },

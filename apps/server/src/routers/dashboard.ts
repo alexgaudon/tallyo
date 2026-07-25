@@ -15,7 +15,13 @@ import {
 } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
+import {
+  category,
+  merchant,
+  merchantKeyword,
+  recurringTransaction,
+  transaction,
+} from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 const dateRangeSchema = z.object({
@@ -55,6 +61,65 @@ function _calculateVolatility(values: number[]): number {
 }
 
 type StatsDateRange = { from?: string; to?: string };
+
+function getMonthlyOccurrence(year: number, month: number, dayOfMonth: number) {
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return `${year}-${String(month).padStart(2, "0")}-${String(Math.min(dayOfMonth, lastDay)).padStart(2, "0")}`;
+}
+
+async function getForecastForDateRange(
+  userId: string,
+  dateRange: StatsDateRange,
+) {
+  if (!dateRange.from || !dateRange.to) {
+    return {
+      forecastedIncome: 0,
+      forecastedExpenses: 0,
+      forecastedTransactionCount: 0,
+    };
+  }
+
+  const rules = await db.query.recurringTransaction.findMany({
+    where: and(
+      eq(recurringTransaction.userId, userId),
+      eq(recurringTransaction.active, true),
+    ),
+  });
+  const [fromYear, fromMonth] = dateRange.from
+    .slice(0, 7)
+    .split("-")
+    .map(Number);
+  const [toYear, toMonth] = dateRange.to.slice(0, 7).split("-").map(Number);
+  let forecastedIncome = 0;
+  let forecastedExpenses = 0;
+  let forecastedTransactionCount = 0;
+
+  for (const rule of rules) {
+    for (
+      let year = fromYear, month = fromMonth;
+      year < toYear || (year === toYear && month <= toMonth);
+    ) {
+      const occurrence = getMonthlyOccurrence(year, month, rule.dayOfMonth);
+      // The source entry is already actual; forecast subsequent monthly occurrences.
+      if (
+        occurrence > rule.startDate &&
+        occurrence >= dateRange.from &&
+        occurrence <= dateRange.to
+      ) {
+        forecastedTransactionCount += 1;
+        if (rule.amount >= 0) forecastedIncome += rule.amount;
+        else forecastedExpenses += rule.amount;
+      }
+      month += 1;
+      if (month === 13) {
+        month = 1;
+        year += 1;
+      }
+    }
+  }
+
+  return { forecastedIncome, forecastedExpenses, forecastedTransactionCount };
+}
 
 /** Returns same-month day range (1–31) or null if range spans months or is invalid. */
 function getSameMonthDayWindow(
@@ -185,6 +250,9 @@ async function getStatsForDateRange(
     avgIncomeForWindow: number | null;
     avgExpenseForWindow: number | null;
     avgTransactionCountForWindow: number | null;
+    forecastedIncome: number;
+    forecastedExpenses: number;
+    forecastedTransactionCount: number;
   };
 }> {
   const [
@@ -473,6 +541,8 @@ async function getStatsForDateRange(
     }
   }
 
+  const forecastData = await getForecastForDateRange(userId, dateRange);
+
   return {
     stats: {
       totalTransactions:
@@ -511,6 +581,7 @@ async function getStatsForDateRange(
       avgIncomeForWindow,
       avgExpenseForWindow,
       avgTransactionCountForWindow,
+      ...forecastData,
     },
   };
 }

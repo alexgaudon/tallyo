@@ -28,14 +28,28 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
 
   const income = Number(data.stats.totalIncome) || 0;
   const expenses = Number(data.stats.totalExpenses) || 0;
+  const forecastedIncome = Number(data.stats.forecastedIncome) || 0;
+  const forecastedExpenses = Number(data.stats.forecastedExpenses) || 0;
+  const hasForecasts = data.stats.forecastedTransactionCount > 0;
   const netIncome = income + expenses; // expenses are negative
-  const savingsRate = (() => {
-    const absIncome = Math.abs(income);
-    const absExpenses = Math.abs(expenses);
+  const calculateSavingsRate = (
+    incomeAmount: number,
+    expenseAmount: number,
+  ) => {
+    const absIncome = Math.abs(incomeAmount);
+    const absExpenses = Math.abs(expenseAmount);
     if (absIncome === 0) return 0;
     const rate = (absIncome - absExpenses) / absIncome;
     return Math.max(0, Math.round(rate * 100));
-  })();
+  };
+  const savingsRate = calculateSavingsRate(income, expenses);
+  const projectedIncome = income + forecastedIncome;
+  const projectedExpenses = expenses + forecastedExpenses;
+  const projectedNetIncome = projectedIncome + projectedExpenses;
+  const projectedSavingsRate = calculateSavingsRate(
+    projectedIncome,
+    projectedExpenses,
+  );
 
   return (
     <Card className="border-border/80 bg-card/90 p-4 sm:p-5">
@@ -58,6 +72,18 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
                 className="text-base font-semibold text-income tabular-nums"
               />
             </div>
+            {forecastedIncome > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Forecasted Income Remaining
+                </span>
+                <CurrencyAmount
+                  animate
+                  amount={forecastedIncome}
+                  className="text-sm font-semibold text-income tabular-nums"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -82,6 +108,36 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
                 />
               </div>
             </div>
+            {forecastedExpenses < 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Forecasted Payments Remaining
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Minus className="h-3 w-3 text-muted-foreground" />
+                  <CurrencyAmount
+                    animate
+                    amount={Math.abs(forecastedExpenses)}
+                    className="text-sm font-semibold text-expense tabular-nums"
+                  />
+                </div>
+              </div>
+            )}
+            {forecastedExpenses < 0 && (
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-sm font-medium text-foreground">
+                  Projected Total Expenses
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Minus className="h-3 w-3 text-muted-foreground" />
+                  <CurrencyAmount
+                    animate
+                    amount={Math.abs(projectedExpenses)}
+                    className="text-base font-semibold text-expense tabular-nums"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,6 +160,26 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
               className="text-lg font-bold tabular-nums"
             />
           </div>
+          {hasForecasts && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {projectedNetIncome >= 0 ? (
+                  <Plus className="h-4 w-4 text-income" />
+                ) : (
+                  <Minus className="h-4 w-4 text-expense" />
+                )}
+                <span className="text-sm font-medium text-foreground">
+                  Projected Net Income
+                </span>
+              </div>
+              <CurrencyAmount
+                animate
+                amount={projectedNetIncome}
+                showColor
+                className="text-lg font-bold tabular-nums"
+              />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PiggyBankIcon className="h-4 w-4 text-savings" />
@@ -117,6 +193,21 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
               {savingsRate}%
             </span>
           </div>
+          {hasForecasts && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PiggyBankIcon className="h-4 w-4 text-savings" />
+                <span className="text-sm text-muted-foreground">
+                  Projected Savings Rate
+                </span>
+              </div>
+              <span
+                className={`text-base font-semibold tabular-nums ${projectedSavingsRate >= 20 ? "text-savings" : projectedSavingsRate >= 10 ? "text-amber-500" : "text-muted-foreground"}`}
+              >
+                {projectedSavingsRate}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </Card>

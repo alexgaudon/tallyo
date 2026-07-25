@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { Search } from "@/components/transactions/search";
@@ -400,9 +401,42 @@ function RouteComponent() {
           queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
         });
         queryClient.invalidateQueries({
+          queryKey: ["dashboard", "getStatsCounts"],
+        });
+        queryClient.invalidateQueries({
           queryKey: ["transactions", "getUserTransactions", "session"],
         });
       },
+    }),
+  );
+
+  const { mutate: createRecurringForecast } = useMutation(
+    orpc.transactions.createRecurringForecast.mutationOptions({
+      onSuccess: () => {
+        toast.success("Monthly forecast added to Period Summary");
+        queryClient.invalidateQueries({
+          queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["dashboard", "getStatsCounts"],
+        });
+      },
+      onError: () => toast.error("Could not add the monthly forecast"),
+    }),
+  );
+
+  const { mutate: removeRecurringForecast } = useMutation(
+    orpc.transactions.removeRecurringForecast.mutationOptions({
+      onSuccess: () => {
+        toast.success("Monthly forecast removed");
+        queryClient.invalidateQueries({
+          queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["dashboard", "getStatsCounts"],
+        });
+      },
+      onError: () => toast.error("Could not remove the monthly forecast"),
     }),
   );
 
@@ -507,6 +541,8 @@ function RouteComponent() {
               updateNotes={updateNotes}
               toggleReviewed={toggleReviewed}
               deleteTransaction={deleteTransaction}
+              createRecurringForecast={createRecurringForecast}
+              removeRecurringForecast={removeRecurringForecast}
               onCategoryClick={handleCategoryClick}
               onMerchantClick={handleMerchantClick}
               isLoading={false}

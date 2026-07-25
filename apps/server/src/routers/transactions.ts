@@ -11,7 +11,13 @@ import {
   sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
+import {
+  category,
+  merchant,
+  merchantKeyword,
+  recurringTransaction,
+  transaction,
+} from "@/db/schema";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
@@ -297,8 +303,39 @@ export const transactionsRouter = {
             offset: (input.page - 1) * input.pageSize,
           });
 
+          const recurringForecasts =
+            userTransactions.length > 0
+              ? await db
+                  .select({
+                    sourceTransactionId:
+                      recurringTransaction.sourceTransactionId,
+                  })
+                  .from(recurringTransaction)
+                  .where(
+                    and(
+                      eq(
+                        recurringTransaction.userId,
+                        context.session?.user?.id,
+                      ),
+                      eq(recurringTransaction.active, true),
+                      inArray(
+                        recurringTransaction.sourceTransactionId,
+                        userTransactions.map(
+                          (userTransaction) => userTransaction.id,
+                        ),
+                      ),
+                    ),
+                  )
+              : [];
+          const recurringSourceIds = new Set(
+            recurringForecasts.map((forecast) => forecast.sourceTransactionId),
+          );
+
           return {
-            transactions: userTransactions,
+            transactions: userTransactions.map((userTransaction) => ({
+              ...userTransaction,
+              hasRecurringForecast: recurringSourceIds.has(userTransaction.id),
+            })),
             pagination: {
               total: count,
               page: input.page,
@@ -428,21 +465,115 @@ export const transactionsRouter = {
       );
     }),
 
+  createRecurringForecast: protectedProcedure
+    .input(z.object({ transactionId: z.string() }))
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          const source = await validateTransactionOwnership(
+            input.transactionId,
+            context.session?.user?.id,
+          );
+          const dayOfMonth = Number(source.date.slice(8, 10));
+
+          const [forecast] = await db
+            .insert(recurringTransaction)
+            .values({
+              userId: context.session?.user?.id,
+              sourceTransactionId: source.id,
+              merchantId: source.merchantId,
+              categoryId: source.categoryId,
+              amount: source.amount,
+              transactionDetails: source.transactionDetails,
+              startDate: source.date,
+              dayOfMonth,
+              active: true,
+            })
+            .onConflictDoUpdate({
+              target: recurringTransaction.sourceTransactionId,
+              set: {
+                merchantId: source.merchantId,
+                categoryId: source.categoryId,
+                amount: source.amount,
+                transactionDetails: source.transactionDetails,
+                startDate: source.date,
+                dayOfMonth,
+                active: true,
+                updatedAt: new Date(),
+              },
+            })
+            .returning();
+
+          return { forecast };
+        },
+        "Error creating recurring forecast",
+        context.session?.user?.id,
+      );
+    }),
+
+  removeRecurringForecast: protectedProcedure
+    .input(z.object({ transactionId: z.string() }))
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          await validateTransactionOwnership(
+            input.transactionId,
+            context.session?.user?.id,
+          );
+          await db
+            .delete(recurringTransaction)
+            .where(
+              and(
+                eq(
+                  recurringTransaction.sourceTransactionId,
+                  input.transactionId,
+                ),
+                eq(recurringTransaction.userId, context.session?.user?.id),
+              ),
+            );
+          return { success: true };
+        },
+        "Error removing recurring forecast",
+        context.session?.user?.id,
+      );
+    }),
+
   deleteTransaction: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      return withErrorHandling(async () => {
-        const deletedTransaction = await db
-          .delete(transaction)
-          .where(eq(transaction.id, input.id))
-          .returning();
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          await validateTransactionOwnership(
+            input.id,
+            context.session?.user?.id,
+          );
+          await db
+            .delete(recurringTransaction)
+            .where(
+              and(
+                eq(recurringTransaction.sourceTransactionId, input.id),
+                eq(recurringTransaction.userId, context.session?.user?.id),
+              ),
+            );
+          const deletedTransaction = await db
+            .delete(transaction)
+            .where(
+              and(
+                eq(transaction.id, input.id),
+                eq(transaction.userId, context.session?.user?.id),
+              ),
+            )
+            .returning();
 
-        if (!deletedTransaction || deletedTransaction.length === 0) {
-          throw new Error("Transaction not found");
-        }
+          if (!deletedTransaction || deletedTransaction.length === 0) {
+            throw new Error("Transaction not found");
+          }
 
-        return { success: true };
-      }, "Error deleting transaction");
+          return { success: true };
+        },
+        "Error deleting transaction",
+        context.session?.user?.id,
+      );
     }),
 
   splitTransaction: protectedProcedure
@@ -486,6 +617,14 @@ export const transactionsRouter = {
           }
 
           // Delete the original transaction
+          await db
+            .delete(recurringTransaction)
+            .where(
+              and(
+                eq(recurringTransaction.sourceTransactionId, input.id),
+                eq(recurringTransaction.userId, context.session?.user?.id),
+              ),
+            );
           await db.delete(transaction).where(eq(transaction.id, input.id));
 
           // Create new transactions for each split

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
-import { Check, Split, Trash } from "lucide-react";
+import { Check, Repeat, Split, Trash } from "lucide-react";
 import {
   memo,
   type ReactNode,
@@ -64,6 +64,8 @@ interface TransactionsTableProps {
   updateNotes: (args: { id: string; notes: string }) => void;
   toggleReviewed: (args: { id: string }) => void;
   deleteTransaction: (args: { id: string }) => void;
+  createRecurringForecast: (args: { transactionId: string }) => void;
+  removeRecurringForecast: (args: { transactionId: string }) => void;
   onCategoryClick?: (categoryId: string) => void;
   onMerchantClick?: (merchantId: string) => void;
   isLoading?: boolean;
@@ -163,6 +165,8 @@ interface TransactionCardProps {
   onNoteBlur: (id: string, value: string) => void;
   onToggleReviewed: (id: string) => void;
   onDelete: (id: string) => void;
+  onCreateRecurringForecast: (transactionId: string) => void;
+  onRemoveRecurringForecast: (transactionId: string) => void;
   onCategoryChange: (id: string, categoryId: string | null) => void;
   onMerchantChange: (id: string, merchantId: string | null) => void;
   onEditMerchant: (merchantId: string) => void;
@@ -182,6 +186,8 @@ const TransactionCard = memo(function TransactionCard({
   onNoteBlur,
   onToggleReviewed,
   onDelete,
+  onCreateRecurringForecast,
+  onRemoveRecurringForecast,
   onCategoryChange,
   onMerchantChange,
   onEditMerchant,
@@ -261,6 +267,33 @@ const TransactionCard = memo(function TransactionCard({
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                transaction.hasRecurringForecast
+                  ? onRemoveRecurringForecast(transaction.id)
+                  : onCreateRecurringForecast(transaction.id)
+              }
+              className={cn(
+                "h-10 w-10 hover:text-foreground",
+                transaction.hasRecurringForecast
+                  ? "text-income"
+                  : "text-muted-foreground",
+              )}
+              aria-label={
+                transaction.hasRecurringForecast
+                  ? "Stop forecasting monthly"
+                  : "Forecast monthly from this transaction"
+              }
+              title={
+                transaction.hasRecurringForecast
+                  ? "Stop forecasting monthly"
+                  : "Forecast monthly"
+              }
+            >
+              <Repeat className="h-5 w-5" />
+            </Button>
             {!isSplit && !transaction.reviewed && onSplit && (
               <Button
                 variant="ghost"
@@ -470,6 +503,8 @@ export function TransactionsTable({
   updateNotes,
   toggleReviewed,
   deleteTransaction,
+  createRecurringForecast,
+  removeRecurringForecast,
   onCategoryClick,
   onMerchantClick,
   isLoading = false,
@@ -571,6 +606,10 @@ export function TransactionsTable({
 
   const handleToggleReviewed = (id: string) => toggleReviewed({ id });
   const handleDelete = (id: string) => deleteTransaction({ id });
+  const handleCreateRecurringForecast = (transactionId: string) =>
+    createRecurringForecast({ transactionId });
+  const handleRemoveRecurringForecast = (transactionId: string) =>
+    removeRecurringForecast({ transactionId });
   const handleCategoryChange = (id: string, categoryId: string | null) =>
     updateCategory({ id, categoryId });
   const handleMerchantChange = (id: string, merchantId: string | null) =>
@@ -697,6 +736,54 @@ export function TransactionsTable({
           </TooltipTrigger>
           <TooltipContent>
             <p>Split transaction</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
+  const renderRecurringForecastButton = (
+    transaction: Transaction,
+    size: "sm" | "lg" = "sm",
+  ) => {
+    const buttonSizeClass = size === "lg" ? "h-10 w-10" : "h-8 w-8";
+    const iconSizeClass = size === "lg" ? "h-5 w-5" : "h-4 w-4";
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() =>
+                transaction.hasRecurringForecast
+                  ? handleRemoveRecurringForecast(transaction.id)
+                  : handleCreateRecurringForecast(transaction.id)
+              }
+              className={cn(
+                "hover:text-foreground hover:bg-muted/60 transition-colors",
+                buttonSizeClass,
+                transaction.hasRecurringForecast
+                  ? "text-income"
+                  : "text-muted-foreground",
+              )}
+              aria-label={
+                transaction.hasRecurringForecast
+                  ? "Stop forecasting monthly"
+                  : "Forecast monthly from this transaction"
+              }
+              disabled={isLoading}
+            >
+              <Repeat className={iconSizeClass} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {transaction.hasRecurringForecast
+                ? "Stop forecasting monthly"
+                : "Forecast monthly"}
+            </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -1008,6 +1095,7 @@ export function TransactionsTable({
                   </TableCell>
                   <TableCell className="text-center px-2 sm:px-3 h-10 align-middle">
                     <div className="flex items-center justify-center gap-1">
+                      {renderRecurringForecastButton(transaction, "sm")}
                       {renderSplitButton(transaction, "sm")}
                       {renderDeleteButton(transaction, "sm")}
                     </div>
@@ -1050,6 +1138,8 @@ export function TransactionsTable({
               onNoteBlur={handleNoteBlur}
               onToggleReviewed={handleToggleReviewed}
               onDelete={handleDelete}
+              onCreateRecurringForecast={handleCreateRecurringForecast}
+              onRemoveRecurringForecast={handleRemoveRecurringForecast}
               onCategoryChange={handleCategoryChange}
               onMerchantChange={handleMerchantChange}
               onEditMerchant={(merchantId) =>
