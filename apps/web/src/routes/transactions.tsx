@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
+import { PageHeader } from "@/components/layout/page-header";
 import { Search } from "@/components/transactions/search";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
@@ -438,18 +439,7 @@ function RouteComponent() {
   return (
     <EntityPickerProvider>
       <div className="min-h-full">
-        <header className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/20">
-          <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Your activity
-                </p>
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                  Transactions
-                </h1>
-              </div>
-              <Dialog
+        <PageHeader eyebrow="Your activity" title="Transactions" description="Review, categorize, and keep every movement of money in order." actions={<Dialog
                 open={isCreateFormOpen}
                 onOpenChange={(open) => {
                   setIsCreateFormOpen(open);
@@ -479,19 +469,16 @@ function RouteComponent() {
                     }}
                   />
                 </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </header>
+              </Dialog>} />
 
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
+        <div className="max-w-screen-2xl mx-auto space-y-6 px-4 py-8 lg:px-8">
           {/* Search */}
-          <div className="rounded-xl border border-border/80 bg-card p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
             <Search />
           </div>
 
           {/* Table */}
-          <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
             <TransactionsTable
               transactions={transactionsData?.transactions ?? []}
               pagination={{

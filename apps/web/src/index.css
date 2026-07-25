@@ -101,20 +101,20 @@
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  /* Warm, soft shadows */
+  /* Neutral, low-elevation shadows */
   --shadow-soft:
-    0 1px 2px rgba(68, 55, 43, 0.04), 0 4px 8px rgba(68, 55, 43, 0.03),
-    0 8px 16px rgba(68, 55, 43, 0.02);
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 8px rgba(15, 23, 42, 0.03),
+    0 8px 16px rgba(15, 23, 42, 0.02);
   --shadow-soft-lg:
-    0 2px 4px rgba(68, 55, 43, 0.04), 0 8px 16px rgba(68, 55, 43, 0.03),
-    0 16px 32px rgba(68, 55, 43, 0.02);
+    0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 16px rgba(15, 23, 42, 0.03),
+    0 16px 32px rgba(15, 23, 42, 0.02);
   --shadow-soft-xl:
-    0 4px 8px rgba(68, 55, 43, 0.04), 0 12px 24px rgba(68, 55, 43, 0.03),
-    0 24px 48px rgba(68, 55, 43, 0.02);
+    0 4px 8px rgba(15, 23, 42, 0.04), 0 12px 24px rgba(15, 23, 42, 0.03),
+    0 24px 48px rgba(15, 23, 42, 0.02);
 
-  /* Glow effects */
-  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.2);
-  --shadow-glow-sm: 0 0 12px rgba(139, 92, 246, 0.12);
+  /* Accent glow effects */
+  --shadow-glow: 0 0 20px rgba(234, 88, 12, 0.18);
+  --shadow-glow-sm: 0 0 12px rgba(234, 88, 12, 0.1);
 }
 
 html,
@@ -129,69 +129,69 @@ body {
 }
 
 /* ==========================================
-   WARM & FRIENDLY THEME - Light Mode
+   TALLYO ORANGE - Light Mode
    ========================================== */
 
 :root {
-  /* Border radius - slightly more rounded for friendly feel */
-  --radius: 0.625rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.125rem;
+  /* A compact, consistent radius scale */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
   --radius-2xl: 1.5rem;
 
   /* Shadows */
   --shadow-soft:
-    0 1px 2px rgba(68, 55, 43, 0.04), 0 4px 8px rgba(68, 55, 43, 0.03),
-    0 8px 16px rgba(68, 55, 43, 0.02);
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 8px rgba(15, 23, 42, 0.03),
+    0 8px 16px rgba(15, 23, 42, 0.02);
   --shadow-soft-lg:
-    0 2px 4px rgba(68, 55, 43, 0.04), 0 8px 16px rgba(68, 55, 43, 0.03),
-    0 16px 32px rgba(68, 55, 43, 0.02);
+    0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 16px rgba(15, 23, 42, 0.03),
+    0 16px 32px rgba(15, 23, 42, 0.02);
   --shadow-soft-xl:
-    0 4px 8px rgba(68, 55, 43, 0.04), 0 12px 24px rgba(68, 55, 43, 0.03),
-    0 24px 48px rgba(68, 55, 43, 0.02);
-  --shadow-glow: 0 0 20px rgba(139, 92, 246, 0.15);
-  --shadow-glow-sm: 0 0 12px rgba(139, 92, 246, 0.1);
+    0 4px 8px rgba(15, 23, 42, 0.04), 0 12px 24px rgba(15, 23, 42, 0.03),
+    0 24px 48px rgba(15, 23, 42, 0.02);
+  --shadow-glow: 0 0 20px rgba(234, 88, 12, 0.15);
+  --shadow-glow-sm: 0 0 12px rgba(234, 88, 12, 0.1);
 
   /* ==========================================
      BASE COLORS - Warm Neutrals
      ========================================== */
 
-  /* Background - warm off-white with subtle cream */
-  --background: #faf9f7;
-  --foreground: #1c1917;
+  /* Neutral surfaces keep attention on content and actions */
+  --background: #fafafa;
+  --foreground: #171717;
 
-  /* Card - pure white with subtle warmth */
+  /* Card - clean surface against a neutral canvas */
   --card: #ffffff;
-  --card-foreground: #1c1917;
+  --card-foreground: #171717;
 
   /* Popover - white with soft shadow potential */
   --popover: #ffffff;
-  --popover-foreground: #1c1917;
+  --popover-foreground: #171717;
 
   /* ==========================================
-     PRIMARY - Vibrant Violet
+     PRIMARY - Burnt Orange
      ========================================== */
-  --primary: #7c3aed;
+  --primary: #c2410c;
   --primary-foreground: #ffffff;
 
   /* ==========================================
-     SECONDARY - Soft Purple Tint
+     SECONDARY - Cool Gray
      ========================================== */
-  --secondary: #f5f3ff;
-  --secondary-foreground: #5b21b6;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #334155;
 
   /* ==========================================
      MUTED - Soft Warm Gray
      ========================================== */
-  --muted: #faf9f7;
-  --muted-foreground: #78716c;
+  --muted: #f5f5f5;
+  --muted-foreground: #64748b;
 
   /* ==========================================
-     ACCENT - Vibrant Violet
+     ACCENT - Vivid Orange
      ========================================== */
-  --accent: #8b5cf6;
+  --accent: #ea580c;
   --accent-foreground: #ffffff;
 
   /* ==========================================
@@ -203,9 +203,9 @@ body {
   /* ==========================================
      BORDERS & INPUTS
      ========================================== */
-  --border: #e7e5e4;
-  --input: #e7e5e4;
-  --ring: #8b5cf6;
+  --border: #e5e7eb;
+  --input: #d1d5db;
+  --ring: #f97316;
 
   /* ==========================================
      FINANCE COLORS - Warm & Friendly
@@ -220,68 +220,68 @@ body {
   /* ==========================================
      CHART COLORS - Vibrant Palette
      ========================================== */
-  --chart-1: #7c3aed;
-  --chart-2: #0d9488;
-  --chart-3: #8b5cf6;
-  --chart-4: #ec4899;
-  --chart-5: #06b6d4;
-  --chart-6: #84cc16;
-  --chart-7: #f43f5e;
-  --chart-8: #6366f1;
+  --chart-1: #ea580c;
+  --chart-2: #0f766e;
+  --chart-3: #475569;
+  --chart-4: #be123c;
+  --chart-5: #0369a1;
+  --chart-6: #4d7c0f;
+  --chart-7: #a16207;
+  --chart-8: #334155;
 
   /* ==========================================
-     SIDEBAR - Vibrant & Modern
+     SIDEBAR
      ========================================== */
-  --sidebar: #faf9f7;
-  --sidebar-foreground: #44403c;
-  --sidebar-primary: #7c3aed;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #c2410c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5f3ff;
-  --sidebar-accent-foreground: #5b21b6;
-  --sidebar-border: #e7e5e4;
-  --sidebar-ring: #8b5cf6;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #334155;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #f97316;
 }
 
 /* ==========================================
-   WARM & FRIENDLY THEME - Dark Mode
+   TALLYO ORANGE - Dark Mode
    ========================================== */
 
 .dark {
-  /* Background - warm dark with subtle brown undertones */
-  --background: #0c0a09;
-  --foreground: #fafaf9;
+  /* Dark surfaces are distinct without becoming a stack of black panels */
+  --background: #09090b;
+  --foreground: #fafafa;
 
   /* Card - elevated dark for clearer boundaries */
-  --card: #24201e;
-  --card-foreground: #fafaf9;
+  --card: #18181b;
+  --card-foreground: #fafafa;
 
   /* Popover */
-  --popover: #24201e;
-  --popover-foreground: #fafaf9;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
 
   /* ==========================================
-     PRIMARY - Vibrant Violet
+     PRIMARY - Orange
      ========================================== */
-  --primary: #a78bfa;
-  --primary-foreground: #0c0a09;
+  --primary: #fb923c;
+  --primary-foreground: #2a1205;
 
   /* ==========================================
-     SECONDARY - Dark Purple Tint
+     SECONDARY - Dark Gray
      ========================================== */
-  --secondary: #292524;
-  --secondary-foreground: #d6d3d1;
+  --secondary: #27272a;
+  --secondary-foreground: #e4e4e7;
 
   /* ==========================================
      MUTED - Warm Dark Gray
      ========================================== */
-  --muted: #292524;
-  --muted-foreground: #a8a29e;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
 
   /* ==========================================
-     ACCENT - Vibrant Violet
+     ACCENT - Orange
      ========================================== */
-  --accent: #8b5cf6;
-  --accent-foreground: #ffffff;
+  --accent: #fb923c;
+  --accent-foreground: #2a1205;
 
   /* ==========================================
      DESTRUCTIVE - Soft Red
@@ -292,9 +292,9 @@ body {
   /* ==========================================
      BORDERS & INPUTS
      ========================================== */
-  --border: #292524;
-  --input: #292524;
-  --ring: #8b5cf6;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #fb923c;
 
   /* ==========================================
      FINANCE COLORS - Dark Mode
@@ -309,26 +309,26 @@ body {
   /* ==========================================
      CHART COLORS - Dark Mode (vibrant)
      ========================================== */
-  --chart-1: #a78bfa;
+  --chart-1: #fb923c;
   --chart-2: #2dd4bf;
-  --chart-3: #f472b6;
+  --chart-3: #fbbf24;
   --chart-4: #fbbf24;
   --chart-5: #22d3ee;
   --chart-6: #a3e635;
   --chart-7: #fb7185;
-  --chart-8: #818cf8;
+  --chart-8: #fdba74;
 
   /* ==========================================
-     SIDEBAR - Dark Vibrant
+     SIDEBAR
      ========================================== */
-  --sidebar: #0c0a09;
-  --sidebar-foreground: #d6d3d1;
-  --sidebar-primary: #a78bfa;
-  --sidebar-primary-foreground: #0c0a09;
-  --sidebar-accent: #292524;
-  --sidebar-accent-foreground: #a78bfa;
-  --sidebar-border: #292524;
-  --sidebar-ring: #8b5cf6;
+  --sidebar: #09090b;
+  --sidebar-foreground: #e4e4e7;
+  --sidebar-primary: #fb923c;
+  --sidebar-primary-foreground: #2a1205;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #e4e4e7;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #fb923c;
 
   /* Dark mode shadows - warmer tones */
   --shadow-soft:
@@ -340,8 +340,8 @@ body {
   --shadow-soft-xl:
     0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.25),
     0 24px 48px rgba(0, 0, 0, 0.2);
-  --shadow-glow: 0 0 24px rgba(139, 92, 246, 0.25);
-  --shadow-glow-sm: 0 0 16px rgba(139, 92, 246, 0.15);
+  --shadow-glow: 0 0 24px rgba(251, 146, 60, 0.2);
+  --shadow-glow-sm: 0 0 16px rgba(251, 146, 60, 0.12);
 }
 
 @theme inline {
@@ -491,12 +491,12 @@ body {
    ========================================== */
 
 ::selection {
-  background-color: rgba(139, 92, 246, 0.2);
+  background-color: rgba(234, 88, 12, 0.2);
   color: inherit;
 }
 
 .dark ::selection {
-  background-color: rgba(139, 92, 246, 0.3);
+  background-color: rgba(251, 146, 60, 0.28);
 }
 
 html,

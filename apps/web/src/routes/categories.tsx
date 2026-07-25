@@ -4,6 +4,7 @@ import { Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CategoryList } from "@/components/categories/category-list";
 import { CreateCategoryForm } from "@/components/categories/create-category-form";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -108,18 +109,7 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <header className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Organization
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                Categories
-              </h1>
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
+      <PageHeader eyebrow="Organization" title="Categories" description="Create a clear spending taxonomy that makes reports easier to trust." actions={<Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
                   <Plus className="w-4 h-4 mr-2" />
@@ -132,14 +122,10 @@ function RouteComponent() {
                 </DialogHeader>
                 <CreateCategoryForm callback={() => setOpen(false)} />
               </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </header>
+      </Dialog>} />
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Search & Filter - same width as category cards (list uses p-4) */}
-        <div className="px-4">
+      <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
+        <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -166,12 +152,9 @@ function RouteComponent() {
           </div>
         </div>
 
-        {/* List */}
-        <CategoryList
-          categories={filteredCategories}
-          isLoading={isLoading}
-          onDelete={handleDelete}
-        />
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
+          <CategoryList categories={filteredCategories} isLoading={isLoading} onDelete={handleDelete} />
+        </div>
       </div>
     </div>
   );

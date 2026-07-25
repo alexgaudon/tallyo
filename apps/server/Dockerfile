@@ -8,8 +8,8 @@ COPY package.json package-lock.json* ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 
-# Single root install so workspace lockfile and hoisting match local (--ignore-scripts skips husky)
-RUN npm install --ignore-scripts
+# Reproduce the committed workspace dependency graph (--ignore-scripts skips husky).
+RUN npm ci --ignore-scripts
 
 # Copy source code
 COPY . .

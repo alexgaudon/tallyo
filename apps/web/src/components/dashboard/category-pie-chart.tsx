@@ -20,7 +20,7 @@ const chartColors = [
   "#f59e0b", // amber
   "#84cc16", // lime
   "#06b6d4", // cyan
-  "#8b5cf6", // violet
+  "#ea580c", // orange
 ];
 
 function hashString(str: string): number {
