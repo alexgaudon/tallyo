@@ -12,4 +12,3 @@ README.md
 .prettierignore
 biome.json
 turbo.json
-package-lock.json
