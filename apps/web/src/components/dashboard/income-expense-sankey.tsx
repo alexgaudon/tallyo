@@ -29,7 +29,7 @@ const chartColors = [
   "#f59e0b",
   "#84cc16",
   "#06b6d4",
-  "#8b5cf6",
+  "#ea580c",
 ];
 
 function hashString(str: string): number {
