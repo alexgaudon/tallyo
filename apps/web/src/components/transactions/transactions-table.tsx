@@ -930,7 +930,7 @@ export function TransactionsTable({
               <TableHead className="w-[72px] px-2 sm:px-3 text-center">
                 Reviewed
               </TableHead>
-              <TableHead className="w-[88px] px-2 sm:px-3 text-center">
+              <TableHead className="w-[120px] px-2 sm:px-3 text-center">
                 Actions
               </TableHead>
             </TableRow>
