@@ -18,6 +18,7 @@ import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { dateRangeToApiFormat } from "@/lib/utils";
@@ -171,7 +172,7 @@ function RouteComponent() {
           onDateRangeChange={handleDateRangeChange}
         />
 
-        <div className="max-w-screen-2xl mx-auto px-4 py-5 lg:px-8 space-y-5">
+        <div className="max-w-screen-2xl mx-auto space-y-8 px-4 py-8 lg:px-8">
           <UnreviewedTransactionsBanner
             count={session?.meta?.unreviewedTransactionCount ?? 0}
             onReviewClick={() =>
@@ -182,20 +183,20 @@ function RouteComponent() {
             }
           />
 
-          <div className="grid grid-cols-1 xl:grid-cols-10 gap-5 items-stretch">
-            <SectionPanel className="xl:col-span-3" title="Period Summary">
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.65fr)] xl:items-start">
+            <SectionPanel title="Cash flow overview">
               <Stats data={statsData} />
             </SectionPanel>
 
-            <SectionPanel className="xl:col-span-7" title="Spending Breakdown">
+            <SectionPanel title="Spending breakdown">
               <DashboardCharts categoryData={categoryData} />
             </SectionPanel>
 
-            <SectionPanel className="xl:col-span-3" title="Period Insights">
+            <SectionPanel title="Period insights">
               <PeriodInsights data={statsData} />
             </SectionPanel>
 
-            <SectionPanel className="xl:col-span-7" title="Income Flow">
+            <SectionPanel title="Income flow">
               <DashboardSankey sankeyData={sankeyData} />
             </SectionPanel>
           </div>
@@ -212,7 +213,7 @@ function RouteComponent() {
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
+    <h2 className="text-xs font-semibold tracking-[0.14em] uppercase text-muted-foreground">
       {children}
     </h2>
   );
@@ -251,38 +252,31 @@ function DashboardHeader({
   const navigate = useNavigate();
 
   return (
-    <header className="border-b border-border/40 bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
-              Welcome {userName?.split(" ")[0] ?? "there"}!
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {greeting} - {format(new Date(), "EEEE, MMM d, yyyy")}
-            </p>
-          </div>
-          <div className="flex items-stretch gap-2 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-none min-w-0">
+    <PageHeader
+      eyebrow={format(new Date(), "EEEE, MMM d, yyyy")}
+      title={`Welcome back, ${userName?.split(" ")[0] ?? "there"}`}
+      description={`${greeting}. Here's the financial picture for this period.`}
+      actions={
+        <>
+          <div className="min-w-0 flex-1 sm:flex-none">
               <DateRangePicker
                 value={dateRange}
                 onRangeChange={onDateRangeChange}
                 className="w-full"
               />
-            </div>
-            <Button
-              onClick={() =>
-                navigate({ to: "/transactions", search: { create: true } })
-              }
-              className="shrink-0"
-            >
-              <Plus className="w-4 h-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Add</span>
-            </Button>
           </div>
-        </div>
-      </div>
-    </header>
+          <Button
+            onClick={() =>
+              navigate({ to: "/transactions", search: { create: true } })
+            }
+            className="shrink-0"
+          >
+            <Plus className="w-4 h-4 sm:mr-1.5" />
+            <span>Add transaction</span>
+          </Button>
+        </>
+      }
+    />
   );
 }
 
@@ -338,7 +332,7 @@ function DashboardDetails({
     | undefined;
 }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
       <div>
         <div className="mb-3">
           <SectionTitle>Top Merchants</SectionTitle>

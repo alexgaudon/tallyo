@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CreateMerchantForm } from "@/components/merchants/create-merchant-form";
 import { MerchantList } from "@/components/merchants/merchant-list";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,18 +104,7 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <header className="border-b border-border/60 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Vendors & payees
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                Merchants
-              </h1>
-            </div>
-            <div className="flex gap-2">
+      <PageHeader eyebrow="Vendors & payees" title="Merchants" description="Normalize transaction descriptions and keep automatic categorization reliable." actions={<>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -160,14 +150,10 @@ function RouteComponent() {
                   <CreateMerchantForm callback={() => setOpen(false)} />
                 </DialogContent>
               </Dialog>
-            </div>
-          </div>
-        </div>
-      </header>
+      </>} />
 
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 space-y-6">
-        {/* Search - same width as merchant cards (list uses p-4) */}
-        <div className="px-4">
+      <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
+        <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -179,12 +165,9 @@ function RouteComponent() {
           </div>
         </div>
 
-        {/* List */}
-        <MerchantList
-          merchants={filteredMerchants}
-          isLoading={isLoading}
-          onDelete={handleDelete}
-        />
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
+          <MerchantList merchants={filteredMerchants} isLoading={isLoading} onDelete={handleDelete} />
+        </div>
       </div>
     </div>
   );
