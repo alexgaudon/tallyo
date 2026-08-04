@@ -262,8 +262,8 @@ function DashboardHeader({
               {greeting} - {format(new Date(), "EEEE, MMM d, yyyy")}
             </p>
           </div>
-          <div className="flex items-stretch gap-2 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-none min-w-0">
+          <div className="flex flex-col items-stretch gap-2 w-full sm:flex-row sm:items-center sm:w-auto">
+            <div className="w-full sm:w-auto">
               <DateRangePicker
                 value={dateRange}
                 onRangeChange={onDateRangeChange}
@@ -274,7 +274,7 @@ function DashboardHeader({
               onClick={() =>
                 navigate({ to: "/transactions", search: { create: true } })
               }
-              className="shrink-0"
+              className="w-full shrink-0 sm:w-auto"
             >
               <Plus className="w-4 h-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Add</span>
