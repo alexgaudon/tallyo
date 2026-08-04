@@ -61,11 +61,11 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
         <DrawerHeader className="border-b border-border pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-sm">
-                  T
-                </span>
-              </div>
+              <img
+                src="/favicon.ico"
+                alt="Tallyo"
+                className="h-8 w-8 rounded-lg"
+              />
               <span className="font-semibold text-base">Tallyo</span>
             </DrawerTitle>
           </div>
