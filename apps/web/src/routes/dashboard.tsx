@@ -257,24 +257,24 @@ function DashboardHeader({
       title={`Welcome back, ${userName?.split(" ")[0] ?? "there"}`}
       description={`${greeting}. Here's the financial picture for this period.`}
       actions={
-        <>
-          <div className="min-w-0 flex-1 sm:flex-none">
-              <DateRangePicker
-                value={dateRange}
-                onRangeChange={onDateRangeChange}
-                className="w-full"
-              />
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="w-full sm:w-auto">
+            <DateRangePicker
+              value={dateRange}
+              onRangeChange={onDateRangeChange}
+              className="w-full"
+            />
           </div>
           <Button
             onClick={() =>
               navigate({ to: "/transactions", search: { create: true } })
             }
-            className="shrink-0"
+            className="w-full shrink-0 sm:w-auto"
           >
             <Plus className="w-4 h-4 sm:mr-1.5" />
             <span>Add transaction</span>
           </Button>
-        </>
+        </div>
       }
     />
   );
