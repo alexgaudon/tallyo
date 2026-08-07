@@ -17,6 +17,21 @@ import {
 import { logger } from "../lib/logger";
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "";
+const IS_PROD = process.env.NODE_ENV === "production";
+
+function getRedirectOrigin(c: any): string {
+  if (IS_PROD) return CORS_ORIGIN;
+  const origin = c.req.header("origin") || c.req.header("referer");
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      return `${url.protocol}//${url.host}`;
+    } catch {
+      return CORS_ORIGIN;
+    }
+  }
+  return CORS_ORIGIN;
+}
 
 const authRoutes = new Hono();
 
@@ -55,13 +70,13 @@ authRoutes.get("/callback/discord", async (c) => {
   const error = c.req.query("error");
 
   if (error) {
-    return callbackError("Authentication failed");
+    return callbackError(c, "Authentication failed");
   }
   if (!validateState(state)) {
     logger.warn("Invalid state parameter format in OAuth callback", {
       metadata: { hasState: !!state },
     });
-    return callbackError("Authentication failed");
+    return callbackError(c, "Authentication failed");
   }
 
   const stateCookie = parseCookie(c.req.header("Cookie"), "oauth_state");
@@ -72,11 +87,11 @@ authRoutes.get("/callback/discord", async (c) => {
         stateMatches: stateCookie === state,
       },
     });
-    return callbackError("Authentication failed");
+    return callbackError(c, "Authentication failed");
   }
 
   if (!code) {
-    return callbackError("Authentication failed");
+    return callbackError(c, "Authentication failed");
   }
 
   try {
@@ -84,13 +99,14 @@ authRoutes.get("/callback/discord", async (c) => {
     const isRegister = !usersExist;
     const { sessionToken } = await handleDiscordCallback(code, isRegister);
 
-    const response = c.redirect(`${CORS_ORIGIN}/dashboard`);
+    const redirectOrigin = getRedirectOrigin(c);
+    const response = c.redirect(`${redirectOrigin}/dashboard`);
     response.headers.append("Set-Cookie", sessionCookieString(sessionToken));
     response.headers.append("Set-Cookie", clearCookieString("oauth_state"));
     return response;
   } catch (err) {
     logger.error("Discord callback failed", { error: err });
-    return callbackError("Authentication failed");
+    return callbackError(c, "Authentication failed");
   }
 });
 
@@ -104,9 +120,10 @@ authRoutes.post("/signout", async (c) => {
   });
 });
 
-function callbackError(message: string): Response {
+function callbackError(c: any, message: string): Response {
+  const redirectOrigin = getRedirectOrigin(c);
   const headers = new Headers({
-    Location: `${CORS_ORIGIN}/signin?error=${encodeURIComponent(message)}`,
+    Location: `${redirectOrigin}/signin?error=${encodeURIComponent(message)}`,
   });
   headers.append("Set-Cookie", clearCookieString("oauth_state"));
   return new Response(null, { status: 302, headers });

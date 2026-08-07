@@ -49,7 +49,10 @@ app.use(async (c, next) => {
 app.use(
   "/*",
   cors({
-    origin: CORS_ORIGIN,
+    origin: (origin) => {
+      if (!IS_PROD) return origin || CORS_ORIGIN || "*";
+      return CORS_ORIGIN;
+    },
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -109,8 +112,12 @@ app.use("/rpc/*", async (c, next) => {
 app.get("/", async (c) => {
   try {
     const url = new URL(c.req.url);
-    if (!IS_PROD && url.hostname === "localhost") {
-      return c.redirect("http://localhost:3001");
+    if (!IS_PROD) {
+      const origin =
+        c.req.header("origin") ||
+        c.req.header("referer") ||
+        `${url.protocol}//${url.host}`;
+      return c.redirect(`${origin.replace(/:3000$/, ":3001")}/dashboard`);
     }
     await healthCheck();
     if (IS_PROD) {
