@@ -64,27 +64,20 @@ export function TransactionStats({
     );
   }
 
-  const handleTransactionClick = () => {
-    navigate({
-      to: "/transactions",
-    });
-  };
-
   return (
     <div className="space-y-1.5">
       {data.map((transaction) => (
         <Card
           key={transaction.id}
           className="px-3 py-2 sm:px-4 sm:py-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => {
-            handleTransactionClick();
+          onClick={() =>
             navigate({
               to: "/transactions",
               search: {
                 filter: transaction.transactionDetails,
               },
-            });
-          }}
+            })
+          }
           aria-label={`View transaction ${transaction.transactionDetails}`}
         >
           <div className="flex items-center justify-between">
