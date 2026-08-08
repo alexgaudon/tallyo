@@ -12,6 +12,7 @@
 	},
 	"devDependencies": {
 		"@tanstack/react-query-devtools": "^5.90.2",
+		"server": "*",
 		"@tanstack/react-router-devtools": "^1.133.34",
 		"@tanstack/router-plugin": "^1.133.32",
 		"@types/d3-sankey": "^0.12.5",
