@@ -1,14 +1,7 @@
 import { addDays, format } from "date-fns";
-import { and, asc, count, desc, eq, lte } from "drizzle-orm";
+import { and, asc, count, eq, lte } from "drizzle-orm";
 import { db } from "@/db";
-import {
-  account,
-  category,
-  merchant,
-  settings,
-  transaction,
-  user,
-} from "@/db/schema";
+import { account, settings, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 export const metaRouter = {
@@ -105,39 +98,12 @@ export const metaRouter = {
     };
   }),
   getUserMeta: protectedProcedure.handler(async ({ context }) => {
-    const topFiveCategories = await db.query.category.findMany({
-      where: eq(category.userId, context.session?.user?.id),
-      orderBy: [desc(category.name)],
-      limit: 5,
-    });
-
-    const topFiveMerchants = await db.query.merchant.findMany({
-      where: eq(merchant.userId, context.session?.user?.id),
-      orderBy: [desc(merchant.name)],
-      limit: 5,
-    });
-
-    const userCreatedAt = await db.query.user.findFirst({
-      where: eq(user.id, context.session?.user?.id),
-      columns: {
-        createdAt: true,
-      },
-    });
-
     const earliestTransactionDate = await db.query.transaction.findFirst({
       where: eq(transaction.userId, context.session?.user?.id),
       orderBy: [asc(transaction.date)],
       columns: {
         date: true,
       },
-    });
-
-    const transferCategoryId = await db.query.category.findFirst({
-      where: and(
-        eq(category.userId, context.session?.user?.id),
-        eq(category.hideFromInsights, true),
-        eq(category.name, "Transfer"),
-      ),
     });
 
     const unreviewedTransactionCount = await db
@@ -152,10 +118,6 @@ export const metaRouter = {
       );
 
     return {
-      topFiveCategories,
-      topFiveMerchants,
-      userCreatedAt: userCreatedAt?.createdAt,
-      transferCategoryId: transferCategoryId?.id ?? null,
       earliestTransactionDate:
         earliestTransactionDate?.date ?? format(new Date(), "yyyy-MM-dd"),
       unreviewedTransactionCount: unreviewedTransactionCount[0]?.count ?? 0,

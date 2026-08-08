@@ -15,7 +15,7 @@ import {
 } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
+import { category, merchant, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 const dateRangeSchema = z.object({
@@ -28,31 +28,6 @@ const dateRangeSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
     .optional(),
 });
-
-// Helper function to calculate standard deviation
-function calculateStandardDeviation(values: number[]): number {
-  if (values.length === 0) return 0;
-
-  const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-  const squaredDifferences = values.map((val) => (val - mean) ** 2);
-  const variance =
-    squaredDifferences.reduce((sum, val) => sum + val, 0) / values.length;
-
-  return Math.sqrt(variance);
-}
-
-// Helper function to calculate volatility
-function _calculateVolatility(values: number[]): number {
-  if (values.length === 0) return 0;
-
-  // Treat all values as absolute for volatility
-  const absValues = values.map(Math.abs);
-  const mean = absValues.reduce((sum, val) => sum + val, 0) / absValues.length;
-  if (mean === 0) return 0;
-
-  const standardDeviation = calculateStandardDeviation(absValues);
-  return (standardDeviation / mean) * 100;
-}
 
 type StatsDateRange = { from?: string; to?: string };
 
@@ -170,13 +145,8 @@ async function getStatsForDateRange(
 ): Promise<{
   stats: {
     totalTransactions: number;
-    totalCategories: number;
-    totalMerchants: number;
-    totalMerchantKeywords: number;
     totalExpenses: number;
     totalIncome: number;
-    totalIncomeTransactions: number;
-    totalExpenseTransactions: number;
     avgIncomeTransactionsPerMonth: number;
     avgExpenseTransactionsPerMonth: number;
     avgIncomeAmountPerMonth: number;
@@ -189,9 +159,6 @@ async function getStatsForDateRange(
 }> {
   const [
     transactionCount,
-    categoryCount,
-    merchantCount,
-    merchantKeywordCount,
     expenseCount,
     incomeCount,
     expenseTransactionCount,
@@ -211,18 +178,6 @@ async function getStatsForDateRange(
           ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
         ),
       ),
-    db
-      .select({ count: count() })
-      .from(category)
-      .where(eq(category.userId, userId)),
-    db
-      .select({ count: count() })
-      .from(merchant)
-      .where(eq(merchant.userId, userId)),
-    db
-      .select({ count: count() })
-      .from(merchantKeyword)
-      .where(eq(merchantKeyword.userId, userId)),
     db
       .select({ amount: sum(transaction.amount) })
       .from(transaction)
@@ -479,14 +434,6 @@ async function getStatsForDateRange(
         transactionCount.status === "fulfilled"
           ? transactionCount.value[0].count
           : 0,
-      totalCategories:
-        categoryCount.status === "fulfilled" ? categoryCount.value[0].count : 0,
-      totalMerchants:
-        merchantCount.status === "fulfilled" ? merchantCount.value[0].count : 0,
-      totalMerchantKeywords:
-        merchantKeywordCount.status === "fulfilled"
-          ? merchantKeywordCount.value[0].count
-          : 0,
       totalExpenses:
         expenseCount.status === "fulfilled" && expenseCount.value[0].amount
           ? Number(expenseCount.value[0].amount)
@@ -494,14 +441,6 @@ async function getStatsForDateRange(
       totalIncome:
         incomeCount.status === "fulfilled" && incomeCount.value[0].amount
           ? Number(incomeCount.value[0].amount)
-          : 0,
-      totalIncomeTransactions:
-        incomeTransactionCount.status === "fulfilled"
-          ? incomeTransactionCount.value[0].count
-          : 0,
-      totalExpenseTransactions:
-        expenseTransactionCount.status === "fulfilled"
-          ? expenseTransactionCount.value[0].count
           : 0,
       avgIncomeTransactionsPerMonth: avgIncomeTransactions,
       avgExpenseTransactionsPerMonth: avgExpenseTransactions,
