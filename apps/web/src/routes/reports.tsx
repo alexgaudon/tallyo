@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-import { TransactionReport } from "@/components/transactions/transaction-report";
 import { PageHeader } from "@/components/layout/page-header";
+import { TransactionReport } from "@/components/transactions/transaction-report";
 import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
@@ -35,7 +35,11 @@ export const Route = createFileRoute("/reports")({
 function RouteComponent() {
   return (
     <div className="min-h-full">
-      <PageHeader eyebrow="Analytics" title="Reports" description="Explore the patterns behind your spending with focused filters and summaries." />
+      <PageHeader
+        eyebrow="Analytics"
+        title="Reports"
+        description="Explore the patterns behind your spending with focused filters and summaries."
+      />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
         <div>

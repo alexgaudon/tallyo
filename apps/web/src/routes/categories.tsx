@@ -109,20 +109,27 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <PageHeader eyebrow="Organization" title="Categories" description="Create a clear spending taxonomy that makes reports easier to trust." actions={<Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New category
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>New Category</DialogTitle>
-                </DialogHeader>
-                <CreateCategoryForm callback={() => setOpen(false)} />
-              </DialogContent>
-      </Dialog>} />
+      <PageHeader
+        eyebrow="Organization"
+        title="Categories"
+        description="Create a clear spending taxonomy that makes reports easier to trust."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                <Plus className="w-4 h-4 mr-2" />
+                New category
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New Category</DialogTitle>
+              </DialogHeader>
+              <CreateCategoryForm callback={() => setOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
         <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
@@ -153,7 +160,11 @@ function RouteComponent() {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
-          <CategoryList categories={filteredCategories} isLoading={isLoading} onDelete={handleDelete} />
+          <CategoryList
+            categories={filteredCategories}
+            isLoading={isLoading}
+            onDelete={handleDelete}
+          />
         </div>
       </div>
     </div>
