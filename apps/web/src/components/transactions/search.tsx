@@ -1,6 +1,12 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { SlidersHorizontal } from "lucide-react";
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { CategorySelect } from "../categories/category-select";
 import { MerchantSelect } from "../merchants/merchant-select";
@@ -20,18 +26,19 @@ export function Search() {
   const navigate = useNavigate();
 
   // Navigation helper
-  const updateSearchParams = (
-    updates: Record<string, string | boolean | null | undefined>,
-  ) => {
-    navigate({
-      to: "/transactions",
-      search: (prev) => ({
-        ...prev,
-        ...updates,
-        page: 1, // Reset to first page when filters change
-      }),
-    });
-  };
+  const updateSearchParams = useCallback(
+    (updates: Record<string, string | boolean | null | undefined>) => {
+      navigate({
+        to: "/transactions",
+        search: (prev) => ({
+          ...prev,
+          ...updates,
+          page: 1, // Reset to first page when filters change
+        }),
+      });
+    },
+    [navigate],
+  );
 
   // Only maintain local state for the search input (debounced)
   const [filter, setFilter] = useState(() => params.filter ?? "");
@@ -46,7 +53,7 @@ export function Search() {
         updateSearchParams({ filter: debouncedFilter });
       }
     }
-  }, [debouncedFilter, params.filter]);
+  }, [debouncedFilter, params.filter, updateSearchParams]);
 
   // UI state
   const [isOpenMobile, setIsOpenMobile] = useState(false);

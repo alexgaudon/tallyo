@@ -70,7 +70,7 @@ export async function seed() {
       ])
       .returning();
 
-    if (!categories || categories.length !== 7) {
+    if (categories?.length !== 7) {
       throw new Error("Failed to create categories");
     }
   }
@@ -123,7 +123,7 @@ export async function seed() {
       ])
       .returning();
 
-    if (!merchants || merchants.length !== 7) {
+    if (merchants?.length !== 7) {
       throw new Error("Failed to create merchants");
     }
   }
