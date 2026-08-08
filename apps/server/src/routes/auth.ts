@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import {
   deleteSession,
   getDiscordAuthUrl,
@@ -19,7 +19,7 @@ import { logger } from "../lib/logger";
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "";
 const IS_PROD = process.env.NODE_ENV === "production";
 
-function getRedirectOrigin(c: any): string {
+function getRedirectOrigin(c: Context): string {
   if (IS_PROD) return CORS_ORIGIN;
   const origin = c.req.header("origin") || c.req.header("referer");
   if (origin) {
@@ -120,7 +120,7 @@ authRoutes.post("/signout", async (c) => {
   });
 });
 
-function callbackError(c: any, message: string): Response {
+function callbackError(c: Context, message: string): Response {
   const redirectOrigin = getRedirectOrigin(c);
   const headers = new Headers({
     Location: `${redirectOrigin}/signin?error=${encodeURIComponent(message)}`,

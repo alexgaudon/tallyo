@@ -930,14 +930,18 @@ export function TransactionsTable({
                             size="sm"
                             className="w-full justify-start text-left font-normal text-xs h-7"
                             disabled={isLoading}
-                            onClick={() =>
-                              handleMerchantChange(
-                                transaction.id,
+                            onClick={() => {
+                              const suggested =
                                 suggestedMerchantByTransactionId.get(
                                   transaction.id,
-                                )!.id,
-                              )
-                            }
+                                );
+                              if (suggested) {
+                                handleMerchantChange(
+                                  transaction.id,
+                                  suggested.id,
+                                );
+                              }
+                            }}
                           >
                             <span className="truncate">
                               Use suggested merchant:{" "}
@@ -945,7 +949,7 @@ export function TransactionsTable({
                                 {
                                   suggestedMerchantByTransactionId.get(
                                     transaction.id,
-                                  )!.name
+                                  )?.name
                                 }
                               </span>
                             </span>
