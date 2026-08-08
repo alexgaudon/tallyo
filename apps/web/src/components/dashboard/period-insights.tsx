@@ -7,9 +7,14 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
-import type { DashboardStats } from "../../../../server/src/routers";
+import { cn } from "@/lib/utils";
+import type {
+  DashboardPeriodComparison,
+  DashboardStats,
+} from "../../../../server/src/routers";
 
 const DAYS_PER_MONTH = 30;
 const INSIGHTS_TABLE_COLUMNS = "grid-cols-[minmax(0,1fr)_130px_110px]";
@@ -93,7 +98,18 @@ function InsightsHeaderRow() {
   );
 }
 
-export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
+export function PeriodInsights({
+  data,
+  previous,
+}: {
+  data: DashboardStats | undefined;
+  previous?: DashboardPeriodComparison["totals"];
+}) {
+  const [basis, setBasis] = useState<"average" | "previous">("average");
+  useEffect(() => {
+    if (!previous) setBasis("average");
+  }, [previous]);
+
   if (!data?.stats) {
     return (
       <Card className="border-dashed border-border/80 bg-muted/20 p-4 sm:p-5">
@@ -107,6 +123,9 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
   const s = data.stats;
   const periodDays = s.periodLengthInDays ?? DAYS_PER_MONTH;
   const scale = periodDays / DAYS_PER_MONTH;
+
+  const hasPrevious = previous != null;
+  const usePrevious = hasPrevious && basis === "previous";
 
   const incomeCur = Number(s.totalIncome) || 0;
   const expensesCur = Math.abs(Number(s.totalExpenses) || 0);
@@ -124,16 +143,19 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
     s.avgExpenseForWindow != null ||
     s.avgTransactionCountForWindow != null;
 
-  const expectedIncome =
-    useWindow && s.avgIncomeForWindow != null
+  const expectedIncome = usePrevious
+    ? Number(previous?.totalIncome) || 0
+    : useWindow && s.avgIncomeForWindow != null
       ? Number(s.avgIncomeForWindow)
       : scaledMonthlyIncome;
-  const expectedExpenses =
-    useWindow && s.avgExpenseForWindow != null
+  const expectedExpenses = usePrevious
+    ? Number(previous?.totalExpenses) || 0
+    : useWindow && s.avgExpenseForWindow != null
       ? Number(s.avgExpenseForWindow)
       : scaledMonthlyExpense;
-  const expectedTxScaled =
-    useWindow && s.avgTransactionCountForWindow != null
+  const expectedTxScaled = usePrevious
+    ? Number(previous?.totalTransactions) || 0
+    : useWindow && s.avgTransactionCountForWindow != null
       ? Number(s.avgTransactionCountForWindow)
       : scaledMonthlyTx;
 
@@ -176,12 +198,41 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
     <Card className="border-border/80 bg-card/90 p-4 sm:p-5 shadow-sm">
       <div className="mb-3">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Vs your average
+          {usePrevious ? "Vs previous period" : "Vs your average"}
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
           Snapshot for this selected period
         </p>
       </div>
+
+      {hasPrevious && (
+        <div className="mb-3 flex w-fit items-center gap-1 rounded-lg bg-muted/60 p-0.5">
+          <button
+            type="button"
+            onClick={() => setBasis("average")}
+            className={cn(
+              "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+              basis === "average"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            vs Average
+          </button>
+          <button
+            type="button"
+            onClick={() => setBasis("previous")}
+            className={cn(
+              "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+              basis === "previous"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            vs Previous period
+          </button>
+        </div>
+      )}
 
       <div className="border-y border-border/40">
         <div className="divide-y divide-border/40">
@@ -250,9 +301,11 @@ export function PeriodInsights({ data }: { data: DashboardStats | undefined }) {
       </div>
 
       <p className="text-xs text-muted-foreground mt-2">
-        {useWindow
-          ? "Based on your typical results for a similar window."
-          : "Based on your average monthly pace."}
+        {usePrevious
+          ? "Based on the previous period."
+          : useWindow
+            ? "Based on your typical results for a similar window."
+            : "Based on your average monthly pace."}
       </p>
     </Card>
   );

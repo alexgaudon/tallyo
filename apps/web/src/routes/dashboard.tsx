@@ -75,6 +75,11 @@ export const Route = createFileRoute("/dashboard")({
           input: dateRangeToApiFormat(dateRange),
         }),
       ),
+      context.queryClient.prefetchQuery(
+        orpc.dashboard.getPeriodComparison.queryOptions({
+          input: dateRangeToApiFormat(dateRange),
+        }),
+      ),
     ]);
   },
 });
@@ -155,12 +160,20 @@ function RouteComponent() {
     }),
   );
 
+  const { data: periodData, isLoading: isPeriodLoading } = useQuery(
+    orpc.dashboard.getPeriodComparison.queryOptions({
+      placeholderData: (previousData) => previousData,
+      input: dateRangeToApiFormat(dateRange),
+    }),
+  );
+
   const isLoading =
     isStatsLoading ||
     isCategoryLoading ||
     isMerchantLoading ||
     isTransactionLoading ||
-    isSankeyLoading;
+    isSankeyLoading ||
+    isPeriodLoading;
 
   return (
     <div className="min-h-full overflow-x-hidden">
@@ -189,11 +202,17 @@ function RouteComponent() {
             </SectionPanel>
 
             <SectionPanel title="Spending breakdown">
-              <DashboardCharts categoryData={categoryData} />
+              <DashboardCharts
+                categoryData={categoryData}
+                previousCategories={periodData?.categories ?? []}
+              />
             </SectionPanel>
 
             <SectionPanel title="Period insights">
-              <PeriodInsights data={statsData} />
+              <PeriodInsights
+                data={statsData}
+                previous={periodData?.totals ?? null}
+              />
             </SectionPanel>
 
             <SectionPanel title="Income flow">
@@ -204,6 +223,7 @@ function RouteComponent() {
           <DashboardDetails
             merchantData={merchantData}
             transactionData={transactionData}
+            previousMerchants={periodData?.merchants ?? []}
           />
         </div>
       </DelayedLoading>
@@ -280,17 +300,23 @@ function DashboardHeader({
   );
 }
 
+type PeriodComparison = Awaited<
+  ReturnType<typeof orpc.dashboard.getPeriodComparison.call>
+>;
+
 function DashboardCharts({
   categoryData,
+  previousCategories,
 }: {
   categoryData:
     | Awaited<ReturnType<typeof orpc.dashboard.getCategoryData.call>>
     | undefined;
+  previousCategories: PeriodComparison["categories"];
 }) {
   return (
     <>
       {categoryData && categoryData.length > 0 ? (
-        <CategoryPieChart data={categoryData} />
+        <CategoryPieChart data={categoryData} previous={previousCategories} />
       ) : (
         <div className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
           No category data
@@ -323,6 +349,7 @@ function DashboardSankey({
 function DashboardDetails({
   merchantData,
   transactionData,
+  previousMerchants,
 }: {
   merchantData:
     | Awaited<ReturnType<typeof orpc.dashboard.getMerchantStats.call>>
@@ -330,6 +357,7 @@ function DashboardDetails({
   transactionData:
     | Awaited<ReturnType<typeof orpc.dashboard.getTransactionStats.call>>
     | undefined;
+  previousMerchants: PeriodComparison["merchants"];
 }) {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
@@ -338,7 +366,7 @@ function DashboardDetails({
           <SectionTitle>Top Merchants</SectionTitle>
         </div>
         {merchantData && merchantData.length > 0 ? (
-          <MerchantStats data={merchantData} />
+          <MerchantStats data={merchantData} previous={previousMerchants} />
         ) : (
           <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm rounded-xl bg-muted/40">
             No merchant data

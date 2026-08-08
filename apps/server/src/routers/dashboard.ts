@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import {
   and,
   asc,
@@ -762,5 +763,132 @@ export const dashboardRouter = {
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
       return getStatsForDateRange(context.session.user.id, input || {});
+    }),
+  getPeriodComparison: protectedProcedure
+    .input(dateRangeSchema.optional())
+    .handler(async ({ context, input }) => {
+      const dateRange = input || {};
+      const userId = context.session.user.id;
+
+      if (!dateRange.from || !dateRange.to) {
+        return {
+          hasPrevious: false,
+          totals: null,
+          categories: [],
+          merchants: [],
+        };
+      }
+
+      const fromDate = new Date(dateRange.from);
+      const toDate = new Date(dateRange.to);
+      const periodLength =
+        Math.ceil(
+          Math.abs(toDate.getTime() - fromDate.getTime()) /
+            (1000 * 60 * 60 * 24),
+        ) + 1;
+
+      const prevFromDate = new Date(fromDate);
+      prevFromDate.setDate(prevFromDate.getDate() - periodLength);
+      const prevToDate = new Date(fromDate);
+      prevToDate.setDate(prevToDate.getDate() - 1);
+
+      const prevFrom = format(prevFromDate, "yyyy-MM-dd");
+      const prevTo = format(prevToDate, "yyyy-MM-dd");
+
+      const [income, expenses, txCount, categories, merchants] =
+        await Promise.all([
+          db
+            .select({ amount: sum(transaction.amount) })
+            .from(transaction)
+            .innerJoin(category, eq(transaction.categoryId, category.id))
+            .where(
+              and(
+                eq(transaction.userId, userId),
+                eq(transaction.reviewed, true),
+                eq(category.treatAsIncome, true),
+                eq(category.hideFromInsights, false),
+                gte(transaction.date, prevFrom),
+                lte(transaction.date, prevTo),
+              ),
+            ),
+          db
+            .select({ amount: sum(transaction.amount) })
+            .from(transaction)
+            .innerJoin(category, eq(transaction.categoryId, category.id))
+            .where(
+              and(
+                eq(transaction.userId, userId),
+                eq(transaction.reviewed, true),
+                eq(category.treatAsIncome, false),
+                eq(category.hideFromInsights, false),
+                gte(transaction.date, prevFrom),
+                lte(transaction.date, prevTo),
+              ),
+            ),
+          db
+            .select({ count: count() })
+            .from(transaction)
+            .where(
+              and(
+                eq(transaction.userId, userId),
+                gte(transaction.date, prevFrom),
+                lte(transaction.date, prevTo),
+              ),
+            ),
+          db
+            .select({
+              categoryId: category.id,
+              amount: sum(transaction.amount),
+            })
+            .from(transaction)
+            .innerJoin(category, eq(transaction.categoryId, category.id))
+            .where(
+              and(
+                eq(transaction.userId, userId),
+                eq(transaction.reviewed, true),
+                eq(category.treatAsIncome, false),
+                eq(category.hideFromInsights, false),
+                gte(transaction.date, prevFrom),
+                lte(transaction.date, prevTo),
+              ),
+            )
+            .groupBy(category.id),
+          db
+            .select({
+              merchantId: merchant.id,
+              totalAmount: sum(transaction.amount),
+            })
+            .from(transaction)
+            .innerJoin(merchant, eq(transaction.merchantId, merchant.id))
+            .innerJoin(category, eq(transaction.categoryId, category.id))
+            .where(
+              and(
+                eq(transaction.userId, userId),
+                eq(transaction.reviewed, true),
+                eq(category.hideFromInsights, false),
+                not(eq(category.treatAsIncome, true)),
+                gte(transaction.date, prevFrom),
+                lte(transaction.date, prevTo),
+              ),
+            )
+            .groupBy(merchant.id),
+        ]);
+
+      return {
+        hasPrevious: true,
+        totals: {
+          totalIncome: Math.abs(Number(income[0]?.amount ?? 0)),
+          totalExpenses: Math.abs(Number(expenses[0]?.amount ?? 0)),
+          totalTransactions: txCount[0]?.count ?? 0,
+        },
+        categories: categories.map((row) => ({
+          categoryId: row.categoryId,
+          amount: Math.abs(Number(row.amount ?? 0)),
+        })),
+        merchants: merchants.map((row) => ({
+          merchantId: row.merchantId,
+          totalAmount: Math.abs(Number(row.totalAmount ?? 0)),
+        })),
+      };
     }),
 };
