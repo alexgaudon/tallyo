@@ -45,6 +45,10 @@ export type DashboardSankeyData = InferRouterOutputs<
   typeof dashboardRouter
 >["getSankeyData"];
 
+export type DashboardPeriodComparison = InferRouterOutputs<
+  typeof dashboardRouter
+>["getPeriodComparison"];
+
 export const appRouter = {
   healthCheck: publicProcedure.handler(async () => {
     try {

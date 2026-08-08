@@ -5,7 +5,10 @@ import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
-import type { DashboardCategoryData } from "../../../../server/src/routers";
+import type {
+  DashboardCategoryData,
+  DashboardPeriodComparison,
+} from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
 
 const chartColors = [
@@ -45,12 +48,26 @@ interface ChartItem {
   categoryId: string;
 }
 
-export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
+export function CategoryPieChart({
+  data,
+  previous,
+}: {
+  data: DashboardCategoryData;
+  previous?: DashboardPeriodComparison["categories"];
+}) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const previousMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const item of previous ?? []) {
+      map.set(item.categoryId, item.amount);
+    }
+    return map;
+  }, [previous]);
 
   // Process all data - no grouping
   const chartData = useMemo<ChartItem[]>(() => {
@@ -245,6 +262,9 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                     ? ((item.value / totalAmount) * 100).toFixed(1)
                     : "0.0";
                 const isActive = activeItemId === item.id;
+                const prevAmount = previousMap.get(item.categoryId);
+                const delta =
+                  prevAmount === undefined ? null : item.value - prevAmount;
                 return (
                   <button
                     key={item.id}
@@ -268,6 +288,27 @@ export function CategoryPieChart({ data }: { data: DashboardCategoryData }) {
                       <span className="text-xs text-muted-foreground tabular-nums">
                         <CurrencyAmount amount={item.value} /> ({percentage}%)
                       </span>
+                      {delta !== null && (
+                        <span
+                          className={`text-[11px] tabular-nums ${
+                            delta > 0
+                              ? "text-expense"
+                              : delta < 0
+                                ? "text-income"
+                                : "text-muted-foreground"
+                          }`}
+                        >
+                          {delta === 0 ? (
+                            "Same as last period"
+                          ) : (
+                            <>
+                              {delta > 0 ? "▲" : "▼"}{" "}
+                              <CurrencyAmount amount={Math.abs(delta)} /> vs
+                              last period
+                            </>
+                          )}
+                        </span>
+                      )}
                     </div>
                   </button>
                 );
