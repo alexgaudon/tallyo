@@ -4,8 +4,8 @@ import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { PageHeader } from "@/components/layout/page-header";
+import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -190,7 +190,11 @@ function RouteComponent() {
         </DialogContent>
       </Dialog>
 
-      <PageHeader eyebrow="Account" title="Settings" description="Manage privacy, integrations, and the tools connected to your financial data." />
+      <PageHeader
+        eyebrow="Account"
+        title="Settings"
+        description="Manage privacy, integrations, and the tools connected to your financial data."
+      />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
         <div className="space-y-8">

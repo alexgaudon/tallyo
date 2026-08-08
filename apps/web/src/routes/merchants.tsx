@@ -3,9 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Search, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/layout/page-header";
 import { CreateMerchantForm } from "@/components/merchants/create-merchant-form";
 import { MerchantList } from "@/components/merchants/merchant-list";
-import { PageHeader } from "@/components/layout/page-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,53 +104,58 @@ function RouteComponent() {
 
   return (
     <div className="min-h-full">
-      <PageHeader eyebrow="Vendors & payees" title="Merchants" description="Normalize transaction descriptions and keep automatic categorization reliable." actions={<>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    disabled={
-                      isApplyingAll ||
-                      isLoading ||
-                      (merchants?.length ?? 0) === 0
-                    }
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
+      <PageHeader
+        eyebrow="Vendors & payees"
+        title="Merchants"
+        description="Normalize transaction descriptions and keep automatic categorization reliable."
+        actions={
+          <>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  disabled={
+                    isApplyingAll || isLoading || (merchants?.length ?? 0) === 0
+                  }
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Apply all
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Apply All Merchants</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will attempt to automatically match all unreviewed
+                    transactions to merchants based on their keywords. This
+                    action may modify many transactions at once.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleApplyAllMerchants}>
                     Apply all
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Apply All Merchants</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will attempt to automatically match all unreviewed
-                      transactions to merchants based on their keywords. This
-                      action may modify many transactions at once.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleApplyAllMerchants}>
-                      Apply all
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
-                    <Plus className="w-4 h-4 mr-2" />
-                    New merchant
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>New Merchant</DialogTitle>
-                  </DialogHeader>
-                  <CreateMerchantForm callback={() => setOpen(false)} />
-                </DialogContent>
-              </Dialog>
-      </>} />
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New merchant
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>New Merchant</DialogTitle>
+                </DialogHeader>
+                <CreateMerchantForm callback={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </>
+        }
+      />
 
       <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
         <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
@@ -166,7 +171,11 @@ function RouteComponent() {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
-          <MerchantList merchants={filteredMerchants} isLoading={isLoading} onDelete={handleDelete} />
+          <MerchantList
+            merchants={filteredMerchants}
+            isLoading={isLoading}
+            onDelete={handleDelete}
+          />
         </div>
       </div>
     </div>

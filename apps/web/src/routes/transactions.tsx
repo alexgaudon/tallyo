@@ -7,8 +7,8 @@ import {
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { Search } from "@/components/transactions/search";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { Button } from "@/components/ui/button";
@@ -439,37 +439,43 @@ function RouteComponent() {
   return (
     <EntityPickerProvider>
       <div className="min-h-full">
-        <PageHeader eyebrow="Your activity" title="Transactions" description="Review, categorize, and keep every movement of money in order." actions={<Dialog
-                open={isCreateFormOpen}
-                onOpenChange={(open) => {
-                  setIsCreateFormOpen(open);
-                }}
-              >
-                <DialogTrigger asChild>
-                  <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add transaction
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[620px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Transaction</DialogTitle>
-                    <DialogDescription>
-                      Add a new transaction to your records.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <CreateTransactionForm
-                    callback={() => {
-                      queryClient.invalidateQueries({
-                        queryKey:
-                          createTransactionQueryOptions(effectiveSearch)
-                            .queryKey,
-                      });
-                      setIsCreateFormOpen(false);
-                    }}
-                  />
-                </DialogContent>
-              </Dialog>} />
+        <PageHeader
+          eyebrow="Your activity"
+          title="Transactions"
+          description="Review, categorize, and keep every movement of money in order."
+          actions={
+            <Dialog
+              open={isCreateFormOpen}
+              onOpenChange={(open) => {
+                setIsCreateFormOpen(open);
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add transaction
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[620px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Transaction</DialogTitle>
+                  <DialogDescription>
+                    Add a new transaction to your records.
+                  </DialogDescription>
+                </DialogHeader>
+                <CreateTransactionForm
+                  callback={() => {
+                    queryClient.invalidateQueries({
+                      queryKey:
+                        createTransactionQueryOptions(effectiveSearch).queryKey,
+                    });
+                    setIsCreateFormOpen(false);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          }
+        />
 
         <div className="max-w-screen-2xl mx-auto space-y-6 px-4 py-8 lg:px-8">
           {/* Search */}
