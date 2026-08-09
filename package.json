@@ -21,7 +21,8 @@
 		"db:dev": "docker compose up -d postgres",
 		"db:dev:attached": "docker compose up postgres",
 		"db:down": "docker compose down",
-		"db:seed": "turbo -F server db:seed"
+		"db:seed": "turbo -F server db:seed",
+		"db:refresh": "turbo -F server db:refresh"
 	},
 	"dependencies": {
 		"@tanstack/react-hotkeys": "^0.10.0",
