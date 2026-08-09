@@ -1,7 +1,9 @@
 import {
+  CalendarDays,
   Minus,
   PiggyBankIcon,
   Plus,
+  Receipt,
   TrendingDownIcon,
   TrendingUpIcon,
 } from "lucide-react";
@@ -116,6 +118,35 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
             >
               {savingsRate}%
             </span>
+          </div>
+        </div>
+
+        <div className="border-t border-border/60 pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Avg Daily Spend
+              </span>
+            </div>
+            <CurrencyAmount
+              animate
+              amount={Number(data.stats.avgDailyExpense) || 0}
+              className="text-base font-semibold tabular-nums"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Avg Expense / Transaction
+              </span>
+            </div>
+            <CurrencyAmount
+              animate
+              amount={Number(data.stats.avgExpensePerTransaction) || 0}
+              className="text-base font-semibold tabular-nums"
+            />
           </div>
         </div>
       </div>
