@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { Check, Split, Trash } from "lucide-react";
 import {
@@ -19,6 +19,12 @@ import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog"
 import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
 import {
   Table,
@@ -169,6 +175,7 @@ interface TransactionCardProps {
   onEditCategory: (categoryId: string) => void;
   onCreateCategory: () => void;
   onSplit?: () => void;
+  onSplitHalf?: (transaction: Transaction) => void;
   isSplit?: boolean;
   suggestedMerchant?: MerchantWithKeywordsAndCategory | null;
 }
@@ -188,6 +195,7 @@ const TransactionCard = memo(function TransactionCard({
   onEditCategory,
   onCreateCategory,
   onSplit,
+  onSplitHalf,
   isSplit,
   suggestedMerchant,
 }: TransactionCardProps) {
@@ -262,15 +270,35 @@ const TransactionCard = memo(function TransactionCard({
 
           <div className="flex items-center gap-1 shrink-0">
             {!isSplit && !transaction.reviewed && onSplit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onSplit}
-                className="h-10 w-10 text-muted-foreground hover:text-foreground"
-                aria-label="Split transaction"
-              >
-                <Split className="h-5 w-5" />
-              </Button>
+              <DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-10 w-10 text-muted-foreground hover:text-foreground"
+                          aria-label="Split transaction"
+                        >
+                          <Split className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Split transaction</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => onSplitHalf?.(transaction)}>
+                    Split in half
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={onSplit}>
+                    Custom split...
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             <AlertDialog>
@@ -521,6 +549,31 @@ export function TransactionsTable({
     transaction: Transaction | null;
   }>({ open: false, transaction: null });
 
+  const queryClient = useQueryClient();
+
+  const { mutateAsync: quickSplitTransaction } = useMutation(
+    orpc.transactions.splitTransaction.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey });
+      },
+    }),
+  );
+
+  const handleQuickSplit = async (transaction: Transaction) => {
+    if (!transaction) return;
+    const absAmount = Math.abs(transaction.amount);
+    const sign = transaction.amount < 0 ? -1 : 1;
+    const firstHalf = Math.ceil(absAmount / 2);
+    const secondHalf = absAmount - firstHalf;
+    await quickSplitTransaction({
+      id: transaction.id,
+      splits: [
+        { amount: firstHalf * sign, categoryId: null },
+        { amount: secondHalf * sign, categoryId: null },
+      ],
+    });
+  };
+
   const unsavedChanges = useRef<Record<string, string>>({});
   const updateNotesRef = useRef(updateNotes);
   const transactionsRef = useRef(transactions);
@@ -680,25 +733,38 @@ export function TransactionsTable({
 
     return (
       <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSplitDialog({ open: true, transaction })}
-              className={cn(
-                "text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors",
-                buttonSizeClass,
-              )}
-              aria-label="Split transaction"
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors",
+                    buttonSizeClass,
+                  )}
+                  aria-label="Split transaction"
+                >
+                  <Split className={iconSizeClass} />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Split transaction</p>
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => handleQuickSplit(transaction)}>
+              Split in half
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setSplitDialog({ open: true, transaction })}
             >
-              <Split className={iconSizeClass} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Split transaction</p>
-          </TooltipContent>
-        </Tooltip>
+              Custom split...
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TooltipProvider>
     );
   };
@@ -1064,6 +1130,7 @@ export function TransactionsTable({
               }
               onCreateCategory={() => setCreateCategoryDialog(true)}
               onSplit={() => setSplitDialog({ open: true, transaction })}
+              onSplitHalf={handleQuickSplit}
               isSplit={isSplitTransaction(transaction)}
               suggestedMerchant={
                 suggestedMerchantByTransactionId.get(transaction.id) ?? null
