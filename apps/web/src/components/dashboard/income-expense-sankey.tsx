@@ -557,10 +557,12 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                           ) {
                             percentDenom = data.totalExpenses;
                           }
+                          const amountText = formatCurrency(node.value || 0);
+                          const pctText = `${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%`;
                           setTooltip({
                             x: rect.left + rect.width / 2,
                             y: rect.top - 10,
-                            content: `${formatCurrency(node.value || 0)} (${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%)`,
+                            content: `${formatValueWithPrivacy(amountText, isPrivacyMode)} (${formatValueWithPrivacy(pctText, isPrivacyMode)})`,
                           });
                         }}
                         onMouseLeave={() => {
