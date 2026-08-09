@@ -10,7 +10,7 @@
 		"prepare": "husky",
 		"dev": "turbo dev --filter=web --filter=server",
 		"build": "turbo build --filter=web --filter=server",
-		"check-types": "turbo check-types",
+		"check-types": "rm -rf apps/server/dist apps/web/tsconfig.tsbuildinfo && turbo check-types",
 		"dev:native": "turbo -F native dev",
 		"dev:web": "turbo -F web dev",
 		"dev:server": "turbo -F server dev",
