@@ -74,7 +74,7 @@ export function TransactionStats({
             navigate({
               to: "/transactions",
               search: {
-                filter: transaction.transactionDetails,
+                filter: transaction.id,
               },
             })
           }
@@ -94,6 +94,10 @@ export function TransactionStats({
                     transaction.merchantName
                       ? transaction.merchantName
                       : "Unknown Merchant"
+                  }${
+                    transaction.categoryName
+                      ? ` • ${transaction.categoryName}`
+                      : ""
                   } • `}
                   {transaction.date ? (
                     <TooltipProvider>
@@ -119,6 +123,11 @@ export function TransactionStats({
                     "Unknown Date"
                   )}
                 </p>
+                {transaction.notes ? (
+                  <p className="text-xs text-muted-foreground truncate max-w-[280px]">
+                    {transaction.notes}
+                  </p>
+                ) : null}
               </div>
             </div>
             <div className="text-right">
