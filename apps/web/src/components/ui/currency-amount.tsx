@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 
@@ -57,32 +57,33 @@ export function CurrencyAmount({
 	as,
 	forcePrivacyMode,
 	animate = false,
-	animationDuration = 1000,
+	animationDuration = 400,
 }: CurrencyAmountProps) {
 	const { data: session } = useSession();
 	const isPrivacyMode =
 		forcePrivacyMode ?? session?.settings?.isPrivacyMode ?? false;
 
-	const [animatedAmount, setAnimatedAmount] = useState(amount);
+	const [animatedAmount, setAnimatedAmount] = useState(animate ? 0 : amount);
 	const [isAnimating, setIsAnimating] = useState(false);
+	const frameRef = useRef<number | null>(null);
+	const prevAmountRef = useRef(animate ? 0 : amount);
 
 	useEffect(() => {
 		if (!animate) {
 			setAnimatedAmount(amount);
+			prevAmountRef.current = amount;
 			return;
 		}
 
-		// Only animate when the amount changes, not on first render
-		const prevAmount = animatedAmount;
-		if (prevAmount === amount) {
+		const startAmount = prevAmountRef.current;
+		const targetAmount = amount;
+		if (startAmount === targetAmount) {
 			return;
 		}
 
 		setIsAnimating(true);
 
 		const startTime = Date.now();
-		const startAmount = prevAmount;
-		const targetAmount = amount;
 		const difference = targetAmount - startAmount;
 
 		const animateValue = () => {
@@ -91,19 +92,28 @@ export function CurrencyAmount({
 
 			// Easing function for smooth animation
 			const easeOutQuart = 1 - (1 - progress) ** 4;
-			const currentAmount = Math.round(startAmount + difference * easeOutQuart);
+			const currentAmount = Math.round(
+				startAmount + difference * easeOutQuart,
+			);
 
 			setAnimatedAmount(currentAmount);
 
 			if (progress < 1) {
-				requestAnimationFrame(animateValue);
+				frameRef.current = requestAnimationFrame(animateValue);
 			} else {
+				prevAmountRef.current = targetAmount;
 				setIsAnimating(false);
 			}
 		};
 
-		requestAnimationFrame(animateValue);
-	}, [amount, animate, animationDuration, animatedAmount]);
+		frameRef.current = requestAnimationFrame(animateValue);
+
+		return () => {
+			if (frameRef.current !== null) {
+				cancelAnimationFrame(frameRef.current);
+			}
+		};
+	}, [amount, animate, animationDuration]);
 
 	const formattedAmount = formatCurrency(animatedAmount, currency);
 	const displayValue = formatValueWithPrivacy(formattedAmount, isPrivacyMode);
