@@ -49,10 +49,6 @@ export type DashboardPeriodComparison = InferRouterOutputs<
   typeof dashboardRouter
 >["getPeriodComparison"];
 
-export type DashboardDataQuality = InferRouterOutputs<
-  typeof dashboardRouter
->["getDataQuality"];
-
 export const appRouter = {
   healthCheck: publicProcedure.handler(async () => {
     try {

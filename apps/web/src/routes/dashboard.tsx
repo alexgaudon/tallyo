@@ -10,7 +10,6 @@ import { type ReactNode, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
-import { DataQualityCard } from "@/components/dashboard/data-quality-card";
 import { IncomeExpenseSankey } from "@/components/dashboard/income-expense-sankey";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
@@ -78,11 +77,6 @@ export const Route = createFileRoute("/dashboard")({
       ),
       context.queryClient.prefetchQuery(
         orpc.dashboard.getPeriodComparison.queryOptions({
-          input: dateRangeToApiFormat(dateRange),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        orpc.dashboard.getDataQuality.queryOptions({
           input: dateRangeToApiFormat(dateRange),
         }),
       ),
@@ -173,21 +167,13 @@ function RouteComponent() {
     }),
   );
 
-  const { data: dataQuality, isLoading: isDataQualityLoading } = useQuery(
-    orpc.dashboard.getDataQuality.queryOptions({
-      placeholderData: (previousData) => previousData,
-      input: dateRangeToApiFormat(dateRange),
-    }),
-  );
-
   const isLoading =
     isStatsLoading ||
     isCategoryLoading ||
     isMerchantLoading ||
     isTransactionLoading ||
     isSankeyLoading ||
-    isPeriodLoading ||
-    isDataQualityLoading;
+    isPeriodLoading;
 
   return (
     <div className="min-h-full overflow-x-hidden">
@@ -209,8 +195,6 @@ function RouteComponent() {
               })
             }
           />
-
-          <DataQualityCard data={dataQuality} />
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.65fr)] xl:items-start">
             <SectionPanel title="Cash flow overview">
