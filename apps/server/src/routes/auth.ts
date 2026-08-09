@@ -57,9 +57,13 @@ authRoutes.get("/discord/authorize", async (c) => {
 
   const authUrl = getDiscordAuthUrl(stateParam);
   const response = c.redirect(authUrl);
-  response.headers.set(
+  response.headers.append(
     "Set-Cookie",
     buildCookieString("oauth_state", stateParam, 600),
+  );
+  response.headers.append(
+    "Set-Cookie",
+    buildCookieString("oauth_origin", getRedirectOrigin(c), 600),
   );
   return response;
 });
@@ -99,10 +103,12 @@ authRoutes.get("/callback/discord", async (c) => {
     const isRegister = !usersExist;
     const { sessionToken } = await handleDiscordCallback(code, isRegister);
 
-    const redirectOrigin = getRedirectOrigin(c);
+    const oauthOrigin = parseCookie(c.req.header("Cookie"), "oauth_origin");
+    const redirectOrigin = oauthOrigin || getRedirectOrigin(c);
     const response = c.redirect(`${redirectOrigin}/dashboard`);
     response.headers.append("Set-Cookie", sessionCookieString(sessionToken));
     response.headers.append("Set-Cookie", clearCookieString("oauth_state"));
+    response.headers.append("Set-Cookie", clearCookieString("oauth_origin"));
     return response;
   } catch (err) {
     logger.error("Discord callback failed", { error: err });
@@ -121,11 +127,13 @@ authRoutes.post("/signout", async (c) => {
 });
 
 function callbackError(c: Context, message: string): Response {
-  const redirectOrigin = getRedirectOrigin(c);
+  const oauthOrigin = parseCookie(c.req.header("Cookie"), "oauth_origin");
+  const redirectOrigin = oauthOrigin || getRedirectOrigin(c);
   const headers = new Headers({
     Location: `${redirectOrigin}/signin?error=${encodeURIComponent(message)}`,
   });
   headers.append("Set-Cookie", clearCookieString("oauth_state"));
+  headers.append("Set-Cookie", clearCookieString("oauth_origin"));
   return new Response(null, { status: 302, headers });
 }
 
