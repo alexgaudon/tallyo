@@ -547,6 +547,7 @@ export const dashboardRouter = {
             id: category.id,
             name: category.name,
             icon: category.icon,
+            parentCategoryId: category.parentCategoryId,
           },
         })
         .from(transaction)
@@ -561,8 +562,44 @@ export const dashboardRouter = {
             ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
           ),
         )
-        .groupBy(category.id, category.name, category.icon)
+        .groupBy(
+          category.id,
+          category.name,
+          category.icon,
+          category.parentCategoryId,
+        )
         .orderBy(desc(sum(transaction.amount)));
+
+      const parentCategoryIds = result
+        .map((item) => item.category.parentCategoryId)
+        .filter(Boolean) as string[];
+
+      const parentCategories =
+        parentCategoryIds.length > 0
+          ? await db
+              .select({
+                id: category.id,
+                name: category.name,
+                icon: category.icon,
+                userId: category.userId,
+                parentCategoryId: category.parentCategoryId,
+                treatAsIncome: category.treatAsIncome,
+                hideFromInsights: category.hideFromInsights,
+                createdAt: category.createdAt,
+                updatedAt: category.updatedAt,
+              })
+              .from(category)
+              .where(
+                and(
+                  eq(category.userId, userId),
+                  inArray(category.id, parentCategoryIds),
+                ),
+              )
+          : [];
+
+      const parentCategoryMap = new Map(
+        parentCategories.map((parent) => [parent.id, parent]),
+      );
 
       return result.map((item) => ({
         amount: Math.abs(Number(item.amount ?? 0)),
@@ -572,11 +609,14 @@ export const dashboardRouter = {
           name: item.category.name,
           icon: item.category.icon,
           userId,
-          parentCategoryId: null,
+          parentCategoryId: item.category.parentCategoryId,
           treatAsIncome: false,
           hideFromInsights: false,
           createdAt: new Date(),
           updatedAt: new Date(),
+          parentCategory: item.category.parentCategoryId
+            ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
+            : null,
         },
       }));
     }),
