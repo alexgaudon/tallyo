@@ -1,4 +1,5 @@
-import { CheckCircle2, Eye, Tag } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, CheckCircle2, Eye, Tag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { DashboardDataQuality } from "../../../../server/src/routers";
 
@@ -46,7 +47,18 @@ export function DataQualityCard({
               Unreviewed
             </p>
             <p className="text-lg font-semibold tabular-nums">{unreviewed}</p>
-            <p className="text-xs text-muted-foreground">In this period</p>
+            {unreviewed > 0 ? (
+              <Link
+                to="/transactions"
+                search={{ onlyUnreviewed: true }}
+                className="inline-flex items-center gap-0.5 text-xs font-medium text-accent hover:underline"
+              >
+                Review now
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            ) : (
+              <p className="text-xs text-muted-foreground">In this period</p>
+            )}
           </div>
         </div>
 

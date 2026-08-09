@@ -16,7 +16,6 @@ import { MerchantStats } from "@/components/dashboard/merchant-stats";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
 import { TransactionStats } from "@/components/dashboard/transaction-stats";
-import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { PageHeader } from "@/components/layout/page-header";
@@ -200,16 +199,6 @@ function RouteComponent() {
         />
 
         <div className="max-w-screen-2xl mx-auto space-y-8 px-4 py-8 lg:px-8">
-          <UnreviewedTransactionsBanner
-            count={session?.meta?.unreviewedTransactionCount ?? 0}
-            onReviewClick={() =>
-              navigate({
-                to: "/transactions",
-                search: { onlyUnreviewed: true },
-              })
-            }
-          />
-
           <DataQualityCard data={dataQuality} />
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.65fr)] xl:items-start">
