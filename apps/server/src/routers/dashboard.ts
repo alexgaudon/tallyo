@@ -153,6 +153,8 @@ async function getStatsForDateRange(
     avgIncomeAmountPerMonth: number;
     avgExpenseAmountPerMonth: number;
     periodLengthInDays: number;
+    avgDailyExpense: number;
+    avgExpensePerTransaction: number;
     avgIncomeForWindow: number | null;
     avgExpenseForWindow: number | null;
     avgTransactionCountForWindow: number | null;
@@ -429,6 +431,22 @@ async function getStatsForDateRange(
     }
   }
 
+  const expenseSum = (() => {
+    if (expenseCount.status !== "fulfilled" || !expenseCount.value[0].amount) {
+      return 0;
+    }
+    return Math.abs(Number(expenseCount.value[0].amount));
+  })();
+  const expenseTxCount =
+    expenseTransactionCount.status === "fulfilled"
+      ? expenseTransactionCount.value[0].count
+      : 0;
+
+  const avgDailyExpense =
+    periodLengthInDays > 0 ? Math.round(expenseSum / periodLengthInDays) : 0;
+  const avgExpensePerTransaction =
+    expenseTxCount > 0 ? Math.round(expenseSum / expenseTxCount) : 0;
+
   return {
     stats: {
       totalTransactions:
@@ -448,6 +466,8 @@ async function getStatsForDateRange(
       avgIncomeAmountPerMonth: avgIncomeAmountPerMonth,
       avgExpenseAmountPerMonth: avgExpenseAmountPerMonth,
       periodLengthInDays,
+      avgDailyExpense,
+      avgExpensePerTransaction,
       avgIncomeForWindow,
       avgExpenseForWindow,
       avgTransactionCountForWindow,
