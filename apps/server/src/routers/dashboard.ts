@@ -503,7 +503,9 @@ export const dashboardRouter = {
             amount: transaction.amount,
             date: transaction.date,
             transactionDetails: transaction.transactionDetails,
+            notes: transaction.notes,
             merchantName: merchant.name,
+            categoryName: category.name,
           })
           .from(transaction)
           .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
