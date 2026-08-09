@@ -1,5 +1,5 @@
-import { addDays, format } from "date-fns";
-import { and, asc, count, eq, lte } from "drizzle-orm";
+import { format } from "date-fns";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { account, settings, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
@@ -106,21 +106,9 @@ export const metaRouter = {
       },
     });
 
-    const unreviewedTransactionCount = await db
-      .select({ count: count() })
-      .from(transaction)
-      .where(
-        and(
-          eq(transaction.userId, context.session?.user?.id),
-          eq(transaction.reviewed, false),
-          lte(transaction.date, format(addDays(new Date(), 30), "yyyy-MM-dd")),
-        ),
-      );
-
     return {
       earliestTransactionDate:
         earliestTransactionDate?.date ?? format(new Date(), "yyyy-MM-dd"),
-      unreviewedTransactionCount: unreviewedTransactionCount[0]?.count ?? 0,
     };
   }),
 };

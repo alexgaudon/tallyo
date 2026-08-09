@@ -73,7 +73,7 @@ export const useSessionFetch = async () => {
         isPrivacyMode: false,
         webhookUrls: [],
       },
-      meta: { unreviewedTransactionCount: 0, earliestTransactionDate: null },
+      meta: { earliestTransactionDate: null },
       isAuthenticated: true,
     };
   }

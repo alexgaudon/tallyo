@@ -162,8 +162,6 @@ async function getStatsForDateRange(
     transactionCount,
     expenseCount,
     incomeCount,
-    expenseTransactionCount,
-    incomeTransactionCount,
     avgIncomeAmountsPerMonth,
     avgExpenseAmountsPerMonth,
     avgIncomeTransactionsPerMonth,
@@ -195,34 +193,6 @@ async function getStatsForDateRange(
       ),
     db
       .select({ amount: sum(transaction.amount) })
-      .from(transaction)
-      .innerJoin(category, eq(transaction.categoryId, category.id))
-      .where(
-        and(
-          eq(transaction.userId, userId),
-          eq(category.treatAsIncome, true),
-          eq(category.hideFromInsights, false),
-          eq(transaction.reviewed, true),
-          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-        ),
-      ),
-    db
-      .select({ count: count() })
-      .from(transaction)
-      .innerJoin(category, eq(transaction.categoryId, category.id))
-      .where(
-        and(
-          eq(transaction.userId, userId),
-          eq(category.treatAsIncome, false),
-          eq(category.hideFromInsights, false),
-          eq(transaction.reviewed, true),
-          ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-          ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-        ),
-      ),
-    db
-      .select({ count: count() })
       .from(transaction)
       .innerJoin(category, eq(transaction.categoryId, category.id))
       .where(
@@ -332,12 +302,6 @@ async function getStatsForDateRange(
     );
     avgIncomeAmountPerMonth =
       totalIncomeAmount / avgIncomeAmountsPerMonth.value.length;
-  } else {
-    const totalIncomeAmount =
-      incomeCount.status === "fulfilled" && incomeCount.value[0].amount
-        ? Math.abs(Number(incomeCount.value[0].amount))
-        : 0;
-    if (totalIncomeAmount > 0) avgIncomeAmountPerMonth = totalIncomeAmount / 6;
   }
 
   if (
@@ -350,13 +314,6 @@ async function getStatsForDateRange(
     );
     avgExpenseAmountPerMonth =
       totalExpenseAmount / avgExpenseAmountsPerMonth.value.length;
-  } else {
-    const totalExpenseAmount =
-      expenseCount.status === "fulfilled" && expenseCount.value[0].amount
-        ? Math.abs(Number(expenseCount.value[0].amount))
-        : 0;
-    if (totalExpenseAmount > 0)
-      avgExpenseAmountPerMonth = totalExpenseAmount / 6;
   }
 
   if (
@@ -370,13 +327,6 @@ async function getStatsForDateRange(
     avgIncomeTransactions = Math.round(
       totalIncomeTransactions / avgIncomeTransactionsPerMonth.value.length,
     );
-  } else {
-    const totalIncomeCount =
-      incomeTransactionCount.status === "fulfilled"
-        ? incomeTransactionCount.value[0].count
-        : 0;
-    if (totalIncomeCount > 0)
-      avgIncomeTransactions = Math.round(totalIncomeCount / 6);
   }
 
   if (
@@ -391,13 +341,6 @@ async function getStatsForDateRange(
     avgExpenseTransactions = Math.round(
       totalExpenseTransactions / avgExpenseTransactionsPerMonth.value.length,
     );
-  } else {
-    const totalExpenseCount =
-      expenseTransactionCount.status === "fulfilled"
-        ? expenseTransactionCount.value[0].count
-        : 0;
-    if (totalExpenseCount > 0)
-      avgExpenseTransactions = Math.round(totalExpenseCount / 6);
   }
 
   let periodLengthInDays = 30;
