@@ -245,6 +245,50 @@ List all categories for the authenticated user.
 
 ---
 
+## POST /api/merchants
+
+Create a merchant with optional keywords.
+
+### Request Headers
+- `Authorization: Bearer <token>` (required)
+- `Content-Type: application/json`
+
+### Request Body
+```json
+{
+  "name": "Whole Foods",
+  "recommendedCategoryId": "optional-category-uuid",
+  "keywords": ["WHOLEFDS", "WHOLE FOODS"]
+}
+```
+
+- `name` (string, required): Merchant name.
+- `recommendedCategoryId` (string, optional): Category UUID used to auto-categorize transactions matched to this merchant.
+- `keywords` (array of strings, optional): Matching keywords used to auto-assign transactions to this merchant.
+
+### Response
+```json
+{
+  "merchant": {
+    "id": "merchant-uuid",
+    "name": "Whole Foods",
+    "userId": "user-uuid",
+    "recommendedCategoryId": "cat-uuid",
+    "createdAt": "...",
+    "updatedAt": "...",
+    "keywords": [
+      { "id": "kw-uuid", "merchantId": "merchant-uuid", "userId": "user-uuid", "keyword": "WHOLEFDS", ... }
+    ],
+    "recommendedCategory": { "id": "cat-uuid", "name": "Groceries", ... }
+  },
+  "message": "Successfully created merchant"
+}
+```
+
+Returns `409` if a merchant with the same name already exists for the user. Returns `404` if `recommendedCategoryId` does not belong to the user.
+
+---
+
 ## GET /api/merchants
 
 List all merchants for the authenticated user.
