@@ -6,7 +6,7 @@ import type { Context } from "hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "./db";
-import { category, merchant, transaction } from "./db/schema";
+import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
 import {
@@ -579,6 +579,111 @@ externalApi.get("/merchants", async (c) => {
     return c.json({ merchants });
   } catch (error) {
     logger.error("API merchants fetch failed", {
+      error,
+      metadata: {
+        method: c.req.method,
+        url: c.req.url,
+      },
+    });
+    if (error instanceof Error) {
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+// POST /merchants - Create a merchant with optional keywords
+externalApi.post("/merchants", async (c) => {
+  try {
+    const userId = await getUserIdFromBearerToken(c);
+    if (!userId) {
+      return c.json(
+        { error: "Missing, invalid, or expired Authorization header" },
+        401,
+      );
+    }
+
+    const body = await c.req.json();
+
+    const createMerchantSchema = z.object({
+      name: z.string().min(1),
+      recommendedCategoryId: z.string().optional(),
+      keywords: z.array(z.string()).optional(),
+    });
+
+    const validationResult = createMerchantSchema.safeParse(body);
+    if (!validationResult.success) {
+      return c.json(
+        {
+          error: "Invalid request format",
+          details: validationResult.error.issues,
+        },
+        400,
+      );
+    }
+
+    const { name, recommendedCategoryId, keywords } = validationResult.data;
+
+    const existingMerchant = await db.query.merchant.findFirst({
+      where: and(eq(merchant.name, name), eq(merchant.userId, userId)),
+    });
+    if (existingMerchant) {
+      return c.json({ error: "A merchant with this name already exists" }, 409);
+    }
+
+    if (recommendedCategoryId) {
+      const categoryRecord = await db.query.category.findFirst({
+        where: and(
+          eq(category.id, recommendedCategoryId),
+          eq(category.userId, userId),
+        ),
+      });
+      if (!categoryRecord) {
+        return c.json({ error: "Recommended category not found" }, 404);
+      }
+    }
+
+    const createdMerchants = await db
+      .insert(merchant)
+      .values({
+        name,
+        userId,
+        recommendedCategoryId,
+      })
+      .returning();
+
+    const createdMerchant = createdMerchants[0];
+
+    if (keywords && keywords.length > 0) {
+      await db.insert(merchantKeyword).values(
+        keywords.map((keyword) => ({
+          merchantId: createdMerchant.id,
+          userId,
+          keyword: keyword.trim(),
+        })),
+      );
+    }
+
+    const merchantWithKeywords = await db.query.merchant.findFirst({
+      where: and(
+        eq(merchant.id, createdMerchant.id),
+        eq(merchant.userId, userId),
+      ),
+      with: {
+        keywords: true,
+        recommendedCategory: true,
+      },
+    });
+
+    return c.json(
+      {
+        merchant: merchantWithKeywords,
+        message: "Successfully created merchant",
+      },
+      201,
+    );
+  } catch (error) {
+    logger.error("API merchant creation failed", {
       error,
       metadata: {
         method: c.req.method,
