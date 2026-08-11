@@ -9,32 +9,41 @@ import {
 } from "../lib/merchant-matching";
 import { protectedProcedure } from "../lib/orpc";
 
-export async function getMerchantFromVendor(vendor: string, userId: string) {
-  try {
-    // Fetch all merchants with keywords for the user and score them
-    const userMerchants = await db.query.merchant.findMany({
-      where: eq(merchant.userId, userId),
-      with: {
-        keywords: {
-          columns: {
-            keyword: true,
-          },
+/** Fetch a user's merchants (id, name, recommended category, keywords) for
+ *  in-memory keyword matching. Reuse this once per request instead of calling
+ *  getMerchantFromVendor repeatedly (which re-queries all merchants each time).
+ */
+export async function getUserMerchantsForMatching(
+  userId: string,
+): Promise<MatchableMerchant[]> {
+  return db.query.merchant.findMany({
+    where: eq(merchant.userId, userId),
+    columns: {
+      id: true,
+      name: true,
+      recommendedCategoryId: true,
+    },
+    with: {
+      keywords: {
+        columns: {
+          keyword: true,
         },
       },
-    });
+    },
+  });
+}
 
-    const bestMatch = findBestMatchingMerchant(
-      userMerchants as MatchableMerchant[],
-      vendor,
-    );
+export async function getMerchantFromVendor(vendor: string, userId: string) {
+  try {
+    const userMerchants = await getUserMerchantsForMatching(userId);
+
+    const bestMatch = findBestMatchingMerchant(userMerchants, vendor);
 
     return bestMatch
       ? {
           id: bestMatch.id,
           name: bestMatch.name,
-          recommendedCategoryId:
-            (bestMatch as { recommendedCategoryId?: string | null })
-              .recommendedCategoryId ?? null,
+          recommendedCategoryId: bestMatch.recommendedCategoryId ?? null,
         }
       : null;
   } catch (error) {

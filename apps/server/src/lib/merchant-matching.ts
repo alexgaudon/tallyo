@@ -1,6 +1,7 @@
 export interface MatchableMerchant {
   id: string;
   name: string;
+  recommendedCategoryId?: string | null;
   keywords?: { keyword: string }[];
 }
 
