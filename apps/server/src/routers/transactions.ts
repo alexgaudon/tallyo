@@ -36,6 +36,10 @@ const withErrorHandling = <T>(
   });
 };
 
+// Transactions dated further in the future than this are filtered out as
+// likely data-entry errors. The external import API allows up to this window.
+export const MAX_FUTURE_TRANSACTION_DAYS = 30;
+
 export const getTransactionWithRelations = async (transactionId: string) => {
   return await db.query.transaction.findFirst({
     where: eq(transaction.id, transactionId),
@@ -245,11 +249,12 @@ export const transactionsRouter = {
         async () => {
           const conditions = [];
 
-          // Filter out transactions more than 10 days in the future
-          const tenDaysFromNow = new Date();
-          tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 30);
-          const maxDate = tenDaysFromNow.toISOString().split("T")[0];
-          conditions.push(lte(transaction.date, maxDate));
+          // Filter out transactions more than MAX_FUTURE_TRANSACTION_DAYS in the future
+          const maxDate = new Date();
+          maxDate.setDate(maxDate.getDate() + MAX_FUTURE_TRANSACTION_DAYS);
+          conditions.push(
+            lte(transaction.date, maxDate.toISOString().split("T")[0]),
+          );
 
           if (input.category)
             conditions.push(eq(transaction.categoryId, input.category));
@@ -485,47 +490,50 @@ export const transactionsRouter = {
             );
           }
 
-          // Delete the original transaction
-          await db.delete(transaction).where(eq(transaction.id, input.id));
+          // Delete the original and insert the splits atomically so a failed
+          // insert cannot leave the transaction permanently deleted.
+          return db.transaction(async (tx) => {
+            await tx.delete(transaction).where(eq(transaction.id, input.id));
 
-          // Create new transactions for each split
-          const createdTransactions = [];
+            // Create new transactions for each split
+            const createdTransactions = [];
 
-          for (let i = 0; i < input.splits.length; i++) {
-            const split = input.splits[i];
-            // First split keeps original external ID, subsequent splits get -split-N suffix
-            const splitExternalId =
-              i === 0
-                ? originalTransaction.externalId
-                : originalTransaction.externalId
-                  ? `${originalTransaction.externalId}-split-${i}`
-                  : `${originalTransaction.id}-split-${i}`;
+            for (let i = 0; i < input.splits.length; i++) {
+              const split = input.splits[i];
+              // First split keeps original external ID, subsequent splits get -split-N suffix
+              const splitExternalId =
+                i === 0
+                  ? originalTransaction.externalId
+                  : originalTransaction.externalId
+                    ? `${originalTransaction.externalId}-split-${i}`
+                    : `${originalTransaction.id}-split-${i}`;
 
-            const [newTransaction] = await db
-              .insert(transaction)
-              .values({
-                userId: context.session?.user?.id,
-                merchantId: originalTransaction.merchantId,
-                categoryId: split.categoryId,
-                amount: split.amount,
-                date: originalTransaction.date,
-                transactionDetails: originalTransaction.transactionDetails,
-                notes: originalTransaction.notes,
-                externalId: splitExternalId,
-                reviewed: originalTransaction.reviewed,
-                splitFromId: originalTransaction.id,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-              })
-              .returning();
+              const [newTransaction] = await tx
+                .insert(transaction)
+                .values({
+                  userId: context.session?.user?.id,
+                  merchantId: originalTransaction.merchantId,
+                  categoryId: split.categoryId,
+                  amount: split.amount,
+                  date: originalTransaction.date,
+                  transactionDetails: originalTransaction.transactionDetails,
+                  notes: originalTransaction.notes,
+                  externalId: splitExternalId,
+                  reviewed: originalTransaction.reviewed,
+                  splitFromId: originalTransaction.id,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                })
+                .returning();
 
-            createdTransactions.push(newTransaction);
-          }
+              createdTransactions.push(newTransaction);
+            }
 
-          return {
-            success: true,
-            transactions: createdTransactions,
-          };
+            return {
+              success: true,
+              transactions: createdTransactions,
+            };
+          });
         },
         "Error splitting transaction",
         context.session?.user?.id,
@@ -558,11 +566,12 @@ export const transactionsRouter = {
             eq(transaction.userId, context.session?.user?.id),
           ];
 
-          // Filter out transactions more than 10 days in the future
-          const tenDaysFromNow = new Date();
-          tenDaysFromNow.setDate(tenDaysFromNow.getDate() + 10);
-          const maxDate = tenDaysFromNow.toISOString().split("T")[0];
-          conditions.push(lte(transaction.date, maxDate));
+          // Filter out transactions more than MAX_FUTURE_TRANSACTION_DAYS in the future
+          const maxDate = new Date();
+          maxDate.setDate(maxDate.getDate() + MAX_FUTURE_TRANSACTION_DAYS);
+          conditions.push(
+            lte(transaction.date, maxDate.toISOString().split("T")[0]),
+          );
 
           // Date range filters
           if (input.dateFrom) {
