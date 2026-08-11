@@ -77,24 +77,29 @@ externalApi.post("/transactions", async (c) => {
     const { transactions } = validationResult.data;
 
     console.log("Transaction Count:", transactions.length);
-    const { getMerchantFromVendor } = await import("./routers/merchants");
-
-    const transactionData = await Promise.all(
-      transactions.map(async (newTransaction) => {
-        const merchantRecord = await getMerchantFromVendor(
-          newTransaction.transactionDetails,
-          userId,
-        );
-
-        return {
-          ...newTransaction,
-          merchantId: merchantRecord?.id,
-          categoryId: merchantRecord?.recommendedCategoryId,
-          userId: userId,
-          date: new Date(newTransaction.date).toISOString().split("T")[0],
-        };
-      }),
+    const { getUserMerchantsForMatching } = await import("./routers/merchants");
+    const { findBestMatchingMerchant } = await import(
+      "./lib/merchant-matching"
     );
+
+    // Load the user's merchants once and match all transactions in memory
+    // instead of re-querying the full merchant list for each transaction.
+    const userMerchants = await getUserMerchantsForMatching(userId);
+
+    const transactionData = transactions.map((newTransaction) => {
+      const merchantRecord = findBestMatchingMerchant(
+        userMerchants,
+        newTransaction.transactionDetails,
+      );
+
+      return {
+        ...newTransaction,
+        merchantId: merchantRecord?.id,
+        categoryId: merchantRecord?.recommendedCategoryId,
+        userId: userId,
+        date: new Date(newTransaction.date).toISOString().split("T")[0],
+      };
+    });
 
     const insertedTransactions = await db
       .insert(transaction)
