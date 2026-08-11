@@ -13,6 +13,7 @@ import {
   getTransactionWithRelations,
   handleKeywordAddition,
   handleKeywordRemoval,
+  MAX_FUTURE_TRANSACTION_DAYS,
   updateTransactionField,
   validateTransactionOwnership,
 } from "./routers/transactions";
@@ -164,9 +165,11 @@ externalApi.get("/transactions", async (c) => {
     const conditions = [];
     conditions.push(eq(transaction.userId, userId));
 
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-    const maxDate = thirtyDaysFromNow.toISOString().split("T")[0];
+    const maxFutureDate = new Date();
+    maxFutureDate.setDate(
+      maxFutureDate.getDate() + MAX_FUTURE_TRANSACTION_DAYS,
+    );
+    const maxDate = maxFutureDate.toISOString().split("T")[0];
     conditions.push(lte(transaction.date, maxDate));
 
     if (dateFrom) conditions.push(gte(transaction.date, dateFrom));
