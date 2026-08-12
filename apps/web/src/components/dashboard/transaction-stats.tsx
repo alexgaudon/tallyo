@@ -69,7 +69,7 @@ export function TransactionStats({
       {data.map((transaction) => (
         <Card
           key={transaction.id}
-          className="px-3 py-2 sm:px-4 sm:py-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors"
+          className="px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() =>
             navigate({
               to: "/transactions",

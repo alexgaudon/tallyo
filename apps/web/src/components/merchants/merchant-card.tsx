@@ -60,7 +60,7 @@ export function MerchantCard({ merchant, onDelete }: MerchantCardProps) {
   };
 
   return (
-    <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+    <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 pr-2">
           <div className="flex items-center gap-2 mb-1">

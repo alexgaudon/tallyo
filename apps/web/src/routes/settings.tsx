@@ -207,7 +207,7 @@ function RouteComponent() {
                 share it publicly.
               </p>
             </div>
-            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+            <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
                 <div className="relative flex-1">
                   <Input
@@ -280,7 +280,7 @@ function RouteComponent() {
                 transactions are imported.
               </p>
             </div>
-            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+            <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-4">
                 <div className="relative flex-1">
                   <Input
@@ -397,7 +397,7 @@ function RouteComponent() {
                 Enable additional developer tools and debugging options.
               </p>
             </div>
-            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+            <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={devModeId}
@@ -429,7 +429,7 @@ function RouteComponent() {
                 Hide sensitive information and transaction details from view.
               </p>
             </div>
-            <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+            <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
               <div className="flex items-center justify-between py-1">
                 <Label
                   htmlFor={privacyModeId}

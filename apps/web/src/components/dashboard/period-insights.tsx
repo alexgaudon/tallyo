@@ -195,7 +195,7 @@ export function PeriodInsights({
   }
 
   return (
-    <Card className="border-border/80 bg-card/90 p-4 sm:p-5 shadow-sm">
+    <Card className="border-border bg-card p-4 sm:p-5">
       <div className="mb-3">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {usePrevious ? "Vs previous period" : "Vs your average"}

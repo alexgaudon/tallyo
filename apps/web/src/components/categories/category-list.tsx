@@ -60,7 +60,7 @@ export function CategoryList({
         .map((orphanedChild) => (
           <div
             key={orphanedChild.id}
-            className="rounded-xl border border-border/80 bg-card shadow-sm p-4"
+            className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

@@ -142,10 +142,7 @@ function HomeComponent() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
-            <Card
-              key={feature.title}
-              className="group border-border/80 bg-card shadow-sm hover:shadow-md transition-shadow"
-            >
+            <Card key={feature.title} className="group border-border">
               <CardHeader>
                 <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3 text-muted-foreground">
                   {feature.icon}

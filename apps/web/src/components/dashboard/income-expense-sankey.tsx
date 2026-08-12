@@ -375,7 +375,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
 
   if (!data || data.totalIncome === 0) {
     return (
-      <Card className="shadow-sm">
+      <Card>
         <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-muted-foreground text-sm">
@@ -389,7 +389,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
 
   if (nodes.length === 0 || links.length === 0) {
     return (
-      <Card className="shadow-sm">
+      <Card>
         <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-muted-foreground text-sm">
@@ -402,7 +402,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
   }
 
   return (
-    <Card className="shadow-sm w-full">
+    <Card className="w-full">
       <CardContent className="p-2 md:p-4">
         <div className="w-full overflow-x-auto">
           <div className="min-w-[400px] w-full md:min-w-[550px]">

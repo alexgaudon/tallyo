@@ -40,7 +40,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
   })();
 
   return (
-    <Card className="border-border/80 bg-card/90 p-4 sm:p-5">
+    <Card className="border-border bg-card p-4 sm:p-5">
       <div className="space-y-4">
         <div>
           <p className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
