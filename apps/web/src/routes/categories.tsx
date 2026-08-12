@@ -140,14 +140,14 @@ function RouteComponent() {
                 placeholder="Search categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-10"
+                className="pl-9"
               />
             </div>
             <Select
               value={filterType}
               onValueChange={(value: FilterType) => setFilterType(value)}
             >
-              <SelectTrigger className="w-full sm:w-[140px] h-10 shrink-0">
+              <SelectTrigger className="w-full sm:w-[140px] shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
