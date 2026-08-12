@@ -8,6 +8,7 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { DashboardStats } from "../../../../server/src/routers";
 
 import { CurrencyAmount } from "../ui/currency-amount";
@@ -15,16 +16,12 @@ import { CurrencyAmount } from "../ui/currency-amount";
 export function Stats({ data }: { data: DashboardStats | undefined }) {
   if (!data) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-2xl bg-secondary p-5 mb-4 shadow-sm">
-          <TrendingUpIcon className="h-10 w-10 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Your dashboard statistics will appear here once you start adding
-          transactions.
-        </p>
-      </div>
+      <EmptyState
+        icon={<TrendingUpIcon className="h-10 w-10 text-muted-foreground" />}
+        title="No Data Available"
+        description="Your dashboard statistics will appear here once you start adding transactions."
+        bordered={false}
+      />
     );
   }
 

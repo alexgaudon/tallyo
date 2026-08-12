@@ -1,4 +1,5 @@
 import { StoreIcon } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
 import { MerchantCard } from "./merchant-card";
 
@@ -23,13 +24,12 @@ export function MerchantList({
 
   if (!merchants.length) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/80 bg-card shadow-sm">
-        <StoreIcon className="mb-3 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 text-lg font-semibold">No merchants yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Add your first merchant to get started
-        </p>
-      </div>
+      <EmptyState
+        icon={<StoreIcon className="h-12 w-12 text-muted-foreground" />}
+        title="No merchants yet"
+        description="Add your first merchant to get started"
+        bordered={false}
+      />
     );
   }
 

@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function CardListItem({
   className,
@@ -29,25 +30,20 @@ function CardListEmpty({
   icon,
   title,
   description,
-  ...props
-}: ComponentProps<"div"> & {
+}: {
+  className?: string;
   icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div
-      data-slot="card-list-empty"
-      className={cn(
-        "flex flex-col items-center justify-center py-16 text-center",
-        className
-      )}
-      {...props}
-    >
-      <div className="rounded-full bg-muted p-4 mb-4">{icon}</div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-sm">{description}</p>
-    </div>
+    <EmptyState
+      icon={icon}
+      title={title}
+      description={description}
+      bordered={false}
+      className={className}
+    />
   );
 }
 
