@@ -303,11 +303,7 @@ export function SplitTransactionDialog({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!isValid || isPending}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
-          >
+          <Button onClick={handleSubmit} disabled={!isValid || isPending}>
             {isPending ? "Splitting..." : "Split Transaction"}
           </Button>
         </DialogFooter>

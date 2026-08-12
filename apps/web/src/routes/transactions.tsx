@@ -451,7 +451,7 @@ function RouteComponent() {
               }}
             >
               <DialogTrigger asChild>
-                <Button className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
+                <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Add transaction
                 </Button>

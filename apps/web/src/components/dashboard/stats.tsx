@@ -114,7 +114,7 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
               </span>
             </div>
             <span
-              className={`text-base font-semibold tabular-nums ${savingsRate >= 20 ? "text-savings" : savingsRate >= 10 ? "text-amber-500" : "text-muted-foreground"}`}
+              className={`text-base font-semibold tabular-nums ${savingsRate >= 20 ? "text-savings" : savingsRate >= 10 ? "text-warning" : "text-muted-foreground"}`}
             >
               {savingsRate}%
             </span>

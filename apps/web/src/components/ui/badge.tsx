@@ -20,7 +20,7 @@ const badgeVariants = cva(
         success:
           "border-income/20 bg-income/10 text-income [a&]:hover:bg-income/20 [a&]:hover:border-income/30",
         warning:
-          "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400 [a&]:hover:bg-amber-500/20",
+          "border-warning/20 bg-warning/10 text-warning [a&]:hover:bg-warning/20 [a&]:hover:border-warning/30",
       },
     },
     defaultVariants: {

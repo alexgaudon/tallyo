@@ -101,12 +101,12 @@ export function TopNav({ onMenuClick }: TopNavProps) {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors",
                   isActive
-                    ? "text-primary bg-primary/10"
+                    ? "text-accent bg-accent/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 )}
               >
                 <item.icon
-                  className={cn("w-4 h-4", isActive && "text-primary")}
+                  className={cn("w-4 h-4", isActive && "text-accent")}
                 />
                 <span>{item.label}</span>
               </Link>
