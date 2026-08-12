@@ -447,7 +447,7 @@ export function TransactionReport() {
                 <div className="text-3xl font-bold text-foreground mb-1">
                   {reportData.summary.totalCount}
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
                   Total Transactions
                 </div>
               </div>
@@ -458,7 +458,7 @@ export function TransactionReport() {
                     animate
                   />
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
                   Total Amount
                 </div>
               </div>
@@ -469,7 +469,7 @@ export function TransactionReport() {
                     animate
                   />
                 </div>
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
                   Average Amount
                 </div>
               </div>
@@ -481,7 +481,7 @@ export function TransactionReport() {
                       animate
                     />
                   </div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
                     Monthly Average
                   </div>
                 </div>

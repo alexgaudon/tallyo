@@ -89,7 +89,7 @@ function InsightsRow({
 function InsightsHeaderRow() {
   return (
     <div
-      className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2 text-xs uppercase tracking-widest text-muted-foreground border-b border-border/40`}
+      className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2 text-xs uppercase tracking-wider text-muted-foreground border-b border-border/40`}
     >
       <span>Metric</span>
       <span className="text-right">Current</span>
