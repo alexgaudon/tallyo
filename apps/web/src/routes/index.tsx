@@ -116,11 +116,7 @@ function HomeComponent() {
               decisions with clear insights.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                asChild
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
-              >
+              <Button asChild size="lg">
                 <Link to="/signin">Get started free</Link>
               </Button>
             </div>
@@ -170,11 +166,7 @@ function HomeComponent() {
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Connect your data or add transactions manually—you’re in control.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground font-medium"
-          >
+          <Button asChild size="lg">
             <Link to="/signin">Get started free</Link>
           </Button>
         </div>

@@ -203,6 +203,8 @@ body {
   --expense-muted: #fee2e2;
   --savings: #0d9488;
   --savings-muted: #ccfbf1;
+  --warning: #d97706;
+  --warning-muted: #fef3c7;
 
   /* ==========================================
      CHART COLORS - Vibrant Palette
@@ -296,6 +298,8 @@ body {
   --expense-muted: #450a0a;
   --savings: #2dd4bf;
   --savings-muted: #0f766e;
+  --warning: #fbbf24;
+  --warning-muted: #78350f;
 
   /* ==========================================
      CHART COLORS - Dark Mode
@@ -391,6 +395,8 @@ body {
   --color-income-muted: var(--income-muted);
   --color-expense-muted: var(--expense-muted);
   --color-savings-muted: var(--savings-muted);
+  --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
 }
 
 @layer base {

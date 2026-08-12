@@ -5,39 +5,12 @@ import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
+import { getColorFromCategoryId } from "@/lib/chart-colors";
 import type {
   DashboardCategoryData,
   DashboardPeriodComparison,
 } from "../../../../server/src/routers";
 import { formatCategoryText } from "../categories/category-select";
-
-const chartColors = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6)",
-  "var(--chart-7)",
-  "var(--chart-8)",
-  "#f59e0b", // amber
-  "#84cc16", // lime
-  "#06b6d4", // cyan
-  "#ea580c", // orange
-];
-
-function hashString(str: string): number {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
-  }
-  return hash >>> 0;
-}
-
-function getColorFromCategoryId(categoryId: string): string {
-  const hash = hashString(categoryId);
-  return chartColors[hash % chartColors.length];
-}
 
 interface ChartItem {
   id: string;

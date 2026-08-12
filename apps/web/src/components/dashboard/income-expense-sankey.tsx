@@ -10,40 +10,13 @@ import { useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { useSession } from "@/lib/auth-client";
+import { getColorFromCategoryId } from "@/lib/chart-colors";
 import { formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
 import type { DashboardSankeyData } from "../../../../server/src/routers";
 
-const INCOME_COLOR = "#22c55e";
-const SAVED_COLOR = "#3b82f6";
-const EXPENSES_NODE_COLOR = "#ef4444";
-
-const chartColors = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--chart-6)",
-  "var(--chart-7)",
-  "var(--chart-8)",
-  "#f59e0b",
-  "#84cc16",
-  "#06b6d4",
-  "#ea580c",
-];
-
-function hashString(str: string): number {
-  let hash = 5381;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i);
-  }
-  return hash >>> 0;
-}
-
-function getColorFromCategoryId(categoryId: string): string {
-  const hash = hashString(categoryId);
-  return chartColors[hash % chartColors.length];
-}
+const INCOME_COLOR = "var(--income)";
+const SAVED_COLOR = "var(--savings)";
+const EXPENSES_NODE_COLOR = "var(--expense)";
 
 interface SankeyNode {
   id: string;
@@ -221,7 +194,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
         source: "expenses",
         target: parentNodeId,
         value: parent.amount,
-        color: "#ef4444",
+        color: EXPENSES_NODE_COLOR,
       });
     }
 
