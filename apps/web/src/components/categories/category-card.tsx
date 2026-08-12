@@ -56,7 +56,7 @@ export function CategoryCard({
     : FolderIcon;
 
   return (
-    <div className="rounded-xl border border-border/80 bg-card shadow-sm p-4">
+    <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon

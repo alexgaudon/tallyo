@@ -174,7 +174,7 @@ export function CategoryPieChart({
 
   if (!data || data.length === 0) {
     return (
-      <Card className="shadow-sm">
+      <Card>
         <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="text-muted-foreground text-sm">
@@ -187,7 +187,7 @@ export function CategoryPieChart({
   }
 
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardContent className="p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Chart Section */}
