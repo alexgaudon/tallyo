@@ -1,5 +1,6 @@
 import { FolderIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { Category } from "../../../../server/src/routers";
 import { CategoryCard } from "./category-card";
 
@@ -24,13 +25,12 @@ export function CategoryList({
 
   if (!categories.length) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border/80 bg-card shadow-sm">
-        <FolderIcon className="mb-3 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 text-lg font-semibold">No categories yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Create your first category to get started
-        </p>
-      </div>
+      <EmptyState
+        icon={<FolderIcon className="h-12 w-12 text-muted-foreground" />}
+        title="No categories yet"
+        description="Create your first category to get started"
+        bordered={false}
+      />
     );
   }
 

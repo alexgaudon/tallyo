@@ -5,7 +5,7 @@ import {
   useSearch,
 } from "@tanstack/react-router";
 import { format, parseISO, startOfMonth } from "date-fns";
-import { Plus } from "lucide-react";
+import { CreditCardIcon, Plus, StoreIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
@@ -20,6 +20,7 @@ import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { DelayedLoading } from "@/components/delayed-loading";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ensureSession, useSession } from "@/lib/auth-client";
 import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
@@ -318,9 +319,12 @@ function DashboardCharts({
       {categoryData && categoryData.length > 0 ? (
         <CategoryPieChart data={categoryData} previous={previousCategories} />
       ) : (
-        <div className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-          No category data
-        </div>
+        <EmptyState
+          compact
+          bordered={false}
+          title="No category data"
+          description="Add transactions to see a spending breakdown."
+        />
       )}
     </>
   );
@@ -338,9 +342,12 @@ function DashboardSankey({
       {sankeyData && sankeyData.totalIncome > 0 ? (
         <IncomeExpenseSankey data={sankeyData} />
       ) : (
-        <div className="min-h-[250px] sm:min-h-[300px] flex items-center justify-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-          No income data
-        </div>
+        <EmptyState
+          compact
+          bordered={false}
+          title="No income data"
+          description="Add income transactions to see your income flow."
+        />
       )}
     </>
   );
@@ -368,9 +375,12 @@ function DashboardDetails({
         {merchantData && merchantData.length > 0 ? (
           <MerchantStats data={merchantData} previous={previousMerchants} />
         ) : (
-          <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-            No merchant data
-          </div>
+          <EmptyState
+            compact
+            bordered={false}
+            icon={<StoreIcon className="h-10 w-10 text-muted-foreground" />}
+            title="No merchant data"
+          />
         )}
       </div>
 
@@ -381,9 +391,14 @@ function DashboardDetails({
         {transactionData && transactionData.length > 0 ? (
           <TransactionStats data={transactionData} />
         ) : (
-          <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm rounded-xl bg-muted/40">
-            No transaction data
-          </div>
+          <EmptyState
+            compact
+            bordered={false}
+            icon={
+              <CreditCardIcon className="h-10 w-10 text-muted-foreground" />
+            }
+            title="No transaction data"
+          />
         )}
       </div>
     </div>
