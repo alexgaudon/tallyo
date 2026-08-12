@@ -165,7 +165,7 @@ function RouteComponent() {
               placeholder="Search merchants by name, keywords, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10"
+              className="pl-9"
             />
           </div>
         </div>

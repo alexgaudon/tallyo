@@ -177,7 +177,7 @@ export function Search() {
           value={filter}
           onChange={handleChange}
           placeholder="Search transactions..."
-          className="flex-1 h-9"
+          className="flex-1 h-10"
         />
         <MerchantSelect
           allowNull

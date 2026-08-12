@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { orpc } from "@/utils/orpc";
 import type { Transaction } from "../../../../server/src/routers";
 
@@ -232,7 +233,7 @@ export function SplitTransactionDialog({
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                         $
                       </span>
-                      <input
+                      <Input
                         type="text"
                         inputMode="decimal"
                         value={split.amount}
@@ -240,7 +241,7 @@ export function SplitTransactionDialog({
                           handleAmountChange(split.id, e.target.value)
                         }
                         placeholder="0.00"
-                        className="w-full h-9 pl-6 pr-3 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/70"
+                        className="pl-6"
                       />
                     </div>
                   </div>
