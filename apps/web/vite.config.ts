@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
@@ -6,6 +7,23 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Resolve the git commit for the build identifier. Prefers an explicit
+// VITE_GIT_COMMIT (e.g. set as a Docker build ARG) and otherwise falls back
+// to the current HEAD when a .git directory is available at build time.
+function resolveGitCommit(env: Record<string, string>): string {
+  if (env.VITE_GIT_COMMIT) {
+    return env.VITE_GIT_COMMIT;
+  }
+  try {
+    return execSync("git rev-parse --short HEAD", {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "";
+  }
+}
 
 export default defineConfig(({ mode }) => {
   // Load env file based on mode (development/production)
@@ -17,6 +35,7 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_BUILD_TIME": JSON.stringify(
         new Date().toISOString(),
       ),
+      "import.meta.env.VITE_GIT_COMMIT": JSON.stringify(resolveGitCommit(env)),
     },
     base: process.env.NODE_ENV === "production" ? "/" : "/",
     server: {
