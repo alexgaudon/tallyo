@@ -4,6 +4,10 @@ FROM node:24-alpine AS builder
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 
+# Optional build identifier (e.g. short git SHA) injected by the build runner.
+ARG GIT_COMMIT=
+ENV VITE_GIT_COMMIT=${GIT_COMMIT}
+
 WORKDIR /app
 
 # Copy package files

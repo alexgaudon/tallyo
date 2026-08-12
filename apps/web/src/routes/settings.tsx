@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { BuildIdentifier } from "@/components/build-identifier";
 import { PageHeader } from "@/components/layout/page-header";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
@@ -455,6 +456,8 @@ function RouteComponent() {
             </div>
           </Section>
         </div>
+
+        <BuildIdentifier />
       </div>
     </div>
   );
