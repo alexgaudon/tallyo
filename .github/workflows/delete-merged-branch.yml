@@ -1,0 +1,31 @@
+name: Delete Merged Branch
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  delete-branch:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete merged branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch="${{ github.event.pull_request.head.ref }}"
+          head_repo="${{ github.event.pull_request.head.repo.full_name }}"
+          if [ "$head_repo" != "${{ github.repository }}" ]; then
+            echo "Skipping: branch belongs to a fork ($head_repo)"
+            exit 0
+          fi
+          if [ "$branch" == "${{ github.event.pull_request.base.ref }}" ]; then
+            echo "Skipping: refusing to delete base branch '$branch'"
+            exit 0
+          fi
+          gh api -X DELETE \
+            "repos/${{ github.repository }}/git/refs/heads/$branch"
+          echo "Deleted branch '$branch'"
