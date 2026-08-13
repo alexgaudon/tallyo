@@ -30,6 +30,10 @@ const dateRangeSchema = z.object({
     .optional(),
 });
 
+const categoryDataSchema = dateRangeSchema.extend({
+  income: z.boolean().optional(),
+});
+
 type StatsDateRange = { from?: string; to?: string };
 
 /** Returns same-month day range (1–31) or null if range spans months or is invalid. */
@@ -556,10 +560,11 @@ export const dashboardRouter = {
       }
     }),
   getCategoryData: protectedProcedure
-    .input(dateRangeSchema.optional())
+    .input(categoryDataSchema.optional())
     .handler(async ({ context, input }) => {
       const dateRange = input || {};
       const userId = context.session.user.id;
+      const treatAsIncome = input?.income ?? false;
 
       const result = await db
         .select({
@@ -579,7 +584,7 @@ export const dashboardRouter = {
             eq(transaction.userId, userId),
             eq(transaction.reviewed, true),
             eq(category.hideFromInsights, false),
-            eq(category.treatAsIncome, false),
+            eq(category.treatAsIncome, treatAsIncome),
             ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
             ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
           ),
@@ -632,7 +637,7 @@ export const dashboardRouter = {
           icon: item.category.icon,
           userId,
           parentCategoryId: item.category.parentCategoryId,
-          treatAsIncome: false,
+          treatAsIncome,
           hideFromInsights: false,
           createdAt: new Date(),
           updatedAt: new Date(),
