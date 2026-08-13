@@ -1,4 +1,10 @@
-import { format } from "date-fns";
+import {
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  format,
+  parseISO,
+  startOfMonth,
+} from "date-fns";
 import {
   and,
   asc,
@@ -28,6 +34,10 @@ const dateRangeSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
     .optional(),
+});
+
+const categoryDataSchema = dateRangeSchema.extend({
+  income: z.boolean().optional(),
 });
 
 type StatsDateRange = { from?: string; to?: string };
@@ -476,6 +486,90 @@ async function getStatsForDateRange(
 }
 
 export const dashboardRouter = {
+  getCashFlowTrend: protectedProcedure
+    .input(dateRangeSchema.optional())
+    .handler(async ({ context, input }) => {
+      const dateRange = input || {};
+      const userId = context.session.user.id;
+
+      const toDate = dateRange.to ? parseISO(dateRange.to) : new Date();
+      const fromDate = dateRange.from
+        ? parseISO(dateRange.from)
+        : startOfMonth(toDate);
+
+      const sameMonth =
+        format(fromDate, "yyyy-MM") === format(toDate, "yyyy-MM");
+      const granularity = sameMonth ? "day" : "month";
+
+      const rows = await db
+        .select({
+          date: transaction.date,
+          income: sql<number>`COALESCE(SUM(CASE WHEN ${category.treatAsIncome} THEN ${transaction.amount} ELSE 0 END), 0)`,
+          expenses: sql<number>`COALESCE(SUM(CASE WHEN NOT ${category.treatAsIncome} THEN ${transaction.amount} ELSE 0 END), 0)`,
+        })
+        .from(transaction)
+        .innerJoin(category, eq(transaction.categoryId, category.id))
+        .where(
+          and(
+            eq(transaction.userId, userId),
+            eq(transaction.reviewed, true),
+            eq(category.hideFromInsights, false),
+            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
+            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
+          ),
+        )
+        .groupBy(transaction.date);
+
+      const totalsByDay = new Map<
+        string,
+        { income: number; expenses: number }
+      >();
+      for (const row of rows) {
+        const day = String(row.date).slice(0, 10);
+        const current = totalsByDay.get(day) ?? { income: 0, expenses: 0 };
+        current.income += Number(row.income ?? 0);
+        current.expenses += Number(row.expenses ?? 0);
+        totalsByDay.set(day, current);
+      }
+
+      const buckets: Array<{
+        key: string;
+        income: number;
+        expenses: number;
+        net: number;
+      }> = [];
+
+      if (granularity === "day") {
+        for (const day of eachDayOfInterval({ start: fromDate, end: toDate })) {
+          const key = format(day, "yyyy-MM-dd");
+          const totals = totalsByDay.get(key) ?? { income: 0, expenses: 0 };
+          buckets.push({
+            key,
+            income: totals.income,
+            expenses: totals.expenses,
+            net: totals.income + totals.expenses,
+          });
+        }
+      } else {
+        for (const month of eachMonthOfInterval({
+          start: startOfMonth(fromDate),
+          end: startOfMonth(toDate),
+        })) {
+          const key = format(month, "yyyy-MM");
+          let income = 0;
+          let expenses = 0;
+          for (const [day, totals] of totalsByDay) {
+            if (day.startsWith(key)) {
+              income += totals.income;
+              expenses += totals.expenses;
+            }
+          }
+          buckets.push({ key, income, expenses, net: income + expenses });
+        }
+      }
+
+      return { granularity, buckets };
+    }),
   getMerchantStats: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
@@ -556,10 +650,11 @@ export const dashboardRouter = {
       }
     }),
   getCategoryData: protectedProcedure
-    .input(dateRangeSchema.optional())
+    .input(categoryDataSchema.optional())
     .handler(async ({ context, input }) => {
       const dateRange = input || {};
       const userId = context.session.user.id;
+      const treatAsIncome = input?.income ?? false;
 
       const result = await db
         .select({
@@ -579,7 +674,7 @@ export const dashboardRouter = {
             eq(transaction.userId, userId),
             eq(transaction.reviewed, true),
             eq(category.hideFromInsights, false),
-            eq(category.treatAsIncome, false),
+            eq(category.treatAsIncome, treatAsIncome),
             ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
             ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
           ),
@@ -632,7 +727,7 @@ export const dashboardRouter = {
           icon: item.category.icon,
           userId,
           parentCategoryId: item.category.parentCategoryId,
-          treatAsIncome: false,
+          treatAsIncome,
           hideFromInsights: false,
           createdAt: new Date(),
           updatedAt: new Date(),

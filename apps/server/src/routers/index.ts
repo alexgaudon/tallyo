@@ -45,6 +45,10 @@ export type DashboardSankeyData = InferRouterOutputs<
   typeof dashboardRouter
 >["getSankeyData"];
 
+export type DashboardCashFlowTrend = InferRouterOutputs<
+  typeof dashboardRouter
+>["getCashFlowTrend"];
+
 export type DashboardPeriodComparison = InferRouterOutputs<
   typeof dashboardRouter
 >["getPeriodComparison"];

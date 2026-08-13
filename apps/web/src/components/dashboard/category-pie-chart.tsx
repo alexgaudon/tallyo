@@ -53,12 +53,9 @@ export function CategoryPieChart({
       (a, b) => Math.abs(Number(b.amount)) - Math.abs(Number(a.amount)),
     );
 
-    // Filter out income categories and map to chart items
+    // Map to chart items, honoring the server's income/expense selection
     return sortedData
-      .filter(
-        (item) =>
-          !item.category.treatAsIncome && !item.category.hideFromInsights,
-      )
+      .filter((item) => !item.category.hideFromInsights)
       .map((item) => ({
         id: item.category.id,
         value: Math.abs(Number(item.amount)),

@@ -6,9 +6,10 @@ import {
 } from "@tanstack/react-router";
 import { format, parseISO, startOfMonth } from "date-fns";
 import { CreditCardIcon, Plus, StoreIcon } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
+import { CashFlowTrend } from "@/components/dashboard/cash-flow-trend";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { IncomeExpenseSankey } from "@/components/dashboard/income-expense-sankey";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
@@ -22,7 +23,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ensureSession, useSession } from "@/lib/auth-client";
-import { dateRangeToApiFormat } from "@/lib/utils";
+import { cn, dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
 const searchSchema = z.object({
@@ -53,6 +54,11 @@ export const Route = createFileRoute("/dashboard")({
     await Promise.all([
       context.queryClient.prefetchQuery(
         orpc.dashboard.getStatsCounts.queryOptions({
+          input: dateRangeToApiFormat(dateRange),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        orpc.dashboard.getCashFlowTrend.queryOptions({
           input: dateRangeToApiFormat(dateRange),
         }),
       ),
@@ -133,12 +139,27 @@ function RouteComponent() {
     }),
   );
 
+  const { data: trendData, isLoading: isTrendLoading } = useQuery(
+    orpc.dashboard.getCashFlowTrend.queryOptions({
+      placeholderData: (previousData) => previousData,
+      input: dateRangeToApiFormat(dateRange),
+    }),
+  );
+
   const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
     orpc.dashboard.getCategoryData.queryOptions({
       placeholderData: (previousData) => previousData,
       input: dateRangeToApiFormat(dateRange),
     }),
   );
+
+  const { data: incomeCategoryData, isLoading: isIncomeCategoryLoading } =
+    useQuery(
+      orpc.dashboard.getCategoryData.queryOptions({
+        placeholderData: (previousData) => previousData,
+        input: { ...dateRangeToApiFormat(dateRange), income: true },
+      }),
+    );
 
   const { data: merchantData, isLoading: isMerchantLoading } = useQuery(
     orpc.dashboard.getMerchantStats.queryOptions({
@@ -170,7 +191,9 @@ function RouteComponent() {
 
   const isLoading =
     isStatsLoading ||
+    isTrendLoading ||
     isCategoryLoading ||
+    isIncomeCategoryLoading ||
     isMerchantLoading ||
     isTransactionLoading ||
     isSankeyLoading ||
@@ -205,6 +228,7 @@ function RouteComponent() {
             <SectionPanel title="Spending breakdown">
               <DashboardCharts
                 categoryData={categoryData}
+                incomeCategoryData={incomeCategoryData}
                 previousCategories={periodData?.categories ?? []}
               />
             </SectionPanel>
@@ -220,6 +244,10 @@ function RouteComponent() {
               <DashboardSankey sankeyData={sankeyData} />
             </SectionPanel>
           </div>
+
+          <SectionPanel title="Cash flow trend">
+            <DashboardTrend trendData={trendData} />
+          </SectionPanel>
 
           <DashboardDetails
             merchantData={merchantData}
@@ -307,23 +335,84 @@ type PeriodComparison = Awaited<
 
 function DashboardCharts({
   categoryData,
+  incomeCategoryData,
   previousCategories,
 }: {
   categoryData:
     | Awaited<ReturnType<typeof orpc.dashboard.getCategoryData.call>>
     | undefined;
+  incomeCategoryData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getCategoryData.call>>
+    | undefined;
   previousCategories: PeriodComparison["categories"];
 }) {
+  const [showIncome, setShowIncome] = useState(false);
+  const data = showIncome ? incomeCategoryData : categoryData;
+
   return (
-    <>
-      {categoryData && categoryData.length > 0 ? (
-        <CategoryPieChart data={categoryData} previous={previousCategories} />
+    <div className="flex h-full flex-col gap-3">
+      <div className="flex w-fit items-center gap-1 rounded-lg bg-muted/60 p-0.5">
+        <button
+          type="button"
+          onClick={() => setShowIncome(false)}
+          className={cn(
+            "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+            !showIncome
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Expenses
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowIncome(true)}
+          className={cn(
+            "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+            showIncome
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Income
+        </button>
+      </div>
+
+      {data && data.length > 0 ? (
+        <CategoryPieChart data={data} previous={previousCategories} />
       ) : (
         <EmptyState
           compact
           bordered={false}
-          title="No category data"
-          description="Add transactions to see a spending breakdown."
+          title={showIncome ? "No income data" : "No category data"}
+          description={
+            showIncome
+              ? "Add income transactions to see an income breakdown."
+              : "Add transactions to see a spending breakdown."
+          }
+        />
+      )}
+    </div>
+  );
+}
+
+function DashboardTrend({
+  trendData,
+}: {
+  trendData:
+    | Awaited<ReturnType<typeof orpc.dashboard.getCashFlowTrend.call>>
+    | undefined;
+}) {
+  return (
+    <>
+      {trendData && trendData.buckets.length > 0 ? (
+        <CashFlowTrend data={trendData} />
+      ) : (
+        <EmptyState
+          compact
+          bordered={false}
+          title="No cash flow data"
+          description="Add transactions to see income and expenses over time."
         />
       )}
     </>

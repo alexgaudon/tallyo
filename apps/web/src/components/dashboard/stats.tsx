@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  List,
   Minus,
   PiggyBankIcon,
   Plus,
@@ -143,6 +144,48 @@ export function Stats({ data }: { data: DashboardStats | undefined }) {
               animate
               amount={Number(data.stats.avgExpensePerTransaction) || 0}
               className="text-base font-semibold tabular-nums"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <List className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Transactions
+              </span>
+            </div>
+            <span className="text-base font-semibold tabular-nums">
+              {Number(data.stats.totalTransactions) || 0}
+            </span>
+          </div>
+        </div>
+
+        <div className="border-t border-border/60 pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUpIcon className="h-4 w-4 text-income" />
+              <span className="text-sm text-muted-foreground">
+                Avg Income / Month
+              </span>
+            </div>
+            <CurrencyAmount
+              animate
+              amount={Number(data.stats.avgIncomeAmountPerMonth) || 0}
+              className="text-base font-semibold tabular-nums text-income"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingDownIcon className="h-4 w-4 text-expense" />
+              <span className="text-sm text-muted-foreground">
+                Avg Expenses / Month
+              </span>
+            </div>
+            <CurrencyAmount
+              animate
+              amount={
+                Math.abs(Number(data.stats.avgExpenseAmountPerMonth)) || 0
+              }
+              className="text-base font-semibold tabular-nums text-expense"
             />
           </div>
         </div>
