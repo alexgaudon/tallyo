@@ -9,7 +9,6 @@ import { CreditCardIcon, Plus, StoreIcon } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { z } from "zod";
-import { CashFlowTrend } from "@/components/dashboard/cash-flow-trend";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { IncomeExpenseSankey } from "@/components/dashboard/income-expense-sankey";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
@@ -54,11 +53,6 @@ export const Route = createFileRoute("/dashboard")({
     await Promise.all([
       context.queryClient.prefetchQuery(
         orpc.dashboard.getStatsCounts.queryOptions({
-          input: dateRangeToApiFormat(dateRange),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        orpc.dashboard.getCashFlowTrend.queryOptions({
           input: dateRangeToApiFormat(dateRange),
         }),
       ),
@@ -139,13 +133,6 @@ function RouteComponent() {
     }),
   );
 
-  const { data: trendData, isLoading: isTrendLoading } = useQuery(
-    orpc.dashboard.getCashFlowTrend.queryOptions({
-      placeholderData: (previousData) => previousData,
-      input: dateRangeToApiFormat(dateRange),
-    }),
-  );
-
   const { data: categoryData, isLoading: isCategoryLoading } = useQuery(
     orpc.dashboard.getCategoryData.queryOptions({
       placeholderData: (previousData) => previousData,
@@ -191,7 +178,6 @@ function RouteComponent() {
 
   const isLoading =
     isStatsLoading ||
-    isTrendLoading ||
     isCategoryLoading ||
     isIncomeCategoryLoading ||
     isMerchantLoading ||
@@ -244,10 +230,6 @@ function RouteComponent() {
               <DashboardSankey sankeyData={sankeyData} />
             </SectionPanel>
           </div>
-
-          <SectionPanel title="Cash flow trend">
-            <DashboardTrend trendData={trendData} />
-          </SectionPanel>
 
           <DashboardDetails
             merchantData={merchantData}
@@ -393,29 +375,6 @@ function DashboardCharts({
         />
       )}
     </div>
-  );
-}
-
-function DashboardTrend({
-  trendData,
-}: {
-  trendData:
-    | Awaited<ReturnType<typeof orpc.dashboard.getCashFlowTrend.call>>
-    | undefined;
-}) {
-  return (
-    <>
-      {trendData && trendData.buckets.length > 0 ? (
-        <CashFlowTrend data={trendData} />
-      ) : (
-        <EmptyState
-          compact
-          bordered={false}
-          title="No cash flow data"
-          description="Add transactions to see income and expenses over time."
-        />
-      )}
-    </>
   );
 }
 
