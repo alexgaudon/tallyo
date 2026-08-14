@@ -1,12 +1,14 @@
 import { defineChart } from "@tanstack/charts";
 import { focusGroupAngle, pie, polar, radialArc } from "@tanstack/charts/polar";
 import { Chart } from "@tanstack/charts/react";
+import { tooltip } from "@tanstack/charts/tooltip";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { getColorFromCategoryId } from "@/lib/chart-colors";
+import { formatCurrency } from "@/lib/utils";
 import type {
   DashboardCategoryData,
   DashboardPeriodComparison,
@@ -150,6 +152,25 @@ export function CategoryPieChart({
           }),
         ],
         focus: focusGroupAngle,
+        tooltip: {
+          use: tooltip,
+          content: (points) => {
+            const point = points[0];
+            if (!point) {
+              return { rows: [] };
+            }
+            return {
+              title: point.datum.label,
+              color: point.color,
+              rows: [
+                {
+                  label: "Amount",
+                  value: formatCurrency(point.datum.value),
+                },
+              ],
+            };
+          },
+        },
       }),
     [pieData, activeItemId],
   );
