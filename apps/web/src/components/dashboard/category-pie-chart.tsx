@@ -1,11 +1,14 @@
-import type { PieItemIdentifier } from "@mui/x-charts";
-import { PieChart } from "@mui/x-charts/PieChart";
+import { defineChart } from "@tanstack/charts";
+import { focusGroupAngle, pie, polar, radialArc } from "@tanstack/charts/polar";
+import { Chart } from "@tanstack/charts/react";
+import { tooltip } from "@tanstack/charts/tooltip";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { getColorFromCategoryId } from "@/lib/chart-colors";
+import { formatCurrency } from "@/lib/utils";
 import type {
   DashboardCategoryData,
   DashboardPeriodComparison,
@@ -113,33 +116,82 @@ export function CategoryPieChart({
     [navigate],
   );
 
-  // Handle item click from pie chart
-  const handleItemClick = useCallback(
-    (_event: React.MouseEvent, params: PieItemIdentifier) => {
-      const item = chartData[params.dataIndex];
-      if (item?.categoryId) {
-        handleCategoryClick(item.categoryId);
-      }
-    },
-    [chartData, handleCategoryClick],
+  // Allocate the chart data into angular slices
+  const pieData = useMemo(
+    () => pie(chartData, { value: (item) => item.value }),
+    [chartData],
   );
 
-  // Handle highlight change (hover)
-  const handleHighlightChange = useCallback(
-    (
-      highlightedItem: {
-        dataIndex?: number;
-        seriesId?: number | string;
-      } | null,
-    ) => {
-      if (highlightedItem?.dataIndex !== undefined) {
-        const item = chartData[highlightedItem.dataIndex];
-        setActiveItemId(item?.id ?? null);
-      } else {
-        setActiveItemId(null);
+  // Rebuild the definition whenever the active slice changes so the fill
+  // accessor can fade non-active slices (radialArc has no declarative states).
+  const definition = useMemo(
+    () =>
+      defineChart({
+        marks: [
+          polar({
+            inset: 4,
+            radiusRatio: 0.96,
+            marks: [
+              radialArc(pieData, {
+                key: (datum) => datum.categoryId,
+                innerRadius: ({ radius }) => radius * 0.55,
+                cornerRadius: 2,
+                stroke: "var(--card)",
+                strokeWidth: 2,
+                fill: (datum) => {
+                  if (
+                    activeItemId !== null &&
+                    activeItemId !== datum.categoryId
+                  ) {
+                    return `color-mix(in srgb, ${datum.color} 22%, transparent)`;
+                  }
+                  return datum.color;
+                },
+              }),
+            ],
+          }),
+        ],
+        focus: focusGroupAngle,
+        tooltip: {
+          use: tooltip,
+          content: (points) => {
+            const point = points[0];
+            if (!point) {
+              return { rows: [] };
+            }
+            return {
+              title: point.datum.label,
+              color: point.color,
+              rows: [
+                {
+                  label: "Amount",
+                  value: formatCurrency(point.datum.value),
+                },
+              ],
+            };
+          },
+        },
+      }),
+    [pieData, activeItemId],
+  );
+
+  // Keep the legend in sync with the hovered slice
+  const handleFocusChange = useCallback(
+    (point: { datum: ChartItem } | null) => {
+      setActiveItemId(point?.datum.categoryId ?? null);
+    },
+    [],
+  );
+
+  // Handle item click from pie chart
+  const handleItemClick = useCallback(
+    (point: { datum: ChartItem } | null) => {
+      const categoryId = point?.datum.categoryId;
+      if (categoryId) {
+        handleCategoryClick(categoryId);
       }
     },
-    [chartData],
+    [handleCategoryClick],
   );
 
   if (!data || data.length === 0) {
@@ -163,35 +215,13 @@ export function CategoryPieChart({
           {/* Chart Section */}
           <div className="flex-shrink-0 flex justify-center">
             <div className="relative w-[220px] h-[220px]">
-              <PieChart
-                series={[
-                  {
-                    data: chartData,
-                    innerRadius: 50,
-                    outerRadius: 85,
-                    paddingAngle: 0.5,
-                    cornerRadius: 2,
-                    highlightScope: { fade: "global", highlight: "item" },
-                    faded: {
-                      innerRadius: 50,
-                      additionalRadius: -2,
-                      color: "gray",
-                    },
-                    valueFormatter: (item) => {
-                      const dollars = item.value / 100;
-                      return new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      }).format(dollars);
-                    },
-                  },
-                ]}
+              <Chart
+                definition={definition}
                 width={220}
                 height={220}
-                onItemClick={handleItemClick}
-                onHighlightChange={handleHighlightChange}
-                skipAnimation
-                hideLegend
+                ariaLabel="Category spending breakdown"
+                onFocusChange={handleFocusChange}
+                onSelect={handleItemClick}
               />
 
               {/* Center Text */}
