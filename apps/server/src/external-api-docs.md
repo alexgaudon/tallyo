@@ -27,7 +27,8 @@ Create transactions in bulk (1-100 per request).
       "externalId": "unique-id-123",
       "merchantId": "optional-merchant-uuid",
       "categoryId": "optional-category-uuid",
-      "notes": "optional note"
+      "notes": "optional note",
+      "doNotAutoMatch": false
     }
   ]
 }
@@ -40,6 +41,7 @@ Create transactions in bulk (1-100 per request).
 - `merchantId` (string, optional): Pre-assign a merchant UUID.
 - `categoryId` (string, optional): Pre-assign a category UUID.
 - `notes` (string, optional): Free-form note.
+- `doNotAutoMatch` (boolean, optional): When `true`, skip merchant auto-matching for this transaction. The provided `merchantId` and `categoryId` are kept exactly as submitted. Default `false`.
 
 ### Response
 ```json
