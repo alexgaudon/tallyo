@@ -166,6 +166,27 @@ Returns `404` if the transaction, merchant, or category is not found. Returns `4
 
 ---
 
+## DELETE /api/transactions/:id
+
+Delete a transaction permanently.
+
+### Request Headers
+- `Authorization: Bearer <token>` (required)
+
+### Path Parameters
+- `id` (string, required): Transaction UUID.
+
+### Response
+```json
+{
+  "message": "Transaction deleted"
+}
+```
+
+Returns `404` if the transaction is not found. Returns `403` if the transaction belongs to another user.
+
+---
+
 ## GET /api/transactions/search
 
 Broad search across transactions. Matches when the query appears in `transactionDetails`, `notes`, `merchant.name`, or `category.name`.

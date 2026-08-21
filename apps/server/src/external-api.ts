@@ -528,6 +528,64 @@ externalApi.patch("/transactions/:id", async (c) => {
   }
 });
 
+// DELETE /transactions/:id - Delete a transaction
+externalApi.delete("/transactions/:id", async (c) => {
+  try {
+    const userId = await getUserIdFromBearerToken(c);
+    if (!userId) {
+      return c.json(
+        { error: "Missing, invalid, or expired Authorization header" },
+        401,
+      );
+    }
+
+    const transactionId = c.req.param("id");
+
+    const currentTransaction = await validateTransactionOwnership(
+      transactionId,
+      userId,
+    );
+
+    if (currentTransaction.merchantId) {
+      await handleKeywordRemoval(
+        currentTransaction,
+        currentTransaction.merchantId,
+        transactionId,
+      );
+    }
+
+    const deletedTransactions = await db
+      .delete(transaction)
+      .where(eq(transaction.id, transactionId))
+      .returning();
+
+    if (!deletedTransactions || deletedTransactions.length === 0) {
+      return c.json({ error: "Transaction not found" }, 404);
+    }
+
+    return c.json({ message: "Transaction deleted" });
+  } catch (error) {
+    logger.error("API transaction deletion failed", {
+      error,
+      metadata: {
+        method: c.req.method,
+        url: c.req.url,
+      },
+    });
+
+    if (error instanceof Error) {
+      if (error.message === "Transaction not found") {
+        return c.json({ error: error.message }, 404);
+      }
+      if (error.message === "Unauthorized to update this transaction") {
+        return c.json({ error: error.message }, 403);
+      }
+      return c.json({ error: error.message }, 500);
+    }
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 // GET /categories - List categories for the authenticated user
 externalApi.get("/categories", async (c) => {
   try {
