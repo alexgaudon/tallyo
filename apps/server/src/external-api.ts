@@ -57,6 +57,9 @@ externalApi.post("/transactions", async (c) => {
       categoryId: z.string().optional(),
       notes: z.string().optional(),
       externalId: z.string(),
+      // When true, skip merchant auto-matching for this transaction.
+      // The submitted merchantId and categoryId (if provided) are kept as-is.
+      doNotAutoMatch: z.boolean().optional(),
     });
 
     const requestSchema = z.object({
@@ -87,6 +90,16 @@ externalApi.post("/transactions", async (c) => {
     const userMerchants = await getUserMerchantsForMatching(userId);
 
     const transactionData = transactions.map((newTransaction) => {
+      // When doNotAutoMatch is set, keep the client-provided merchant and
+      // category instead of letting merchant matching override them.
+      if (newTransaction.doNotAutoMatch) {
+        return {
+          ...newTransaction,
+          userId: userId,
+          date: new Date(newTransaction.date).toISOString().split("T")[0],
+        };
+      }
+
       const merchantRecord = findBestMatchingMerchant(
         userMerchants,
         newTransaction.transactionDetails,
