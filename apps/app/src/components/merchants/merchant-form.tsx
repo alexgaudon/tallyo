@@ -1,0 +1,218 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { ZapIcon } from "lucide-react";
+import { type SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { KeywordPills } from "@/components/ui/keyword-pills";
+import { orpc, queryClient } from "@/utils/orpc";
+import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
+import { CategorySelect } from "../categories/category-select";
+
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  recommendedCategoryId: z.string().nullable().optional(),
+  keywords: z.array(z.string()),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+interface MerchantFormProps {
+  merchant?: MerchantWithKeywordsAndCategory;
+  callback?: (merchantId?: string) => void;
+  initialKeyword?: string;
+}
+
+export function MerchantForm({
+  merchant,
+  callback,
+  initialKeyword,
+}: MerchantFormProps) {
+  const form = useForm<FormValues>({
+    defaultValues: {
+      name: merchant?.name ?? "",
+      recommendedCategoryId: merchant?.recommendedCategoryId ?? null,
+      keywords: merchant?.keywords
+        ? Array.isArray(merchant.keywords)
+          ? merchant.keywords.map((k) => k.keyword)
+          : []
+        : initialKeyword
+          ? [initialKeyword]
+          : [],
+    },
+    resolver: zodResolver(formSchema),
+  });
+
+  const { mutateAsync: createMerchant } = useMutation(
+    orpc.merchants.createMerchant.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+        });
+      },
+    }),
+  );
+
+  const { mutateAsync: updateMerchant } = useMutation(
+    orpc.merchants.updateMerchant.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+        });
+      },
+    }),
+  );
+
+  const { mutateAsync: applyMerchant, isPending: isApplying } = useMutation(
+    orpc.merchants.applyMerchant.mutationOptions(),
+  );
+
+  const handleApplyMerchant = async () => {
+    if (!merchant) return;
+
+    try {
+      const result = await applyMerchant({ id: merchant.id });
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(
+        `Failed to apply merchant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  };
+
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    try {
+      if (merchant) {
+        const result = await updateMerchant({
+          id: merchant.id,
+          name: values.name,
+          ...(values.recommendedCategoryId &&
+            values.recommendedCategoryId !== null && {
+              recommendedCategoryId: values.recommendedCategoryId,
+            }),
+          keywords: values.keywords,
+        });
+
+        toast.success(result.message);
+        callback?.();
+      } else {
+        const result = await createMerchant({
+          name: values.name,
+          ...(values.recommendedCategoryId &&
+            values.recommendedCategoryId !== null && {
+              recommendedCategoryId: values.recommendedCategoryId,
+            }),
+          keywords: values.keywords,
+        });
+
+        toast.success("Merchant created successfully");
+        callback?.(result.merchant.id);
+      }
+
+      form.reset();
+    } catch (error) {
+      toast.error(
+        `Failed to ${merchant ? "update" : "create"} merchant: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="mt-4 space-y-4 w-full"
+      >
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel>Merchant Name</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter merchant name"
+                  {...field}
+                  autoComplete="off"
+                  className="w-full"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="recommendedCategoryId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Recommended Category (Optional)</FormLabel>
+              <FormControl>
+                <CategorySelect
+                  allowNull
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Select a category"
+                  className="w-full"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="keywords"
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel>Keywords (Optional)</FormLabel>
+              <FormControl>
+                <KeywordPills
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Add keywords..."
+                  className="w-full"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex flex-col gap-2">
+          <Button type="submit" className="w-full">
+            {merchant ? "Update Merchant" : "Create Merchant"}
+          </Button>
+          {merchant && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleApplyMerchant}
+              disabled={isApplying}
+            >
+              <ZapIcon className="h-4 w-4 mr-2" />
+              Apply to Transactions
+            </Button>
+          )}
+        </div>
+      </form>
+    </Form>
+  );
+}

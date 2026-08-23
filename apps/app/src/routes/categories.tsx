@@ -1,0 +1,172 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CategoryList } from "@/components/categories/category-list";
+import { CreateCategoryForm } from "@/components/categories/create-category-form";
+import { PageHeader } from "@/components/layout/page-header";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ensureSession } from "@/lib/auth-client";
+import { orpc, queryClient } from "@/utils/orpc";
+
+type FilterType = "all" | "income" | "expense";
+
+export const Route = createFileRoute("/categories")({
+  component: RouteComponent,
+  beforeLoad: async ({ context }) => {
+    ensureSession(context.isAuthenticated, "/categories");
+
+    await context.queryClient.ensureQueryData(
+      orpc.categories.getUserCategories.queryOptions(),
+    );
+  },
+});
+
+function RouteComponent() {
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<FilterType>("all");
+  const { data: categories, isLoading } = useQuery(
+    orpc.categories.getUserCategories.queryOptions({
+      select: (data) => data.categories,
+    }),
+  );
+
+  const { mutateAsync: deleteCategory } = useMutation(
+    orpc.categories.deleteCategory.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
+        });
+      },
+    }),
+  );
+
+  const filteredCategories = useMemo(() => {
+    if (!categories) {
+      return [];
+    }
+
+    let filtered = categories;
+
+    if (filterType !== "all") {
+      filtered = filtered.filter((category) => {
+        if (filterType === "income") {
+          return category.treatAsIncome;
+        } else if (filterType === "expense") {
+          return !category.treatAsIncome;
+        }
+        return true;
+      });
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      // First find categories that match the search
+      const matchingIds = new Set<string>();
+      filtered.forEach((category) => {
+        if (category.name.toLowerCase().includes(query)) {
+          matchingIds.add(category.id);
+        }
+        if (category.icon?.toLowerCase().includes(query)) {
+          matchingIds.add(category.id);
+        }
+      });
+
+      // Then include parents of matching children
+      const resultIds = new Set<string>(matchingIds);
+      filtered.forEach((category) => {
+        if (category.parentCategory && matchingIds.has(category.id)) {
+          // This is a child that matches - include its parent
+          resultIds.add(category.parentCategory.id);
+        }
+      });
+
+      filtered = filtered.filter((category) => resultIds.has(category.id));
+    }
+
+    return filtered;
+  }, [categories, searchQuery, filterType]);
+
+  async function handleDelete(id: string) {
+    await deleteCategory({ id });
+  }
+
+  return (
+    <div className="min-h-full">
+      <PageHeader
+        eyebrow="Organization"
+        title="Categories"
+        description="Create a clear spending taxonomy that makes reports easier to trust."
+        actions={
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New category
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>New Category</DialogTitle>
+              </DialogHeader>
+              <CreateCategoryForm callback={() => setOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        }
+      />
+
+      <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-6">
+        <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select
+              value={filterType}
+              onValueChange={(value: FilterType) => setFilterType(value)}
+            >
+              <SelectTrigger className="w-full sm:w-[140px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">Expense</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
+          <CategoryList
+            categories={filteredCategories}
+            isLoading={isLoading}
+            onDelete={handleDelete}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

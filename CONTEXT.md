@@ -8,6 +8,7 @@ reviews them, and explores spending/income through reports and dashboard charts.
 
 ```
 apps/web       React single-page application
+apps/app       Experimental TanStack Start (SPA mode) port of apps/web
 apps/server    Hono API, oRPC procedures, PostgreSQL/Drizzle data layer
 compose.yml    Local PostgreSQL and production-style server container
 ops/           Operational backup-related material

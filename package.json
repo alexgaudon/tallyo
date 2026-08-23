@@ -13,6 +13,8 @@
 		"check-types": "rm -rf apps/server/dist apps/web/tsconfig.tsbuildinfo && turbo check-types",
 		"dev:native": "turbo -F native dev",
 		"dev:web": "turbo -F web dev",
+		"dev:app": "turbo -F app dev",
+		"build:app": "turbo -F app build",
 		"dev:server": "turbo -F server dev",
 		"db:push": "turbo -F server db:push",
 		"db:studio": "turbo -F server db:studio",

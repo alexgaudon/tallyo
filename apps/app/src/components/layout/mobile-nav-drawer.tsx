@@ -1,0 +1,159 @@
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import {
+  BarChart3Icon,
+  BlocksIcon,
+  CreditCardIcon,
+  FolderTreeIcon,
+  LogOut,
+  Settings,
+  StoreIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { signOut, useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { queryClient } from "@/utils/orpc";
+
+const navItems = [
+  { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
+  { to: "/transactions", label: "Transactions", icon: CreditCardIcon },
+  { to: "/merchants", label: "Merchants", icon: StoreIcon },
+  { to: "/categories", label: "Categories", icon: FolderTreeIcon },
+  { to: "/reports", label: "Reports", icon: BarChart3Icon },
+];
+
+interface MobileNavDrawerProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
+  const { data: session } = useSession();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  if (!session?.user) return null;
+
+  const isOpen = open !== undefined ? open : internalOpen;
+  const handleOpenChange =
+    onOpenChange !== undefined ? onOpenChange : setInternalOpen;
+
+  const handleNavigation = () => {
+    handleOpenChange(false);
+  };
+
+  return (
+    <Drawer
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      direction="left"
+      modal={false}
+      shouldScaleBackground={false}
+    >
+      <DrawerContent className="animate-none will-change-transform">
+        <DrawerHeader className="border-b border-border pb-4">
+          <div className="flex items-center justify-between">
+            <DrawerTitle className="flex items-center gap-3">
+              <img
+                src="/favicon.ico"
+                alt="Tallyo"
+                className="h-8 w-8 rounded-lg"
+              />
+              <span className="font-semibold text-base">Tallyo</span>
+            </DrawerTitle>
+          </div>
+        </DrawerHeader>
+
+        <nav className="p-4 space-y-1">
+          {navItems.map((item) => {
+            const isActive =
+              location.pathname === item.to ||
+              (item.to === "/transactions" &&
+                location.pathname.startsWith("/transactions"));
+
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={handleNavigation}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
+                  isActive
+                    ? "bg-accent/10 text-accent border border-accent/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+                )}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          <div className="border-t border-border my-4" />
+
+          <Link
+            to="/settings"
+            onClick={handleNavigation}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
+              location.pathname === "/settings"
+                ? "bg-accent/10 text-accent border border-accent/20"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
+            )}
+          >
+            <Settings className="w-5 h-5" />
+            <span>Settings</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={async () => {
+              await signOut();
+              queryClient.invalidateQueries({ queryKey: ["session"] });
+              setTimeout(() => {
+                navigate({ to: "/" });
+              }, 500);
+            }}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 w-full transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Log out</span>
+          </button>
+        </nav>
+
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              {session?.user?.image ? (
+                <img
+                  alt={session.user.name ?? ""}
+                  src={session.user.image}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <AvatarFallback>
+                  {session?.user?.name?.substring(0, 1).toUpperCase() ?? "U"}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium truncate">
+                {session?.user?.name ?? ""}
+              </div>
+              <div className="text-sm text-muted-foreground truncate">
+                {session?.user?.email ?? ""}
+              </div>
+            </div>
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}

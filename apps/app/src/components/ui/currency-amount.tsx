@@ -1,0 +1,147 @@
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSession } from "@/lib/auth-client";
+import { cn, formatCurrency, formatValueWithPrivacy } from "@/lib/utils";
+
+interface CurrencyAmountProps {
+	/**
+	 * Amount in cents (e.g., 1500 for $15.00)
+	 */
+	amount: number;
+	/**
+	 * Currency code (defaults to "USD")
+	 */
+	currency?: string;
+	/**
+	 * CSS class name for styling
+	 */
+	className?: string;
+	/**
+	 * Whether to show negative amounts in red and positive in green
+	 */
+	showColor?: boolean;
+	/**
+	 * Custom component to wrap the amount (e.g., for tooltips)
+	 */
+	as?: ReactNode;
+	/**
+	 * Override privacy mode setting (useful for testing or specific use cases)
+	 */
+	forcePrivacyMode?: boolean;
+	/**
+	 * Whether to animate the value on first render
+	 */
+	animate?: boolean;
+	/**
+	 * Duration of the animation in milliseconds
+	 */
+	animationDuration?: number;
+}
+
+/**
+ * A reusable component for displaying dollar amounts that respects privacy mode.
+ *
+ * @example
+ * ```tsx
+ * <CurrencyAmount amount={1500} /> // Shows "$15.00" or "••••••" in privacy mode
+ * <CurrencyAmount amount={-2500} showColor /> // Shows "-$25.00" in red
+ * <CurrencyAmount amount={1000} className="text-lg font-bold" />
+ * <CurrencyAmount amount={1000} animate /> // Animates from 0 to $10.00
+ * ```
+ */
+export function CurrencyAmount({
+	amount,
+	currency = "USD",
+	className,
+	showColor = false,
+	as,
+	forcePrivacyMode,
+	animate = false,
+	animationDuration = 400,
+}: CurrencyAmountProps) {
+	const { data: session } = useSession();
+	const isPrivacyMode =
+		forcePrivacyMode ?? session?.settings?.isPrivacyMode ?? false;
+
+	const [animatedAmount, setAnimatedAmount] = useState(animate ? 0 : amount);
+	const [isAnimating, setIsAnimating] = useState(false);
+	const frameRef = useRef<number | null>(null);
+	const prevAmountRef = useRef(animate ? 0 : amount);
+
+	useEffect(() => {
+		if (!animate) {
+			setAnimatedAmount(amount);
+			prevAmountRef.current = amount;
+			return;
+		}
+
+		const startAmount = prevAmountRef.current;
+		const targetAmount = amount;
+		if (startAmount === targetAmount) {
+			return;
+		}
+
+		setIsAnimating(true);
+
+		const startTime = Date.now();
+		const difference = targetAmount - startAmount;
+
+		const animateValue = () => {
+			const elapsed = Date.now() - startTime;
+			const progress = Math.min(elapsed / animationDuration, 1);
+
+			// Easing function for smooth animation
+			const easeOutQuart = 1 - (1 - progress) ** 4;
+			const currentAmount = Math.round(
+				startAmount + difference * easeOutQuart,
+			);
+
+			setAnimatedAmount(currentAmount);
+
+			if (progress < 1) {
+				frameRef.current = requestAnimationFrame(animateValue);
+			} else {
+				prevAmountRef.current = targetAmount;
+				setIsAnimating(false);
+			}
+		};
+
+		frameRef.current = requestAnimationFrame(animateValue);
+
+		return () => {
+			if (frameRef.current !== null) {
+				cancelAnimationFrame(frameRef.current);
+			}
+		};
+	}, [amount, animate, animationDuration]);
+
+	const formattedAmount = formatCurrency(animatedAmount, currency);
+	const displayValue = formatValueWithPrivacy(formattedAmount, isPrivacyMode);
+
+	const content = (
+		<span
+			data-currency
+			className={cn(
+				"font-mono tabular-nums truncate",
+				"flex items-center",
+				showColor && animatedAmount < 0 && "text-[var(--expense)]",
+				showColor && animatedAmount > 0 && "text-[var(--income)]",
+				isAnimating && "transition-all duration-75 ease-out",
+				className,
+			)}
+		>
+			{displayValue}
+		</span>
+	);
+
+	if (as) {
+		return (
+			<span className="contents">
+				{as}
+				{content}
+			</span>
+		);
+	}
+
+	return content;
+}

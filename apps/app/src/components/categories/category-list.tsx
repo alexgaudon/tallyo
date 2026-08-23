@@ -1,0 +1,88 @@
+import { FolderIcon, XIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import type { Category } from "../../../../server/src/routers";
+import { CategoryCard } from "./category-card";
+
+interface CategoryListProps {
+  categories: Category[];
+  isLoading: boolean;
+  onDelete: (id: string) => Promise<void>;
+}
+
+export function CategoryList({
+  categories,
+  isLoading,
+  onDelete,
+}: CategoryListProps) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-muted-foreground">Loading categories...</div>
+      </div>
+    );
+  }
+
+  if (!categories.length) {
+    return (
+      <EmptyState
+        icon={<FolderIcon className="h-12 w-12 text-muted-foreground" />}
+        title="No categories yet"
+        description="Create your first category to get started"
+        bordered={false}
+      />
+    );
+  }
+
+  const parentCategories = categories.filter((cat) => !cat.parentCategory);
+  const childCategories = categories.filter((cat) => cat.parentCategory);
+
+  return (
+    <div className="space-y-4 p-4">
+      {parentCategories.map((parent) => (
+        <CategoryCard
+          key={parent.id}
+          category={parent}
+          subCategories={childCategories.filter(
+            (child) => child.parentCategory?.id === parent.id,
+          )}
+          onDelete={onDelete}
+        />
+      ))}
+
+      {childCategories
+        .filter(
+          (child) =>
+            !parentCategories.some(
+              (parent) => parent.id === child.parentCategory?.id,
+            ),
+        )
+        .map((orphanedChild) => (
+          <div
+            key={orphanedChild.id}
+            className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FolderIcon className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <span className="font-medium">{orphanedChild.name}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (Orphaned category)
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                onClick={() => onDelete(orphanedChild.id)}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}

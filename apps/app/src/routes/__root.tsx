@@ -1,0 +1,179 @@
+import { createORPCClient } from "@orpc/client";
+import { createORPCReactQueryUtils } from "@orpc/react-query";
+import type { RouterClient } from "@orpc/server";
+import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Link,
+  Outlet,
+  Scripts,
+  useLocation,
+} from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { ArrowLeft } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
+import Footer from "@/components/footer";
+import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
+import { TopNav } from "@/components/layout/top-nav";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useSession, useSessionFetch } from "@/lib/auth-client";
+import { link, ORPCContext, type orpc } from "@/utils/orpc";
+import type { appRouter } from "../../../server/src/routers";
+import "../index.css";
+
+export interface RouterAppContext {
+  orpc: typeof orpc;
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterAppContext>()({
+  component: RootComponent,
+  beforeLoad: async ({ context }) => {
+    // SPA mode: the prerendered shell renders without network access.
+    // The real session is fetched client-side on hydration.
+    if (typeof window === "undefined") {
+      return { auth: null, isAuthenticated: false };
+    }
+
+    const queryClient = context.queryClient;
+    const session = await queryClient.ensureQueryData({
+      queryKey: ["session"],
+      queryFn: useSessionFetch,
+    });
+
+    return { auth: session, isAuthenticated: !!session };
+  },
+  head: () => ({
+    meta: [
+      {
+        title: "Tallyo",
+      },
+      {
+        name: "description",
+        content: "Tallyo is a personal finance inspection tool",
+      },
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1.0, viewport-fit=cover",
+      },
+    ],
+    links: [
+      {
+        rel: "icon",
+        href: "/favicon.ico",
+      },
+      {
+        rel: "preconnect",
+        href: "https://cdn.jsdelivr.net",
+      },
+      {
+        rel: "preload",
+        href: "https://cdn.jsdelivr.net/npm/geist@1.3.0/dist/fonts/geist-mono/GeistMono-Regular.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+    ],
+    scripts: [
+      {
+        // Prevent FOUC by setting theme immediately
+        children: `(() => {
+  const storageKey = 'vite-ui-theme';
+  const theme = localStorage.getItem(storageKey) || 'dark';
+  const root = document.documentElement;
+  root.classList.remove('light', 'dark');
+  if (theme === 'system') {
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    root.classList.add(systemTheme);
+  } else {
+    root.classList.add(theme);
+  }
+})();`,
+      },
+    ],
+  }),
+});
+
+function RootComponent() {
+  const [client] = useState<RouterClient<typeof appRouter>>(() =>
+    createORPCClient(link),
+  );
+  const [orpcUtils] = useState(() => createORPCReactQueryUtils(client));
+
+  const location = useLocation();
+
+  const { data: session } = useSession();
+
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  useKeyboardShortcuts();
+
+  const isAuthenticated = !!session;
+
+  return (
+    <RootDocument>
+      <ORPCContext.Provider value={orpcUtils}>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          {isAuthenticated ? (
+            <div className="flex flex-col min-h-screen pt-14">
+              <TopNav onMenuClick={() => setMobileDrawerOpen(true)} />
+              <MobileNavDrawer
+                open={mobileDrawerOpen}
+                onOpenChange={setMobileDrawerOpen}
+              />
+              <main className="flex-1 bg-muted/20">
+                <Outlet />
+              </main>
+              <Footer />
+            </div>
+          ) : (
+            <div className="flex flex-col min-h-screen pt-14">
+              {location.pathname.startsWith("/sign") ? (
+                <div className="fixed top-0 left-0 mt-8 ml-8 z-50">
+                  <Link to="/">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Link>
+                </div>
+              ) : !session && location.pathname === "/" ? null : (
+                <TopNav />
+              )}
+              <main className="flex-1">
+                <Outlet />
+              </main>
+              <Footer />
+            </div>
+          )}
+          <Toaster richColors />
+        </ThemeProvider>
+      </ORPCContext.Provider>
+      {session?.settings?.isDevMode && import.meta.env.DEV && (
+        <>
+          <ReactQueryDevtools position="bottom" buttonPosition="top-right" />
+          <TanStackRouterDevtools position="bottom-right" />
+        </>
+      )}
+    </RootDocument>
+  );
+}
+
+function RootDocument({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}

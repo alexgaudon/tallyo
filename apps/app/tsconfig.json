@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"esModuleInterop": true,
+		"jsx": "react-jsx",
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"skipLibCheck": true,
+		"types": ["vite/client"],
+		"baseUrl": ".",
+		"composite": true,
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	},
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		"dist"
+	],
+	"references": [
+		{
+			"path": "../server"
+		}
+	]
+}
