@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Section } from "@/components/ui/section";
 import { Switch } from "@/components/ui/switch";
+import { useUpdateSettings } from "@/hooks/use-update-settings";
 import { ensureSession, useSession } from "@/lib/auth-client";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/settings")({
   component: RouteComponent,
@@ -44,134 +45,38 @@ function RouteComponent() {
 
   const webhookUrls: string[] = settingsData?.settings?.webhookUrls ?? [];
 
-  const { mutate: updateSettings, isPending } = useMutation(
-    orpc.settings.updateSettings.mutationOptions({
-      onMutate: async (newSettings) => {
-        await queryClient.cancelQueries({
-          queryKey: orpc.settings.getUserSettings.queryOptions().queryKey,
-        });
+  const { mutate: updateSettings, isPending } = useUpdateSettings({
+    showRetry: true,
+    onSuccess: (newSettings) => {
+      const changedSettings = [];
+      const oldSettings = session?.settings;
 
-        const previousSettings = queryClient.getQueryData(
-          orpc.settings.getUserSettings.queryOptions().queryKey,
+      if (newSettings.isDevMode !== oldSettings?.isDevMode) {
+        changedSettings.push({
+          name: "Developer mode",
+          enabled: newSettings.isDevMode,
+        });
+      }
+      if (newSettings.isPrivacyMode !== oldSettings?.isPrivacyMode) {
+        changedSettings.push({
+          name: "Privacy mode",
+          enabled: newSettings.isPrivacyMode,
+        });
+      }
+
+      if (changedSettings.length > 0) {
+        const descriptions = changedSettings.map(
+          (setting) =>
+            `${setting.name} has been ${setting.enabled ? "enabled" : "disabled"}`,
         );
 
-        queryClient.setQueryData(
-          orpc.settings.getUserSettings.queryOptions().queryKey,
-          (
-            old:
-              | {
-                  settings: {
-                    isDevMode: boolean;
-                    isPrivacyMode: boolean;
-                    webhookUrls?: string[];
-                  };
-                }
-              | undefined,
-          ) => ({
-            ...old,
-            settings: newSettings,
-          }),
-        );
-
-        queryClient.setQueryData(
-          ["session"],
-          (
-            old:
-              | {
-                  settings: {
-                    isDevMode: boolean;
-                    isPrivacyMode: boolean;
-                    webhookUrls?: string[];
-                  };
-                }
-              | undefined,
-          ) => ({
-            ...old,
-            settings: newSettings,
-          }),
-        );
-
-        return { previousSettings };
-      },
-      onError: (err, newSettings, context) => {
-        if (context?.previousSettings) {
-          queryClient.setQueryData(
-            orpc.settings.getUserSettings.queryOptions().queryKey,
-            context.previousSettings,
-          );
-        }
-
-        queryClient.setQueryData(
-          ["session"],
-          (
-            old:
-              | {
-                  settings: {
-                    isDevMode: boolean;
-                    isPrivacyMode: boolean;
-                    webhookUrls?: string[];
-                  };
-                }
-              | undefined,
-          ) => ({
-            ...old,
-            settings: session?.settings,
-          }),
-        );
-
-        toast.error("Failed to update settings", {
-          description:
-            err instanceof Error
-              ? `Error: ${err.message}`
-              : "An unexpected error occurred. Please try again.",
-          duration: 5000,
-          action: {
-            label: "Retry",
-            onClick: () => {
-              updateSettings(newSettings);
-            },
-          },
+        toast.success("Settings updated", {
+          description: descriptions.join(". "),
+          duration: 4000,
         });
-      },
-      onSuccess: (data) => {
-        queryClient.invalidateQueries({
-          queryKey: orpc.settings.getUserSettings.queryOptions().queryKey,
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["session"],
-        });
-
-        const changedSettings = [];
-        const oldSettings = session?.settings;
-        const newSettings = data.settings;
-
-        if (newSettings.isDevMode !== oldSettings?.isDevMode) {
-          changedSettings.push({
-            name: "Developer mode",
-            enabled: newSettings.isDevMode,
-          });
-        }
-        if (newSettings.isPrivacyMode !== oldSettings?.isPrivacyMode) {
-          changedSettings.push({
-            name: "Privacy mode",
-            enabled: newSettings.isPrivacyMode,
-          });
-        }
-
-        if (changedSettings.length > 0) {
-          const descriptions = changedSettings.map(
-            (setting) =>
-              `${setting.name} has been ${setting.enabled ? "enabled" : "disabled"}`,
-          );
-
-          toast.success("Settings updated", {
-            description: descriptions.join(". "),
-            duration: 4000,
-          });
-        }
-      },
-    }),
-  );
+      }
+    },
+  });
 
   const [isConfirmPasswordOpen, setIsConfirmPasswordOpen] = useState(false);
 
@@ -302,12 +207,7 @@ function RouteComponent() {
                               return;
                             }
                             const updatedUrls = [...webhookUrls, url];
-                            updateSettings({
-                              isDevMode: session?.settings?.isDevMode ?? false,
-                              isPrivacyMode:
-                                session?.settings?.isPrivacyMode ?? false,
-                              webhookUrls: updatedUrls,
-                            });
+                            updateSettings({ webhookUrls: updatedUrls });
                             setNewWebhookUrl("");
                             toast.success("Webhook URL added");
                           } catch {
@@ -329,12 +229,7 @@ function RouteComponent() {
                           return;
                         }
                         const updatedUrls = [...webhookUrls, url];
-                        updateSettings({
-                          isDevMode: session?.settings?.isDevMode ?? false,
-                          isPrivacyMode:
-                            session?.settings?.isPrivacyMode ?? false,
-                          webhookUrls: updatedUrls,
-                        });
+                        updateSettings({ webhookUrls: updatedUrls });
                         setNewWebhookUrl("");
                         toast.success("Webhook URL added");
                       } catch {
@@ -363,12 +258,7 @@ function RouteComponent() {
                           const updatedUrls = webhookUrls.filter(
                             (u: string) => u !== url,
                           );
-                          updateSettings({
-                            isDevMode: session?.settings?.isDevMode ?? false,
-                            isPrivacyMode:
-                              session?.settings?.isPrivacyMode ?? false,
-                            webhookUrls: updatedUrls,
-                          });
+                          updateSettings({ webhookUrls: updatedUrls });
                           toast.success("Webhook URL removed");
                         }}
                         size="sm"
@@ -413,8 +303,6 @@ function RouteComponent() {
                   onCheckedChange={() => {
                     updateSettings({
                       isDevMode: !(session?.settings?.isDevMode ?? false),
-                      isPrivacyMode: session?.settings?.isPrivacyMode ?? false,
-                      webhookUrls: webhookUrls,
                     });
                   }}
                 />
@@ -447,8 +335,6 @@ function RouteComponent() {
                       isPrivacyMode: !(
                         session?.settings?.isPrivacyMode ?? false
                       ),
-                      isDevMode: session?.settings?.isDevMode ?? false,
-                      webhookUrls: webhookUrls,
                     });
                   }}
                 />
