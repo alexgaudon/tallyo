@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { category } from "@/db/schema";
 import { db } from "../db";
@@ -40,7 +40,12 @@ export const categoriesRouter = {
       try {
         const deletedCategory = await db
           .delete(category)
-          .where(eq(category.id, input.id))
+          .where(
+            and(
+              eq(category.id, input.id),
+              eq(category.userId, context.session?.user?.id),
+            ),
+          )
           .returning();
 
         if (!deletedCategory || deletedCategory.length === 0) {
@@ -91,6 +96,20 @@ export const categoriesRouter = {
 
         if (existingCategory) {
           throw new Error("Category with this name already exists");
+        }
+
+        // Validate the parent category exists and belongs to this user
+        if (input.parentCategoryId) {
+          const parentCategory = await db.query.category.findFirst({
+            where: and(
+              eq(category.id, input.parentCategoryId),
+              eq(category.userId, context.session.user.id),
+            ),
+          });
+
+          if (!parentCategory) {
+            throw new Error("Parent category not found");
+          }
         }
 
         const newCategory = await db
@@ -158,13 +177,33 @@ export const categoriesRouter = {
         }
 
         const { id, ...updateData } = input;
+
+        // Validate the parent category exists and belongs to this user
+        if (updateData.parentCategoryId) {
+          const parentCategory = await db.query.category.findFirst({
+            where: and(
+              eq(category.id, updateData.parentCategoryId),
+              eq(category.userId, context.session?.user?.id),
+            ),
+          });
+
+          if (!parentCategory) {
+            throw new Error("Parent category not found");
+          }
+        }
+
         const updatedCategory = await db
           .update(category)
           .set({
             ...updateData,
             updatedAt: new Date(),
           })
-          .where(eq(category.id, id))
+          .where(
+            and(
+              eq(category.id, id),
+              eq(category.userId, context.session?.user?.id),
+            ),
+          )
           .returning();
 
         if (!updatedCategory || updatedCategory.length === 0) {
