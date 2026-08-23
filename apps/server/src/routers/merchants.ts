@@ -487,7 +487,12 @@ export const merchantsRouter = {
       try {
         const deletedMerchant = await db
           .delete(merchant)
-          .where(eq(merchant.id, input.id))
+          .where(
+            and(
+              eq(merchant.id, input.id),
+              eq(merchant.userId, context.session?.user?.id),
+            ),
+          )
           .returning();
 
         if (!deletedMerchant || deletedMerchant.length === 0) {

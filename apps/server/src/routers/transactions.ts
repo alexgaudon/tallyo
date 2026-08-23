@@ -85,7 +85,9 @@ export const updateTransactionField = async (
       ...updates,
       updatedAt: new Date(),
     })
-    .where(eq(transaction.id, transactionId))
+    .where(
+      and(eq(transaction.id, transactionId), eq(transaction.userId, userId)),
+    )
     .returning();
 
   if (!updatedTransaction || updatedTransaction.length === 0) {
@@ -435,11 +437,16 @@ export const transactionsRouter = {
 
   deleteTransaction: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       return withErrorHandling(async () => {
         const deletedTransaction = await db
           .delete(transaction)
-          .where(eq(transaction.id, input.id))
+          .where(
+            and(
+              eq(transaction.id, input.id),
+              eq(transaction.userId, context.session?.user?.id),
+            ),
+          )
           .returning();
 
         if (!deletedTransaction || deletedTransaction.length === 0) {
