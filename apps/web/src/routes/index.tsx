@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
   beforeLoad: async ({ context }) => {
     const queryClient = context.queryClient;
     await queryClient.prefetchQuery(orpc.healthCheck.queryOptions());
-    if (context.auth?.isAuthenticated) {
+    if (context.isAuthenticated) {
       throw redirect({ to: "/dashboard" });
     }
   },

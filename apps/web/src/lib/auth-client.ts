@@ -59,7 +59,6 @@ export const useSessionFetch = async () => {
       ...session,
       ...data[1],
       meta: data[0],
-      isAuthenticated: true,
     };
   } catch (error) {
     if (error instanceof ORPCError && error.code === "UNAUTHORIZED") {
@@ -74,7 +73,6 @@ export const useSessionFetch = async () => {
         webhookUrls: [],
       },
       meta: { unreviewedTransactionCount: 0, earliestTransactionDate: null },
-      isAuthenticated: true,
     };
   }
 };
