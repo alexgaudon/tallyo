@@ -199,12 +199,16 @@ export const authToken = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     token: text("token").notNull(),
+    // SHA-256 of the raw token; enables indexed lookup at validation time.
+    // Nullable so pre-existing bcrypt-only tokens remain valid until regenerated.
+    tokenHash: text("token_hash"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("auth_token_user_id_unique").on(table.userId),
     uniqueIndex("auth_token_token_unique").on(table.token),
+    uniqueIndex("auth_token_token_hash_unique").on(table.tokenHash),
   ],
 );
 
