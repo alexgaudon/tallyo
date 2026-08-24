@@ -68,6 +68,51 @@ function buildMatchCondition(term: string) {
   return ilike(transaction.transactionDetails, `%${trimmed}%`);
 }
 
+/** Apply a merchant (and its recommended category, if any) to every unreviewed
+ *  transaction whose details match any of the given search terms.
+ *  Returns the updated row count. Bails out with 0 when no usable terms remain
+ *  after trimming, so an empty condition list can never degrade the WHERE into
+ *  "every unreviewed transaction".
+ */
+async function applyMerchantToUnreviewed(
+  userId: string,
+  merchantRef: { id: string; recommendedCategoryId: string | null },
+  terms: string[],
+): Promise<number> {
+  const keywordConditions = terms
+    .map((term) => buildMatchCondition(term))
+    .filter((c): c is NonNullable<typeof c> => c !== undefined);
+
+  if (keywordConditions.length === 0) return 0;
+
+  const updateData: {
+    merchantId: string;
+    updatedAt: Date;
+    categoryId?: string;
+  } = {
+    merchantId: merchantRef.id,
+    updatedAt: new Date(),
+  };
+
+  // Only update category if a recommended category is set
+  if (merchantRef.recommendedCategoryId) {
+    updateData.categoryId = merchantRef.recommendedCategoryId;
+  }
+
+  const updatedResult = await db
+    .update(transaction)
+    .set(updateData)
+    .where(
+      and(
+        eq(transaction.userId, userId),
+        eq(transaction.reviewed, false),
+        or(...keywordConditions),
+      ),
+    );
+
+  return updatedResult.rowCount ?? 0;
+}
+
 export const merchantsRouter = {
   getMerchantFromVendor: protectedProcedure
     .input(
@@ -217,36 +262,11 @@ export const merchantsRouter = {
 
         // Update unreviewed transactions that match the keywords with the merchant and recommended category
         if (keywords && keywords.length > 0) {
-          const keywordConditions = keywords
-            .map((keyword) => buildMatchCondition(keyword))
-            .filter((c): c is NonNullable<typeof c> => c !== undefined);
-
-          const updateData: {
-            merchantId: string;
-            updatedAt: Date;
-            categoryId?: string;
-          } = {
-            merchantId: id,
-            updatedAt: new Date(),
-          };
-
-          // Only update category if recommendedCategoryId is provided
-          if (input.recommendedCategoryId) {
-            updateData.categoryId = input.recommendedCategoryId;
-          }
-
-          const updatedResult = await db
-            .update(transaction)
-            .set(updateData)
-            .where(
-              and(
-                eq(transaction.userId, context.session?.user?.id),
-                eq(transaction.reviewed, false),
-                or(...keywordConditions),
-              ),
-            );
-
-          updatedCount = updatedResult.rowCount ?? 0;
+          updatedCount = await applyMerchantToUnreviewed(
+            context.session?.user?.id,
+            { id, recommendedCategoryId: input.recommendedCategoryId ?? null },
+            keywords,
+          );
         }
 
         return {
@@ -308,36 +328,11 @@ export const merchantsRouter = {
           };
         }
 
-        const keywordConditions = searchTerms
-          .map((term) => buildMatchCondition(term))
-          .filter((c): c is NonNullable<typeof c> => c !== undefined);
-
-        const updateData: {
-          merchantId: string;
-          updatedAt: Date;
-          categoryId?: string;
-        } = {
-          merchantId: input.id,
-          updatedAt: new Date(),
-        };
-
-        // Only update category if recommendedCategoryId is provided
-        if (merchantData.recommendedCategoryId) {
-          updateData.categoryId = merchantData.recommendedCategoryId;
-        }
-
-        const updatedResult = await db
-          .update(transaction)
-          .set(updateData)
-          .where(
-            and(
-              eq(transaction.userId, context.session?.user?.id),
-              eq(transaction.reviewed, false),
-              or(...keywordConditions),
-            ),
-          );
-
-        const updatedCount = updatedResult.rowCount ?? 0;
+        const updatedCount = await applyMerchantToUnreviewed(
+          context.session?.user?.id,
+          merchantData,
+          searchTerms,
+        );
 
         logger.info(
           `Applied merchant ${input.id} to ${updatedCount} transactions for user ${context.session?.user?.id}`,
@@ -409,36 +404,12 @@ export const merchantsRouter = {
             continue; // Skip merchants without any search terms
           }
 
-          const keywordConditions = searchTerms
-            .map((term) => buildMatchCondition(term))
-            .filter((c): c is NonNullable<typeof c> => c !== undefined);
+          const updatedCount = await applyMerchantToUnreviewed(
+            context.session?.user?.id,
+            merchantData,
+            searchTerms,
+          );
 
-          const updateData: {
-            merchantId: string;
-            updatedAt: Date;
-            categoryId?: string;
-          } = {
-            merchantId: merchantData.id,
-            updatedAt: new Date(),
-          };
-
-          // Only update category if recommendedCategoryId is provided
-          if (merchantData.recommendedCategoryId) {
-            updateData.categoryId = merchantData.recommendedCategoryId;
-          }
-
-          const updatedResult = await db
-            .update(transaction)
-            .set(updateData)
-            .where(
-              and(
-                eq(transaction.userId, context.session?.user?.id),
-                eq(transaction.reviewed, false),
-                or(...keywordConditions),
-              ),
-            );
-
-          const updatedCount = updatedResult.rowCount ?? 0;
           totalUpdated += updatedCount;
           merchantsProcessed++;
 
