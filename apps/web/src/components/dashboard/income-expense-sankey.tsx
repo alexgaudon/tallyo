@@ -22,6 +22,15 @@ interface SankeyNode {
   id: string;
   label: string;
   color: string;
+  kind:
+    | "income"
+    | "saved"
+    | "expenses"
+    | "parent"
+    | "child"
+    | "directChild"
+    | "standalone";
+  categoryId?: string;
   x0?: number;
   x1?: number;
   y0?: number;
@@ -53,23 +62,11 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
   } | null>(null);
 
   // Handle node click to navigate to transactions with filter
-  const handleNodeClick = (nodeId: string) => {
-    let categoryId: string | null = null;
-
-    if (nodeId.startsWith("parent-")) {
-      categoryId = nodeId.replace("parent-", "");
-    } else if (nodeId.startsWith("child-direct-")) {
-      categoryId = nodeId.replace("child-direct-", "");
-    } else if (nodeId.startsWith("child-")) {
-      categoryId = nodeId.replace("child-", "");
-    } else if (nodeId.startsWith("category-")) {
-      categoryId = nodeId.replace("category-", "");
-    }
-
-    if (categoryId) {
+  const handleNodeClick = (node: SankeyNode) => {
+    if (node.categoryId) {
       navigate({
         to: "/transactions",
-        search: { category: categoryId, page: 1 },
+        search: { category: node.categoryId, page: 1 },
       });
     }
   };
@@ -101,6 +98,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
       id: "income",
       label: `Income`,
       color: INCOME_COLOR,
+      kind: "income",
       value: data.totalIncome,
     });
 
@@ -110,6 +108,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
         id: "saved",
         label: `Saved`,
         color: SAVED_COLOR,
+        kind: "saved",
         value: data.savedAmount,
       });
       linkMap.set("income->saved", {
@@ -125,6 +124,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
         id: "expenses",
         label: "Expenses",
         color: EXPENSES_NODE_COLOR,
+        kind: "expenses",
         value: data.totalExpenses,
       });
       linkMap.set("income->expenses", {
@@ -188,6 +188,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
         id: parentNodeId,
         label: parent.name,
         color: getColorFromCategoryId(parent.id),
+        kind: "parent",
+        categoryId: parent.id,
         value: parent.amount,
       });
       linkMap.set(`expenses->${parentNodeId}`, {
@@ -210,6 +212,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
           id: childNodeId,
           label: expense.category.name, // Just the category name, not full path
           color: getColorFromCategoryId(expense.category.id),
+          kind: "child",
+          categoryId: expense.category.id,
         });
       }
 
@@ -248,6 +252,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
           id: directChildId,
           label: `${parent.name} (direct)`,
           color: getColorFromCategoryId(parent.id),
+          kind: "directChild",
+          categoryId: parent.id,
         });
       }
       linkMap.set(`${parentNodeId}->${directChildId}`, {
@@ -267,6 +273,8 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
           id: nodeId,
           label: expense.category.name,
           color: getColorFromCategoryId(expense.category.id),
+          kind: "standalone",
+          categoryId: expense.category.id,
         });
       }
 
@@ -287,27 +295,24 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     const rawNodes = Array.from(nodeMap.values());
     const rawLinks = Array.from(linkMap.values());
 
-    const getParentValue = (nodeId: string): number => {
-      for (const link of rawLinks) {
-        const source =
-          typeof link.source === "string"
-            ? link.source
-            : (link.source as { id: string }).id;
-        const target =
-          typeof link.target === "string"
-            ? link.target
-            : (link.target as { id: string }).id;
-        if (target === nodeId) {
-          const sourceNode = rawNodes.find((n) => n.id === source);
-          return sourceNode?.value ?? 0;
-        }
-      }
-      return 0;
-    };
+    // Precompute each target node's source value once, so the sort is O(n log n).
+    const parentValueByTarget = new Map<string, number>();
+    for (const link of rawLinks) {
+      const source =
+        typeof link.source === "string"
+          ? link.source
+          : (link.source as { id: string }).id;
+      const target =
+        typeof link.target === "string"
+          ? link.target
+          : (link.target as { id: string }).id;
+      const sourceNode = rawNodes.find((n) => n.id === source);
+      parentValueByTarget.set(target, sourceNode?.value ?? 0);
+    }
 
     rawNodes.sort((a, b) => {
-      const aParentVal = getParentValue(a.id);
-      const bParentVal = getParentValue(b.id);
+      const aParentVal = parentValueByTarget.get(a.id) ?? 0;
+      const bParentVal = parentValueByTarget.get(b.id) ?? 0;
       if (aParentVal !== bParentVal) return bParentVal - aParentVal;
       return (b.value ?? 0) - (a.value ?? 0);
     });
@@ -517,19 +522,14 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         className="cursor-pointer"
                         role="button"
                         tabIndex={0}
-                        onClick={() => handleNodeClick(node.id)}
+                        onClick={() => handleNodeClick(node)}
                         onMouseEnter={(e) => {
                           setHoveredNode(node.id);
                           const rect = e.currentTarget.getBoundingClientRect();
-                          let percentDenom = data.totalIncome;
-                          if (
-                            node.id === "expenses" ||
-                            node.id.startsWith("parent-") ||
-                            node.id.startsWith("child-") ||
-                            node.id.startsWith("category-")
-                          ) {
-                            percentDenom = data.totalExpenses;
-                          }
+                          const percentDenom =
+                            node.kind === "income" || node.kind === "saved"
+                              ? data.totalIncome
+                              : data.totalExpenses;
                           const amountText = formatCurrency(node.value || 0);
                           const pctText = `${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%`;
                           setTooltip({
@@ -563,10 +563,10 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         }}
                         role="button"
                         tabIndex={0}
-                        onClick={() => handleNodeClick(node.id)}
+                        onClick={() => handleNodeClick(node)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
-                            handleNodeClick(node.id);
+                            handleNodeClick(node);
                           }
                         }}
                         onMouseEnter={() => setHoveredNode(node.id)}
@@ -603,7 +603,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
                         }}
                         role="button"
                         tabIndex={0}
-                        onClick={() => handleNodeClick(node.id)}
+                        onClick={() => handleNodeClick(node)}
                         onMouseEnter={() => setHoveredNode(node.id)}
                         onMouseLeave={() => setHoveredNode(null)}
                       >
