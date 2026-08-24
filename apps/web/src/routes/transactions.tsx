@@ -27,6 +27,7 @@ import { orpc } from "@/utils/orpc";
 import type {
   Category,
   MerchantWithKeywordsAndCategory,
+  Transaction,
 } from "../../../server/src/routers";
 import type { RouterAppContext } from "./__root";
 
@@ -64,6 +65,56 @@ const createTransactionQueryOptions = (
     },
   });
 };
+
+type QueryClient = ReturnType<typeof useQueryClient>;
+
+/**
+ * Shared optimistic-update flow for the transactions list: cancel in-flight
+ * queries, snapshot, patch the matching row, roll back on error, invalidate
+ * on settle. Each mutation supplies only the per-row transform.
+ */
+function optimisticTransactionMutation<TVars>(
+  queryClient: QueryClient,
+  search: SearchParams,
+  patch: (tx: Transaction, vars: TVars) => Transaction,
+  settled?: () => Promise<void> | void,
+) {
+  const options = createTransactionQueryOptions(search);
+  return {
+    onMutate: async (vars: TVars) => {
+      await queryClient.cancelQueries(options);
+      const previousData = queryClient.getQueryData<TransactionQueryResponse>(
+        options.queryKey,
+      );
+      queryClient.setQueryData<TransactionQueryResponse>(
+        options.queryKey,
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            transactions: old.transactions.map((tx) =>
+              tx.id === (vars as { id: string }).id ? patch(tx, vars) : tx,
+            ),
+          };
+        },
+      );
+      return { previousData };
+    },
+    onError: (
+      _err: unknown,
+      _vars: TVars,
+      context?: { previousData?: TransactionQueryResponse },
+    ) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(options.queryKey, context.previousData);
+      }
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries(options);
+      await settled?.();
+    },
+  };
+}
 
 export const Route = createFileRoute("/transactions")({
   validateSearch: searchSchema,
@@ -170,227 +221,84 @@ function RouteComponent() {
 
   const { mutateAsync: updateCategory } = useMutation(
     orpc.transactions.updateTransactionCategory.mutationOptions({
-      onMutate: async ({ id, categoryId }) => {
-        await queryClient.cancelQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-
-        const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-        );
-
-        const categoriesData = queryClient.getQueryData(
-          orpc.categories.getUserCategories.queryOptions().queryKey,
-        );
-
-        queryClient.setQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-          (old: TransactionQueryResponse | undefined) => {
-            if (!old) return old;
-
-            const selectedCategory =
-              categoryId && categoriesData
-                ? (
-                    categoriesData as { categories: Category[] }
-                  ).categories?.find((c) => c.id === categoryId)
-                : null;
-
-            return {
-              ...old,
-              transactions: old.transactions.map((transaction) =>
-                transaction.id === id
-                  ? {
-                      ...transaction,
-                      categoryId,
-                      category: selectedCategory || null,
-                    }
-                  : transaction,
-              ),
-            };
-          },
-        );
-
-        return { previousData };
-      },
-      onError: (_err, _variables, context) => {
-        if (context?.previousData) {
-          queryClient.setQueryData(
-            createTransactionQueryOptions(effectiveSearch).queryKey,
-            context.previousData,
+      ...optimisticTransactionMutation(
+        queryClient,
+        effectiveSearch,
+        (tx, { categoryId }: { categoryId: string | null }) => {
+          const categoriesData = queryClient.getQueryData(
+            orpc.categories.getUserCategories.queryOptions().queryKey,
           );
-        }
-      },
-      onSettled: async () => {
-        await queryClient.invalidateQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-      },
+          const selectedCategory =
+            categoryId && categoriesData
+              ? (categoriesData as { categories: Category[] }).categories?.find(
+                  (c) => c.id === categoryId,
+                )
+              : null;
+          return { ...tx, categoryId, category: selectedCategory || null };
+        },
+      ),
     }),
   );
 
   const { mutateAsync: updateMerchant } = useMutation(
     orpc.transactions.updateTransactionMerchant.mutationOptions({
-      onMutate: async ({ id, merchantId }) => {
-        await queryClient.cancelQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-
-        const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-        );
-
-        const merchantsData = queryClient.getQueryData(
-          orpc.merchants.getUserMerchants.queryOptions().queryKey,
-        );
-
-        queryClient.setQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-          (old: TransactionQueryResponse | undefined) => {
-            if (!old) return old;
-
-            const selectedMerchant =
-              merchantId && merchantsData
-                ? (merchantsData as MerchantWithKeywordsAndCategory[]).find(
-                    (m) => m.id === merchantId,
-                  )
-                : null;
-
-            const categoriesData = queryClient.getQueryData(
-              orpc.categories.getUserCategories.queryOptions().queryKey,
-            );
-
-            const autoCategoryId =
-              selectedMerchant?.recommendedCategoryId ?? null;
-            const autoCategory =
-              autoCategoryId && categoriesData
-                ? ((
-                    categoriesData as { categories: Category[] }
-                  ).categories?.find((c) => c.id === autoCategoryId) ?? null)
-                : null;
-
-            return {
-              ...old,
-              transactions: old.transactions.map((transaction) =>
-                transaction.id === id
-                  ? {
-                      ...transaction,
-                      merchantId,
-                      merchant: selectedMerchant || null,
-                      categoryId: autoCategoryId,
-                      category: autoCategory,
-                    }
-                  : transaction,
-              ),
-            };
-          },
-        );
-
-        return { previousData };
-      },
-      onError: (_err, _variables, context) => {
-        if (context?.previousData) {
-          queryClient.setQueryData(
-            createTransactionQueryOptions(effectiveSearch).queryKey,
-            context.previousData,
+      ...optimisticTransactionMutation(
+        queryClient,
+        effectiveSearch,
+        (tx, { merchantId }: { merchantId: string | null }) => {
+          const merchantsData = queryClient.getQueryData(
+            orpc.merchants.getUserMerchants.queryOptions().queryKey,
           );
-        }
-      },
-      onSettled: async () => {
-        await queryClient.invalidateQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-      },
+          const categoriesData = queryClient.getQueryData(
+            orpc.categories.getUserCategories.queryOptions().queryKey,
+          );
+          const selectedMerchant =
+            merchantId && merchantsData
+              ? (merchantsData as MerchantWithKeywordsAndCategory[]).find(
+                  (m) => m.id === merchantId,
+                )
+              : null;
+          const autoCategoryId =
+            selectedMerchant?.recommendedCategoryId ?? null;
+          const autoCategory =
+            autoCategoryId && categoriesData
+              ? ((
+                  categoriesData as { categories: Category[] }
+                ).categories?.find((c) => c.id === autoCategoryId) ?? null)
+              : null;
+          return {
+            ...tx,
+            merchantId,
+            merchant: selectedMerchant || null,
+            categoryId: autoCategoryId,
+            category: autoCategory,
+          };
+        },
+      ),
     }),
   );
 
   const { mutateAsync: updateNotes } = useMutation(
     orpc.transactions.updateTransactionNotes.mutationOptions({
-      onMutate: async ({ id, notes }) => {
-        await queryClient.cancelQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-
-        const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-        );
-
-        queryClient.setQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-          (old: TransactionQueryResponse | undefined) => {
-            if (!old) return old;
-            return {
-              ...old,
-              transactions: old.transactions.map((transaction) =>
-                transaction.id === id ? { ...transaction, notes } : transaction,
-              ),
-            };
-          },
-        );
-
-        return { previousData };
-      },
-      onError: (_err, _variables, context) => {
-        if (context?.previousData) {
-          queryClient.setQueryData(
-            createTransactionQueryOptions(effectiveSearch).queryKey,
-            context.previousData,
-          );
-        }
-      },
-      onSettled: async () => {
-        await queryClient.invalidateQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-      },
+      ...optimisticTransactionMutation(
+        queryClient,
+        effectiveSearch,
+        (tx, { notes }: { notes: string | null }) => ({ ...tx, notes }),
+      ),
     }),
   );
 
   const { mutateAsync: toggleReviewed } = useMutation(
     orpc.transactions.toggleTransactionReviewed.mutationOptions({
-      onMutate: async ({ id }) => {
-        await queryClient.cancelQueries(
-          createTransactionQueryOptions(effectiveSearch),
-        );
-
-        const previousData = queryClient.getQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-        );
-
-        queryClient.setQueryData(
-          createTransactionQueryOptions(effectiveSearch).queryKey,
-          (old: TransactionQueryResponse | undefined) => {
-            if (!old) return old;
-            return {
-              ...old,
-              transactions: old.transactions.map((transaction) =>
-                transaction.id === id
-                  ? { ...transaction, reviewed: !transaction.reviewed }
-                  : transaction,
-              ),
-            };
-          },
-        );
-
-        return { previousData };
-      },
-      onError: (_err, _variables, context) => {
-        if (context?.previousData) {
-          queryClient.setQueryData(
-            createTransactionQueryOptions(effectiveSearch).queryKey,
-            context.previousData,
-          );
-        }
-      },
-      onSettled: async () => {
-        await Promise.all([
-          queryClient.invalidateQueries(
-            createTransactionQueryOptions(effectiveSearch),
-          ),
+      ...optimisticTransactionMutation(
+        queryClient,
+        effectiveSearch,
+        (tx) => ({ ...tx, reviewed: !tx.reviewed }),
+        () =>
           queryClient.invalidateQueries({
             queryKey: ["session"],
           }),
-        ]);
-      },
+      ),
     }),
   );
 
