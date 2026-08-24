@@ -7,7 +7,7 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import { cn } from "@/lib/utils";
@@ -106,9 +106,6 @@ export function PeriodInsights({
   previous?: DashboardPeriodComparison["totals"];
 }) {
   const [basis, setBasis] = useState<"average" | "previous">("average");
-  useEffect(() => {
-    if (!previous) setBasis("average");
-  }, [previous]);
 
   if (!data?.stats) {
     return (
@@ -143,21 +140,30 @@ export function PeriodInsights({
     s.avgExpenseForWindow != null ||
     s.avgTransactionCountForWindow != null;
 
-  const expectedIncome = usePrevious
-    ? Number(previous?.totalIncome) || 0
-    : useWindow && s.avgIncomeForWindow != null
-      ? Number(s.avgIncomeForWindow)
-      : scaledMonthlyIncome;
-  const expectedExpenses = usePrevious
-    ? Number(previous?.totalExpenses) || 0
-    : useWindow && s.avgExpenseForWindow != null
-      ? Number(s.avgExpenseForWindow)
-      : scaledMonthlyExpense;
-  const expectedTxScaled = usePrevious
-    ? Number(previous?.totalTransactions) || 0
-    : useWindow && s.avgTransactionCountForWindow != null
-      ? Number(s.avgTransactionCountForWindow)
-      : scaledMonthlyTx;
+  const expected = (
+    prev: number | null | undefined,
+    windowAvg: number | null,
+    fallback: number,
+  ): number => {
+    if (usePrevious) return Number(prev ?? 0) || 0;
+    return windowAvg != null ? Number(windowAvg) : fallback;
+  };
+
+  const expectedIncome = expected(
+    previous?.totalIncome,
+    s.avgIncomeForWindow,
+    scaledMonthlyIncome,
+  );
+  const expectedExpenses = expected(
+    previous?.totalExpenses,
+    s.avgExpenseForWindow,
+    scaledMonthlyExpense,
+  );
+  const expectedTxScaled = expected(
+    previous?.totalTransactions,
+    s.avgTransactionCountForWindow,
+    scaledMonthlyTx,
+  );
 
   const savingsCur =
     incomeCur === 0
@@ -212,7 +218,7 @@ export function PeriodInsights({
             onClick={() => setBasis("average")}
             className={cn(
               "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
-              basis === "average"
+              !usePrevious
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
@@ -224,7 +230,7 @@ export function PeriodInsights({
             onClick={() => setBasis("previous")}
             className={cn(
               "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
-              basis === "previous"
+              usePrevious
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
