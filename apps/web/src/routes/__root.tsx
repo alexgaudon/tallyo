@@ -19,7 +19,7 @@ import { TopNav } from "@/components/layout/top-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { useSession, useSessionFetch } from "@/lib/auth-client";
+import { type Session, useSession, useSessionFetch } from "@/lib/auth-client";
 import { link, ORPCContext, type orpc } from "@/utils/orpc";
 import type { appRouter } from "../../../server/src/routers";
 import "../index.css";
@@ -27,6 +27,8 @@ import "../index.css";
 export interface RouterAppContext {
   orpc: typeof orpc;
   queryClient: QueryClient;
+  auth: Session | null;
+  isAuthenticated: boolean;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({

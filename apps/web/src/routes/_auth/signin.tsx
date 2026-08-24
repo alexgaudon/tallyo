@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_auth/signin")({
   beforeLoad: async ({ context, search }) => {
     if (search.scope !== "token") {
       if (context.isAuthenticated) {
-        redirect({ to: "/" });
+        throw redirect({ to: "/" });
       }
     }
   },

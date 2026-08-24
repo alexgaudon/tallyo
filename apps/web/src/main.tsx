@@ -10,7 +10,7 @@ const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   defaultPendingComponent: () => <Loader />,
-  context: { orpc, queryClient },
+  context: { orpc, queryClient, auth: null, isAuthenticated: false },
   Wrap: function WrapComponent({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
