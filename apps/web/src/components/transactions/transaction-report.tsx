@@ -1,7 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
-import { useCallback, useId, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { DateRange } from "react-day-picker";
 import { CategoryMultiSelect } from "@/components/categories/category-multi-select";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
@@ -19,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useDebounce } from "@/hooks/use-debounce";
 import { dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
@@ -105,6 +113,50 @@ export function TransactionReport() {
     amountMax: search.amountMax,
     reviewed: search.reviewed,
   }));
+
+  // Local draft state for the amount inputs so typing stays responsive,
+  // while the committed values (and the resulting request) are debounced.
+  const [amountMinInput, setAmountMinInput] = useState<string>(() =>
+    filters.amountMin !== undefined ? String(filters.amountMin) : "",
+  );
+  const [amountMaxInput, setAmountMaxInput] = useState<string>(() =>
+    filters.amountMax !== undefined ? String(filters.amountMax) : "",
+  );
+
+  const debouncedAmountMin = useDebounce(amountMinInput, 300);
+  const debouncedAmountMax = useDebounce(amountMaxInput, 300);
+
+  const prevAmountMinRef = useRef<number | undefined>(filters.amountMin);
+  const prevAmountMaxRef = useRef<number | undefined>(filters.amountMax);
+
+  // Commit the debounced amount values to filters + URL, which drives the query.
+  useEffect(() => {
+    const numValue = debouncedAmountMin
+      ? Number.parseFloat(debouncedAmountMin)
+      : undefined;
+    if (numValue !== prevAmountMinRef.current) {
+      prevAmountMinRef.current = numValue;
+      setFilters((prev) => ({ ...prev, amountMin: numValue }));
+      navigate({
+        to: "/reports",
+        search: (prev) => ({ ...prev, amountMin: numValue }),
+      });
+    }
+  }, [debouncedAmountMin, navigate]);
+
+  useEffect(() => {
+    const numValue = debouncedAmountMax
+      ? Number.parseFloat(debouncedAmountMax)
+      : undefined;
+    if (numValue !== prevAmountMaxRef.current) {
+      prevAmountMaxRef.current = numValue;
+      setFilters((prev) => ({ ...prev, amountMax: numValue }));
+      navigate({
+        to: "/reports",
+        search: (prev) => ({ ...prev, amountMax: numValue }),
+      });
+    }
+  }, [debouncedAmountMax, navigate]);
 
   const queryInput = useMemo(() => {
     // Convert UI dollars to cents
@@ -228,41 +280,13 @@ export function TransactionReport() {
     [navigate],
   );
 
-  const handleAmountMinChange = useCallback(
-    (value: string) => {
-      const numValue = value ? Number.parseFloat(value) : undefined;
-      setFilters((prev) => ({
-        ...prev,
-        amountMin: numValue,
-      }));
-      navigate({
-        to: "/reports",
-        search: (prev) => ({
-          ...prev,
-          amountMin: numValue,
-        }),
-      });
-    },
-    [navigate],
-  );
+  const handleAmountMinChange = useCallback((value: string) => {
+    setAmountMinInput(value);
+  }, []);
 
-  const handleAmountMaxChange = useCallback(
-    (value: string) => {
-      const numValue = value ? Number.parseFloat(value) : undefined;
-      setFilters((prev) => ({
-        ...prev,
-        amountMax: numValue,
-      }));
-      navigate({
-        to: "/reports",
-        search: (prev) => ({
-          ...prev,
-          amountMax: numValue,
-        }),
-      });
-    },
-    [navigate],
-  );
+  const handleAmountMaxChange = useCallback((value: string) => {
+    setAmountMaxInput(value);
+  }, []);
 
   const handleReviewedChange = useCallback(
     (checked: boolean) => {
@@ -318,6 +342,10 @@ export function TransactionReport() {
       reviewed: undefined,
     };
     setFilters(resetFilters);
+    setAmountMinInput("");
+    setAmountMaxInput("");
+    prevAmountMinRef.current = undefined;
+    prevAmountMaxRef.current = undefined;
     navigate({
       to: "/reports",
       search: {},
@@ -376,7 +404,7 @@ export function TransactionReport() {
                 type="number"
                 step="0.01"
                 placeholder="0"
-                value={filters.amountMin ?? ""}
+                value={amountMinInput}
                 onChange={(e) => handleAmountMinChange(e.target.value)}
               />
             </div>
@@ -386,7 +414,7 @@ export function TransactionReport() {
                 type="number"
                 step="0.01"
                 placeholder="0"
-                value={filters.amountMax ?? ""}
+                value={amountMaxInput}
                 onChange={(e) => handleAmountMaxChange(e.target.value)}
               />
             </div>
