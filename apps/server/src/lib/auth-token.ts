@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { db } from "../db";
 import { authToken } from "../db/schema";
 import { logger } from "./logger";
@@ -13,7 +13,15 @@ export function generateAuthToken(): string {
 }
 
 /**
- * Hash a token using bcrypt
+ * Deterministically hash a token for indexed lookup. Tokens are 256-bit
+ * random secrets (not passwords), so a fast hash is appropriate here.
+ */
+function hashTokenForLookup(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+/**
+ * Bcrypt hash kept for legacy rows created before token_hash existed.
  */
 function hashToken(token: string): string {
   return bcrypt.hashSync(token, 10);
@@ -25,6 +33,7 @@ function hashToken(token: string): string {
 export async function createOrUpdateAuthToken(userId: string): Promise<string> {
   const token = generateAuthToken();
   const hashedToken = hashToken(token);
+  const tokenHash = hashTokenForLookup(token);
 
   try {
     // Check if user already has a token
@@ -38,6 +47,7 @@ export async function createOrUpdateAuthToken(userId: string): Promise<string> {
         .update(authToken)
         .set({
           token: hashedToken,
+          tokenHash,
           updatedAt: new Date(),
         })
         .where(eq(authToken.userId, userId));
@@ -46,6 +56,7 @@ export async function createOrUpdateAuthToken(userId: string): Promise<string> {
       await db.insert(authToken).values({
         userId,
         token: hashedToken,
+        tokenHash,
       });
     }
 
@@ -61,28 +72,33 @@ export async function createOrUpdateAuthToken(userId: string): Promise<string> {
 }
 
 /**
- * Validate an auth token and return the user ID if valid
+ * Validate an auth token and return the user ID if valid.
  *
- * Note: Since tokens are hashed with bcrypt, we can't query by token directly.
- * However, we can optimize by checking tokens in batches or using a different
- * approach. For now, we'll iterate through all tokens, but this should be
- * optimized if the number of users grows significantly.
- *
- * Alternative approaches:
- * - Store a hash of the token (e.g., SHA256) alongside the bcrypt hash for quick lookup
- * - Use a different hashing scheme that allows direct comparison
- * - Limit the number of active tokens per user
+ * Tokens are high-entropy random secrets stored as SHA-256 digests, so
+ * validation is a single indexed lookup. Rows created before token_hash
+ * existed only carry a bcrypt digest; those are validated via the legacy
+ * comparison scan until regenerated from settings.
  */
 export async function validateAuthToken(token: string): Promise<string | null> {
   try {
-    // Get all tokens (since we can't query by bcrypt hash directly)
-    // TODO: Consider adding a SHA256 hash of the token for faster lookup
-    const tokenRecords = await db.query.authToken.findMany();
+    const tokenHash = hashTokenForLookup(token);
+    const record = await db.query.authToken.findFirst({
+      where: eq(authToken.tokenHash, tokenHash),
+      columns: { userId: true },
+    });
 
-    for (const tokenRecord of tokenRecords) {
+    if (record) {
+      return record.userId;
+    }
+
+    // Legacy fallback: bcrypt-only rows predating token_hash.
+    const legacyRecords = await db.query.authToken.findMany({
+      where: isNull(authToken.tokenHash),
+    });
+
+    for (const tokenRecord of legacyRecords) {
       try {
-        const isValid = bcrypt.compareSync(token, tokenRecord.token);
-        if (isValid) {
+        if (bcrypt.compareSync(token, tokenRecord.token)) {
           return tokenRecord.userId;
         }
       } catch (_verifyError) {
