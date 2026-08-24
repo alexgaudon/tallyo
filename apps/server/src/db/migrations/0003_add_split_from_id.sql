@@ -1,1 +1,0 @@
-ALTER TABLE "transactions" ADD COLUMN "split_from_id" text;

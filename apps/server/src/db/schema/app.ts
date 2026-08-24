@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
 import { relations } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   date,
+  index,
   integer,
   pgTable,
   text,
@@ -38,7 +40,10 @@ export const category = pgTable(
       .$defaultFn((): string => crypto.randomUUID()),
     name: text("name").notNull(),
     userId: text("user_id").notNull(),
-    parentCategoryId: text("parent_category_id"),
+    parentCategoryId: text("parent_category_id").references(
+      (): AnyPgColumn => category.id,
+      { onDelete: "cascade" },
+    ),
     icon: text("icon"),
     treatAsIncome: boolean("treat_as_income").notNull().default(false),
     hideFromInsights: boolean("hide_from_insights").notNull().default(false),
@@ -47,6 +52,7 @@ export const category = pgTable(
   },
   (table) => [
     uniqueIndex("category_name_user_id_unique").on(table.name, table.userId),
+    index("category_parent_category_id_idx").on(table.parentCategoryId),
   ],
 );
 
@@ -73,7 +79,10 @@ export const merchant = pgTable(
       .$defaultFn((): string => crypto.randomUUID()),
     name: text("name").notNull(),
     userId: text("user_id").notNull(),
-    recommendedCategoryId: text("recommended_category_id"),
+    recommendedCategoryId: text("recommended_category_id").references(
+      () => category.id,
+      { onDelete: "set null" },
+    ),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -88,7 +97,9 @@ export const merchantKeyword = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn((): string => crypto.randomUUID()),
-    merchantId: text("merchant_id").notNull(),
+    merchantId: text("merchant_id")
+      .notNull()
+      .references(() => merchant.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     keyword: text("keyword").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -136,8 +147,12 @@ export const transaction = pgTable(
       .primaryKey()
       .$defaultFn((): string => crypto.randomUUID()),
     userId: text("user_id").notNull(),
-    merchantId: text("merchant_id"),
-    categoryId: text("category_id"),
+    merchantId: text("merchant_id").references(() => merchant.id, {
+      onDelete: "set null",
+    }),
+    categoryId: text("category_id").references(() => category.id, {
+      onDelete: "set null",
+    }),
     amount: integer("amount").notNull(),
     date: date("date").notNull(),
     transactionDetails: text("transaction_details").notNull(),
@@ -153,6 +168,9 @@ export const transaction = pgTable(
       table.externalId,
       table.userId,
     ),
+    index("transaction_user_id_date_idx").on(table.userId, table.date),
+    index("transaction_category_id_idx").on(table.categoryId),
+    index("transaction_merchant_id_idx").on(table.merchantId),
   ],
 );
 
@@ -177,7 +195,9 @@ export const authToken = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn((): string => crypto.randomUUID()),
-    userId: text("user_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
     token: text("token").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
