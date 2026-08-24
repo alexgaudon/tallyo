@@ -1,8 +1,6 @@
+import type { MatchableMerchant } from "../../../server/src/lib/merchant-matching";
+import { findAllMatchingMerchants } from "../../../server/src/lib/merchant-matching";
 import type { MerchantWithKeywordsAndCategory } from "../../../server/src/routers";
-import {
-  findAllMatchingMerchants,
-  type MatchableMerchant,
-} from "./merchant-matching";
 
 /** Merchants whose name or keywords match the bank/import description. */
 export function findMerchantsMatchingDetails(
