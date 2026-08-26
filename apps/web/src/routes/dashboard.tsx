@@ -90,15 +90,6 @@ function RouteComponent() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/dashboard" });
 
-  const now = new Date();
-  const hour = now.getHours();
-  let greeting = "Good evening";
-  if (hour < 12) {
-    greeting = "Good morning";
-  } else if (hour < 17) {
-    greeting = "Good afternoon";
-  }
-
   const dateRange = useMemo((): DateRange | undefined => {
     if (search.from && search.to) {
       return {
@@ -189,7 +180,6 @@ function RouteComponent() {
     <div className="min-h-full overflow-x-hidden">
       <DelayedLoading isLoading={isLoading}>
         <DashboardHeader
-          greeting={greeting}
           userName={session?.user?.name}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
@@ -270,23 +260,23 @@ function SectionPanel({
 }
 
 function DashboardHeader({
-  greeting,
   userName,
   dateRange,
   onDateRangeChange,
 }: {
-  greeting: string;
   userName: string | null | undefined;
   dateRange: DateRange | undefined;
   onDateRangeChange: (range: DateRange | undefined) => void;
 }) {
   const navigate = useNavigate();
 
+  const firstName = userName?.split(" ")[0] ?? "there";
+
   return (
     <PageHeader
       eyebrow={format(new Date(), "EEEE, MMM d, yyyy")}
-      title={`Welcome back, ${userName?.split(" ")[0] ?? "there"}`}
-      description={`${greeting}. Here's the financial picture for this period.`}
+      title={`Welcome back, ${firstName} 👋`}
+      description="Here's your financial picture for this period."
       actions={
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
           <div className="w-full sm:w-auto">
