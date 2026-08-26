@@ -40,4 +40,4 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["node", "dist/src/start.js"]
+CMD ["sh", "-c", "node dist/src/db/migrate.js && exec node dist/src/start.js"]
