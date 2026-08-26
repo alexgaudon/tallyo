@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useId, useState } from "react";
@@ -43,6 +43,10 @@ function RouteComponent() {
     orpc.settings.getUserSettings.queryOptions(),
   );
 
+  const [displayName, setDisplayName] = useState(
+    settingsData?.settings?.displayName ?? "",
+  );
+
   const webhookUrls: string[] = settingsData?.settings?.webhookUrls ?? [];
 
   const { mutate: updateSettings, isPending } = useUpdateSettings({
@@ -62,6 +66,12 @@ function RouteComponent() {
           name: "Privacy mode",
           enabled: newSettings.isPrivacyMode,
         });
+      }
+
+      if (
+        (newSettings.displayName ?? null) !== (oldSettings?.displayName ?? null)
+      ) {
+        toast.success("Display name updated");
       }
 
       if (changedSettings.length > 0) {
@@ -104,6 +114,44 @@ function RouteComponent() {
 
       <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8 space-y-8">
         <div className="space-y-8">
+          {/* Display Name */}
+          <Section>
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Display Name</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Choose the name shown across the app. Leave it empty to use your
+                Discord name.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-card shadow-soft p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder={session?.user?.name ?? "Your name"}
+                    maxLength={50}
+                    className="bg-background"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    updateSettings({ displayName: displayName.trim() });
+                  }}
+                  size="sm"
+                  disabled={
+                    isPending ||
+                    displayName.trim() ===
+                      (settingsData?.settings?.displayName ?? "")
+                  }
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
+          </Section>
+
           {/* API Token */}
           <Section>
             <div className="mb-4">

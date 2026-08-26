@@ -180,7 +180,7 @@ function RouteComponent() {
     <div className="min-h-full overflow-x-hidden">
       <DelayedLoading isLoading={isLoading}>
         <DashboardHeader
-          userName={session?.user?.name}
+          userName={session?.settings?.displayName || session?.user?.name}
           dateRange={dateRange}
           onDateRangeChange={handleDateRangeChange}
         />

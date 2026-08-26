@@ -10,6 +10,7 @@ export const settingsRouter = {
     let userSettings = await db.query.settings.findFirst({
       where: eq(settings.userId, context.session.user.id),
       columns: {
+        displayName: true,
         isDevMode: true,
         isPrivacyMode: true,
         webhookUrls: true,
@@ -24,6 +25,7 @@ export const settingsRouter = {
       userSettings = await db.query.settings.findFirst({
         where: eq(settings.userId, context.session.user.id),
         columns: {
+          displayName: true,
           isDevMode: true,
           isPrivacyMode: true,
           webhookUrls: true,
@@ -38,6 +40,7 @@ export const settingsRouter = {
 
     return {
       settings: {
+        displayName: userSettings.displayName ?? null,
         isDevMode: userSettings.isDevMode,
         isPrivacyMode: userSettings.isPrivacyMode,
         webhookUrls: userSettings.webhookUrls ?? [],
@@ -47,6 +50,7 @@ export const settingsRouter = {
   updateSettings: protectedProcedure
     .input(
       z.object({
+        displayName: z.string().trim().max(50).nullable().optional(),
         isDevMode: z.boolean(),
         isPrivacyMode: z.boolean(),
         webhookUrls: z.array(z.url()).optional(),
@@ -55,6 +59,7 @@ export const settingsRouter = {
     .handler(async ({ context, input }) => {
       try {
         const updateData: {
+          displayName?: string | null;
           isDevMode: boolean;
           isPrivacyMode: boolean;
           webhookUrls?: string[];
@@ -64,6 +69,12 @@ export const settingsRouter = {
           isPrivacyMode: input.isPrivacyMode,
           updatedAt: new Date(),
         };
+
+        if (input.displayName !== undefined) {
+          // An empty value clears the display name; null means not set.
+          updateData.displayName =
+            input.displayName === "" ? null : input.displayName;
+        }
 
         if (input.webhookUrls !== undefined) {
           updateData.webhookUrls = input.webhookUrls;

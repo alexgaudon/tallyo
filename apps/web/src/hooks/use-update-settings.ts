@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { orpc, queryClient } from "@/utils/orpc";
 
 export interface UserSettings {
+  displayName?: string | null;
   isDevMode: boolean;
   isPrivacyMode: boolean;
   webhookUrls?: string[];
@@ -23,7 +24,9 @@ function getCachedSettings(): UserSettings {
   const fromSession = queryClient.getQueryData<{
     settings?: UserSettings;
   }>(SESSION_QUERY_KEY)?.settings;
-  return fromSession ?? { isDevMode: false, isPrivacyMode: false };
+  return (
+    fromSession ?? { isDevMode: false, isPrivacyMode: false, displayName: null }
+  );
 }
 
 /**
@@ -37,6 +40,7 @@ export function useUpdateSettings(options?: {
   errorTitle?: string;
   showRetry?: boolean;
   onSuccess?: (settings: {
+    displayName?: string | null;
     isDevMode: boolean;
     isPrivacyMode: boolean;
     webhookUrls?: string[] | null;
