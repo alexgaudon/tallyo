@@ -275,7 +275,11 @@ function DashboardHeader({
   return (
     <PageHeader
       eyebrow={format(new Date(), "EEEE, MMM d, yyyy")}
-      title={`Welcome back, ${firstName} 👋`}
+      title={
+        <>
+          Welcome back, <span className="text-accent">{firstName}</span> 👋
+        </>
+      }
       description="Here's your financial picture for this period."
       actions={
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
