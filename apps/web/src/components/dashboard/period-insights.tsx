@@ -17,7 +17,9 @@ import type {
 } from "../../../../server/src/routers";
 
 const DAYS_PER_MONTH = 30;
-const INSIGHTS_TABLE_COLUMNS = "grid-cols-[minmax(0,1fr)_130px_110px]";
+// Value and change columns size to content so the table stays on
+// narrow (mobile) viewports; the label column absorbs the rest.
+const INSIGHTS_TABLE_COLUMNS = "grid-cols-[minmax(0,1fr)_auto_auto]";
 
 function percentChange(current: number, expected: number): number | null {
   if (expected === 0) return current > 0 ? 100 : current < 0 ? -100 : 0;
@@ -72,9 +74,7 @@ function InsightsRow({
     <div className={`grid ${INSIGHTS_TABLE_COLUMNS} items-center gap-2 py-2`}>
       <div className="flex items-center gap-2 min-w-0">
         <span className="shrink-0">{icon}</span>
-        <span className="text-sm text-foreground/90 whitespace-nowrap">
-          {label}
-        </span>
+        <span className="text-sm text-foreground/90">{label}</span>
       </div>
       <span
         className={`text-sm font-semibold tabular-nums text-right whitespace-nowrap ${currentClassName ?? ""}`}
