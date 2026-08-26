@@ -12,3 +12,8 @@ README.md
 .prettierignore
 biome.json
 turbo.json
+postgres-data
+logs
+backups
+apps/*/dist
+apps/*/tsconfig.tsbuildinfo

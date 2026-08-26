@@ -68,6 +68,7 @@ export const useSessionFetch = async () => {
     return {
       ...session,
       settings: {
+        displayName: null,
         isDevMode: false,
         isPrivacyMode: false,
         webhookUrls: [],

@@ -43,6 +43,8 @@ export function TopNav({ onMenuClick }: TopNavProps) {
 
   if (!session?.user) return null;
 
+  const displayName = session.settings?.displayName || session.user.name;
+
   const handleTriggerWebhooks = async () => {
     try {
       const data = await orpc.meta.triggerWebhookRefresh.call();
@@ -134,14 +136,13 @@ export function TopNav({ onMenuClick }: TopNavProps) {
                 <Avatar className="h-8 w-8">
                   {session?.user?.image ? (
                     <img
-                      alt={session.user.name ?? ""}
+                      alt={displayName ?? ""}
                       src={session.user.image}
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <AvatarFallback className="text-xs bg-secondary">
-                      {session?.user?.name?.substring(0, 1).toUpperCase() ??
-                        "U"}
+                      {displayName?.substring(0, 1).toUpperCase() ?? "U"}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -149,7 +150,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <div className="px-2 py-1.5 text-sm font-medium">
-                {session?.user?.name ?? "User"}
+                {displayName ?? "User"}
               </div>
               <DropdownMenuItem asChild>
                 <Link

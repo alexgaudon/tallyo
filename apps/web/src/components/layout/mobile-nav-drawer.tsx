@@ -41,6 +41,8 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
 
   if (!session?.user) return null;
 
+  const displayName = session.settings?.displayName || session.user.name;
+
   const isOpen = open !== undefined ? open : internalOpen;
   const handleOpenChange =
     onOpenChange !== undefined ? onOpenChange : setInternalOpen;
@@ -133,20 +135,18 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
             <Avatar className="h-10 w-10">
               {session?.user?.image ? (
                 <img
-                  alt={session.user.name ?? ""}
+                  alt={displayName ?? ""}
                   src={session.user.image}
                   className="h-full w-full object-cover"
                 />
               ) : (
                 <AvatarFallback>
-                  {session?.user?.name?.substring(0, 1).toUpperCase() ?? "U"}
+                  {displayName?.substring(0, 1).toUpperCase() ?? "U"}
                 </AvatarFallback>
               )}
             </Avatar>
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">
-                {session?.user?.name ?? ""}
-              </div>
+              <div className="font-medium truncate">{displayName ?? ""}</div>
               <div className="text-sm text-muted-foreground truncate">
                 {session?.user?.email ?? ""}
               </div>
