@@ -6,3 +6,4 @@ ops
 backups
 dist
 *.tsbuildinfo
+dev-proxy-run.log
