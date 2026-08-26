@@ -3,5 +3,6 @@ node_modules
 .turbo
 postgres-data
 ops
-backupsdist
+backups
+dist
 *.tsbuildinfo
