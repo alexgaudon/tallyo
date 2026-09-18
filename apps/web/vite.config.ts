@@ -46,11 +46,11 @@ export default defineConfig(({ mode }) => {
       port: 3001,
       proxy: {
         "/api": {
-          target: "http://localhost:3000",
+          target: env.VITE_API_PROXY_TARGET || "http://localhost:3000",
           changeOrigin: true,
         },
         "/rpc": {
-          target: "http://localhost:3000",
+          target: env.VITE_API_PROXY_TARGET || "http://localhost:3000",
           changeOrigin: true,
         },
       },

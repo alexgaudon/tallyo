@@ -7,6 +7,7 @@ import {
   index,
   integer,
   pgTable,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -159,6 +160,11 @@ export const transaction = pgTable(
     transactionDetails: text("transaction_details").notNull(),
     notes: text("notes"),
     externalId: text("external_id"),
+    suggestedCategoryId: text("suggested_category_id").references(
+      () => category.id,
+      { onDelete: "set null" },
+    ),
+    suggestedCategoryConfidence: real("suggested_category_confidence"),
     reviewed: boolean("reviewed").notNull().default(false),
     splitFromId: text("split_from_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -186,6 +192,10 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   }),
   category: one(category, {
     fields: [transaction.categoryId],
+    references: [category.id],
+  }),
+  suggestedCategory: one(category, {
+    fields: [transaction.suggestedCategoryId],
     references: [category.id],
   }),
 }));

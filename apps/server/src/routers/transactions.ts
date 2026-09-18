@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
 import { db } from "../db";
+import { suggestCategoriesForTransactions } from "../lib/jev";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
 import { getMerchantFromVendor } from "./merchants";
@@ -50,6 +51,7 @@ export const getTransactionWithRelations = async (transactionId: string) => {
           parentCategory: true,
         },
       },
+      suggestedCategory: true,
     },
   });
 };
@@ -224,6 +226,46 @@ export const transactionsRouter = {
             throw new Error("Failed to create transaction");
           }
 
+          // Jev suggestion: never auto-applied. When no category was assigned
+          // (neither user-provided nor keyword-recommended), ask Jev for a
+          // suggestion and store it as metadata for the UI to offer.
+          const created = newTransaction[0];
+          if (!created.categoryId) {
+            try {
+              const userCategories = await db.query.category.findMany({
+                where: eq(category.userId, context.session?.user?.id),
+              });
+              const suggestions = await suggestCategoriesForTransactions({
+                categories: userCategories.map((c) => ({
+                  id: c.id,
+                  name: c.name,
+                })),
+                transactions: [
+                  {
+                    id: created.id,
+                    transactionDetails: created.transactionDetails,
+                    amount: created.amount,
+                  },
+                ],
+              });
+              const suggestion = suggestions.get(created.id);
+              if (suggestion) {
+                await db
+                  .update(transaction)
+                  .set({
+                    suggestedCategoryId: suggestion.categoryId,
+                    suggestedCategoryConfidence: suggestion.confidence,
+                    updatedAt: new Date(),
+                  })
+                  .where(eq(transaction.id, created.id));
+              }
+            } catch (error) {
+              logger.warn("Failed to fetch Jev category suggestion:", {
+                error,
+              });
+            }
+          }
+
           const createdTransaction = await getTransactionWithRelations(
             newTransaction[0].id,
           );
@@ -298,6 +340,7 @@ export const transactionsRouter = {
             with: {
               merchant: true,
               category: { with: { parentCategory: true } },
+              suggestedCategory: true,
             },
             orderBy: [desc(transaction.date), desc(transaction.amount)],
             limit: input.pageSize,

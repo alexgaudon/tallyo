@@ -43,6 +43,10 @@ Create transactions in bulk (1-100 per request).
 - `notes` (string, optional): Free-form note.
 - `doNotAutoMatch` (boolean, optional): When `true`, skip merchant auto-matching for this transaction. The provided `merchantId` and `categoryId` are kept exactly as submitted. Default `false`.
 
+### AI category suggestions
+
+When an `OPENROUTER_API_KEY` is configured on the server, transactions that end up without a category after keyword matching get a suggested category stored as metadata (`suggestedCategoryId` / `suggestedCategoryConfidence`). Suggestions are **never auto-applied** — they are advisory and can be reviewed in the UI. Configure an optional confidence threshold with `JEV_CONFIDENCE_THRESHOLD` (default `0.7`) and model with `JEV_MODEL` (default `typesafe/jev-1.13`).
+
 ### Response
 ```json
 {
@@ -88,12 +92,15 @@ List transactions with filtering, sorting, and pagination.
       "transactionDetails": "WHOLEFDS",
       "notes": null,
       "externalId": "unique-id-123",
+      "suggestedCategoryId": null,
+      "suggestedCategoryConfidence": null,
       "reviewed": false,
       "splitFromId": null,
       "createdAt": "2024-01-15T10:00:00.000Z",
       "updatedAt": "2024-01-15T10:00:00.000Z",
       "merchant": { "id": "...", "name": "Whole Foods", ... },
-      "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null }
+      "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null },
+      "suggestedCategory": { "id": "...", "name": "Groceries", ..., "parentCategory": null }
     }
   ],
   "pagination": {

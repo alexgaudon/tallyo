@@ -1,0 +1,3 @@
+ALTER TABLE "transactions" ADD COLUMN "suggested_category_id" text;--> statement-breakpoint
+ALTER TABLE "transactions" ADD COLUMN "suggested_category_confidence" real;--> statement-breakpoint
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_suggested_category_id_categories_id_fk" FOREIGN KEY ("suggested_category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;

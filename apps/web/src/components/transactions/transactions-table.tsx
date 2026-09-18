@@ -78,6 +78,49 @@ interface TransactionsTableProps {
   onlyUnreviewed?: boolean;
 }
 
+// Renders an optional "use AI suggestion" button when Jev produced a category
+// recommendation that has not been applied yet.
+const AiCategorySuggestionButton = ({
+  transaction,
+  isLoading,
+  onApply,
+}: {
+  transaction: Transaction;
+  isLoading?: boolean;
+  onApply: (categoryId: string) => void;
+}) => {
+  if (
+    transaction.reviewed ||
+    transaction.category ||
+    !transaction.suggestedCategory
+  ) {
+    return null;
+  }
+
+  const confidencePercent = Math.round(
+    (transaction.suggestedCategoryConfidence ?? 0) * 100,
+  );
+
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      className="w-full justify-start text-left font-normal text-xs h-7"
+      disabled={isLoading}
+      onClick={() => onApply(transaction.suggestedCategoryId as string)}
+    >
+      <span className="truncate">
+        ✨ Suggested:{" "}
+        <span className="font-medium">
+          {transaction.suggestedCategory.name}
+        </span>
+        {confidencePercent > 0 && <span> ({confidencePercent}%)</span>}
+      </span>
+    </Button>
+  );
+};
+
 // Helper functions moved outside component
 const parseTransactionDate = (dateValue: string | Date) => {
   let year: number;
@@ -370,23 +413,32 @@ const TransactionCard = memo(function TransactionCard({
             label="Category"
             complete={!!transaction.category}
           >
-            <div className="flex items-center gap-2">
-              <CategorySelect
-                value={transaction.category?.id}
-                onValueChange={(categoryId) =>
+            <div className="flex flex-col gap-2">
+              <AiCategorySuggestionButton
+                transaction={transaction}
+                isLoading={isLoading}
+                onApply={(categoryId) =>
                   onCategoryChange(transaction.id, categoryId)
                 }
-                placeholder="Tap to choose category"
-                className="w-full min-h-11"
-                allowNull
-                disabled={isLoading || transaction.reviewed}
-                onEditCategory={
-                  transaction.reviewed ? undefined : onEditCategory
-                }
-                onCreateCategory={
-                  transaction.reviewed ? undefined : onCreateCategory
-                }
               />
+              <div className="flex items-center gap-2">
+                <CategorySelect
+                  value={transaction.category?.id}
+                  onValueChange={(categoryId) =>
+                    onCategoryChange(transaction.id, categoryId)
+                  }
+                  placeholder="Tap to choose category"
+                  className="w-full min-h-11"
+                  allowNull
+                  disabled={isLoading || transaction.reviewed}
+                  onEditCategory={
+                    transaction.reviewed ? undefined : onEditCategory
+                  }
+                  onCreateCategory={
+                    transaction.reviewed ? undefined : onCreateCategory
+                  }
+                />
+              </div>
             </div>
           </MobileAssignmentField>
 
@@ -856,24 +908,39 @@ export function TransactionsTable({
     }
 
     return (
-      <div className={cn("flex items-center gap-2", isMobileView && "w-full")}>
-        <CategorySelect
-          value={transaction.category?.id}
-          onValueChange={(categoryId) =>
+      <div
+        className={cn("flex flex-col gap-1 w-full", isMobileView && "min-w-0")}
+      >
+        <AiCategorySuggestionButton
+          transaction={transaction}
+          isLoading={isLoading}
+          onApply={(categoryId) =>
             updateCategory({ id: transaction.id, categoryId })
           }
-          placeholder={isMobileView ? "Select category..." : "Select category"}
-          className={
-            isMobileView ? "w-full" : "w-full min-w-[180px] sm:min-w-[200px]"
-          }
-          allowNull
-          disabled={isLoading}
-          onEditCategory={(categoryId) =>
-            setEditCategoryDialog({ open: true, categoryId })
-          }
-          onCreateCategory={() => setCreateCategoryDialog(true)}
         />
-        {splitIndicator}
+        <div
+          className={cn("flex items-center gap-2", isMobileView && "w-full")}
+        >
+          <CategorySelect
+            value={transaction.category?.id}
+            onValueChange={(categoryId) =>
+              updateCategory({ id: transaction.id, categoryId })
+            }
+            placeholder={
+              isMobileView ? "Select category..." : "Select category"
+            }
+            className={
+              isMobileView ? "w-full" : "w-full min-w-[180px] sm:min-w-[200px]"
+            }
+            allowNull
+            disabled={isLoading}
+            onEditCategory={(categoryId) =>
+              setEditCategoryDialog({ open: true, categoryId })
+            }
+            onCreateCategory={() => setCreateCategoryDialog(true)}
+          />
+          {splitIndicator}
+        </div>
       </div>
     );
   };

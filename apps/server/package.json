@@ -19,12 +19,14 @@
     "db:refresh": "tsx src/db/refresh.ts"
   },
   "dependencies": {
+    "@ai-sdk/typesafe-ai": "^3.0.3",
     "@hono/node-server": "^2.0.10",
     "@orpc/client": "^1.13.6",
     "@orpc/openapi": "^1.13.9",
     "@orpc/react-query": "^1.13.6",
     "@orpc/server": "^1.13.6",
     "@orpc/zod": "^1.13.6",
+    "ai": "^7.0.106",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",

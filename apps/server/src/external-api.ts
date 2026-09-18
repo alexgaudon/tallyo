@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "./db";
 import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
+import { isJevEnabled, suggestCategoriesForTransactions } from "./lib/jev";
 import { logger } from "./lib/logger";
 import {
   getTransactionWithRelations,
@@ -114,9 +115,48 @@ externalApi.post("/transactions", async (c) => {
       };
     });
 
+    // Jev suggestions: never auto-applied. For transactions that ended up
+    // without a category after keyword matching, ask Jev and store the
+    // suggestion as metadata for the UI to offer.
+    let transactionValues = transactionData;
+    if (isJevEnabled()) {
+      try {
+        const userCategories = await db.query.category.findMany({
+          where: eq(category.userId, userId),
+        });
+        if (userCategories.length > 0) {
+          const suggestions = await suggestCategoriesForTransactions({
+            categories: userCategories.map((c) => ({ id: c.id, name: c.name })),
+            transactions: transactionData
+              .filter((t) => !t.categoryId)
+              .map((t) => ({
+                id: t.externalId,
+                transactionDetails: t.transactionDetails,
+                amount: t.amount,
+              })),
+          });
+          transactionValues = transactionData.map((row) => {
+            const suggestion = suggestions.get(row.externalId);
+            if (suggestion && !row.categoryId) {
+              return {
+                ...row,
+                suggestedCategoryId: suggestion.categoryId,
+                suggestedCategoryConfidence: suggestion.confidence,
+              };
+            }
+            return row;
+          });
+        }
+      } catch (error) {
+        logger.warn("Failed to fetch Jev category suggestions:", {
+          error,
+        });
+      }
+    }
+
     const insertedTransactions = await db
       .insert(transaction)
-      .values(transactionData)
+      .values(transactionValues)
       .onConflictDoNothing()
       .returning();
 
@@ -226,6 +266,7 @@ externalApi.get("/transactions", async (c) => {
       with: {
         merchant: true,
         category: { with: { parentCategory: true } },
+        suggestedCategory: true,
       },
       orderBy: [desc(transaction.date), desc(transaction.amount)],
       limit: pageSize,
@@ -323,6 +364,7 @@ externalApi.get("/transactions/search", async (c) => {
         with: {
           merchant: true,
           category: { with: { parentCategory: true } },
+          suggestedCategory: true,
         },
       });
 
