@@ -448,7 +448,7 @@ function RouteComponent() {
                 aria-label="Search taxonomy"
               />
             </div>
-            <div className="inline-flex shrink-0 rounded-lg border border-border bg-muted/50 p-0.5">
+            <div className="grid w-full grid-cols-2 rounded-lg border border-border bg-muted/50 p-0.5 sm:inline-flex sm:w-auto sm:shrink-0">
               {(["merchants", "categories"] as const).map((option) => (
                 <button
                   key={option}
@@ -456,7 +456,7 @@ function RouteComponent() {
                   onClick={() => setTab(option)}
                   aria-pressed={tab === option}
                   className={cn(
-                    "rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors",
+                    "flex-1 rounded-md px-3 py-1.5 text-center text-xs font-medium capitalize transition-colors",
                     tab === option
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground",
@@ -480,7 +480,7 @@ function RouteComponent() {
             actions={
               <>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handleApplyAllMerchants}
                   disabled={
