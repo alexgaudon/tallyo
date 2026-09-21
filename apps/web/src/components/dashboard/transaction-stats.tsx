@@ -74,7 +74,7 @@ export function TransactionStats({
             navigate({
               to: "/transactions",
               search: {
-                filter: transaction.id,
+                q: transaction.id,
               },
             })
           }

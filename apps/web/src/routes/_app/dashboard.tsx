@@ -189,7 +189,7 @@ function RouteComponent() {
             onReviewClick={() =>
               navigate({
                 to: "/transactions",
-                search: { onlyUnreviewed: true },
+                search: { review: "unreviewed" },
               })
             }
           />

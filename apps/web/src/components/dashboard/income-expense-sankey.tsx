@@ -66,7 +66,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     if (node.categoryId) {
       navigate({
         to: "/transactions",
-        search: { category: node.categoryId, page: 1 },
+        search: { categories: [node.categoryId] },
       });
     }
   };

@@ -55,7 +55,7 @@ export function UnreviewedTransactionsBanner({
             variant="outline"
             className="border-primary/30 hover:bg-primary/10 hover:text-primary"
           >
-            <Link to="/transactions" search={{ onlyUnreviewed: true }}>
+            <Link to="/transactions" search={{ review: "unreviewed" }}>
               <Eye className="h-3.5 w-3.5 mr-1.5" />
               Review now
             </Link>

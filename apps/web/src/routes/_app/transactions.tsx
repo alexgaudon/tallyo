@@ -1,16 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
+  useRouter,
   useSearch,
 } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
+import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
 import { PageHeader } from "@/components/layout/page-header";
+import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
-import { Search } from "@/components/transactions/search";
-import { TransactionsTable } from "@/components/transactions/transactions-table";
+import { ReviewCard } from "@/components/transactions/review-card";
+import { SplitTransactionDialog } from "@/components/transactions/split-transaction-dialog";
+import { TransactionList } from "@/components/transactions/transaction-list";
+import { ViewControls } from "@/components/transactions/view-controls";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,317 +27,117 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { EntityPickerProvider } from "@/components/ui/entity-picker-sheet";
-import { useLocalPageSize } from "@/hooks/use-local-page-size";
+import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
+import { Panel } from "@/components/ui/panel";
+import {
+  type LedgerTransaction,
+  useTransactionMutations,
+} from "@/hooks/use-transaction-mutations";
+import {
+  hasActiveViewFilters,
+  viewQueryOptions,
+  viewSearchSchema,
+} from "@/lib/transaction-view";
 import { orpc } from "@/utils/orpc";
-import type {
-  Category,
-  MerchantWithKeywordsAndCategory,
-  Transaction,
-} from "../../../../server/src/routers";
 
-const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).optional(),
-  filter: z.string().optional(),
-  category: z.string().optional(),
-  merchant: z.string().optional(),
-  onlyUnreviewed: z.boolean().optional(),
-  onlyWithoutMerchant: z.boolean().optional(),
+const ledgerSearchSchema = viewSearchSchema.extend({
+  // UI-only affordance that opens the create dialog. It is not part of the
+  // transaction view, so it is excluded from the loader deps below.
   create: z.boolean().optional(),
 });
 
-type SearchParams = z.infer<typeof searchSchema>;
-
-type TransactionQueryResponse = Awaited<
-  ReturnType<typeof orpc.transactions.getUserTransactions.call>
->;
-
-const createTransactionQueryOptions = (
-  search: SearchParams,
-  options?: Record<string, unknown>,
-) => {
-  return orpc.transactions.getUserTransactions.queryOptions({
-    ...options,
-    input: {
-      page: search.page,
-      pageSize: search.pageSize,
-      filter: search.filter,
-      category: search.category,
-      merchant: search.merchant,
-      onlyUnreviewed: search.onlyUnreviewed,
-      onlyWithoutMerchant: search.onlyWithoutMerchant,
-    },
-  });
-};
-
-type QueryClient = ReturnType<typeof useQueryClient>;
-
-/**
- * Shared optimistic-update flow for the transactions list: cancel in-flight
- * queries, snapshot, patch the matching row, roll back on error, invalidate
- * on settle. Each mutation supplies only the per-row transform.
- */
-function optimisticTransactionMutation<TVars>(
-  queryClient: QueryClient,
-  search: SearchParams,
-  patch: (tx: Transaction, vars: TVars) => Transaction,
-  settled?: () => Promise<void> | void,
-) {
-  const options = createTransactionQueryOptions(search);
-  return {
-    onMutate: async (vars: TVars) => {
-      await queryClient.cancelQueries(options);
-      const previousData = queryClient.getQueryData<TransactionQueryResponse>(
-        options.queryKey,
-      );
-      queryClient.setQueryData<TransactionQueryResponse>(
-        options.queryKey,
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            transactions: old.transactions.map((tx) =>
-              tx.id === (vars as { id: string }).id ? patch(tx, vars) : tx,
-            ),
-          };
-        },
-      );
-      return { previousData };
-    },
-    onError: (
-      _err: unknown,
-      _vars: TVars,
-      context?: { previousData?: TransactionQueryResponse },
-    ) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(options.queryKey, context.previousData);
-      }
-    },
-    onSettled: async () => {
-      await queryClient.invalidateQueries(options);
-      await settled?.();
-    },
-  };
-}
-
 export const Route = createFileRoute("/_app/transactions")({
-  validateSearch: searchSchema,
-  beforeLoad: async ({ context, search }) => {
-    let effectivePageSize = 10;
-    try {
-      const stored = localStorage.getItem("transactions-page-size");
-      if (stored) {
-        const parsed = Number.parseInt(stored, 10);
-        if ([10, 25, 50, 100].includes(parsed)) {
-          effectivePageSize = parsed;
-        }
-      }
-    } catch (_error) {
-      // Ignore local storage errors
-    }
-
-    const effectiveSearch = {
-      ...search,
-      pageSize: search.pageSize ?? effectivePageSize,
-    };
-
-    await Promise.all([
-      context.queryClient.prefetchQuery(
-        orpc.categories.getUserCategories.queryOptions(),
-      ),
-      context.queryClient.prefetchQuery(
-        orpc.merchants.getUserMerchants.queryOptions(),
-      ),
-      context.queryClient.prefetchQuery(
-        createTransactionQueryOptions(effectiveSearch),
-      ),
-    ]);
+  validateSearch: ledgerSearchSchema,
+  loaderDeps: ({ search }) => {
+    const { create: _create, ...view } = search;
+    return view;
   },
+  loader: ({ context: { queryClient }, deps }) =>
+    queryClient.ensureQueryData(viewQueryOptions(deps)),
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/_app/transactions" });
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const search = useSearch({ from: "/_app/transactions" });
+
+  const { data } = useQuery(viewQueryOptions(search));
+  const mutations = useTransactionMutations(search);
+
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
-  const { pageSize: localPageSize, savePageSize } = useLocalPageSize();
+  const [editMerchant, setEditMerchant] = useState<{
+    open: boolean;
+    merchantId: string;
+  }>({ open: false, merchantId: "" });
+  const [editCategory, setEditCategory] = useState<{
+    open: boolean;
+    categoryId: string;
+  }>({ open: false, categoryId: "" });
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+  const [splitDialog, setSplitDialog] = useState<{
+    open: boolean;
+    transaction: LedgerTransaction | null;
+  }>({ open: false, transaction: null });
 
-  const effectivePageSize = search.pageSize ?? localPageSize;
-  const effectiveSearch = { ...search, pageSize: effectivePageSize };
+  const transactions = data?.transactions ?? [];
+  const pagination: PaginationInfo = data?.pagination ?? {
+    total: 0,
+    page: search.page,
+    pageSize: search.pageSize,
+    totalPages: 1,
+  };
 
-  useEffect(() => {
-    if (!search.pageSize) {
-      navigate({
-        to: "/transactions",
-        search: { ...search, pageSize: localPageSize },
-        replace: true,
-      });
-    } else {
-      savePageSize(search.pageSize);
-    }
-  }, [search.pageSize, localPageSize, navigate, search, savePageSize]);
+  const reviewing = search.review === "unreviewed";
+  const viewKey = viewQueryOptions(search).queryKey;
 
-  // Open create modal when navigating with ?create=true
   useEffect(() => {
     if (search.create) {
       setIsCreateFormOpen(true);
-      // Clear the create param from URL
       navigate({
         to: "/transactions",
-        search: { ...search, create: undefined },
+        search: (prev) => ({ ...prev, create: undefined }),
         replace: true,
       });
     }
-  }, [search.create, navigate, search]);
+  }, [search.create, navigate]);
 
-  const hasActiveFilters = !!(
-    search.filter ||
-    search.category ||
-    search.merchant ||
-    search.onlyUnreviewed ||
-    search.onlyWithoutMerchant
-  );
-
-  const { data } = useQuery(
-    createTransactionQueryOptions(effectiveSearch, {
-      keepPreviousData: true,
-      refetchInterval: 30000,
-    }),
-  );
-  const transactionsData = data as TransactionQueryResponse | undefined;
-
-  useQuery({
-    ...createTransactionQueryOptions({
-      ...effectiveSearch,
-      page: effectiveSearch.page + 1,
-    }),
-    staleTime: 1000 * 60,
-  });
-
-  const { mutateAsync: updateCategory } = useMutation(
-    orpc.transactions.updateTransactionCategory.mutationOptions({
-      ...optimisticTransactionMutation(
-        queryClient,
-        effectiveSearch,
-        (tx, { categoryId }: { categoryId: string | null }) => {
-          const categoriesData = queryClient.getQueryData(
-            orpc.categories.getUserCategories.queryOptions().queryKey,
-          );
-          const selectedCategory =
-            categoryId && categoriesData
-              ? (categoriesData as { categories: Category[] }).categories?.find(
-                  (c) => c.id === categoryId,
-                )
-              : null;
-          return { ...tx, categoryId, category: selectedCategory || null };
-        },
-      ),
-    }),
-  );
-
-  const { mutateAsync: updateMerchant } = useMutation(
-    orpc.transactions.updateTransactionMerchant.mutationOptions({
-      ...optimisticTransactionMutation(
-        queryClient,
-        effectiveSearch,
-        (tx, { merchantId }: { merchantId: string | null }) => {
-          const merchantsData = queryClient.getQueryData(
-            orpc.merchants.getUserMerchants.queryOptions().queryKey,
-          );
-          const categoriesData = queryClient.getQueryData(
-            orpc.categories.getUserCategories.queryOptions().queryKey,
-          );
-          const selectedMerchant =
-            merchantId && merchantsData
-              ? (merchantsData as MerchantWithKeywordsAndCategory[]).find(
-                  (m) => m.id === merchantId,
-                )
-              : null;
-          const autoCategoryId =
-            selectedMerchant?.recommendedCategoryId ?? null;
-          const autoCategory =
-            autoCategoryId && categoriesData
-              ? ((
-                  categoriesData as { categories: Category[] }
-                ).categories?.find((c) => c.id === autoCategoryId) ?? null)
-              : null;
-          return {
-            ...tx,
-            merchantId,
-            merchant: selectedMerchant || null,
-            categoryId: autoCategoryId,
-            category: autoCategory,
-          };
-        },
-      ),
-    }),
-  );
-
-  const { mutateAsync: updateNotes } = useMutation(
-    orpc.transactions.updateTransactionNotes.mutationOptions({
-      ...optimisticTransactionMutation(
-        queryClient,
-        effectiveSearch,
-        (tx, { notes }: { notes: string | null }) => ({ ...tx, notes }),
-      ),
-    }),
-  );
-
-  const { mutateAsync: toggleReviewed } = useMutation(
-    orpc.transactions.toggleTransactionReviewed.mutationOptions({
-      ...optimisticTransactionMutation(
-        queryClient,
-        effectiveSearch,
-        (tx) => ({ ...tx, reviewed: !tx.reviewed }),
-        () =>
-          queryClient.invalidateQueries({
-            queryKey: ["session"],
-          }),
-      ),
-    }),
-  );
-
-  const { mutateAsync: deleteTransaction } = useMutation(
-    orpc.transactions.deleteTransaction.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: createTransactionQueryOptions(effectiveSearch).queryKey,
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["transactions", "getUserTransactions", "session"],
-        });
-      },
-    }),
-  );
-
-  const handlePageChange = (page: number) => {
+  const goToPage = (page: number) => {
     navigate({
       to: "/transactions",
       search: (prev) => ({ ...prev, page }),
     });
   };
 
-  const handlePageSizeChange = (pageSize: number) => {
-    savePageSize(pageSize);
+  const changePageSize = (pageSize: number) => {
     navigate({
       to: "/transactions",
-      search: { ...search, pageSize, page: 1 },
+      search: (prev) => ({ ...prev, pageSize, page: 1 }),
     });
   };
 
   const handleCategoryClick = (categoryId: string) => {
     navigate({
       to: "/transactions",
-      search: { ...search, category: categoryId, page: 1 },
+      search: (prev) => ({ ...prev, categories: [categoryId], page: 1 }),
     });
   };
 
   const handleMerchantClick = (merchantId: string) => {
     navigate({
       to: "/transactions",
-      search: { ...search, merchant: merchantId, page: 1 },
+      search: (prev) => ({ ...prev, merchants: [merchantId], page: 1 }),
     });
+  };
+
+  const handleCreateSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: viewKey });
+    queryClient.invalidateQueries({
+      queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
+    });
+    router.invalidate();
+    setIsCreateFormOpen(false);
   };
 
   return (
@@ -342,15 +148,10 @@ function RouteComponent() {
           title="Transactions"
           description="Review, categorize, and keep every movement of money in order."
           actions={
-            <Dialog
-              open={isCreateFormOpen}
-              onOpenChange={(open) => {
-                setIsCreateFormOpen(open);
-              }}
-            >
+            <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
               <DialogTrigger asChild>
                 <Button>
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Add transaction
                 </Button>
               </DialogTrigger>
@@ -361,54 +162,100 @@ function RouteComponent() {
                     Add a new transaction to your records.
                   </DialogDescription>
                 </DialogHeader>
-                <CreateTransactionForm
-                  callback={() => {
-                    queryClient.invalidateQueries({
-                      queryKey:
-                        createTransactionQueryOptions(effectiveSearch).queryKey,
-                    });
-                    setIsCreateFormOpen(false);
-                  }}
-                />
+                <CreateTransactionForm callback={handleCreateSuccess} />
               </DialogContent>
             </Dialog>
           }
         />
 
         <div className="max-w-screen-2xl mx-auto space-y-6 px-4 py-8 lg:px-8">
-          {/* Search */}
-          <div className="rounded-xl border border-border bg-card p-3 shadow-soft">
-            <Search />
-          </div>
+          <Panel dense>
+            <ViewControls />
+          </Panel>
 
-          {/* Table */}
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-soft">
-            <TransactionsTable
-              transactions={transactionsData?.transactions ?? []}
-              pagination={{
-                total: transactionsData?.pagination.total ?? 0,
-                page: transactionsData?.pagination.page ?? 1,
-                pageSize: search.pageSize ?? localPageSize,
-                totalPages: transactionsData?.pagination.totalPages ?? 1,
-              }}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              updateCategory={updateCategory}
-              updateMerchant={updateMerchant}
-              updateNotes={updateNotes}
-              toggleReviewed={toggleReviewed}
-              deleteTransaction={deleteTransaction}
-              onCategoryClick={handleCategoryClick}
-              onMerchantClick={handleMerchantClick}
-              isLoading={false}
-              queryKey={[
-                ...createTransactionQueryOptions(effectiveSearch).queryKey,
-              ]}
-              hasActiveFilters={hasActiveFilters}
-              onlyUnreviewed={!!search.onlyUnreviewed}
+          {reviewing && transactions.length > 0 ? (
+            <ReviewCard
+              transactions={transactions}
+              mutations={mutations}
+              onEditMerchant={(merchantId) =>
+                setEditMerchant({ open: true, merchantId })
+              }
+              onEditCategory={(categoryId) =>
+                setEditCategory({ open: true, categoryId })
+              }
+              onCreateCategory={() => setCreateCategoryOpen(true)}
             />
-          </div>
+          ) : null}
+
+          <Panel className="gap-0 overflow-hidden p-0">
+            <TransactionList
+              transactions={transactions}
+              hasActiveFilters={hasActiveViewFilters(search)}
+              reviewOnly={reviewing}
+              isMutating={mutations.isPending}
+              mutations={mutations}
+              onCustomSplit={(transaction) =>
+                setSplitDialog({ open: true, transaction })
+              }
+              onEditMerchant={(merchantId) =>
+                setEditMerchant({ open: true, merchantId })
+              }
+              onEditCategory={(categoryId) =>
+                setEditCategory({ open: true, categoryId })
+              }
+              onCreateCategory={() => setCreateCategoryOpen(true)}
+              onMerchantClick={handleMerchantClick}
+              onCategoryClick={handleCategoryClick}
+            />
+          </Panel>
+
+          <Paginator
+            pagination={pagination}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+          />
         </div>
+
+        <EditMerchantDialog
+          open={editMerchant.open}
+          onOpenChange={(open) =>
+            setEditMerchant({ open, merchantId: editMerchant.merchantId })
+          }
+          merchantId={editMerchant.merchantId}
+          onSuccess={handleCreateSuccess}
+        />
+
+        <EditCategoryDialog
+          open={editCategory.open}
+          onOpenChange={(open) =>
+            setEditCategory({ open, categoryId: editCategory.categoryId })
+          }
+          categoryId={editCategory.categoryId}
+          onSuccess={handleCreateSuccess}
+        />
+
+        <CreateCategoryDialog
+          open={createCategoryOpen}
+          onOpenChange={setCreateCategoryOpen}
+          onSuccess={() =>
+            queryClient.invalidateQueries({
+              queryKey:
+                orpc.categories.getUserCategories.queryOptions().queryKey,
+            })
+          }
+        />
+
+        <SplitTransactionDialog
+          open={splitDialog.open}
+          onOpenChange={(open) =>
+            setSplitDialog({
+              open,
+              transaction: open ? splitDialog.transaction : null,
+            })
+          }
+          transaction={splitDialog.transaction}
+          queryKey={viewKey}
+        />
       </div>
     </EntityPickerProvider>
   );

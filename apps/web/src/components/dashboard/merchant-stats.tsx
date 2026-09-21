@@ -34,7 +34,7 @@ export function MerchantStats({
   const handleMerchantClick = (merchantId: string) => {
     navigate({
       to: "/transactions",
-      search: { merchant: merchantId, page: 1 },
+      search: { merchants: [merchantId] },
     });
   };
 

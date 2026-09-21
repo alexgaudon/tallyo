@@ -110,7 +110,7 @@ export function CategoryPieChart({
     (categoryId: string) => {
       navigate({
         to: "/transactions",
-        search: { category: categoryId, page: 1 },
+        search: { categories: [categoryId] },
       });
     },
     [navigate],
