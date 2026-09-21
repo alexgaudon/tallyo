@@ -22,6 +22,7 @@ import { Route as AppTaxonomyRouteImport } from './routes/_app/taxonomy'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AuthSigninRouteImport } from './routes/_auth/signin'
 import { Route as DevPrimitivesRouteImport } from './routes/dev.primitives'
+import { Route as DevTransactionsRouteImport } from './routes/dev.transactions'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -87,6 +88,11 @@ const DevPrimitivesRoute = DevPrimitivesRouteImport.update({
   path: '/dev/primitives',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevTransactionsRoute = DevTransactionsRouteImport.update({
+  id: '/dev/transactions',
+  path: '/dev/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/dev/transactions': typeof DevTransactionsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/dev/transactions': typeof DevTransactionsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/dev/transactions': typeof DevTransactionsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
+    | '/dev/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
+    | '/dev/transactions'
   id:
     | '__root__'
     | '/'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_auth/signin'
     | '/dev/primitives'
+    | '/dev/transactions'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -185,6 +197,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   AuthSigninRoute: typeof AuthSigninRoute
   DevPrimitivesRoute: typeof DevPrimitivesRoute
+  DevTransactionsRoute: typeof DevTransactionsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevPrimitivesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/transactions': {
+      id: '/dev/transactions'
+      path: '/dev/transactions'
+      fullPath: '/dev/transactions'
+      preLoaderRoute: typeof DevTransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   AuthSigninRoute: AuthSigninRoute,
   DevPrimitivesRoute: DevPrimitivesRoute,
+  DevTransactionsRoute: DevTransactionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
