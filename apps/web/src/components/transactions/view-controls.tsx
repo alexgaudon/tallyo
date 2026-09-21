@@ -291,6 +291,31 @@ function ViewControlsForm({
         </div>
       </div>
 
+      {/* Date range. The ledger and reports both filter on it; drill-downs and
+          the reports page rely on it as the start/end of the reporting period. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-muted-foreground">Dates</span>
+        <Input
+          type="date"
+          value={search.from ?? ""}
+          onChange={(event) =>
+            onUpdate({ from: event.target.value || undefined })
+          }
+          className="h-9 w-[10.5rem]"
+          aria-label="Start date"
+        />
+        <span className="text-muted-foreground">–</span>
+        <Input
+          type="date"
+          value={search.to ?? ""}
+          onChange={(event) =>
+            onUpdate({ to: event.target.value || undefined })
+          }
+          className="h-9 w-[10.5rem]"
+          aria-label="End date"
+        />
+      </div>
+
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <EntityPicker
           kind="category"
