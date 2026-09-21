@@ -21,7 +21,7 @@ import { DelayedLoading } from "@/components/delayed-loading";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ensureSession, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { cn, dateRangeToApiFormat } from "@/lib/utils";
 import { orpc } from "@/utils/orpc";
 
@@ -32,12 +32,10 @@ const searchSchema = z.object({
 
 type SearchParams = z.infer<typeof searchSchema>;
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_app/dashboard")({
   validateSearch: searchSchema,
   component: RouteComponent,
   beforeLoad: async ({ context, search }) => {
-    ensureSession(context.isAuthenticated, "/dashboard");
-
     const defaultDateRange = {
       from: startOfMonth(new Date()),
       to: new Date(),
@@ -88,7 +86,7 @@ export const Route = createFileRoute("/dashboard")({
 function RouteComponent() {
   const { data: session } = useSession();
   const navigate = useNavigate();
-  const search = useSearch({ from: "/dashboard" });
+  const search = useSearch({ from: "/_app/dashboard" });
 
   const dateRange = useMemo((): DateRange | undefined => {
     if (search.from && search.to) {

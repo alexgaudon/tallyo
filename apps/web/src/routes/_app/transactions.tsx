@@ -22,14 +22,12 @@ import {
 } from "@/components/ui/dialog";
 import { EntityPickerProvider } from "@/components/ui/entity-picker-sheet";
 import { useLocalPageSize } from "@/hooks/use-local-page-size";
-import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 import type {
   Category,
   MerchantWithKeywordsAndCategory,
   Transaction,
-} from "../../../server/src/routers";
-import type { RouterAppContext } from "./__root";
+} from "../../../../server/src/routers";
 
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -116,17 +114,9 @@ function optimisticTransactionMutation<TVars>(
   };
 }
 
-export const Route = createFileRoute("/transactions")({
+export const Route = createFileRoute("/_app/transactions")({
   validateSearch: searchSchema,
-  beforeLoad: async ({
-    context,
-    search,
-  }: {
-    context: RouterAppContext;
-    search: SearchParams;
-  }) => {
-    ensureSession(context.isAuthenticated, "/transactions");
-
+  beforeLoad: async ({ context, search }) => {
     let effectivePageSize = 10;
     try {
       const stored = localStorage.getItem("transactions-page-size");
@@ -162,7 +152,7 @@ export const Route = createFileRoute("/transactions")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/transactions" });
+  const search = useSearch({ from: "/_app/transactions" });
   const queryClient = useQueryClient();
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const { pageSize: localPageSize, savePageSize } = useLocalPageSize();

@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { PageHeader } from "@/components/layout/page-header";
 import { TransactionReport } from "@/components/transactions/transaction-report";
-import { ensureSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
 const searchSchema = z.object({
@@ -16,11 +15,10 @@ const searchSchema = z.object({
   includeIncome: z.boolean().optional(),
 });
 
-export const Route = createFileRoute("/reports")({
+export const Route = createFileRoute("/_app/reports")({
   validateSearch: searchSchema,
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    ensureSession(context.isAuthenticated, "/reports");
     await Promise.all([
       context.queryClient.prefetchQuery(
         orpc.categories.getUserCategories.queryOptions(),

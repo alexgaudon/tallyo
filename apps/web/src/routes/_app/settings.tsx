@@ -14,13 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Section } from "@/components/ui/section";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateSettings } from "@/hooks/use-update-settings";
-import { ensureSession, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_app/settings")({
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    ensureSession(context.isAuthenticated, "/settings");
     await context.queryClient.ensureQueryData(
       orpc.settings.getUserSettings.queryOptions(),
     );

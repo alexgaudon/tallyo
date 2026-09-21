@@ -21,16 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 
 type FilterType = "all" | "income" | "expense";
 
-export const Route = createFileRoute("/categories")({
+export const Route = createFileRoute("/_app/categories")({
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    ensureSession(context.isAuthenticated, "/categories");
-
     await context.queryClient.ensureQueryData(
       orpc.categories.getUserCategories.queryOptions(),
     );

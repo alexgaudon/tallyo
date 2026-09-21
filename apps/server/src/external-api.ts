@@ -9,11 +9,11 @@ import { db } from "./db";
 import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
+import { MAX_FUTURE_TRANSACTION_DAYS } from "./lib/transaction-view";
 import {
   getTransactionWithRelations,
   handleKeywordAddition,
   handleKeywordRemoval,
-  MAX_FUTURE_TRANSACTION_DAYS,
   updateTransactionField,
   validateTransactionOwnership,
 } from "./routers/transactions";

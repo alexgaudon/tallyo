@@ -160,7 +160,17 @@ export const transaction = pgTable(
     notes: text("notes"),
     externalId: text("external_id"),
     reviewed: boolean("reviewed").notNull().default(false),
-    splitFromId: text("split_from_id"),
+    excludedFromInsights: boolean("excluded_from_insights")
+      .notNull()
+      .default(false),
+    // Explicit override for which side of the ledger a transaction is on.
+    // Null means "infer from the category's treatAsIncome flag" (legacy
+    // behaviour); "transfer" is excluded from insights scope entirely.
+    flow: text("flow", { enum: ["income", "expense", "transfer"] }),
+    // Groups the children of a split. Not a row reference: the original
+    // transaction is deleted when it is split, so this is a logical group id
+    // shared by every child rather than a foreign key.
+    splitGroupId: text("split_group_id"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -172,6 +182,7 @@ export const transaction = pgTable(
     index("transaction_user_id_date_idx").on(table.userId, table.date),
     index("transaction_category_id_idx").on(table.categoryId),
     index("transaction_merchant_id_idx").on(table.merchantId),
+    index("transaction_split_group_id_idx").on(table.splitGroupId),
   ],
 );
 

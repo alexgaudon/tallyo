@@ -17,6 +17,11 @@ import {
 import { z } from "zod";
 import { db } from "@/db";
 import { category, merchant, transaction } from "@/db/schema";
+import {
+  buildTransactionWhere,
+  type TransactionViewFilter,
+  transactionViewFilterSchema,
+} from "@/lib/transaction-view";
 import { protectedProcedure } from "../lib/orpc";
 
 const dateRangeSchema = z.object({
@@ -35,6 +40,34 @@ const categoryDataSchema = dateRangeSchema.extend({
 });
 
 type StatsDateRange = { from?: string; to?: string };
+
+/**
+ * The dashboard's historical scope: reviewed transactions that count toward
+ * insights, split by category `treatAsIncome`. Every panel procedure and the
+ * consolidated canvas share this shape so a panel is just a view of one filter.
+ */
+function toInsightsFilter(dateRange: StatsDateRange): TransactionViewFilter {
+  return {
+    scope: "insights",
+    reviewState: "reviewed",
+    side: "all",
+    range: { from: dateRange.from, to: dateRange.to },
+  };
+}
+
+/**
+ * Canvas default: insights scope, reviewed only. The schema's own defaults
+ * (`ledger`/`all`) are pinned here so an omitted or empty input reproduces the
+ * classic dashboard, while the remaining filter fields are passed through.
+ */
+function toCanvasFilter(input?: TransactionViewFilter): TransactionViewFilter {
+  return {
+    ...(input ?? {}),
+    scope: "insights",
+    reviewState: "reviewed",
+    side: input?.side ?? "all",
+  };
+}
 
 /** Returns same-month day range (1–31) or null if range spans months or is invalid. */
 function getSameMonthDayWindow(
@@ -125,9 +158,9 @@ async function getWindowAverages(
   };
 }
 
-async function getStatsForDateRange(
+async function computeStats(
   userId: string,
-  dateRange: StatsDateRange,
+  filter: TransactionViewFilter,
 ): Promise<{
   stats: {
     totalTransactions: number;
@@ -145,17 +178,16 @@ async function getStatsForDateRange(
     avgTransactionCountForWindow: number | null;
   };
 }> {
-  const rangeFilters = and(
-    eq(transaction.userId, userId),
-    eq(transaction.reviewed, true),
-    eq(category.hideFromInsights, false),
-    ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-    ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-  );
+  const dateRange = filter.range ?? {};
+  const viewWhere = buildTransactionWhere(userId, filter);
 
   // One grouped query over all time feeds every monthly average; one ranged
   // aggregate feeds every period total; plus a plain count. Conditional
   // FILTER aggregates replace nine near-identical scans.
+  //
+  // The count query deliberately stays joinless and unfiltered by review state
+  // (it counts every transaction in range), and the period aggregate keeps its
+  // INNER JOIN on category so uncategorized rows never enter the money totals.
   const [transactionCount, periodAgg, monthRows] = await Promise.all([
     db
       .select({ count: count() })
@@ -176,7 +208,7 @@ async function getStatsForDateRange(
       })
       .from(transaction)
       .innerJoin(category, eq(transaction.categoryId, category.id))
-      .where(rangeFilters),
+      .where(and(viewWhere, eq(category.hideFromInsights, false))),
     db
       .select({
         incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${category.treatAsIncome}), 0)`,
@@ -188,8 +220,9 @@ async function getStatsForDateRange(
       .innerJoin(category, eq(transaction.categoryId, category.id))
       .where(
         and(
-          eq(transaction.userId, userId),
-          eq(transaction.reviewed, true),
+          // Monthly averages intentionally span all time, so the range is
+          // dropped while every other filter still applies.
+          buildTransactionWhere(userId, { ...filter, range: undefined }),
           eq(category.hideFromInsights, false),
         ),
       )
@@ -296,38 +329,396 @@ async function getStatsForDateRange(
   };
 }
 
+async function computeCategoryData(
+  userId: string,
+  filter: TransactionViewFilter,
+  income: boolean,
+) {
+  const treatAsIncome = income;
+  const viewWhere = buildTransactionWhere(userId, { ...filter, side: "all" });
+
+  const result = await db
+    .select({
+      amount: sum(transaction.amount),
+      transactionCount: count(),
+      category: {
+        id: category.id,
+        name: category.name,
+        icon: category.icon,
+        parentCategoryId: category.parentCategoryId,
+      },
+    })
+    .from(transaction)
+    .innerJoin(category, eq(transaction.categoryId, category.id))
+    .where(
+      and(
+        viewWhere,
+        eq(category.hideFromInsights, false),
+        eq(category.treatAsIncome, treatAsIncome),
+      ),
+    )
+    .groupBy(
+      category.id,
+      category.name,
+      category.icon,
+      category.parentCategoryId,
+    )
+    .orderBy(desc(sum(transaction.amount)));
+
+  const parentCategoryIds = result
+    .map((item) => item.category.parentCategoryId)
+    .filter(Boolean) as string[];
+
+  const parentCategories =
+    parentCategoryIds.length > 0
+      ? await db
+          .select({
+            id: category.id,
+            name: category.name,
+            icon: category.icon,
+            userId: category.userId,
+            parentCategoryId: category.parentCategoryId,
+            treatAsIncome: category.treatAsIncome,
+            hideFromInsights: category.hideFromInsights,
+            createdAt: category.createdAt,
+            updatedAt: category.updatedAt,
+          })
+          .from(category)
+          .where(
+            and(
+              eq(category.userId, userId),
+              inArray(category.id, parentCategoryIds),
+            ),
+          )
+      : [];
+
+  const parentCategoryMap = new Map(
+    parentCategories.map((parent) => [parent.id, parent]),
+  );
+
+  return result.map((item) => ({
+    amount: Math.abs(Number(item.amount ?? 0)),
+    count: Number(item.transactionCount ?? 0),
+    category: {
+      id: item.category.id,
+      name: item.category.name,
+      icon: item.category.icon,
+      userId,
+      parentCategoryId: item.category.parentCategoryId,
+      treatAsIncome,
+      hideFromInsights: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      parentCategory: item.category.parentCategoryId
+        ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
+        : null,
+    },
+  }));
+}
+
+async function computeMerchantStats(
+  userId: string,
+  filter: TransactionViewFilter,
+) {
+  return await db
+    .select({
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      totalAmount: sum(transaction.amount),
+      count: count(),
+    })
+    .from(transaction)
+    .innerJoin(merchant, eq(transaction.merchantId, merchant.id))
+    .innerJoin(category, eq(transaction.categoryId, category.id))
+    .where(
+      and(
+        buildTransactionWhere(userId, { ...filter, side: "all" }),
+        eq(category.hideFromInsights, false),
+        not(eq(category.treatAsIncome, true)),
+      ),
+    )
+    .groupBy(merchant.id, merchant.name)
+    .orderBy(asc(sum(transaction.amount)))
+    .limit(5);
+}
+
+async function computeTransactionStats(
+  userId: string,
+  filter: TransactionViewFilter,
+) {
+  // Unlike the category aggregates this deliberately keeps uncategorized rows
+  // (via the LEFT JOIN + `isNull(category.id)`), treating them as expenses.
+  return await db
+    .select({
+      id: transaction.id,
+      amount: transaction.amount,
+      date: transaction.date,
+      transactionDetails: transaction.transactionDetails,
+      notes: transaction.notes,
+      merchantName: merchant.name,
+      categoryName: category.name,
+    })
+    .from(transaction)
+    .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
+    .leftJoin(category, eq(transaction.categoryId, category.id))
+    .where(
+      and(
+        buildTransactionWhere(userId, { ...filter, side: "all" }),
+        or(
+          isNull(category.id),
+          and(
+            not(eq(category.treatAsIncome, true)),
+            eq(category.hideFromInsights, false),
+          ),
+        ),
+      ),
+    )
+    .orderBy(sql`${transaction.amount} ASC`)
+    .limit(5);
+}
+
+async function computeSankeyData(
+  userId: string,
+  filter: TransactionViewFilter,
+) {
+  const viewWhere = buildTransactionWhere(userId, { ...filter, side: "all" });
+
+  // Get total income
+  const incomeResult = await db
+    .select({ amount: sum(transaction.amount) })
+    .from(transaction)
+    .innerJoin(category, eq(transaction.categoryId, category.id))
+    .where(
+      and(
+        viewWhere,
+        eq(category.treatAsIncome, true),
+        eq(category.hideFromInsights, false),
+      ),
+    );
+
+  const totalIncome = Math.abs(Number(incomeResult[0]?.amount ?? 0));
+
+  // Get expenses by category
+  const expenseResult = await db
+    .select({
+      amount: sum(transaction.amount),
+      category: {
+        id: category.id,
+        name: category.name,
+        icon: category.icon,
+        parentCategoryId: category.parentCategoryId,
+      },
+    })
+    .from(transaction)
+    .innerJoin(category, eq(transaction.categoryId, category.id))
+    .where(
+      and(
+        viewWhere,
+        eq(category.treatAsIncome, false),
+        eq(category.hideFromInsights, false),
+      ),
+    )
+    .groupBy(
+      category.id,
+      category.name,
+      category.icon,
+      category.parentCategoryId,
+    );
+
+  // Fetch parent categories for categories that have them
+  const parentCategoryIds = expenseResult
+    .map((item) => item.category.parentCategoryId)
+    .filter(Boolean) as string[];
+
+  const parentCategories =
+    parentCategoryIds.length > 0
+      ? await db
+          .select({
+            id: category.id,
+            name: category.name,
+            icon: category.icon,
+            userId: category.userId,
+            parentCategoryId: category.parentCategoryId,
+            treatAsIncome: category.treatAsIncome,
+            hideFromInsights: category.hideFromInsights,
+            createdAt: category.createdAt,
+            updatedAt: category.updatedAt,
+          })
+          .from(category)
+          .where(
+            and(
+              eq(category.userId, userId),
+              inArray(category.id, parentCategoryIds),
+            ),
+          )
+      : [];
+
+  const parentCategoryMap = new Map(
+    parentCategories.map((parent) => [parent.id, parent]),
+  );
+
+  // Transform expense data with parent category info
+  const expensesByCategory = expenseResult.map((item) => ({
+    amount: Math.abs(Number(item.amount ?? 0)),
+    category: {
+      ...item.category,
+      userId,
+      treatAsIncome: false,
+      hideFromInsights: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      parentCategory: item.category.parentCategoryId
+        ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
+        : null,
+    },
+  }));
+
+  // Calculate total expenses
+  const totalExpenses = expensesByCategory.reduce(
+    (sum, item) => sum + item.amount,
+    0,
+  );
+
+  // Calculate saved amount (income - expenses)
+  const savedAmount = Math.max(0, totalIncome - totalExpenses);
+
+  return {
+    totalIncome,
+    totalExpenses,
+    savedAmount,
+    expensesByCategory,
+  };
+}
+
+async function computePeriodComparison(
+  userId: string,
+  filter: TransactionViewFilter,
+) {
+  const dateRange = filter.range ?? {};
+
+  if (!dateRange.from || !dateRange.to) {
+    return {
+      hasPrevious: false,
+      totals: null,
+      categories: [] as { categoryId: string; amount: number }[],
+      merchants: [] as { merchantId: string; totalAmount: number }[],
+    };
+  }
+
+  const fromDate = new Date(dateRange.from);
+  const toDate = new Date(dateRange.to);
+  const periodLength =
+    Math.ceil(
+      Math.abs(toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24),
+    ) + 1;
+
+  const prevFromDate = new Date(fromDate);
+  prevFromDate.setDate(prevFromDate.getDate() - periodLength);
+  const prevToDate = new Date(fromDate);
+  prevToDate.setDate(prevToDate.getDate() - 1);
+
+  const prevFrom = format(prevFromDate, "yyyy-MM-dd");
+  const prevTo = format(prevToDate, "yyyy-MM-dd");
+
+  const prevWhere = buildTransactionWhere(userId, {
+    ...filter,
+    side: "all",
+    range: { from: prevFrom, to: prevTo },
+  });
+
+  const [income, expenses, txCount, categories, merchants] = await Promise.all([
+    db
+      .select({ amount: sum(transaction.amount) })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          prevWhere,
+          eq(category.treatAsIncome, true),
+          eq(category.hideFromInsights, false),
+        ),
+      ),
+    db
+      .select({ amount: sum(transaction.amount) })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          prevWhere,
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+        ),
+      ),
+    db
+      .select({ count: count() })
+      .from(transaction)
+      .where(
+        and(
+          eq(transaction.userId, userId),
+          gte(transaction.date, prevFrom),
+          lte(transaction.date, prevTo),
+        ),
+      ),
+    db
+      .select({
+        categoryId: category.id,
+        amount: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          prevWhere,
+          eq(category.treatAsIncome, false),
+          eq(category.hideFromInsights, false),
+        ),
+      )
+      .groupBy(category.id),
+    db
+      .select({
+        merchantId: merchant.id,
+        totalAmount: sum(transaction.amount),
+      })
+      .from(transaction)
+      .innerJoin(merchant, eq(transaction.merchantId, merchant.id))
+      .innerJoin(category, eq(transaction.categoryId, category.id))
+      .where(
+        and(
+          prevWhere,
+          eq(category.hideFromInsights, false),
+          not(eq(category.treatAsIncome, true)),
+        ),
+      )
+      .groupBy(merchant.id),
+  ]);
+
+  return {
+    hasPrevious: true,
+    totals: {
+      totalIncome: Math.abs(Number(income[0]?.amount ?? 0)),
+      totalExpenses: Math.abs(Number(expenses[0]?.amount ?? 0)),
+      totalTransactions: txCount[0]?.count ?? 0,
+    },
+    categories: categories.map((row) => ({
+      categoryId: row.categoryId,
+      amount: Math.abs(Number(row.amount ?? 0)),
+    })),
+    merchants: merchants.map((row) => ({
+      merchantId: row.merchantId,
+      totalAmount: Math.abs(Number(row.totalAmount ?? 0)),
+    })),
+  };
+}
+
 export const dashboardRouter = {
   getMerchantStats: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
       try {
-        const merchantStats = await db
-          .select({
-            merchantId: merchant.id,
-            merchantName: merchant.name,
-            totalAmount: sum(transaction.amount),
-            count: count(),
-          })
-          .from(transaction)
-          .innerJoin(merchant, eq(transaction.merchantId, merchant.id))
-          .innerJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.reviewed, true),
-              eq(category.hideFromInsights, false),
-              eq(transaction.userId, context.session.user.id),
-              not(eq(category.treatAsIncome, true)),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          )
-          .groupBy(merchant.id, merchant.name)
-          .orderBy(asc(sum(transaction.amount)))
-          .limit(5);
-        return merchantStats;
+        return await computeMerchantStats(
+          context.session.user.id,
+          toInsightsFilter(input || {}),
+        );
       } catch (error) {
         console.error("Error fetching merchant stats:", error);
         throw error;
@@ -336,41 +727,11 @@ export const dashboardRouter = {
   getTransactionStats: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
       try {
-        const transactionStats = await db
-          .select({
-            id: transaction.id,
-            amount: transaction.amount,
-            date: transaction.date,
-            transactionDetails: transaction.transactionDetails,
-            notes: transaction.notes,
-            merchantName: merchant.name,
-            categoryName: category.name,
-          })
-          .from(transaction)
-          .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
-          .leftJoin(category, eq(transaction.categoryId, category.id))
-          .where(
-            and(
-              eq(transaction.reviewed, true),
-              eq(transaction.userId, context.session.user.id),
-              or(
-                isNull(category.id),
-                and(
-                  not(eq(category.treatAsIncome, true)),
-                  eq(category.hideFromInsights, false),
-                ),
-              ),
-              ...(dateRange.from
-                ? [gte(transaction.date, dateRange.from)]
-                : []),
-              ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-            ),
-          )
-          .orderBy(sql`${transaction.amount} ASC`)
-          .limit(5);
-        return transactionStats;
+        return await computeTransactionStats(
+          context.session.user.id,
+          toInsightsFilter(input || {}),
+        );
       } catch (error) {
         console.error("Error fetching transaction stats:", error);
         throw error;
@@ -379,339 +740,69 @@ export const dashboardRouter = {
   getCategoryData: protectedProcedure
     .input(categoryDataSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
-      const userId = context.session.user.id;
-      const treatAsIncome = input?.income ?? false;
-
-      const result = await db
-        .select({
-          amount: sum(transaction.amount),
-          transactionCount: count(),
-          category: {
-            id: category.id,
-            name: category.name,
-            icon: category.icon,
-            parentCategoryId: category.parentCategoryId,
-          },
-        })
-        .from(transaction)
-        .innerJoin(category, eq(transaction.categoryId, category.id))
-        .where(
-          and(
-            eq(transaction.userId, userId),
-            eq(transaction.reviewed, true),
-            eq(category.hideFromInsights, false),
-            eq(category.treatAsIncome, treatAsIncome),
-            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-          ),
-        )
-        .groupBy(
-          category.id,
-          category.name,
-          category.icon,
-          category.parentCategoryId,
-        )
-        .orderBy(desc(sum(transaction.amount)));
-
-      const parentCategoryIds = result
-        .map((item) => item.category.parentCategoryId)
-        .filter(Boolean) as string[];
-
-      const parentCategories =
-        parentCategoryIds.length > 0
-          ? await db
-              .select({
-                id: category.id,
-                name: category.name,
-                icon: category.icon,
-                userId: category.userId,
-                parentCategoryId: category.parentCategoryId,
-                treatAsIncome: category.treatAsIncome,
-                hideFromInsights: category.hideFromInsights,
-                createdAt: category.createdAt,
-                updatedAt: category.updatedAt,
-              })
-              .from(category)
-              .where(
-                and(
-                  eq(category.userId, userId),
-                  inArray(category.id, parentCategoryIds),
-                ),
-              )
-          : [];
-
-      const parentCategoryMap = new Map(
-        parentCategories.map((parent) => [parent.id, parent]),
+      return await computeCategoryData(
+        context.session.user.id,
+        toInsightsFilter(input || {}),
+        input?.income ?? false,
       );
-
-      return result.map((item) => ({
-        amount: Math.abs(Number(item.amount ?? 0)),
-        count: Number(item.transactionCount ?? 0),
-        category: {
-          id: item.category.id,
-          name: item.category.name,
-          icon: item.category.icon,
-          userId,
-          parentCategoryId: item.category.parentCategoryId,
-          treatAsIncome,
-          hideFromInsights: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          parentCategory: item.category.parentCategoryId
-            ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
-            : null,
-        },
-      }));
     }),
   getSankeyData: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
-      const userId = context.session.user.id;
-
-      // Get total income
-      const incomeResult = await db
-        .select({ amount: sum(transaction.amount) })
-        .from(transaction)
-        .innerJoin(category, eq(transaction.categoryId, category.id))
-        .where(
-          and(
-            eq(transaction.userId, userId),
-            eq(transaction.reviewed, true),
-            eq(category.treatAsIncome, true),
-            eq(category.hideFromInsights, false),
-            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-          ),
-        );
-
-      const totalIncome = Math.abs(Number(incomeResult[0]?.amount ?? 0));
-
-      // Get expenses by category
-      const expenseResult = await db
-        .select({
-          amount: sum(transaction.amount),
-          category: {
-            id: category.id,
-            name: category.name,
-            icon: category.icon,
-            parentCategoryId: category.parentCategoryId,
-          },
-        })
-        .from(transaction)
-        .innerJoin(category, eq(transaction.categoryId, category.id))
-        .where(
-          and(
-            eq(transaction.userId, userId),
-            eq(transaction.reviewed, true),
-            eq(category.treatAsIncome, false),
-            eq(category.hideFromInsights, false),
-            ...(dateRange.from ? [gte(transaction.date, dateRange.from)] : []),
-            ...(dateRange.to ? [lte(transaction.date, dateRange.to)] : []),
-          ),
-        )
-        .groupBy(
-          category.id,
-          category.name,
-          category.icon,
-          category.parentCategoryId,
-        );
-
-      // Fetch parent categories for categories that have them
-      const parentCategoryIds = expenseResult
-        .map((item) => item.category.parentCategoryId)
-        .filter(Boolean) as string[];
-
-      const parentCategories =
-        parentCategoryIds.length > 0
-          ? await db
-              .select({
-                id: category.id,
-                name: category.name,
-                icon: category.icon,
-                userId: category.userId,
-                parentCategoryId: category.parentCategoryId,
-                treatAsIncome: category.treatAsIncome,
-                hideFromInsights: category.hideFromInsights,
-                createdAt: category.createdAt,
-                updatedAt: category.updatedAt,
-              })
-              .from(category)
-              .where(
-                and(
-                  eq(category.userId, userId),
-                  inArray(category.id, parentCategoryIds),
-                ),
-              )
-          : [];
-
-      const parentCategoryMap = new Map(
-        parentCategories.map((parent) => [parent.id, parent]),
+      return await computeSankeyData(
+        context.session.user.id,
+        toInsightsFilter(input || {}),
       );
-
-      // Transform expense data with parent category info
-      const expensesByCategory = expenseResult.map((item) => ({
-        amount: Math.abs(Number(item.amount ?? 0)),
-        category: {
-          ...item.category,
-          userId: context.session.user.id,
-          treatAsIncome: false,
-          hideFromInsights: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          parentCategory: item.category.parentCategoryId
-            ? (parentCategoryMap.get(item.category.parentCategoryId) ?? null)
-            : null,
-        },
-      }));
-
-      // Calculate total expenses
-      const totalExpenses = expensesByCategory.reduce(
-        (sum, item) => sum + item.amount,
-        0,
-      );
-
-      // Calculate saved amount (income - expenses)
-      const savedAmount = Math.max(0, totalIncome - totalExpenses);
-
-      return {
-        totalIncome,
-        totalExpenses,
-        savedAmount,
-        expensesByCategory,
-      };
     }),
   getStatsCounts: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      return getStatsForDateRange(context.session.user.id, input || {});
+      return await computeStats(
+        context.session.user.id,
+        toInsightsFilter(input || {}),
+      );
     }),
   getPeriodComparison: protectedProcedure
     .input(dateRangeSchema.optional())
     .handler(async ({ context, input }) => {
-      const dateRange = input || {};
+      return await computePeriodComparison(
+        context.session.user.id,
+        toInsightsFilter(input || {}),
+      );
+    }),
+  getCanvasOverview: protectedProcedure
+    .input(transactionViewFilterSchema.optional())
+    .handler(async ({ context, input }) => {
       const userId = context.session.user.id;
+      const filter = toCanvasFilter(input);
 
-      if (!dateRange.from || !dateRange.to) {
-        return {
-          hasPrevious: false,
-          totals: null,
-          categories: [],
-          merchants: [],
-        };
-      }
-
-      const fromDate = new Date(dateRange.from);
-      const toDate = new Date(dateRange.to);
-      const periodLength =
-        Math.ceil(
-          Math.abs(toDate.getTime() - fromDate.getTime()) /
-            (1000 * 60 * 60 * 24),
-        ) + 1;
-
-      const prevFromDate = new Date(fromDate);
-      prevFromDate.setDate(prevFromDate.getDate() - periodLength);
-      const prevToDate = new Date(fromDate);
-      prevToDate.setDate(prevToDate.getDate() - 1);
-
-      const prevFrom = format(prevFromDate, "yyyy-MM-dd");
-      const prevTo = format(prevToDate, "yyyy-MM-dd");
-
-      const [income, expenses, txCount, categories, merchants] =
-        await Promise.all([
-          db
-            .select({ amount: sum(transaction.amount) })
-            .from(transaction)
-            .innerJoin(category, eq(transaction.categoryId, category.id))
-            .where(
-              and(
-                eq(transaction.userId, userId),
-                eq(transaction.reviewed, true),
-                eq(category.treatAsIncome, true),
-                eq(category.hideFromInsights, false),
-                gte(transaction.date, prevFrom),
-                lte(transaction.date, prevTo),
-              ),
-            ),
-          db
-            .select({ amount: sum(transaction.amount) })
-            .from(transaction)
-            .innerJoin(category, eq(transaction.categoryId, category.id))
-            .where(
-              and(
-                eq(transaction.userId, userId),
-                eq(transaction.reviewed, true),
-                eq(category.treatAsIncome, false),
-                eq(category.hideFromInsights, false),
-                gte(transaction.date, prevFrom),
-                lte(transaction.date, prevTo),
-              ),
-            ),
-          db
-            .select({ count: count() })
-            .from(transaction)
-            .where(
-              and(
-                eq(transaction.userId, userId),
-                gte(transaction.date, prevFrom),
-                lte(transaction.date, prevTo),
-              ),
-            ),
-          db
-            .select({
-              categoryId: category.id,
-              amount: sum(transaction.amount),
-            })
-            .from(transaction)
-            .innerJoin(category, eq(transaction.categoryId, category.id))
-            .where(
-              and(
-                eq(transaction.userId, userId),
-                eq(transaction.reviewed, true),
-                eq(category.treatAsIncome, false),
-                eq(category.hideFromInsights, false),
-                gte(transaction.date, prevFrom),
-                lte(transaction.date, prevTo),
-              ),
-            )
-            .groupBy(category.id),
-          db
-            .select({
-              merchantId: merchant.id,
-              totalAmount: sum(transaction.amount),
-            })
-            .from(transaction)
-            .innerJoin(merchant, eq(transaction.merchantId, merchant.id))
-            .innerJoin(category, eq(transaction.categoryId, category.id))
-            .where(
-              and(
-                eq(transaction.userId, userId),
-                eq(transaction.reviewed, true),
-                eq(category.hideFromInsights, false),
-                not(eq(category.treatAsIncome, true)),
-                gte(transaction.date, prevFrom),
-                lte(transaction.date, prevTo),
-              ),
-            )
-            .groupBy(merchant.id),
-        ]);
+      // Every panel is independent, so compute them concurrently.
+      const [
+        stats,
+        categoryData,
+        incomeCategoryData,
+        merchantStats,
+        transactionStats,
+        sankeyData,
+        periodComparison,
+      ] = await Promise.all([
+        computeStats(userId, filter),
+        computeCategoryData(userId, filter, false),
+        computeCategoryData(userId, filter, true),
+        computeMerchantStats(userId, filter),
+        computeTransactionStats(userId, filter),
+        computeSankeyData(userId, filter),
+        computePeriodComparison(userId, filter),
+      ]);
 
       return {
-        hasPrevious: true,
-        totals: {
-          totalIncome: Math.abs(Number(income[0]?.amount ?? 0)),
-          totalExpenses: Math.abs(Number(expenses[0]?.amount ?? 0)),
-          totalTransactions: txCount[0]?.count ?? 0,
-        },
-        categories: categories.map((row) => ({
-          categoryId: row.categoryId,
-          amount: Math.abs(Number(row.amount ?? 0)),
-        })),
-        merchants: merchants.map((row) => ({
-          merchantId: row.merchantId,
-          totalAmount: Math.abs(Number(row.totalAmount ?? 0)),
-        })),
+        stats,
+        categoryData,
+        incomeCategoryData,
+        merchantStats,
+        transactionStats,
+        sankeyData,
+        periodComparison,
       };
     }),
 };

@@ -1,9 +1,21 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { category } from "@/db/schema";
+import { category, transaction } from "@/db/schema";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
+
+/** Load a single category in the same shape returned by getUserCategories
+ *  (all category columns plus the parentCategory relation).
+ */
+async function getCategoryWithParent(userId: string, id: string) {
+  return db.query.category.findFirst({
+    where: and(eq(category.id, id), eq(category.userId, userId)),
+    with: {
+      parentCategory: true,
+    },
+  });
+}
 
 export const categoriesRouter = {
   getUserCategories: protectedProcedure.handler(async ({ context }) => {
@@ -22,6 +34,46 @@ export const categoriesRouter = {
     } catch (error) {
       logger.error(
         `Error fetching categories for user ${context.session?.user?.id}:`,
+        {
+          error,
+          metadata: { userId: context.session?.user?.id },
+        },
+      );
+      throw error;
+    }
+  }),
+  getCategoryUsage: protectedProcedure.handler(async ({ context }) => {
+    try {
+      const usage = await db
+        .select({
+          categoryId: category.id,
+          name: category.name,
+          transactionCount: count(transaction.id),
+          totalAmount: sql<number>`COALESCE(SUM(ABS(${transaction.amount})), 0)`,
+          lastTransactionDate: sql<string | null>`MAX(${transaction.date})`,
+        })
+        .from(category)
+        .leftJoin(
+          transaction,
+          and(
+            eq(transaction.categoryId, category.id),
+            eq(transaction.userId, category.userId),
+          ),
+        )
+        .where(eq(category.userId, context.session?.user?.id))
+        .groupBy(category.id, category.name)
+        .orderBy(desc(count(transaction.id)));
+
+      return usage.map((row) => ({
+        categoryId: row.categoryId,
+        name: row.name,
+        transactionCount: Number(row.transactionCount ?? 0),
+        totalAmount: Number(row.totalAmount ?? 0),
+        lastTransactionDate: row.lastTransactionDate ?? null,
+      }));
+    } catch (error) {
+      logger.error(
+        `Error fetching category usage for user ${context.session?.user?.id}:`,
         {
           error,
           metadata: { userId: context.session?.user?.id },
@@ -134,8 +186,17 @@ export const categoriesRouter = {
           throw new Error("Failed to create category. Please try again.");
         }
 
+        const enrichedCategory = await getCategoryWithParent(
+          context.session.user.id,
+          newCategory[0].id,
+        );
+
+        if (!enrichedCategory) {
+          throw new Error("Failed to load created category");
+        }
+
         return {
-          category: newCategory[0],
+          category: enrichedCategory,
         };
       } catch (error) {
         logger.error(`Error creating category "${input.name}":`, {
@@ -216,8 +277,17 @@ export const categoriesRouter = {
           throw new Error("Category not found or update failed");
         }
 
+        const enrichedCategory = await getCategoryWithParent(
+          context.session.user.id,
+          updatedCategory[0].id,
+        );
+
+        if (!enrichedCategory) {
+          throw new Error("Failed to load updated category");
+        }
+
         return {
-          category: updatedCategory[0],
+          category: enrichedCategory,
         };
       } catch (error) {
         logger.error(`Error updating category ${input.id}:`, {

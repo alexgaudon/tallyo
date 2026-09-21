@@ -1,17 +1,14 @@
-import {
-  and,
-  desc,
-  eq,
-  gte,
-  ilike,
-  inArray,
-  isNull,
-  lte,
-  or,
-  sql,
-} from "drizzle-orm";
+import crypto from "node:crypto";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { category, merchant, merchantKeyword, transaction } from "@/db/schema";
+import { merchant, merchantKeyword, transaction } from "@/db/schema";
+import {
+  buildTransactionOrderBy,
+  buildTransactionWhere,
+  type TransactionViewFilter,
+  transactionViewFilterSchema,
+  transactionViewSchema,
+} from "@/lib/transaction-view";
 import { db } from "../db";
 import { logger } from "../lib/logger";
 import { protectedProcedure } from "../lib/orpc";
@@ -35,10 +32,6 @@ const withErrorHandling = <T>(
     );
   });
 };
-
-// Transactions dated further in the future than this are filtered out as
-// likely data-entry errors. The external import API allows up to this window.
-export const MAX_FUTURE_TRANSACTION_DAYS = 30;
 
 export const getTransactionWithRelations = async (transactionId: string) => {
   return await db.query.transaction.findFirst({
@@ -182,6 +175,46 @@ export const handleKeywordAddition = async (
   }
 };
 
+type TransactionSummary = {
+  totalCount: number;
+  totalAmount: number;
+  averageAmount: number;
+  monthlyAverage?: number;
+};
+
+/**
+ * Aggregates a filtered set of transactions. `monthlyAverage` is only defined
+ * when exactly one category or exactly one merchant is selected, matching the
+ * historical report behaviour.
+ */
+export const computeTransactionSummary = (
+  rows: { amount: number; date: string }[],
+  filter: Pick<TransactionViewFilter, "categories" | "merchants">,
+): TransactionSummary => {
+  const totalCount = rows.length;
+  const totalAmount = rows.reduce((sum, row) => sum + Number(row.amount), 0);
+  const averageAmount = totalCount > 0 ? totalAmount / totalCount : 0;
+
+  let monthlyAverage: number | undefined;
+  const shouldCalculateMonthlyAverage =
+    filter.categories?.length === 1 || filter.merchants?.length === 1;
+
+  if (shouldCalculateMonthlyAverage && rows.length > 0) {
+    const dates = rows.map((row) => new Date(row.date));
+    const minDate = new Date(Math.min(...dates.map((d) => d.getTime())));
+    const maxDate = new Date(Math.max(...dates.map((d) => d.getTime())));
+
+    const monthsDiff =
+      (maxDate.getFullYear() - minDate.getFullYear()) * 12 +
+      (maxDate.getMonth() - minDate.getMonth()) +
+      1;
+
+    monthlyAverage = totalAmount / monthsDiff;
+  }
+
+  return { totalCount, totalAmount, averageAmount, monthlyAverage };
+};
+
 export const transactionsRouter = {
   createTransaction: protectedProcedure
     .input(
@@ -249,57 +282,29 @@ export const transactionsRouter = {
     .handler(async ({ input, context }) => {
       return withErrorHandling(
         async () => {
-          const conditions = [];
-
-          // Filter out transactions more than MAX_FUTURE_TRANSACTION_DAYS in the future
-          const maxDate = new Date();
-          maxDate.setDate(maxDate.getDate() + MAX_FUTURE_TRANSACTION_DAYS);
-          conditions.push(
-            lte(transaction.date, maxDate.toISOString().split("T")[0]),
-          );
-
-          if (input.category)
-            conditions.push(eq(transaction.categoryId, input.category));
-          if (input.merchant)
-            conditions.push(eq(transaction.merchantId, input.merchant));
-          if (input.onlyUnreviewed)
-            conditions.push(eq(transaction.reviewed, false));
-          if (input.onlyWithoutMerchant) {
-            conditions.push(
-              or(
-                isNull(transaction.merchantId),
-                eq(transaction.merchantId, ""),
-              ),
-            );
-          }
-          if (input.filter) {
-            conditions.push(
-              or(
-                ilike(transaction.transactionDetails, `%${input.filter}%`),
-                ilike(transaction.notes, `%${input.filter}%`),
-                ilike(transaction.id, `%${input.filter}%`),
-              ),
-            );
-          }
-
-          const baseConditions = and(
-            eq(transaction.userId, context.session?.user?.id),
-            ...conditions,
-          );
+          const userId = context.session.user.id;
+          const where = buildTransactionWhere(userId, {
+            scope: "ledger",
+            reviewState: input.onlyUnreviewed ? "unreviewed" : "all",
+            side: "all",
+            categories: input.category ? [input.category] : undefined,
+            merchants: input.merchant ? [input.merchant] : undefined,
+            text: input.filter,
+            withoutMerchant: input.onlyWithoutMerchant,
+          });
 
           const [{ count }] = await db
             .select({ count: sql<number>`count(*)` })
             .from(transaction)
-            .leftJoin(merchant, eq(transaction.merchantId, merchant.id))
-            .where(and(baseConditions));
+            .where(where);
 
           const userTransactions = await db.query.transaction.findMany({
-            where: and(baseConditions),
+            where,
             with: {
               merchant: true,
               category: { with: { parentCategory: true } },
             },
-            orderBy: [desc(transaction.date), desc(transaction.amount)],
+            orderBy: buildTransactionOrderBy("date"),
             limit: input.pageSize,
             offset: (input.page - 1) * input.pageSize,
           });
@@ -307,14 +312,78 @@ export const transactionsRouter = {
           return {
             transactions: userTransactions,
             pagination: {
-              total: count,
+              total: Number(count),
               page: input.page,
               pageSize: input.pageSize,
-              totalPages: Math.ceil(count / input.pageSize),
+              totalPages: Math.ceil(Number(count) / input.pageSize),
             },
           };
         },
         "Error fetching transactions",
+        context.session?.user?.id,
+      );
+    }),
+
+  getView: protectedProcedure
+    .input(transactionViewSchema)
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          const userId = context.session.user.id;
+          const where = buildTransactionWhere(userId, input);
+          const offset = (input.page - 1) * input.pageSize;
+
+          const [{ count }] = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(transaction)
+            .where(where);
+
+          const viewTransactions = await db.query.transaction.findMany({
+            where,
+            orderBy: buildTransactionOrderBy(input.sort),
+            with: {
+              merchant: true,
+              category: { with: { parentCategory: true } },
+            },
+            limit: input.pageSize,
+            offset,
+          });
+
+          const total = Number(count);
+          return {
+            transactions: viewTransactions,
+            pagination: {
+              total,
+              page: input.page,
+              pageSize: input.pageSize,
+              totalPages: Math.ceil(total / input.pageSize),
+            },
+          };
+        },
+        "Error fetching transaction view",
+        context.session?.user?.id,
+      );
+    }),
+
+  getViewSummary: protectedProcedure
+    .input(transactionViewFilterSchema)
+    .handler(async ({ input, context }) => {
+      return withErrorHandling(
+        async () => {
+          const userId = context.session.user.id;
+          const where = buildTransactionWhere(userId, input);
+
+          const summaryRows = await db
+            .select({
+              amount: transaction.amount,
+              date: transaction.date,
+            })
+            .from(transaction)
+            .where(where);
+
+          return computeTransactionSummary(summaryRows, input);
+        },
+        "Error fetching transaction view summary",
         context.session?.user?.id,
       );
     }),
@@ -480,7 +549,7 @@ export const transactionsRouter = {
           );
 
           // Check if this is already a split transaction
-          if (originalTransaction.splitFromId) {
+          if (originalTransaction.splitGroupId) {
             throw new Error(
               "Cannot split a transaction that is already a split",
             );
@@ -496,6 +565,10 @@ export const transactionsRouter = {
               `Split amounts must sum to the original transaction amount (${originalTransaction.amount}), got ${totalSplitAmount}`,
             );
           }
+
+          // The original row is deleted below, so the split children share a
+          // logical group id rather than referencing a parent transaction.
+          const splitGroupId = crypto.randomUUID();
 
           // Delete the original and insert the splits atomically so a failed
           // insert cannot leave the transaction permanently deleted.
@@ -527,7 +600,10 @@ export const transactionsRouter = {
                   notes: originalTransaction.notes,
                   externalId: splitExternalId,
                   reviewed: originalTransaction.reviewed,
-                  splitFromId: originalTransaction.id,
+                  flow: originalTransaction.flow,
+                  excludedFromInsights:
+                    originalTransaction.excludedFromInsights,
+                  splitGroupId,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 })
@@ -547,6 +623,12 @@ export const transactionsRouter = {
       );
     }),
 
+  /**
+   * @deprecated Use `getView` plus `getViewSummary` instead. This procedure is
+   * kept only so the existing web report keeps working; it will be removed once
+   * the frontend report folds into the ledger. Its input and output shapes are
+   * frozen for that reason.
+   */
   getTransactionReport: protectedProcedure
     .input(
       z.object({
@@ -569,140 +651,26 @@ export const transactionsRouter = {
     .handler(async ({ input, context }) => {
       return withErrorHandling(
         async () => {
-          const conditions = [
-            eq(transaction.userId, context.session?.user?.id),
-          ];
+          const userId = context.session.user.id;
+          const filter: TransactionViewFilter = {
+            // The expense report hides categories flagged `hideFromInsights`,
+            // which is exactly the insights scope; the income-inclusive report
+            // historically returned every row.
+            scope: input.includeIncome ? "ledger" : "insights",
+            range: { from: input.dateFrom, to: input.dateTo },
+            categories: input.categoryIds,
+            merchants: input.merchantIds,
+            amount: { min: input.amountMin, max: input.amountMax },
+            reviewState:
+              input.reviewed === undefined
+                ? "all"
+                : input.reviewed
+                  ? "reviewed"
+                  : "unreviewed",
+            side: input.includeIncome ? "all" : "expense",
+          };
 
-          // Filter out transactions more than MAX_FUTURE_TRANSACTION_DAYS in the future
-          const maxDate = new Date();
-          maxDate.setDate(maxDate.getDate() + MAX_FUTURE_TRANSACTION_DAYS);
-          conditions.push(
-            lte(transaction.date, maxDate.toISOString().split("T")[0]),
-          );
-
-          // Date range filters
-          if (input.dateFrom) {
-            conditions.push(gte(transaction.date, input.dateFrom));
-          }
-          if (input.dateTo) {
-            conditions.push(lte(transaction.date, input.dateTo));
-          }
-
-          if (input.categoryIds && input.categoryIds.length > 0) {
-            conditions.push(inArray(transaction.categoryId, input.categoryIds));
-          }
-
-          // Merchant filters
-          if (input.merchantIds && input.merchantIds.length > 0) {
-            conditions.push(inArray(transaction.merchantId, input.merchantIds));
-          }
-
-          // Amount range filters
-          if (input.amountMin !== undefined) {
-            conditions.push(gte(transaction.amount, input.amountMin));
-          }
-          if (input.amountMax !== undefined) {
-            conditions.push(lte(transaction.amount, input.amountMax));
-          }
-
-          // Reviewed status filter
-          if (input.reviewed !== undefined) {
-            conditions.push(eq(transaction.reviewed, input.reviewed));
-          }
-
-          // Income/expense filter
-          if (!input.includeIncome) {
-            // Get transactions with expense categories
-            const categorizedExpenseTransactions = await db
-              .select({
-                id: transaction.id,
-                amount: transaction.amount,
-                date: transaction.date,
-                transactionDetails: transaction.transactionDetails,
-                notes: transaction.notes,
-                reviewed: transaction.reviewed,
-                merchantId: transaction.merchantId,
-                categoryId: transaction.categoryId,
-              })
-              .from(transaction)
-              .innerJoin(category, eq(transaction.categoryId, category.id))
-              .where(
-                and(
-                  ...conditions,
-                  eq(category.treatAsIncome, false),
-                  eq(category.hideFromInsights, false),
-                ),
-              );
-
-            // Get transactions without categories (assume they are expenses)
-            const uncategorizedTransactions = await db
-              .select({
-                id: transaction.id,
-                amount: transaction.amount,
-                date: transaction.date,
-                transactionDetails: transaction.transactionDetails,
-                notes: transaction.notes,
-                reviewed: transaction.reviewed,
-                merchantId: transaction.merchantId,
-                categoryId: transaction.categoryId,
-              })
-              .from(transaction)
-              .where(and(...conditions, isNull(transaction.categoryId)));
-
-            // Combine both sets of transactions
-            const expenseTransactions = [
-              ...categorizedExpenseTransactions,
-              ...uncategorizedTransactions,
-            ].sort((a, b) => b.date.localeCompare(a.date));
-
-            const totalAmount = expenseTransactions.reduce(
-              (sum, t) => sum + Number(t.amount),
-              0,
-            );
-            const totalCount = expenseTransactions.length;
-
-            // Calculate monthly average if exactly one category and/or one merchant is selected
-            let monthlyAverage: number | undefined;
-            const hasExactlyOneCategory = input.categoryIds?.length === 1;
-            const hasExactlyOneMerchant = input.merchantIds?.length === 1;
-            const shouldCalculateMonthlyAverage =
-              hasExactlyOneCategory || hasExactlyOneMerchant;
-
-            if (
-              shouldCalculateMonthlyAverage &&
-              expenseTransactions.length > 0
-            ) {
-              // Get the date range for monthly calculation
-              const dates = expenseTransactions.map((t) => new Date(t.date));
-              const minDate = new Date(
-                Math.min(...dates.map((d) => d.getTime())),
-              );
-              const maxDate = new Date(
-                Math.max(...dates.map((d) => d.getTime())),
-              );
-
-              // Calculate number of months in the range
-              const monthsDiff =
-                (maxDate.getFullYear() - minDate.getFullYear()) * 12 +
-                (maxDate.getMonth() - minDate.getMonth()) +
-                1;
-
-              monthlyAverage = totalAmount / monthsDiff;
-            }
-
-            return {
-              transactions: expenseTransactions,
-              summary: {
-                totalCount,
-                totalAmount,
-                averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
-                monthlyAverage,
-              },
-            };
-          }
-
-          // Include all transactions (both income and expenses)
-          const allTransactions = await db
+          const reportTransactions = await db
             .select({
               id: transaction.id,
               amount: transaction.amount,
@@ -714,49 +682,12 @@ export const transactionsRouter = {
               categoryId: transaction.categoryId,
             })
             .from(transaction)
-            .where(and(...conditions))
+            .where(buildTransactionWhere(userId, filter))
             .orderBy(desc(transaction.date));
 
-          const totalAmount = allTransactions.reduce(
-            (sum, t) => sum + Number(t.amount),
-            0,
-          );
-          const totalCount = allTransactions.length;
-
-          // Calculate monthly average if exactly one category and/or one merchant is selected
-          let monthlyAverage: number | undefined;
-          const hasExactlyOneCategory = input.categoryIds?.length === 1;
-          const hasExactlyOneMerchant = input.merchantIds?.length === 1;
-          const shouldCalculateMonthlyAverage =
-            hasExactlyOneCategory || hasExactlyOneMerchant;
-
-          if (shouldCalculateMonthlyAverage && allTransactions.length > 0) {
-            // Get the date range for monthly calculation
-            const dates = allTransactions.map((t) => new Date(t.date));
-            const minDate = new Date(
-              Math.min(...dates.map((d) => d.getTime())),
-            );
-            const maxDate = new Date(
-              Math.max(...dates.map((d) => d.getTime())),
-            );
-
-            // Calculate number of months in the range
-            const monthsDiff =
-              (maxDate.getFullYear() - minDate.getFullYear()) * 12 +
-              (maxDate.getMonth() - minDate.getMonth()) +
-              1;
-
-            monthlyAverage = totalAmount / monthsDiff;
-          }
-
           return {
-            transactions: allTransactions,
-            summary: {
-              totalCount,
-              totalAmount,
-              averageAmount: totalCount > 0 ? totalAmount / totalCount : 0,
-              monthlyAverage,
-            },
+            transactions: reportTransactions,
+            summary: computeTransactionSummary(reportTransactions, filter),
           };
         },
         "Error generating transaction report",

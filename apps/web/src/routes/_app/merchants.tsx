@@ -26,14 +26,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ensureSession } from "@/lib/auth-client";
 import { orpc, queryClient } from "@/utils/orpc";
 
-export const Route = createFileRoute("/merchants")({
+export const Route = createFileRoute("/_app/merchants")({
   component: RouteComponent,
   beforeLoad: async ({ context }) => {
-    ensureSession(context.isAuthenticated, "/merchants");
-
     await context.queryClient.ensureQueryData(
       orpc.merchants.getUserMerchants.queryOptions(),
     );
