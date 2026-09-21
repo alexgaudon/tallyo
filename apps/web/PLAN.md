@@ -1,8 +1,31 @@
 # Tallyo frontend — rebuild from first principles
 
-Status: planning. Branch: `exp/drastic-changes`.
+Branch: `exp/drastic-changes`.
 
-Decisions locked:
+## Status: implemented
+
+This plan drove the `exp/drastic-changes` branch. All phases landed:
+
+| Phase | What shipped |
+| --- | --- |
+| 0 | `Panel`, `ChartFrame` primitives; `/dev/primitives` review route |
+| 1 | `routes/_app.tsx` single auth gate; routes moved under `_app/`; `lib/nav.ts` |
+| 2 | `lib/transaction-view.ts` + loader-owned ledger lens (`LedgerView`, one responsive row, `useTransactionMutations`) |
+| 3 | Dashboard as a canvas over `dashboard.getCanvasOverview` |
+| 4 | `EntityPicker`; `/taxonomy` lens; `/merchants` + `/categories` retired to redirects |
+| 5 | `/reports` as the ledger view + `getViewSummary`; `transaction-report.tsx` deleted |
+| 6 | Settings/signin/public restyle; dead-code sweep |
+| R0–R3 | Soft-glass tokens; new shell + ⌘K palette; canvas lenses; motion vocabulary |
+| Fixes | Postgres alias bug in `buildTransactionWhere`; row edits no longer remount/scroll; mobile burger side nav; collapsed lens filters |
+
+### Known gaps / follow-ups
+
+- **Lenses are client state**, not URL-addressable. A drill-down can't be deep-linked and the back button doesn't dismiss it. The canvas route's search params are the place to fix this.
+- **`flow` vs `treatAsIncome`:** the canvas category panels derive income/expense from `category.treatAsIncome`, while the view's `side` filter uses the new `flow` column. Harmless while no UI writes `flow`; must be reconciled before it does.
+- **No automated tests.** Verification so far is `check-types` plus route/RPC smoke checks. A view-engine test for `buildTransactionWhere` scope/side semantics is the obvious first test.
+- **Sub-categories:** `TransactionView.categories` matches exact category ids; a parent selection does not expand to descendants.
+
+### Decisions locked
 
 - **Paradigm shift** — rethink the interaction model, not just the visuals.
 - **Dashboard as canvas** — the canvas is the center; other surfaces are lenses over it.
