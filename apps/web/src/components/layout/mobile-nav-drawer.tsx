@@ -1,13 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import {
-  BarChart3Icon,
-  BlocksIcon,
-  CreditCardIcon,
-  FolderTreeIcon,
-  LogOut,
-  Settings,
-  StoreIcon,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -17,16 +9,9 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { signOut, useSession } from "@/lib/auth-client";
+import { isNavActive, navItems, settingsNavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { queryClient } from "@/utils/orpc";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
-  { to: "/transactions", label: "Transactions", icon: CreditCardIcon },
-  { to: "/merchants", label: "Merchants", icon: StoreIcon },
-  { to: "/categories", label: "Categories", icon: FolderTreeIcon },
-  { to: "/reports", label: "Reports", icon: BarChart3Icon },
-];
 
 interface MobileNavDrawerProps {
   open?: boolean;
@@ -75,10 +60,7 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
 
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
-            const isActive =
-              location.pathname === item.to ||
-              (item.to === "/transactions" &&
-                location.pathname.startsWith("/transactions"));
+            const isActive = isNavActive(location.pathname, item.to);
 
             return (
               <Link
@@ -101,17 +83,17 @@ export function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
           <div className="border-t border-border my-4" />
 
           <Link
-            to="/settings"
+            to={settingsNavItem.to}
             onClick={handleNavigation}
             className={cn(
               "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors",
-              location.pathname === "/settings"
+              isNavActive(location.pathname, settingsNavItem.to)
                 ? "bg-accent/10 text-accent border border-accent/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
             )}
           >
-            <Settings className="w-5 h-5" />
-            <span>Settings</span>
+            <settingsNavItem.icon className="w-5 h-5" />
+            <span>{settingsNavItem.label}</span>
           </Link>
 
           <button

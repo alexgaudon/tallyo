@@ -1,15 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import {
-  BarChart3Icon,
-  BlocksIcon,
-  CreditCardIcon,
-  FolderTreeIcon,
-  LogOut,
-  Menu,
-  RefreshCw,
-  Settings,
-  StoreIcon,
-} from "lucide-react";
+import { LogOut, Menu, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,16 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut, useSession } from "@/lib/auth-client";
+import { isNavActive, navItems, settingsNavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { orpc, queryClient } from "@/utils/orpc";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
-  { to: "/transactions", label: "Transactions", icon: CreditCardIcon },
-  { to: "/merchants", label: "Merchants", icon: StoreIcon },
-  { to: "/categories", label: "Categories", icon: FolderTreeIcon },
-  { to: "/reports", label: "Reports", icon: BarChart3Icon },
-];
 
 interface TopNavProps {
   onMenuClick?: () => void;
@@ -91,10 +74,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
         {/* Primary Navigation - Desktop */}
         <div className="hidden lg:flex items-center gap-0.5">
           {navItems.map((item) => {
-            const isActive =
-              location.pathname === item.to ||
-              (item.to === "/transactions" &&
-                location.pathname.startsWith("/transactions"));
+            const isActive = isNavActive(location.pathname, item.to);
 
             return (
               <Link
@@ -154,11 +134,11 @@ export function TopNav({ onMenuClick }: TopNavProps) {
               </div>
               <DropdownMenuItem asChild>
                 <Link
-                  to="/settings"
+                  to={settingsNavItem.to}
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <Settings className="w-4 h-4" />
-                  Settings
+                  <settingsNavItem.icon className="w-4 h-4" />
+                  {settingsNavItem.label}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

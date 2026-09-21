@@ -10,34 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CategoriesRouteImport } from './routes/categories'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as MerchantsRouteImport } from './routes/merchants'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppMerchantsRouteImport } from './routes/_app/merchants'
+import { Route as AppReportsRouteImport } from './routes/_app/reports'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AuthSigninRouteImport } from './routes/_auth/signin'
+import { Route as DevPrimitivesRouteImport } from './routes/dev.primitives'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoriesRoute = CategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MerchantsRoute = MerchantsRouteImport.update({
-  id: '/merchants',
-  path: '/merchants',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -45,119 +36,143 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TransactionsRoute = TransactionsRouteImport.update({
+const AppCategoriesRoute = AppCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMerchantsRoute = AppMerchantsRouteImport.update({
+  id: '/merchants',
+  path: '/merchants',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTransactionsRoute = AppTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 const AuthSigninRoute = AuthSigninRouteImport.update({
   id: '/_auth/signin',
   path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevPrimitivesRoute = DevPrimitivesRouteImport.update({
+  id: '/dev/primitives',
+  path: '/dev/primitives',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
-  '/merchants': typeof MerchantsRoute
   '/privacy': typeof PrivacyRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
-  '/transactions': typeof TransactionsRoute
+  '/categories': typeof AppCategoriesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/merchants': typeof AppMerchantsRoute
+  '/reports': typeof AppReportsRoute
+  '/settings': typeof AppSettingsRoute
+  '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
+  '/dev/primitives': typeof DevPrimitivesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
-  '/merchants': typeof MerchantsRoute
   '/privacy': typeof PrivacyRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
-  '/transactions': typeof TransactionsRoute
+  '/categories': typeof AppCategoriesRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/merchants': typeof AppMerchantsRoute
+  '/reports': typeof AppReportsRoute
+  '/settings': typeof AppSettingsRoute
+  '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
+  '/dev/primitives': typeof DevPrimitivesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
-  '/merchants': typeof MerchantsRoute
+  '/_app': typeof AppRouteWithChildren
   '/privacy': typeof PrivacyRoute
-  '/reports': typeof ReportsRoute
-  '/settings': typeof SettingsRoute
   '/terms': typeof TermsRoute
-  '/transactions': typeof TransactionsRoute
+  '/_app/categories': typeof AppCategoriesRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/merchants': typeof AppMerchantsRoute
+  '/_app/reports': typeof AppReportsRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
+  '/dev/primitives': typeof DevPrimitivesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/categories'
     | '/dashboard'
     | '/merchants'
-    | '/privacy'
     | '/reports'
     | '/settings'
-    | '/terms'
     | '/transactions'
     | '/signin'
+    | '/dev/primitives'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/privacy'
+    | '/terms'
     | '/categories'
     | '/dashboard'
     | '/merchants'
-    | '/privacy'
     | '/reports'
     | '/settings'
-    | '/terms'
     | '/transactions'
     | '/signin'
+    | '/dev/primitives'
   id:
     | '__root__'
     | '/'
-    | '/categories'
-    | '/dashboard'
-    | '/merchants'
+    | '/_app'
     | '/privacy'
-    | '/reports'
-    | '/settings'
     | '/terms'
-    | '/transactions'
+    | '/_app/categories'
+    | '/_app/dashboard'
+    | '/_app/merchants'
+    | '/_app/reports'
+    | '/_app/settings'
+    | '/_app/transactions'
     | '/_auth/signin'
+    | '/dev/primitives'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CategoriesRoute: typeof CategoriesRoute
-  DashboardRoute: typeof DashboardRoute
-  MerchantsRoute: typeof MerchantsRoute
+  AppRoute: typeof AppRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
-  ReportsRoute: typeof ReportsRoute
-  SettingsRoute: typeof SettingsRoute
   TermsRoute: typeof TermsRoute
-  TransactionsRoute: typeof TransactionsRoute
   AuthSigninRoute: typeof AuthSigninRoute
+  DevPrimitivesRoute: typeof DevPrimitivesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -169,25 +184,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories': {
-      id: '/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/merchants': {
-      id: '/merchants'
-      path: '/merchants'
-      fullPath: '/merchants'
-      preLoaderRoute: typeof MerchantsRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -197,20 +198,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -218,12 +205,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/transactions': {
-      id: '/transactions'
+    '/_app/categories': {
+      id: '/_app/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof AppCategoriesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/merchants': {
+      id: '/_app/merchants'
+      path: '/merchants'
+      fullPath: '/merchants'
+      preLoaderRoute: typeof AppMerchantsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/transactions': {
+      id: '/_app/transactions'
       path: '/transactions'
       fullPath: '/transactions'
-      preLoaderRoute: typeof TransactionsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppTransactionsRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_auth/signin': {
       id: '/_auth/signin'
@@ -232,20 +254,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/primitives': {
+      id: '/dev/primitives'
+      path: '/dev/primitives'
+      fullPath: '/dev/primitives'
+      preLoaderRoute: typeof DevPrimitivesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppCategoriesRoute: typeof AppCategoriesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppMerchantsRoute: typeof AppMerchantsRoute
+  AppReportsRoute: typeof AppReportsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppTransactionsRoute: typeof AppTransactionsRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCategoriesRoute: AppCategoriesRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppMerchantsRoute: AppMerchantsRoute,
+  AppReportsRoute: AppReportsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppTransactionsRoute: AppTransactionsRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CategoriesRoute: CategoriesRoute,
-  DashboardRoute: DashboardRoute,
-  MerchantsRoute: MerchantsRoute,
+  AppRoute: AppRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
-  ReportsRoute: ReportsRoute,
-  SettingsRoute: SettingsRoute,
   TermsRoute: TermsRoute,
-  TransactionsRoute: TransactionsRoute,
   AuthSigninRoute: AuthSigninRoute,
+  DevPrimitivesRoute: DevPrimitivesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

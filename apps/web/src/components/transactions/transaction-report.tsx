@@ -43,7 +43,7 @@ interface TransactionReportFilters {
 
 export function TransactionReport() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/reports" });
+  const search = useSearch({ from: "/_app/reports" });
 
   const defaultDateFrom = startOfMonth(new Date());
   const defaultDateTo = endOfMonth(new Date());

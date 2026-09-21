@@ -14,7 +14,6 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Footer from "@/components/footer";
-import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
 import { TopNav } from "@/components/layout/top-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -71,8 +70,6 @@ function RootComponent() {
 
   const { data: session } = useSession();
 
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-
   useKeyboardShortcuts();
 
   const isAuthenticated = !!session;
@@ -83,17 +80,7 @@ function RootComponent() {
       <ORPCContext.Provider value={orpcUtils}>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           {isAuthenticated ? (
-            <div className="flex flex-col min-h-screen pt-20">
-              <TopNav onMenuClick={() => setMobileDrawerOpen(true)} />
-              <MobileNavDrawer
-                open={mobileDrawerOpen}
-                onOpenChange={setMobileDrawerOpen}
-              />
-              <main className="flex-1 bg-muted/20">
-                <Outlet />
-              </main>
-              <Footer />
-            </div>
+            <Outlet />
           ) : (
             <div className="flex flex-col min-h-screen pt-20">
               {location.pathname.startsWith("/sign") ? (

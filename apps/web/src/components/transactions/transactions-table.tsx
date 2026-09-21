@@ -120,7 +120,7 @@ const isUpcomingTransaction = (dateValue: string | Date) => {
 };
 
 const isSplitTransaction = (transaction: Transaction) => {
-  return !!transaction.splitFromId;
+  return !!transaction.splitGroupId;
 };
 
 const formatRelativeTime = (dateValue: string | Date) => {

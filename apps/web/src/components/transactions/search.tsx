@@ -22,7 +22,7 @@ import {
 import { Input } from "../ui/input";
 
 export function Search() {
-  const params = useSearch({ from: "/transactions" });
+  const params = useSearch({ from: "/_app/transactions" });
   const navigate = useNavigate();
 
   // Navigation helper
