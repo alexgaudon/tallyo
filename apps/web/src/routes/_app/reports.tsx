@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
-  useRouter,
   useSearch,
 } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -60,7 +59,6 @@ export const Route = createFileRoute("/_app/reports")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const search = useSearch({ from: "/_app/reports" });
 
@@ -101,7 +99,6 @@ function RouteComponent() {
     queryClient.invalidateQueries({
       queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
     });
-    router.invalidate();
   };
 
   const goToPage = (page: number) => {

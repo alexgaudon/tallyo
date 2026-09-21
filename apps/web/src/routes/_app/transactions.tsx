@@ -2,7 +2,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
-  useRouter,
   useSearch,
 } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
@@ -47,7 +46,6 @@ export const Route = createFileRoute("/_app/transactions")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const search = useSearch({ from: "/_app/transactions" });
 
@@ -78,7 +76,6 @@ function RouteComponent() {
     queryClient.invalidateQueries({
       queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
     });
-    router.invalidate();
     setIsCreateFormOpen(false);
   };
 

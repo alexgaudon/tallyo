@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import {
   type ViewScope,
   type ViewSearch,
@@ -20,15 +19,16 @@ export type LedgerTransaction = LedgerViewData["transactions"][number];
 /**
  * The single optimistic-mutation surface for the ledger. Every row and the
  * review card drive these; the shared flow cancels the view query, snapshots
- * it, patches the affected row, rolls back on error, then refreshes both the
- * cache and the loader-owned data.
+ * it, patches the affected row, rolls back on error, then refreshes the cache.
+ * It deliberately does NOT call `router.invalidate()`: the route loader only
+ * primes this same query, and re-running it would flip the route into its
+ * pending state (and scroll to top) on every single row edit.
  */
 export function useTransactionMutations(
   search: ViewSearch,
   scope: ViewScope = "ledger",
 ) {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const view = viewQueryOptions(search, scope);
 
   const categoriesQueryKey =
@@ -73,7 +73,6 @@ export function useTransactionMutations(
       if (options?.invalidateSession) {
         await queryClient.invalidateQueries({ queryKey: ["session"] });
       }
-      await router.invalidate();
     },
   });
 

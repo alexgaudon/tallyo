@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
@@ -50,7 +49,6 @@ export function LedgerView({
   dense = false,
   className,
 }: LedgerViewProps) {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data } = useQuery(viewQueryOptions(view, scope));
@@ -87,7 +85,6 @@ export function LedgerView({
     queryClient.invalidateQueries({
       queryKey: orpc.categories.getUserCategories.queryOptions().queryKey,
     });
-    router.invalidate();
   };
 
   return (
