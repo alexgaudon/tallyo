@@ -20,8 +20,14 @@ This plan drove the `exp/drastic-changes` branch. All phases landed:
 
 ### Known gaps / follow-ups
 
-- **Lenses are client state**, not URL-addressable. A drill-down can't be deep-linked and the back button doesn't dismiss it. The canvas route's search params are the place to fix this.
-- **`flow` vs `treatAsIncome`:** the canvas category panels derive income/expense from `category.treatAsIncome`, while the view's `side` filter uses the new `flow` column. Harmless while no UI writes `flow`; must be reconciled before it does.
+- **Lenses are URL-addressable.** A drill-down lives in the dashboard route's search
+  params, so it deep-links and Back dismisses it. (The remaining stack depth is 1 —
+  no nested drill-downs.)
+- **`flow` / `excludedFromInsights` have no UI yet.** Every surface now derives
+  income/expense through one shared expression (`effectiveSideExpression`), so the
+  canvas and the ledger agree; but nothing writes `flow` or `excludedFromInsights`
+  yet, so the columns are groundwork for a future "transfer / exclude from insights"
+  affordance.
 - **No automated tests.** Verification so far is `check-types` plus route/RPC smoke checks. A view-engine test for `buildTransactionWhere` scope/side semantics is the obvious first test.
 - **Sub-categories:** `TransactionView.categories` matches exact category ids; a parent selection does not expand to descendants.
 

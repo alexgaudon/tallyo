@@ -9,7 +9,6 @@ import {
   inArray,
   isNull,
   lte,
-  not,
   or,
   sql,
   sum,
@@ -19,6 +18,7 @@ import { db } from "@/db";
 import { category, merchant, transaction } from "@/db/schema";
 import {
   buildTransactionWhere,
+  effectiveSideExpression,
   type TransactionViewFilter,
   transactionViewFilterSchema,
 } from "@/lib/transaction-view";
@@ -43,8 +43,9 @@ type StatsDateRange = { from?: string; to?: string };
 
 /**
  * The dashboard's historical scope: reviewed transactions that count toward
- * insights, split by category `treatAsIncome`. Every panel procedure and the
- * consolidated canvas share this shape so a panel is just a view of one filter.
+ * insights, split by the shared effective-side expression (`flow`, else the
+ * category). Every panel procedure and the consolidated canvas share this shape
+ * so a panel is just a view of one filter.
  */
 function toInsightsFilter(dateRange: StatsDateRange): TransactionViewFilter {
   return {
@@ -102,10 +103,10 @@ async function getWindowAverages(
   const [sideRows, txRows] = await Promise.all([
     db
       .select({
-        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${category.treatAsIncome}), 0)`,
-        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE NOT ${category.treatAsIncome}), 0)`,
-        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${category.treatAsIncome})`,
-        expenseCount: sql<number>`COUNT(*) FILTER (WHERE NOT ${category.treatAsIncome})`,
+        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'income'), 0)`,
+        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'expense'), 0)`,
+        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'income')`,
+        expenseCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'expense')`,
       })
       .from(transaction)
       .innerJoin(category, eq(transaction.categoryId, category.id))
@@ -201,20 +202,20 @@ async function computeStats(
       ),
     db
       .select({
-        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${category.treatAsIncome}), 0)`,
-        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE NOT ${category.treatAsIncome}), 0)`,
-        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${category.treatAsIncome})`,
-        expenseCount: sql<number>`COUNT(*) FILTER (WHERE NOT ${category.treatAsIncome})`,
+        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'income'), 0)`,
+        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'expense'), 0)`,
+        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'income')`,
+        expenseCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'expense')`,
       })
       .from(transaction)
       .innerJoin(category, eq(transaction.categoryId, category.id))
       .where(and(viewWhere, eq(category.hideFromInsights, false))),
     db
       .select({
-        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${category.treatAsIncome}), 0)`,
-        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE NOT ${category.treatAsIncome}), 0)`,
-        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${category.treatAsIncome})`,
-        expenseCount: sql<number>`COUNT(*) FILTER (WHERE NOT ${category.treatAsIncome})`,
+        incomeAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'income'), 0)`,
+        expenseAmount: sql<string>`COALESCE(SUM(${transaction.amount}) FILTER (WHERE ${effectiveSideExpression()} = 'expense'), 0)`,
+        incomeCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'income')`,
+        expenseCount: sql<number>`COUNT(*) FILTER (WHERE ${effectiveSideExpression()} = 'expense')`,
       })
       .from(transaction)
       .innerJoin(category, eq(transaction.categoryId, category.id))
@@ -354,7 +355,7 @@ async function computeCategoryData(
       and(
         viewWhere,
         eq(category.hideFromInsights, false),
-        eq(category.treatAsIncome, treatAsIncome),
+        sql`${effectiveSideExpression()} = ${treatAsIncome ? "income" : "expense"}`,
       ),
     )
     .groupBy(
@@ -434,7 +435,7 @@ async function computeMerchantStats(
       and(
         buildTransactionWhere(userId, { ...filter, side: "all" }),
         eq(category.hideFromInsights, false),
-        not(eq(category.treatAsIncome, true)),
+        sql`${effectiveSideExpression()} = 'expense'`,
       ),
     )
     .groupBy(merchant.id, merchant.name)
@@ -464,12 +465,9 @@ async function computeTransactionStats(
     .where(
       and(
         buildTransactionWhere(userId, { ...filter, side: "all" }),
-        or(
-          isNull(category.id),
-          and(
-            not(eq(category.treatAsIncome, true)),
-            eq(category.hideFromInsights, false),
-          ),
+        and(
+          sql`${effectiveSideExpression()} = 'expense'`,
+          or(isNull(category.id), eq(category.hideFromInsights, false)),
         ),
       ),
     )
@@ -491,7 +489,7 @@ async function computeSankeyData(
     .where(
       and(
         viewWhere,
-        eq(category.treatAsIncome, true),
+        sql`${effectiveSideExpression()} = 'income'`,
         eq(category.hideFromInsights, false),
       ),
     );
@@ -514,7 +512,7 @@ async function computeSankeyData(
     .where(
       and(
         viewWhere,
-        eq(category.treatAsIncome, false),
+        sql`${effectiveSideExpression()} = 'expense'`,
         eq(category.hideFromInsights, false),
       ),
     )
@@ -634,7 +632,7 @@ async function computePeriodComparison(
       .where(
         and(
           prevWhere,
-          eq(category.treatAsIncome, true),
+          sql`${effectiveSideExpression()} = 'income'`,
           eq(category.hideFromInsights, false),
         ),
       ),
@@ -645,7 +643,7 @@ async function computePeriodComparison(
       .where(
         and(
           prevWhere,
-          eq(category.treatAsIncome, false),
+          sql`${effectiveSideExpression()} = 'expense'`,
           eq(category.hideFromInsights, false),
         ),
       ),
@@ -669,7 +667,7 @@ async function computePeriodComparison(
       .where(
         and(
           prevWhere,
-          eq(category.treatAsIncome, false),
+          sql`${effectiveSideExpression()} = 'expense'`,
           eq(category.hideFromInsights, false),
         ),
       )
@@ -686,7 +684,7 @@ async function computePeriodComparison(
         and(
           prevWhere,
           eq(category.hideFromInsights, false),
-          not(eq(category.treatAsIncome, true)),
+          sql`${effectiveSideExpression()} = 'expense'`,
         ),
       )
       .groupBy(merchant.id),

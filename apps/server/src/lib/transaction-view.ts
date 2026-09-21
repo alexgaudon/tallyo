@@ -81,6 +81,11 @@ export const transactionViewSchema = transactionViewFilterSchema.extend({
 export type TransactionView = z.infer<typeof transactionViewSchema>;
 
 /**
+ * The single definition of "which side of the ledger is this row". Returns a
+ * fresh SQL chunk each call. `flow` wins when set; otherwise the row's category
+ * decides; otherwise it falls back to `'expense'`. A `flow` of `'transfer'`
+ * yields `'transfer'`, which is neither income nor expense.
+ *
  * The category table is referenced with literal (quoted) identifiers rather
  * than the Drizzle `category` object. Inside the relational query builder the
  * `transaction` table is aliased, and embedding the `category` object made
@@ -88,8 +93,11 @@ export type TransactionView = z.infer<typeof transactionViewSchema>;
  * `"transaction"."treat_as_income"`), producing invalid SQL. Raw identifiers
  * resolve correctly in both the relational and the select builders, while the
  * `transaction` reference stays interpolated so it follows the active alias.
+ *
+ * Because `flow` and the fallback are honoured here, the ledger's `side` filter
+ * and the canvas aggregates derive income/expense identically.
  */
-const effectiveSideSql = () => sql`COALESCE(
+export const effectiveSideExpression = (): SQL => sql`COALESCE(
   ${transaction.flow},
   (
     SELECT CASE WHEN "c"."treat_as_income" THEN 'income' ELSE 'expense' END
@@ -166,7 +174,7 @@ export function buildTransactionWhere(
   }
 
   if (filter.side && filter.side !== "all") {
-    conditions.push(sql`${effectiveSideSql()} = ${filter.side}`);
+    conditions.push(sql`${effectiveSideExpression()} = ${filter.side}`);
   }
 
   if (filter.scope === "insights") {
