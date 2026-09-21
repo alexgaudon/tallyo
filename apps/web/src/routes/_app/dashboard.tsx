@@ -17,7 +17,7 @@ import { Stats } from "@/components/dashboard/stats";
 import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
-import { useLens } from "@/components/layout/lens";
+import { TransactionsLens } from "@/components/layout/lens";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { ChartFrame } from "@/components/ui/chart-frame";
@@ -27,9 +27,28 @@ import { canvasOverviewQueryOptions } from "@/lib/canvas";
 import { type ViewSearch, viewSearchSchema } from "@/lib/transaction-view";
 import { cn, dateRangeToApiFormat } from "@/lib/utils";
 
+const lensFilterSchema = {
+  categories: z.array(z.string()).optional(),
+  merchants: z.array(z.string()).optional(),
+  q: z.string().optional(),
+  review: z.enum(["all", "reviewed", "unreviewed"]).optional(),
+  noMerchant: z.boolean().optional(),
+  side: z.enum(["all", "income", "expense"]).optional(),
+  min: z.coerce.number().optional(),
+  max: z.coerce.number().optional(),
+  sort: z.enum(["date", "amount"]).optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).optional(),
+};
+
 const searchSchema = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
+  // A drill-down lens lives in the URL so it can be shared, and so the browser
+  // Back button dismisses it.
+  lens: z.enum(["transactions"]).optional(),
+  lensTitle: z.string().optional(),
+  ...lensFilterSchema,
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
@@ -47,7 +66,8 @@ function toDateRange(search: SearchParams): DateRange {
 
 export const Route = createFileRoute("/_app/dashboard")({
   validateSearch: searchSchema,
-  loaderDeps: ({ search }) => search,
+  // Only the range feeds the canvas query; lens params must not refetch it.
+  loaderDeps: ({ search }) => ({ from: search.from, to: search.to }),
   loader: ({ context: { queryClient }, deps }) =>
     queryClient.ensureQueryData(
       canvasOverviewQueryOptions(dateRangeToApiFormat(toDateRange(deps))),
@@ -58,7 +78,6 @@ export const Route = createFileRoute("/_app/dashboard")({
 function RouteComponent() {
   const { data: session } = useSession();
   const navigate = useNavigate();
-  const { openLens } = useLens();
   const search = useSearch({ from: "/_app/dashboard" });
   const [showIncome, setShowIncome] = useState(false);
 
@@ -80,17 +99,72 @@ function RouteComponent() {
   const previousTotals = data?.periodComparison?.totals ?? null;
 
   /**
-   * Drill-downs open a lens over the canvas rather than navigating away. The
-   * view is derived from the current canvas range plus the clicked entity, so
-   * the lens opens pre-filtered but stays independently filterable and pageable.
+   * Drill-downs open a lens over the canvas. The lens is URL state — opening,
+   * filtering, and paging all write search params — so it is deep-linkable and
+   * Back dismisses it. The view is scoped to the canvas range by default.
    */
-  const openTransactionsLens = (title: string, view: Partial<ViewSearch>) => {
-    openLens({
-      kind: "transactions",
-      title,
-      view: viewSearchSchema.parse({ from: range.from, to: range.to, ...view }),
+  const openTransactionsLens = (
+    title: string,
+    view: Partial<ViewSearch>,
+    opts?: { withRange?: boolean },
+  ) => {
+    const withRange = opts?.withRange ?? true;
+    navigate({
+      to: "/dashboard",
+      search: {
+        from: withRange ? range.from : undefined,
+        to: withRange ? range.to : undefined,
+        lens: "transactions" as const,
+        lensTitle: title,
+        ...view,
+      },
     });
   };
+
+  const closeLens = () => {
+    navigate({
+      to: "/dashboard",
+      search: { from: search.from, to: search.to },
+      replace: true,
+    });
+  };
+
+  const handleLensViewChange = (next: ViewSearch) => {
+    navigate({
+      to: "/dashboard",
+      search: (prev) => ({
+        ...prev,
+        categories: next.categories,
+        merchants: next.merchants,
+        q: next.q,
+        review: next.review,
+        noMerchant: next.noMerchant,
+        side: next.side,
+        min: next.min,
+        max: next.max,
+        sort: next.sort,
+        page: next.page,
+        pageSize: next.pageSize,
+      }),
+      replace: true,
+    });
+  };
+
+  const lensView: ViewSearch = viewSearchSchema.parse({
+    from: search.from,
+    to: search.to,
+    categories: search.categories,
+    merchants: search.merchants,
+    q: search.q,
+    review: search.review,
+    noMerchant: search.noMerchant,
+    side: search.side,
+    min: search.min,
+    max: search.max,
+    sort: search.sort,
+    page: search.page,
+    pageSize: search.pageSize,
+  });
 
   const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
     navigate({
@@ -148,11 +222,11 @@ function RouteComponent() {
         <UnreviewedTransactionsBanner
           count={session?.meta?.unreviewedTransactionCount ?? 0}
           onReviewClick={() =>
-            openLens({
-              kind: "transactions",
-              title: "Transactions to review",
-              view: viewSearchSchema.parse({ review: "unreviewed" }),
-            })
+            openTransactionsLens(
+              "Transactions to review",
+              { review: "unreviewed" },
+              { withRange: false },
+            )
           }
         />
 
@@ -293,6 +367,15 @@ function RouteComponent() {
           </Panel>
         </div>
       </div>
+
+      {search.lens === "transactions" ? (
+        <TransactionsLens
+          title={search.lensTitle ?? "Transactions"}
+          view={lensView}
+          onViewChange={handleLensViewChange}
+          onClose={closeLens}
+        />
+      ) : null}
     </div>
   );
 }

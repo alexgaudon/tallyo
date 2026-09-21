@@ -1,15 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, X } from "lucide-react";
-import {
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { LedgerView } from "@/components/transactions/ledger-view";
 import { Button } from "@/components/ui/button";
@@ -17,76 +9,7 @@ import { EntityPickerProvider } from "@/components/ui/entity-picker-sheet";
 import type { ViewSearch } from "@/lib/transaction-view";
 import { cn } from "@/lib/utils";
 
-/** At most two lenses are kept on the stack; pushing a third drops the oldest. */
-const MAX_LENS_DEPTH = 2;
-
 const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)";
-
-export interface TransactionsLensSpec {
-  kind: "transactions";
-  /** Heading shown in the lens chrome. */
-  title: string;
-  description?: string;
-  /** The initial view; the lens owns it from here and filters/pages locally. */
-  view: ViewSearch;
-}
-
-export type LensSpec = TransactionsLensSpec;
-
-interface LensEntry {
-  id: string;
-  spec: LensSpec;
-}
-
-interface LensContextValue {
-  stack: LensEntry[];
-  openLens: (spec: LensSpec) => void;
-  closeLens: () => void;
-  closeAllLenses: () => void;
-}
-
-const LensContext = createContext<LensContextValue | null>(null);
-
-export function useLens() {
-  const context = useContext(LensContext);
-  if (!context) {
-    throw new Error("useLens must be used within a LensProvider");
-  }
-  return context;
-}
-
-let lensCounter = 0;
-function nextLensId() {
-  lensCounter += 1;
-  return `lens-${lensCounter}`;
-}
-
-/**
- * Holds the lens stack. Lenses layer over the persistent canvas instead of
- * navigating away; the underlying route stays mounted and untouched.
- */
-export function LensProvider({ children }: { children: ReactNode }) {
-  const [stack, setStack] = useState<LensEntry[]>([]);
-
-  const openLens = useCallback((spec: LensSpec) => {
-    setStack((prev) =>
-      [...prev, { id: nextLensId(), spec }].slice(-MAX_LENS_DEPTH),
-    );
-  }, []);
-
-  const closeLens = useCallback(() => {
-    setStack((prev) => prev.slice(0, -1));
-  }, []);
-
-  const closeAllLenses = useCallback(() => setStack([]), []);
-
-  const value = useMemo(
-    () => ({ stack, openLens, closeLens, closeAllLenses }),
-    [stack, openLens, closeLens, closeAllLenses],
-  );
-
-  return <LensContext.Provider value={value}>{children}</LensContext.Provider>;
-}
 
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -106,46 +29,39 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-/**
- * Renders the active lens. Only the top of the stack is surfaced so focus and
- * Escape always belong to a single surface; closing it reveals the one below.
- */
-export function LensHost() {
-  const { stack, closeLens } = useLens();
-  const isDesktop = useIsDesktop();
-  const top = stack[stack.length - 1];
-
-  if (!top) return null;
-
-  return (
-    <LensInstance
-      key={top.id}
-      spec={top.spec}
-      isDesktop={isDesktop}
-      onClose={closeLens}
-    />
-  );
+export interface TransactionsLensProps {
+  title: string;
+  description?: string;
+  /** The lens view; the parent owns it (URL search params), not this component. */
+  view: ViewSearch;
+  /** Persist a filter/page change. */
+  onViewChange: (next: ViewSearch) => void;
+  /** Dismiss the lens. */
+  onClose: () => void;
 }
 
-function LensInstance({
-  spec,
-  isDesktop,
+/**
+ * A drill-down lens rendered over the canvas. It is URL-owned: the parent route
+ * derives `view` from search params and persists every change, so a lens is
+ * deep-linkable and the browser Back button dismisses it.
+ */
+export function TransactionsLens({
+  title,
+  description,
+  view,
+  onViewChange,
   onClose,
-}: {
-  spec: LensSpec;
-  isDesktop: boolean;
-  onClose: () => void;
-}) {
-  const [view, setView] = useState<ViewSearch>(spec.view);
+}: TransactionsLensProps) {
+  const isDesktop = useIsDesktop();
 
   const header = (
     <header className="flex items-start justify-between gap-3 border-b border-glass-border px-4 py-4">
       <div className="min-w-0 space-y-1">
         <h2 className="truncate text-base font-semibold text-foreground">
-          {spec.title}
+          {title}
         </h2>
-        {spec.description ? (
-          <p className="text-xs text-muted-foreground">{spec.description}</p>
+        {description ? (
+          <p className="text-xs text-muted-foreground">{description}</p>
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-1">
@@ -171,7 +87,7 @@ function LensInstance({
     <EntityPickerProvider>
       <LedgerView
         view={view}
-        onViewChange={setView}
+        onViewChange={onViewChange}
         dense
         collapsibleFilters={!isDesktop}
       />
@@ -194,7 +110,7 @@ function LensInstance({
             )}
           >
             <DialogPrimitive.Title className="sr-only">
-              {spec.title}
+              {title}
             </DialogPrimitive.Title>
             {header}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8 pt-4">
@@ -220,7 +136,7 @@ function LensInstance({
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <DrawerPrimitive.Title className="sr-only">
-            {spec.title}
+            {title}
           </DrawerPrimitive.Title>
           <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-foreground/20" />
           {header}
