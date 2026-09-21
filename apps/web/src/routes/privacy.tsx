@@ -6,12 +6,19 @@ export const Route = createFileRoute("/privacy")({
 
 function PrivacyComponent() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
+    <div className="mx-auto max-w-3xl px-4 py-12 lg:px-8 lg:py-16">
+      <header className="mb-10 border-b border-border pb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Legal
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Privacy Policy
+        </h1>
+      </header>
 
-      <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+      <div className="space-y-8 text-sm leading-7 text-muted-foreground sm:text-base">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             1. Information We Collect
           </h2>
           <p>
@@ -19,7 +26,7 @@ function PrivacyComponent() {
             create an account, use our services, or contact us for support. This
             may include:
           </p>
-          <ul className="list-disc pl-6 mt-2">
+          <ul className="list-disc space-y-1 pl-5">
             <li>Account information (email address, username)</li>
             <li>Financial transaction data you choose to input</li>
             <li>Usage data and preferences</li>
@@ -27,12 +34,12 @@ function PrivacyComponent() {
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             2. How We Use Your Information
           </h2>
           <p>We use the information we collect to:</p>
-          <ul className="list-disc pl-6 mt-2">
+          <ul className="list-disc space-y-1 pl-5">
             <li>Provide, maintain, and improve our services</li>
             <li>Process transactions and send related information</li>
             <li>Send technical notices and support messages</li>
@@ -41,8 +48,8 @@ function PrivacyComponent() {
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             3. Information Sharing
           </h2>
           <p>
@@ -51,7 +58,7 @@ function PrivacyComponent() {
             described in this policy. We may share your information in the
             following circumstances:
           </p>
-          <ul className="list-disc pl-6 mt-2">
+          <ul className="list-disc space-y-1 pl-5">
             <li>With your explicit consent</li>
             <li>To comply with legal obligations</li>
             <li>To protect our rights and prevent fraud</li>
@@ -59,8 +66,10 @@ function PrivacyComponent() {
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">4. Data Security</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            4. Data Security
+          </h2>
           <p>
             We implement appropriate technical and organizational measures to
             protect your personal information against unauthorized access,
@@ -69,8 +78,10 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">5. Data Retention</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            5. Data Retention
+          </h2>
           <p>
             We retain your personal information for as long as necessary to
             provide our services and fulfill the purposes outlined in this
@@ -78,13 +89,15 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">6. Your Rights</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            6. Your Rights
+          </h2>
           <p>
             Depending on your location, you may have certain rights regarding
             your personal information, including:
           </p>
-          <ul className="list-disc pl-6 mt-2">
+          <ul className="list-disc space-y-1 pl-5">
             <li>The right to access your personal information</li>
             <li>The right to correct inaccurate information</li>
             <li>The right to delete your personal information</li>
@@ -93,8 +106,8 @@ function PrivacyComponent() {
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             7. Cookies and Tracking
           </h2>
           <p>
@@ -105,8 +118,8 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             8. Third-Party Services
           </h2>
           <p>
@@ -116,8 +129,10 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">9. Children's Privacy</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            9. Children's Privacy
+          </h2>
           <p>
             Our service is not intended for children under 13 years of age. We
             do not knowingly collect personal information from children under
@@ -126,8 +141,8 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             10. International Data Transfers
           </h2>
           <p>
@@ -137,8 +152,8 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             11. Changes to This Policy
           </h2>
           <p>
@@ -148,8 +163,10 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">12. Contact Us</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            12. Contact Us
+          </h2>
           <p>
             If you have any questions about this Privacy Policy or our privacy
             practices, please contact us through the appropriate channels
@@ -157,9 +174,9 @@ function PrivacyComponent() {
           </p>
         </section>
 
-        <div className="mt-8 pt-4 border-t text-sm text-muted-foreground">
-          <p>Last updated: {new Date().toLocaleDateString()}</p>
-        </div>
+        <p className="border-t border-border pt-6 text-sm text-muted-foreground">
+          Last updated: {new Date().toLocaleDateString()}
+        </p>
       </div>
     </div>
   );
