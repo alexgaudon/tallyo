@@ -169,7 +169,12 @@ function LensInstance({
 
   const body = (
     <EntityPickerProvider>
-      <LedgerView view={view} onViewChange={setView} dense />
+      <LedgerView
+        view={view}
+        onViewChange={setView}
+        dense
+        collapsibleFilters={!isDesktop}
+      />
     </EntityPickerProvider>
   );
 
