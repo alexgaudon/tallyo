@@ -20,6 +20,7 @@ interface TransactionListProps {
   onCustomSplit: (transaction: LedgerTransaction) => void;
   onEditMerchant: (merchantId: string) => void;
   onEditCategory: (categoryId: string) => void;
+  onCreateMerchant: () => void;
   onCreateCategory: () => void;
   onMerchantClick?: (merchantId: string) => void;
   onCategoryClick?: (categoryId: string) => void;
@@ -34,6 +35,7 @@ export function TransactionList({
   onCustomSplit,
   onEditMerchant,
   onEditCategory,
+  onCreateMerchant,
   onCreateCategory,
   onMerchantClick,
   onCategoryClick,
@@ -107,6 +109,7 @@ export function TransactionList({
           onCustomSplit={onCustomSplit}
           onEditMerchant={onEditMerchant}
           onEditCategory={onEditCategory}
+          onCreateMerchant={onCreateMerchant}
           onCreateCategory={onCreateCategory}
           onMerchantClick={onMerchantClick}
           onCategoryClick={onCategoryClick}

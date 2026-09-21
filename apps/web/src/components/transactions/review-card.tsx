@@ -1,9 +1,8 @@
 import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CategorySelect } from "@/components/categories/category-select";
-import { MerchantSelect } from "@/components/merchants/merchant-select";
 import { Button } from "@/components/ui/button";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
+import { EntityPicker } from "@/components/ui/entity-picker";
 import { Panel } from "@/components/ui/panel";
 import type {
   LedgerTransaction,
@@ -15,6 +14,7 @@ interface ReviewCardProps {
   mutations: TransactionMutations;
   onEditMerchant: (merchantId: string) => void;
   onEditCategory: (categoryId: string) => void;
+  onCreateMerchant: () => void;
   onCreateCategory: () => void;
 }
 
@@ -28,6 +28,7 @@ export function ReviewCard({
   mutations,
   onEditMerchant,
   onEditCategory,
+  onCreateMerchant,
   onCreateCategory,
 }: ReviewCardProps) {
   const count = transactions.length;
@@ -113,16 +114,23 @@ export function ReviewCard({
             <span className="text-xs font-medium text-muted-foreground">
               Merchant
             </span>
-            <MerchantSelect
-              value={transaction.merchant?.id}
-              onValueChange={(merchantId) =>
-                mutations.updateMerchant({ id: transaction.id, merchantId })
+            <EntityPicker
+              kind="merchant"
+              value={transaction.merchant?.id ?? null}
+              onChange={(next) =>
+                mutations.updateMerchant({
+                  id: transaction.id,
+                  merchantId: next as string | null,
+                })
               }
               placeholder="Choose merchant..."
               className="w-full"
-              allowNull
+              allowClear
+              allowCreate
+              allowEdit
+              onCreate={onCreateMerchant}
+              onEdit={onEditMerchant}
               transactionDetails={transaction.transactionDetails}
-              onEditMerchant={onEditMerchant}
             />
           </div>
 
@@ -130,16 +138,22 @@ export function ReviewCard({
             <span className="text-xs font-medium text-muted-foreground">
               Category
             </span>
-            <CategorySelect
-              value={transaction.category?.id}
-              onValueChange={(categoryId) =>
-                mutations.updateCategory({ id: transaction.id, categoryId })
+            <EntityPicker
+              kind="category"
+              value={transaction.category?.id ?? null}
+              onChange={(next) =>
+                mutations.updateCategory({
+                  id: transaction.id,
+                  categoryId: next as string | null,
+                })
               }
               placeholder="Choose category..."
               className="w-full"
-              allowNull
-              onEditCategory={onEditCategory}
-              onCreateCategory={onCreateCategory}
+              allowClear
+              allowCreate
+              allowEdit
+              onCreate={onCreateCategory}
+              onEdit={onEditCategory}
             />
           </div>
 

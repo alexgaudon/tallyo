@@ -18,6 +18,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppMerchantsRouteImport } from './routes/_app/merchants'
 import { Route as AppReportsRouteImport } from './routes/_app/reports'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
+import { Route as AppTaxonomyRouteImport } from './routes/_app/taxonomy'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AuthSigninRouteImport } from './routes/_auth/signin'
 import { Route as DevPrimitivesRouteImport } from './routes/dev.primitives'
@@ -66,6 +67,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTaxonomyRoute = AppTaxonomyRouteImport.update({
+  id: '/taxonomy',
+  path: '/taxonomy',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTransactionsRoute = AppTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/merchants': typeof AppMerchantsRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
+  '/taxonomy': typeof AppTaxonomyRoute
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/merchants': typeof AppMerchantsRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
+  '/taxonomy': typeof AppTaxonomyRoute
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_app/merchants': typeof AppMerchantsRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/taxonomy': typeof AppTaxonomyRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/merchants'
     | '/reports'
     | '/settings'
+    | '/taxonomy'
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/merchants'
     | '/reports'
     | '/settings'
+    | '/taxonomy'
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/_app/merchants'
     | '/_app/reports'
     | '/_app/settings'
+    | '/_app/taxonomy'
     | '/_app/transactions'
     | '/_auth/signin'
     | '/dev/primitives'
@@ -240,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/taxonomy': {
+      id: '/_app/taxonomy'
+      path: '/taxonomy'
+      fullPath: '/taxonomy'
+      preLoaderRoute: typeof AppTaxonomyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/transactions': {
       id: '/_app/transactions'
       path: '/transactions'
@@ -270,6 +289,7 @@ interface AppRouteChildren {
   AppMerchantsRoute: typeof AppMerchantsRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppTaxonomyRoute: typeof AppTaxonomyRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
 }
 
@@ -279,6 +299,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMerchantsRoute: AppMerchantsRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppTaxonomyRoute: AppTaxonomyRoute,
   AppTransactionsRoute: AppTransactionsRoute,
 }
 

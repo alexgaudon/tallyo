@@ -1,11 +1,7 @@
 import { format, parseISO } from "date-fns";
 import { Check, Split, Trash } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import {
-  CategorySelect,
-  formatCategory,
-} from "@/components/categories/category-select";
-import { MerchantSelect } from "@/components/merchants/merchant-select";
+import { formatCategory } from "@/components/categories/category-select";
 import { Button } from "@/components/ui/button";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import {
@@ -14,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EntityPicker } from "@/components/ui/entity-picker";
 import {
   Tooltip,
   TooltipContent,
@@ -120,6 +117,7 @@ interface TransactionRowProps {
   onCustomSplit: (transaction: LedgerTransaction) => void;
   onEditMerchant: (merchantId: string) => void;
   onEditCategory: (categoryId: string) => void;
+  onCreateMerchant: () => void;
   onCreateCategory: () => void;
   onMerchantClick?: (merchantId: string) => void;
   onCategoryClick?: (categoryId: string) => void;
@@ -134,6 +132,7 @@ export const TransactionRow = memo(function TransactionRow({
   onCustomSplit,
   onEditMerchant,
   onEditCategory,
+  onCreateMerchant,
   onCreateCategory,
   onMerchantClick,
   onCategoryClick,
@@ -264,17 +263,24 @@ export const TransactionRow = memo(function TransactionRow({
             <span className="text-sm text-muted-foreground">No merchant</span>
           )
         ) : (
-          <MerchantSelect
-            value={transaction.merchant?.id}
-            onValueChange={(merchantId) =>
-              mutations.updateMerchant({ id: transaction.id, merchantId })
+          <EntityPicker
+            kind="merchant"
+            value={transaction.merchant?.id ?? null}
+            onChange={(next) =>
+              mutations.updateMerchant({
+                id: transaction.id,
+                merchantId: next as string | null,
+              })
             }
             placeholder="Select merchant..."
             className="w-full"
-            allowNull
+            allowClear
+            allowCreate
+            allowEdit
             disabled={isMutating}
+            onCreate={onCreateMerchant}
+            onEdit={onEditMerchant}
             transactionDetails={transaction.transactionDetails}
-            onEditMerchant={onEditMerchant}
           />
         )}
         {isDevMode && transaction.externalId ? (
@@ -305,17 +311,23 @@ export const TransactionRow = memo(function TransactionRow({
             )}
           </div>
         ) : (
-          <CategorySelect
-            value={transaction.category?.id}
-            onValueChange={(categoryId) =>
-              mutations.updateCategory({ id: transaction.id, categoryId })
+          <EntityPicker
+            kind="category"
+            value={transaction.category?.id ?? null}
+            onChange={(next) =>
+              mutations.updateCategory({
+                id: transaction.id,
+                categoryId: next as string | null,
+              })
             }
             placeholder="Select category..."
             className="w-full"
-            allowNull
+            allowClear
+            allowCreate
+            allowEdit
             disabled={isMutating}
-            onEditCategory={onEditCategory}
-            onCreateCategory={onCreateCategory}
+            onCreate={onCreateCategory}
+            onEdit={onEditCategory}
           />
         )}
       </div>

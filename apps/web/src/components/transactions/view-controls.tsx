@@ -1,9 +1,8 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowUpDown, SearchIcon, Store, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CategoryMultiSelect } from "@/components/categories/category-multi-select";
-import { MerchantMultiSelect } from "@/components/merchants/merchant-multi-select";
 import { Button } from "@/components/ui/button";
+import { EntityPicker } from "@/components/ui/entity-picker";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -220,18 +219,26 @@ export function ViewControls() {
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <CategoryMultiSelect
+        <EntityPicker
+          kind="category"
+          multiple
           value={search.categories ?? []}
-          onValueChange={(categories) =>
-            update({ categories: categories.length ? categories : undefined })
+          onChange={(next) =>
+            update({
+              categories: Array.isArray(next) && next.length ? next : undefined,
+            })
           }
           placeholder="All categories"
           className="flex-1"
         />
-        <MerchantMultiSelect
+        <EntityPicker
+          kind="merchant"
+          multiple
           value={search.merchants ?? []}
-          onValueChange={(merchants) =>
-            update({ merchants: merchants.length ? merchants : undefined })
+          onChange={(next) =>
+            update({
+              merchants: Array.isArray(next) && next.length ? next : undefined,
+            })
           }
           placeholder="All merchants"
           className="flex-1"

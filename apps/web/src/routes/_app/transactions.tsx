@@ -11,6 +11,7 @@ import { z } from "zod";
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
 import { PageHeader } from "@/components/layout/page-header";
+import { CreateMerchantDialog } from "@/components/merchants/create-merchant-dialog";
 import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
 import { ReviewCard } from "@/components/transactions/review-card";
@@ -76,6 +77,7 @@ function RouteComponent() {
     categoryId: string;
   }>({ open: false, categoryId: "" });
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+  const [createMerchantOpen, setCreateMerchantOpen] = useState(false);
   const [splitDialog, setSplitDialog] = useState<{
     open: boolean;
     transaction: LedgerTransaction | null;
@@ -183,6 +185,7 @@ function RouteComponent() {
               onEditCategory={(categoryId) =>
                 setEditCategory({ open: true, categoryId })
               }
+              onCreateMerchant={() => setCreateMerchantOpen(true)}
               onCreateCategory={() => setCreateCategoryOpen(true)}
             />
           ) : null}
@@ -203,6 +206,7 @@ function RouteComponent() {
               onEditCategory={(categoryId) =>
                 setEditCategory({ open: true, categoryId })
               }
+              onCreateMerchant={() => setCreateMerchantOpen(true)}
               onCreateCategory={() => setCreateCategoryOpen(true)}
               onMerchantClick={handleMerchantClick}
               onCategoryClick={handleCategoryClick}
@@ -232,6 +236,16 @@ function RouteComponent() {
           }
           categoryId={editCategory.categoryId}
           onSuccess={handleCreateSuccess}
+        />
+
+        <CreateMerchantDialog
+          open={createMerchantOpen}
+          onOpenChange={setCreateMerchantOpen}
+          onSuccess={() =>
+            queryClient.invalidateQueries({
+              queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
+            })
+          }
         />
 
         <CreateCategoryDialog

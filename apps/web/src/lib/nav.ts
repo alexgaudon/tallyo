@@ -4,14 +4,12 @@ import {
   CreditCardIcon,
   FolderTreeIcon,
   Settings,
-  StoreIcon,
 } from "lucide-react";
 
 export const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
   { to: "/transactions", label: "Transactions", icon: CreditCardIcon },
-  { to: "/merchants", label: "Merchants", icon: StoreIcon },
-  { to: "/categories", label: "Categories", icon: FolderTreeIcon },
+  { to: "/taxonomy", label: "Taxonomy", icon: FolderTreeIcon },
   { to: "/reports", label: "Reports", icon: BarChart3Icon },
 ] as const;
 
@@ -24,6 +22,10 @@ export const settingsNavItem = {
 export function isNavActive(pathname: string, to: string) {
   return (
     pathname === to ||
-    (to === "/transactions" && pathname.startsWith("/transactions"))
+    (to === "/transactions" && pathname.startsWith("/transactions")) ||
+    (to === "/taxonomy" &&
+      (pathname.startsWith("/taxonomy") ||
+        pathname.startsWith("/merchants") ||
+        pathname.startsWith("/categories")))
   );
 }
