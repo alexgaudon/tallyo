@@ -6,12 +6,19 @@ export const Route = createFileRoute("/terms")({
 
 function TermsComponent() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Terms of Service</h1>
+    <div className="mx-auto max-w-3xl px-4 py-12 lg:px-8 lg:py-16">
+      <header className="mb-10 border-b border-border pb-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Legal
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          Terms of Service
+        </h1>
+      </header>
 
-      <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+      <div className="space-y-8 text-sm leading-7 text-muted-foreground sm:text-base">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             1. Acceptance of Terms
           </h2>
           <p>
@@ -21,8 +28,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             2. Description of Service
           </h2>
           <p>
@@ -33,8 +40,10 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">3. User Accounts</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            3. User Accounts
+          </h2>
           <p>
             To access certain features of the Service, you may be required to
             create an account. You are responsible for maintaining the
@@ -43,8 +52,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             4. User Data and Privacy
           </h2>
           <p>
@@ -55,8 +64,10 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">5. Acceptable Use</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            5. Acceptable Use
+          </h2>
           <p>
             You agree not to use the Service for any unlawful purpose or in any
             way that could damage, disable, overburden, or impair the Service.
@@ -65,8 +76,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             6. Intellectual Property
           </h2>
           <p>
@@ -77,8 +88,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             7. Disclaimer of Warranties
           </h2>
           <p>
@@ -89,8 +100,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             8. Limitation of Liability
           </h2>
           <p>
@@ -101,8 +112,10 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">9. Termination</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            9. Termination
+          </h2>
           <p>
             We may terminate or suspend your account and bar access to the
             Service immediately, without prior notice or liability, under our
@@ -110,8 +123,10 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">10. Changes to Terms</h2>
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            10. Changes to Terms
+          </h2>
           <p>
             We reserve the right to modify or replace these Terms at any time.
             If a revision is material, we will provide at least 30 days notice
@@ -119,8 +134,8 @@ function TermsComponent() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
             11. Contact Information
           </h2>
           <p>
@@ -130,9 +145,9 @@ function TermsComponent() {
           </p>
         </section>
 
-        <div className="mt-8 pt-4 border-t text-sm text-muted-foreground">
-          <p>Last updated: {new Date().toLocaleDateString()}</p>
-        </div>
+        <p className="border-t border-border pt-6 text-sm text-muted-foreground">
+          Last updated: {new Date().toLocaleDateString()}
+        </p>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { BarChart3, Building2, PieChart, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Panel } from "@/components/ui/panel";
 import { hasUsers, initiateDiscordAuth } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
 
@@ -39,15 +40,45 @@ function RouteComponent() {
     await initiateDiscordAuth();
   };
 
+  const features = [
+    {
+      icon: <TrendingUp className="h-4 w-4" />,
+      title: "Log transactions",
+      description: "Import from any financial provider via API integration.",
+    },
+    {
+      icon: <PieChart className="h-4 w-4" />,
+      title: "Auto-categorize",
+      description: "Transactions are automatically sorted into categories.",
+    },
+    {
+      icon: <Building2 className="h-4 w-4" />,
+      title: "Normalize vendors",
+      description: "Merchants are consolidated for clearer analysis.",
+    },
+    {
+      icon: <BarChart3 className="h-4 w-4" />,
+      title: "Visualize insights",
+      description: "Charts and stats help you understand your spending.",
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 flex items-center justify-center p-8 bg-background border-r border-border">
-        <div className="max-w-md w-full space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight">
+    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-6 px-4 py-16">
+      <Panel>
+        <div className="flex flex-col items-center gap-6 text-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 ring-1 ring-accent/20">
+              <img
+                src="/favicon.ico"
+                alt="Tallyo"
+                className="h-8 w-8 rounded-lg"
+              />
+            </div>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
               {usersExist ? "Sign in" : "Get started"}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground text-balance">
               {usersExist
                 ? "Sign in to your account to continue"
                 : "Create your account to start tracking your finances"}
@@ -66,7 +97,7 @@ function RouteComponent() {
               viewBox="0 0 127.14 96.36"
               aria-label="Discord"
               role="img"
-              className="w-4 h-4 mr-2"
+              className="mr-2 h-4 w-4"
             >
               <path
                 fill="#5865f2"
@@ -76,69 +107,24 @@ function RouteComponent() {
             {usersExist ? "Continue with Discord" : "Register with Discord"}
           </Button>
         </div>
-      </div>
+      </Panel>
 
-      <div className="hidden lg:flex flex-1 flex-col justify-center p-16 bg-muted/20">
-        <div className="w-full max-w-xl space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Track, understand, improve.
-            </h2>
-            <p className="text-muted-foreground">
-              Tallyo gives you clarity on your personal finances.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-px bg-border">
-            <div className="p-6 bg-background">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 flex items-center justify-center bg-accent">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <h4 className="font-medium">Log transactions</h4>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {features.map((feature) => (
+          <Panel key={feature.title} dense>
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                {feature.icon}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Import from any financial provider via API integration.
-              </p>
-            </div>
-
-            <div className="p-6 bg-background">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 flex items-center justify-center bg-accent">
-                  <PieChart className="w-4 h-4" />
-                </div>
-                <h4 className="font-medium">Auto-categorize</h4>
+              <div className="space-y-0.5">
+                <h2 className="text-sm font-medium">{feature.title}</h2>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {feature.description}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Transactions are automatically sorted into categories.
-              </p>
             </div>
-
-            <div className="p-6 bg-background">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 flex items-center justify-center bg-accent">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <h4 className="font-medium">Normalize vendors</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Merchants are consolidated for clearer analysis.
-              </p>
-            </div>
-
-            <div className="p-6 bg-background">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 flex items-center justify-center bg-accent">
-                  <BarChart3 className="w-4 h-4" />
-                </div>
-                <h4 className="font-medium">Visualize insights</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Charts and stats help you understand your spending.
-              </p>
-            </div>
-          </div>
-        </div>
+          </Panel>
+        ))}
       </div>
     </div>
   );

@@ -9,11 +9,11 @@ import { db } from "./db";
 import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
+import { MAX_FUTURE_TRANSACTION_DAYS } from "./lib/transaction-view";
 import {
   getTransactionWithRelations,
   handleKeywordAddition,
   handleKeywordRemoval,
-  MAX_FUTURE_TRANSACTION_DAYS,
   updateTransactionField,
   validateTransactionOwnership,
 } from "./routers/transactions";
@@ -79,7 +79,6 @@ externalApi.post("/transactions", async (c) => {
 
     const { transactions } = validationResult.data;
 
-    console.log("Transaction Count:", transactions.length);
     const { getUserMerchantsForMatching } = await import("./routers/merchants");
     const { findBestMatchingMerchant } = await import(
       "./lib/merchant-matching"

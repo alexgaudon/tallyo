@@ -1,15 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import {
-  BarChart3Icon,
-  BlocksIcon,
-  CreditCardIcon,
-  FolderTreeIcon,
-  LogOut,
-  Menu,
-  RefreshCw,
-  Settings,
-  StoreIcon,
-} from "lucide-react";
+import { LogOut, Menu, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,16 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut, useSession } from "@/lib/auth-client";
+import { isNavActive, navItems, settingsNavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { orpc, queryClient } from "@/utils/orpc";
-
-const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: BlocksIcon },
-  { to: "/transactions", label: "Transactions", icon: CreditCardIcon },
-  { to: "/merchants", label: "Merchants", icon: StoreIcon },
-  { to: "/categories", label: "Categories", icon: FolderTreeIcon },
-  { to: "/reports", label: "Reports", icon: BarChart3Icon },
-];
 
 interface TopNavProps {
   onMenuClick?: () => void;
@@ -65,7 +48,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 px-3 pt-3 sm:px-4">
-      <div className="max-w-screen-2xl mx-auto flex h-14 items-center justify-between rounded-2xl border border-border bg-background/70 px-3 backdrop-blur-xl shadow-soft lg:px-5">
+      <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between rounded-2xl border border-border bg-background/70 px-3 backdrop-blur-xl shadow-soft lg:px-5">
         {/* Logo */}
         <div className="flex items-center gap-3">
           <Button
@@ -91,17 +74,14 @@ export function TopNav({ onMenuClick }: TopNavProps) {
         {/* Primary Navigation - Desktop */}
         <div className="hidden lg:flex items-center gap-0.5">
           {navItems.map((item) => {
-            const isActive =
-              location.pathname === item.to ||
-              (item.to === "/transactions" &&
-                location.pathname.startsWith("/transactions"));
+            const isActive = isNavActive(location.pathname, item.to);
 
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg transition-colors",
+                  "flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg transition-soft",
                   isActive
                     ? "bg-secondary/60 text-accent"
                     : "text-foreground/80 hover:text-foreground hover:bg-secondary/50",
@@ -119,7 +99,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
           <button
             type="button"
             onClick={handleTriggerWebhooks}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-soft hover:text-foreground hover:bg-secondary"
             title="Trigger Webhooks"
           >
             <RefreshCw className="w-4 h-4" />
@@ -154,11 +134,11 @@ export function TopNav({ onMenuClick }: TopNavProps) {
               </div>
               <DropdownMenuItem asChild>
                 <Link
-                  to="/settings"
+                  to={settingsNavItem.to}
                   className="flex items-center gap-2 cursor-pointer"
                 >
-                  <Settings className="w-4 h-4" />
-                  Settings
+                  <settingsNavItem.icon className="w-4 h-4" />
+                  {settingsNavItem.label}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem

@@ -171,7 +171,7 @@ export function EntityPickerProvider({ children }: { children: ReactNode }) {
               {config.showCreateOption && config.onCreateClick ? (
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-primary hover:bg-muted/60 active:bg-muted"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-base text-primary transition-soft hover:bg-muted/60 active:bg-muted"
                   onClick={() => {
                     config.onCreateClick?.();
                     close();
@@ -195,7 +195,7 @@ export function EntityPickerProvider({ children }: { children: ReactNode }) {
                         <button
                           type="button"
                           className={cn(
-                            "flex w-full items-center gap-2 px-4 py-3 text-left text-base active:bg-muted",
+                            "flex w-full items-center gap-2 px-4 py-3 text-left text-base transition-soft active:bg-muted",
                             selected ? "bg-muted/80" : "hover:bg-muted/60",
                           )}
                           onClick={() => handleSelect(entity.id)}

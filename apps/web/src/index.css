@@ -114,48 +114,69 @@ body {
 }
 
 /* ==========================================
+   SOFT GLASS - Shared primitives
+   Theme-independent glass mechanics (blur, motion, elevation scale).
+   Only the surface colors below change between light and dark.
+   ========================================== */
+
+:root {
+  /* Radius scale — a single base var; the rounded-* steps are derived in
+     @theme inline so there is one source of truth. The focus-visible rule
+     references --radius directly. */
+  --radius: 0.75rem;
+
+  /* Glass blur strengths. Surfaced to Tailwind as backdrop-blur-glass(-strong). */
+  --blur-glass: 16px;
+  --blur-glass-strong: 28px;
+
+  /* Motion — soft, slightly overshooting ease for surfaces that appear. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 380ms;
+}
+
+/* ==========================================
    TALLYO ORANGE - Light Mode
    ========================================== */
 
 :root {
-  /* Radius scale — kept in sync with the @theme inline tokens that back
-     the rounded-* utilities; these vars also serve var(--radius-*) refs
-     such as the global :focus-visible rule. */
-  --radius: 0.75rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.125rem;
-  --radius-2xl: 1.5rem;
-
-  /* Light-mode shadows. Overridden for dark mode in .dark below. */
+  /* Layered ambient elevation. Large, low-opacity spreads so surfaces feel
+     lifted off the canvas rather than outlined. */
   --shadow-soft:
-    0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 8px rgba(15, 23, 42, 0.03),
-    0 8px 16px rgba(15, 23, 42, 0.02);
+    0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 16px -6px rgba(28, 25, 23, 0.08);
   --shadow-soft-lg:
-    0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 16px rgba(15, 23, 42, 0.03),
-    0 16px 32px rgba(15, 23, 42, 0.02);
+    0 2px 4px rgba(28, 25, 23, 0.04), 0 14px 32px -12px rgba(28, 25, 23, 0.12);
   --shadow-soft-xl:
-    0 4px 8px rgba(15, 23, 42, 0.04), 0 12px 24px rgba(15, 23, 42, 0.03),
-    0 24px 48px rgba(15, 23, 42, 0.02);
-  --shadow-glow: 0 0 20px rgba(234, 88, 12, 0.15);
-  --shadow-glow-sm: 0 0 12px rgba(234, 88, 12, 0.1);
+    0 8px 24px -8px rgba(28, 25, 23, 0.1),
+    0 32px 64px -24px rgba(28, 25, 23, 0.18);
+  --shadow-glow: 0 0 24px rgba(234, 88, 12, 0.18);
+  --shadow-glow-sm: 0 0 14px rgba(234, 88, 12, 0.12);
+
+  /* Glass elevation — shadow plus an inset top highlight that reads as a
+     light-catching edge on translucent surfaces. */
+  --shadow-glass:
+    0 1px 1px rgba(28, 25, 23, 0.04), 0 2px 6px -1px rgba(28, 25, 23, 0.06),
+    0 16px 40px -20px rgba(28, 25, 23, 0.2);
+  --shadow-glass-lg:
+    0 2px 4px rgba(28, 25, 23, 0.05), 0 8px 20px -8px rgba(28, 25, 23, 0.1),
+    0 32px 72px -28px rgba(28, 25, 23, 0.3);
 
   /* ==========================================
      BASE COLORS - Warm Neutrals
      ========================================== */
 
   /* Neutral surfaces keep attention on content and actions */
-  --background: #fafafa;
-  --foreground: #171717;
+  --background: #f4f2ef;
+  --foreground: #1b1917;
 
   /* Card - clean surface against a neutral canvas */
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #1b1917;
 
   /* Popover - white with soft shadow potential */
   --popover: #ffffff;
-  --popover-foreground: #171717;
+  --popover-foreground: #1b1917;
 
   /* ==========================================
      PRIMARY - Burnt Orange
@@ -164,16 +185,16 @@ body {
   --primary-foreground: #ffffff;
 
   /* ==========================================
-     SECONDARY - Cool Gray
+     SECONDARY - Soft Warm Gray
      ========================================== */
-  --secondary: #f1f5f9;
-  --secondary-foreground: #334155;
+  --secondary: #edeae5;
+  --secondary-foreground: #3f3a34;
 
   /* ==========================================
      MUTED - Soft Warm Gray
      ========================================== */
-  --muted: #f5f5f5;
-  --muted-foreground: #64748b;
+  --muted: #efece8;
+  --muted-foreground: #6b6560;
 
   /* ==========================================
      ACCENT - Vivid Orange
@@ -190,9 +211,36 @@ body {
   /* ==========================================
      BORDERS & INPUTS
      ========================================== */
-  --border: #e5e7eb;
-  --input: #d1d5db;
+  --border: #e3ded7;
+  --input: #d6d0c8;
   --ring: #f97316;
+
+  /* ==========================================
+     GLASS SURFACES
+     ========================================== */
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(28, 25, 23, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+
+  /* Ambient mesh painted on the page background; content floats above it and
+     translucent surfaces pick it up through their backdrop blur. */
+  --ambient-image:
+    radial-gradient(
+      60rem 42rem at 8% -12%,
+      rgba(234, 88, 12, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(
+      50rem 40rem at 104% 4%,
+      rgba(13, 148, 136, 0.07),
+      transparent 58%
+    ),
+    radial-gradient(
+      64rem 48rem at 50% 118%,
+      rgba(251, 146, 60, 0.08),
+      transparent 62%
+    );
 
   /* ==========================================
      FINANCE COLORS - Warm & Friendly
@@ -223,13 +271,13 @@ body {
   /* ==========================================
      SIDEBAR
      ========================================== */
-  --sidebar: #fafafa;
-  --sidebar-foreground: #334155;
+  --sidebar: #f4f2ef;
+  --sidebar-foreground: #3f3a34;
   --sidebar-primary: #c2410c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f1f5f9;
-  --sidebar-accent-foreground: #334155;
-  --sidebar-border: #e5e7eb;
+  --sidebar-accent: #edeae5;
+  --sidebar-accent-foreground: #3f3a34;
+  --sidebar-border: #e3ded7;
   --sidebar-ring: #f97316;
 }
 
@@ -239,16 +287,16 @@ body {
 
 .dark {
   /* Dark surfaces are distinct without becoming a stack of black panels */
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #0b0a0c;
+  --foreground: #f4f2ef;
 
   /* Card - elevated dark for clearer boundaries */
-  --card: #18181b;
-  --card-foreground: #fafafa;
+  --card: #17161a;
+  --card-foreground: #f4f2ef;
 
   /* Popover */
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
+  --popover: #1a191d;
+  --popover-foreground: #f4f2ef;
 
   /* ==========================================
      PRIMARY - Orange
@@ -259,16 +307,16 @@ body {
   /* ==========================================
      SECONDARY - Dark Gray
      ========================================== */
-  --secondary: #27272a;
-  --secondary-foreground: #e4e4e7;
+  --secondary: #26242a;
+  --secondary-foreground: #e7e4df;
 
   /* ==========================================
      MUTED - Warm Dark Gray
      ========================================== */
   /* Intentionally distinct from --secondary (which doubles as interactive
      hover surfaces); muted reads as a slightly recessed backdrop. */
-  --muted: #1f1f23;
-  --muted-foreground: #a1a1aa;
+  --muted: #1e1d22;
+  --muted-foreground: #a8a29c;
 
   /* ==========================================
      ACCENT - Orange
@@ -285,9 +333,34 @@ body {
   /* ==========================================
      BORDERS & INPUTS
      ========================================== */
-  --border: #27272a;
-  --input: #27272a;
+  --border: #29272e;
+  --input: #29272e;
   --ring: #fb923c;
+
+  /* ==========================================
+     GLASS SURFACES
+     ========================================== */
+  --glass: rgba(30, 29, 34, 0.55);
+  --glass-strong: rgba(30, 29, 34, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.07);
+
+  --ambient-image:
+    radial-gradient(
+      62rem 44rem at 6% -14%,
+      rgba(251, 146, 60, 0.16),
+      transparent 58%
+    ),
+    radial-gradient(
+      52rem 42rem at 104% 0%,
+      rgba(56, 189, 248, 0.1),
+      transparent 56%
+    ),
+    radial-gradient(
+      66rem 50rem at 50% 120%,
+      rgba(45, 212, 191, 0.09),
+      transparent 60%
+    );
 
   /* ==========================================
      FINANCE COLORS - Dark Mode
@@ -318,41 +391,53 @@ body {
   /* ==========================================
      SIDEBAR
      ========================================== */
-  --sidebar: #09090b;
-  --sidebar-foreground: #e4e4e7;
+  --sidebar: #0b0a0c;
+  --sidebar-foreground: #e7e4df;
   --sidebar-primary: #fb923c;
   --sidebar-primary-foreground: #2a1205;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #e4e4e7;
-  --sidebar-border: #27272a;
+  --sidebar-accent: #26242a;
+  --sidebar-accent-foreground: #e7e4df;
+  --sidebar-border: #29272e;
   --sidebar-ring: #fb923c;
 
   /* Dark mode shadows - warmer tones */
   --shadow-soft:
-    0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25),
-    0 8px 16px rgba(0, 0, 0, 0.2);
+    0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 22px -8px rgba(0, 0, 0, 0.5);
   --shadow-soft-lg:
-    0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.25),
-    0 16px 32px rgba(0, 0, 0, 0.2);
+    0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 40px -14px rgba(0, 0, 0, 0.55);
   --shadow-soft-xl:
-    0 4px 8px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.25),
-    0 24px 48px rgba(0, 0, 0, 0.2);
-  --shadow-glow: 0 0 24px rgba(251, 146, 60, 0.2);
-  --shadow-glow-sm: 0 0 16px rgba(251, 146, 60, 0.12);
+    0 10px 28px -10px rgba(0, 0, 0, 0.5), 0 40px 76px -28px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 28px rgba(251, 146, 60, 0.22);
+  --shadow-glow-sm: 0 0 16px rgba(251, 146, 60, 0.14);
+
+  --shadow-glass:
+    0 1px 1px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.5),
+    0 18px 48px -20px rgba(0, 0, 0, 0.7);
+  --shadow-glass-lg:
+    0 2px 6px rgba(0, 0, 0, 0.5), 0 12px 32px -8px rgba(0, 0, 0, 0.6),
+    0 40px 88px -32px rgba(0, 0, 0, 0.85);
 }
 
 @theme inline {
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
-  --radius-xl: 1.125rem;
-  --radius-2xl: 1.5rem;
+  /* Radius step derived from the single --radius base in :root. */
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
 
   --shadow-soft: var(--shadow-soft);
   --shadow-soft-lg: var(--shadow-soft-lg);
   --shadow-soft-xl: var(--shadow-soft-xl);
   --shadow-glow: var(--shadow-glow);
   --shadow-glow-sm: var(--shadow-glow-sm);
+  --shadow-glass: var(--shadow-glass);
+  --shadow-glass-lg: var(--shadow-glass-lg);
+
+  /* Motion + glass mechanics, exposed as ease-out-soft / backdrop-blur-glass. */
+  --ease-out-soft: var(--ease-out-soft);
+  --blur-glass: var(--blur-glass);
+  --blur-glass-strong: var(--blur-glass-strong);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -373,6 +458,10 @@ body {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-glass-highlight: var(--glass-highlight);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -399,6 +488,156 @@ body {
   --color-warning-muted: var(--warning-muted);
 }
 
+/* ==========================================
+   GLASS UTILITIES
+   Three-step hierarchy: glass (inline/nested) -> glass-surface (panels)
+   -> glass-strong (overlays). All consume the theme-aware glass tokens.
+   ========================================== */
+
+@utility glass {
+  background-color: var(--glass);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(150%);
+  backdrop-filter: blur(var(--blur-glass)) saturate(150%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+@utility glass-surface {
+  background-color: var(--glass);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(150%);
+  backdrop-filter: blur(var(--blur-glass)) saturate(150%);
+  box-shadow:
+    var(--shadow-glass),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+@utility glass-strong {
+  background-color: var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(160%);
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(160%);
+  box-shadow:
+    var(--shadow-glass-lg),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Ambient page mesh. Applied to the body and available to any route/frame. */
+@utility bg-ambient {
+  background-image: var(--ambient-image);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* ==========================================
+   MOTION VOCABULARY
+   Reusable enter/exit animations built on the motion tokens above. Radix
+   surfaces expose data-state, so each utility binds both directions in a
+   single class; tw-animate-css stays imported for anything that wants its
+   mechanics directly.
+   ========================================== */
+
+@keyframes soft-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes soft-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes soft-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes soft-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes soft-lens-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes soft-lens-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+
+/* Overlay scrims: short, soft fade. */
+@utility motion-fade {
+  &[data-state="open"] {
+    animation: soft-fade-in var(--duration-base) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-fade-out var(--duration-fast) var(--ease-out-soft);
+  }
+}
+
+/* Popover-style surfaces: fade plus a restrained scale. */
+@utility motion-pop {
+  &[data-state="open"] {
+    animation: soft-pop-in var(--duration-base) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-pop-out var(--duration-fast) var(--ease-out-soft);
+  }
+}
+
+/* Edge-docked lens: slight slide rather than a full-width travel. */
+@utility motion-lens {
+  &[data-state="open"] {
+    animation: soft-lens-in var(--duration-slow) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-lens-out var(--duration-base) var(--ease-out-soft);
+  }
+}
+
+/* Shared interaction transition for hovers, active states, and settling
+   optimistic updates. */
+@utility transition-soft {
+  transition-property:
+    color, background-color, border-color, opacity, box-shadow, transform;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: var(--duration-base);
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -406,6 +645,9 @@ body {
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-image: var(--ambient-image);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -463,15 +705,15 @@ body {
    ========================================== */
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in var(--duration-slow) var(--ease-out-soft);
 }
 
 .animate-scale-in {
-  animation: scale-in 0.2s ease-out;
+  animation: scale-in var(--duration-base) var(--ease-out-soft);
 }
 
 .animate-slide-up {
-  animation: slide-up 0.4s ease-out;
+  animation: slide-up var(--duration-slow) var(--ease-out-soft);
 }
 
 .animate-shimmer {
@@ -529,7 +771,7 @@ body {
 :focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
 }
 
 [data-slot="command-input"]:focus-visible {
@@ -537,18 +779,8 @@ body {
 }
 
 /* ==========================================
-    UTILITY CLASSES
-    ========================================== */
-
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.dark .glass {
-  background: rgba(28, 25, 23, 0.7);
-}
+   UTILITY CLASSES
+   ========================================== */
 
 .gradient-mask-b {
   mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
@@ -576,5 +808,23 @@ body {
   textarea,
   [role="button"] {
     font-size: 16px;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION
+   Disable non-essential animation and transition for users who ask for it.
+   Duration is collapsed rather than zeroed so fill-mode end states still
+   apply and overlays unmount immediately.
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

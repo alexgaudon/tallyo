@@ -49,8 +49,15 @@ const formatRelativeTime = (dateValue: string | Date) => {
 
 export function TransactionStats({
   data,
+  from,
+  to,
+  onTransactionSelect,
 }: {
   data: DashboardTransactionStats | undefined;
+  from?: string;
+  to?: string;
+  /** When provided, drill-down opens a lens instead of navigating away. */
+  onTransactionSelect?: (transactionId: string, title: string) => void;
 }) {
   const navigate = useNavigate();
 
@@ -70,14 +77,23 @@ export function TransactionStats({
         <Card
           key={transaction.id}
           className="px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() =>
+          onClick={() => {
+            if (onTransactionSelect) {
+              onTransactionSelect(
+                transaction.id,
+                transaction.transactionDetails,
+              );
+              return;
+            }
             navigate({
               to: "/transactions",
               search: {
-                filter: transaction.id,
+                q: transaction.id,
+                from,
+                to,
               },
-            })
-          }
+            });
+          }}
           aria-label={`View transaction ${transaction.transactionDetails}`}
         >
           <div className="flex items-center justify-between">

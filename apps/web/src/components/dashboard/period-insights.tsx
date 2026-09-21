@@ -98,22 +98,43 @@ function InsightsHeaderRow() {
   );
 }
 
+function Surface({
+  embedded,
+  className,
+  children,
+}: {
+  embedded: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (embedded) {
+    return <div className={className}>{children}</div>;
+  }
+  return <Card className={className}>{children}</Card>;
+}
+
 export function PeriodInsights({
   data,
   previous,
+  embedded = false,
 }: {
   data: DashboardStats | undefined;
   previous?: DashboardPeriodComparison["totals"];
+  embedded?: boolean;
 }) {
   const [basis, setBasis] = useState<"average" | "previous">("average");
+  const noticeClassName = cn(
+    "rounded-xl p-4 sm:p-5",
+    embedded ? "bg-muted/20" : "border-dashed border-border/80 bg-muted/20",
+  );
 
   if (!data?.stats) {
     return (
-      <Card className="border-dashed border-border/80 bg-muted/20 p-4 sm:p-5">
+      <Surface embedded={embedded} className={noticeClassName}>
         <p className="text-sm text-muted-foreground">
           Your comparison to average will appear here once you have enough data.
         </p>
-      </Card>
+      </Surface>
     );
   }
 
@@ -192,16 +213,19 @@ export function PeriodInsights({
 
   if (!hasAverages) {
     return (
-      <Card className="border-dashed border-border/80 bg-muted/20 p-4 sm:p-5">
+      <Surface embedded={embedded} className={noticeClassName}>
         <p className="text-sm text-muted-foreground">
           Add more history to see how this period compares to your average.
         </p>
-      </Card>
+      </Surface>
     );
   }
 
   return (
-    <Card className="border-border bg-card p-4 sm:p-5">
+    <Surface
+      embedded={embedded}
+      className={embedded ? "" : "border-border bg-card p-4 sm:p-5"}
+    >
       <div className="mb-3">
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {usePrevious ? "Vs previous period" : "Vs your average"}
@@ -313,6 +337,6 @@ export function PeriodInsights({
             ? "Based on your typical results for a similar window."
             : "Based on your average monthly pace."}
       </p>
-    </Card>
+    </Surface>
   );
 }

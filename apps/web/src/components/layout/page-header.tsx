@@ -18,7 +18,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <header className={cn("border-b border-border bg-background", className)}>
-      <div className="max-w-screen-2xl mx-auto px-4 py-6 lg:px-8 lg:py-7">
+      <div className="mx-auto max-w-screen-2xl px-4 py-6 lg:px-8 lg:py-7">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-2xl space-y-1.5">
             {eyebrow && (

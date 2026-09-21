@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import { db } from "../db";
@@ -8,6 +8,24 @@ import {
   type MatchableMerchant,
 } from "../lib/merchant-matching";
 import { protectedProcedure } from "../lib/orpc";
+
+/** Load a single merchant in the same shape returned by getUserMerchants
+ *  (all merchant columns plus recommendedCategory and keywords).
+ */
+async function getMerchantWithRelations(userId: string, id: string) {
+  return db.query.merchant.findFirst({
+    where: and(eq(merchant.id, id), eq(merchant.userId, userId)),
+    with: {
+      recommendedCategory: true,
+      keywords: {
+        columns: {
+          id: true,
+          keyword: true,
+        },
+      },
+    },
+  });
+}
 
 /** Fetch a user's merchants (id, name, recommended category, keywords) for
  *  in-memory keyword matching. Reuse this once per request instead of calling
@@ -159,6 +177,43 @@ export const merchantsRouter = {
       throw error;
     }
   }),
+  getMerchantUsage: protectedProcedure.handler(async ({ context }) => {
+    try {
+      const usage = await db
+        .select({
+          merchantId: merchant.id,
+          name: merchant.name,
+          transactionCount: count(transaction.id),
+          totalAmount: sql<number>`COALESCE(SUM(ABS(${transaction.amount})), 0)`,
+          lastTransactionDate: sql<string | null>`MAX(${transaction.date})`,
+        })
+        .from(merchant)
+        .leftJoin(
+          transaction,
+          and(
+            eq(transaction.merchantId, merchant.id),
+            eq(transaction.userId, merchant.userId),
+          ),
+        )
+        .where(eq(merchant.userId, context.session?.user?.id))
+        .groupBy(merchant.id, merchant.name)
+        .orderBy(desc(count(transaction.id)));
+
+      return usage.map((row) => ({
+        merchantId: row.merchantId,
+        name: row.name,
+        transactionCount: Number(row.transactionCount ?? 0),
+        totalAmount: Number(row.totalAmount ?? 0),
+        lastTransactionDate: row.lastTransactionDate ?? null,
+      }));
+    } catch (error) {
+      logger.error(
+        `Error fetching merchant usage for user ${context.session?.user?.id}:`,
+        { error },
+      );
+      throw error;
+    }
+  }),
   createMerchant: protectedProcedure
     .input(
       z.object({
@@ -195,8 +250,17 @@ export const merchantsRouter = {
           );
         }
 
+        const enrichedMerchant = await getMerchantWithRelations(
+          context.session?.user?.id,
+          newMerchant[0].id,
+        );
+
+        if (!enrichedMerchant) {
+          throw new Error("Failed to load created merchant");
+        }
+
         return {
-          merchant: newMerchant[0],
+          merchant: enrichedMerchant,
           message: "Successfully created merchant",
         };
       } catch (error) {
@@ -269,8 +333,17 @@ export const merchantsRouter = {
           );
         }
 
+        const enrichedMerchant = await getMerchantWithRelations(
+          context.session?.user?.id,
+          id,
+        );
+
+        if (!enrichedMerchant) {
+          throw new Error("Failed to load updated merchant");
+        }
+
         return {
-          merchant: updatedMerchant[0],
+          merchant: enrichedMerchant,
           message:
             updatedCount > 0
               ? `Updated ${updatedCount} unreviewed transaction${updatedCount === 1 ? "" : "s"} with this merchant`

@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +7,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { orpc } from "@/utils/orpc";
 import { cn } from "@/lib/utils";
 
 export interface PaginationInfo {
@@ -35,19 +33,7 @@ export function Paginator({
 	className = "",
 	isLoading = false,
 }: PaginatorProps) {
-	const queryClient = useQueryClient();
-
 	if (pagination.totalPages <= 1) return null;
-
-	const prefetchPage = (page: number) => {
-		if (page >= 1 && page <= pagination.totalPages) {
-			queryClient.prefetchQuery(
-				orpc.transactions.getUserTransactions.queryOptions({
-					input: { page, pageSize: pagination.pageSize },
-				}),
-			);
-		}
-	};
 
 	return (
 		<div className={cn("flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 py-4", className)}>
@@ -115,7 +101,6 @@ export function Paginator({
 						variant="outline"
 						size="sm"
 						onClick={() => onPageChange(Math.max(1, pagination.page - 1))}
-						onMouseEnter={() => prefetchPage(pagination.page - 1)}
 						disabled={pagination.page === 1 || isLoading}
 					>
 						<ChevronLeft className="h-4 w-4" />
@@ -129,7 +114,6 @@ export function Paginator({
 						onClick={() =>
 							onPageChange(Math.min(pagination.totalPages, pagination.page + 1))
 						}
-						onMouseEnter={() => prefetchPage(pagination.page + 1)}
 						disabled={pagination.page === pagination.totalPages || isLoading}
 					>
 						<ChevronRight className="h-4 w-4" />
