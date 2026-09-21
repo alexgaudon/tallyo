@@ -12,7 +12,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { z } from "zod";
-import { category, transaction } from "@/db/schema";
+import { transaction } from "@/db/schema";
 
 /**
  * Transactions dated further in the future than this are filtered out as likely
@@ -81,24 +81,28 @@ export const transactionViewSchema = transactionViewFilterSchema.extend({
 export type TransactionView = z.infer<typeof transactionViewSchema>;
 
 /**
- * Effective income/expense side of a row: explicit `flow` wins, otherwise the
- * category's `treatAsIncome`, otherwise expense (uncategorized is treated as
- * an expense, matching the historical report behaviour).
+ * The category table is referenced with literal (quoted) identifiers rather
+ * than the Drizzle `category` object. Inside the relational query builder the
+ * `transaction` table is aliased, and embedding the `category` object made
+ * Drizzle resolve its columns against that alias (e.g.
+ * `"transaction"."treat_as_income"`), producing invalid SQL. Raw identifiers
+ * resolve correctly in both the relational and the select builders, while the
+ * `transaction` reference stays interpolated so it follows the active alias.
  */
-const effectiveSideSql = sql`COALESCE(
+const effectiveSideSql = () => sql`COALESCE(
   ${transaction.flow},
   (
-    SELECT CASE WHEN ${category.treatAsIncome} THEN 'income' ELSE 'expense' END
-    FROM ${category}
-    WHERE ${category.id} = ${transaction.categoryId}
+    SELECT CASE WHEN "c"."treat_as_income" THEN 'income' ELSE 'expense' END
+    FROM "categories" AS "c"
+    WHERE "c"."id" = ${transaction.categoryId}
   ),
   'expense'
 )`;
 
-const notHiddenFromInsightsSql = sql`NOT EXISTS (
-  SELECT 1 FROM ${category}
-  WHERE ${category.id} = ${transaction.categoryId}
-    AND ${category.hideFromInsights} = true
+const notHiddenFromInsightsSql = () => sql`NOT EXISTS (
+  SELECT 1 FROM "categories" AS "c"
+  WHERE "c"."id" = ${transaction.categoryId}
+    AND "c"."hide_from_insights" = true
 )`;
 
 /**
@@ -161,8 +165,8 @@ export function buildTransactionWhere(
     conditions.push(lte(transaction.amount, filter.amount.max));
   }
 
-  if (filter.side !== "all") {
-    conditions.push(sql`${effectiveSideSql} = ${filter.side}`);
+  if (filter.side && filter.side !== "all") {
+    conditions.push(sql`${effectiveSideSql()} = ${filter.side}`);
   }
 
   if (filter.scope === "insights") {
@@ -170,7 +174,7 @@ export function buildTransactionWhere(
     conditions.push(
       sql`(${transaction.flow} IS NULL OR ${transaction.flow} <> 'transfer')`,
     );
-    conditions.push(notHiddenFromInsightsSql);
+    conditions.push(notHiddenFromInsightsSql());
   }
 
   return and(...conditions) as SQL;
