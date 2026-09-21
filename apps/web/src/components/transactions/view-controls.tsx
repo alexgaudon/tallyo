@@ -58,12 +58,31 @@ function Segmented<T extends string>({
   );
 }
 
+interface ViewControlsProps {
+  /**
+   * Which ledger surface these controls edit. Every view route shares the
+   * frozen `viewSearchSchema`, so the only difference is the route the params
+   * are read from and written back to.
+   */
+  route?: "transactions" | "reports";
+}
+
 /**
  * The ledger's view editor. Every control writes to the route search params,
  * which in turn drive the loader-owned query. One responsive layout — the
  * controls wrap rather than fork into a mobile drawer and a desktop row.
  */
-export function ViewControls() {
+export function ViewControls({
+  route = "transactions",
+}: ViewControlsProps = {}) {
+  return route === "reports" ? (
+    <ReportsViewControls />
+  ) : (
+    <TransactionsViewControls />
+  );
+}
+
+function TransactionsViewControls() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/_app/transactions" });
 
@@ -77,6 +96,45 @@ export function ViewControls() {
     [navigate],
   );
 
+  const clear = useCallback(() => {
+    navigate({ to: "/transactions", search: clearedViewSearch(search) });
+  }, [navigate, search]);
+
+  return <ViewControlsForm search={search} onUpdate={update} onClear={clear} />;
+}
+
+function ReportsViewControls() {
+  const navigate = useNavigate();
+  const search = useSearch({ from: "/_app/reports" });
+
+  const update = useCallback(
+    (updates: Partial<ViewSearch>) => {
+      navigate({
+        to: "/reports",
+        search: (prev) => ({ ...prev, ...updates, page: 1 }),
+      });
+    },
+    [navigate],
+  );
+
+  const clear = useCallback(() => {
+    navigate({ to: "/reports", search: clearedViewSearch(search) });
+  }, [navigate, search]);
+
+  return <ViewControlsForm search={search} onUpdate={update} onClear={clear} />;
+}
+
+interface ViewControlsFormProps {
+  search: ViewSearch;
+  onUpdate: (updates: Partial<ViewSearch>) => void;
+  onClear: () => void;
+}
+
+function ViewControlsForm({
+  search,
+  onUpdate,
+  onClear,
+}: ViewControlsFormProps) {
   const [text, setText] = useState(search.q ?? "");
   const debouncedText = useDebounce(text, 300);
   const lastTextRef = useRef(search.q ?? "");
@@ -84,8 +142,8 @@ export function ViewControls() {
   useEffect(() => {
     if (debouncedText === lastTextRef.current) return;
     lastTextRef.current = debouncedText;
-    update({ q: debouncedText.trim() ? debouncedText : undefined });
-  }, [debouncedText, update]);
+    onUpdate({ q: debouncedText.trim() ? debouncedText : undefined });
+  }, [debouncedText, onUpdate]);
 
   useEffect(() => {
     const next = search.q ?? "";
@@ -111,8 +169,8 @@ export function ViewControls() {
       parsed !== undefined && Number.isNaN(parsed) ? undefined : parsed;
     if (value === lastMinRef.current) return;
     lastMinRef.current = value;
-    update({ min: value });
-  }, [debouncedMin, update]);
+    onUpdate({ min: value });
+  }, [debouncedMin, onUpdate]);
 
   useEffect(() => {
     const parsed =
@@ -121,8 +179,8 @@ export function ViewControls() {
       parsed !== undefined && Number.isNaN(parsed) ? undefined : parsed;
     if (value === lastMaxRef.current) return;
     lastMaxRef.current = value;
-    update({ max: value });
-  }, [debouncedMax, update]);
+    onUpdate({ max: value });
+  }, [debouncedMax, onUpdate]);
 
   useEffect(() => {
     if (search.min === lastMinRef.current) return;
@@ -153,7 +211,7 @@ export function ViewControls() {
           <Segmented
             label="Review state"
             value={search.review}
-            onChange={(review) => update({ review })}
+            onChange={(review) => onUpdate({ review })}
             options={[
               { value: "all", label: "All" },
               { value: "unreviewed", label: "To review" },
@@ -163,7 +221,7 @@ export function ViewControls() {
           <Segmented
             label="Side"
             value={search.side}
-            onChange={(side) => update({ side })}
+            onChange={(side) => onUpdate({ side })}
             options={[
               { value: "all", label: "All" },
               { value: "income", label: "Income" },
@@ -173,7 +231,7 @@ export function ViewControls() {
           <Select
             value={search.sort}
             onValueChange={(value) =>
-              update({ sort: value as ViewSearch["sort"] })
+              onUpdate({ sort: value as ViewSearch["sort"] })
             }
           >
             <SelectTrigger className="h-9 w-[9.5rem]" aria-label="Sort">
@@ -192,7 +250,7 @@ export function ViewControls() {
             className="h-9"
             aria-pressed={Boolean(search.noMerchant)}
             onClick={() =>
-              update({ noMerchant: search.noMerchant ? undefined : true })
+              onUpdate({ noMerchant: search.noMerchant ? undefined : true })
             }
           >
             <Store className="h-3.5 w-3.5" />
@@ -204,12 +262,7 @@ export function ViewControls() {
               variant="ghost"
               size="sm"
               className="h-9"
-              onClick={() =>
-                navigate({
-                  to: "/transactions",
-                  search: clearedViewSearch(search),
-                })
-              }
+              onClick={onClear}
             >
               <X className="h-3.5 w-3.5" />
               Clear
@@ -224,7 +277,7 @@ export function ViewControls() {
           multiple
           value={search.categories ?? []}
           onChange={(next) =>
-            update({
+            onUpdate({
               categories: Array.isArray(next) && next.length ? next : undefined,
             })
           }
@@ -236,7 +289,7 @@ export function ViewControls() {
           multiple
           value={search.merchants ?? []}
           onChange={(next) =>
-            update({
+            onUpdate({
               merchants: Array.isArray(next) && next.length ? next : undefined,
             })
           }
