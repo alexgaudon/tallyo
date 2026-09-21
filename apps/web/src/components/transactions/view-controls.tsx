@@ -65,16 +65,36 @@ interface ViewControlsProps {
    * are read from and written back to.
    */
   route?: "transactions" | "reports";
+  /**
+   * Controlled mode. When both `view` and `onViewChange` are supplied, the
+   * controls edit the given view directly (e.g. inside a lens) instead of
+   * reading and writing route search params.
+   */
+  view?: ViewSearch;
+  onViewChange?: (next: ViewSearch) => void;
 }
 
 /**
- * The ledger's view editor. Every control writes to the route search params,
- * which in turn drive the loader-owned query. One responsive layout — the
- * controls wrap rather than fork into a mobile drawer and a desktop row.
+ * The ledger's view editor. By default every control writes to the route
+ * search params, which in turn drive the loader-owned query. Passing `view` +
+ * `onViewChange` switches it to a controlled editor. One responsive layout —
+ * the controls wrap rather than fork into a mobile drawer and a desktop row.
  */
 export function ViewControls({
   route = "transactions",
+  view,
+  onViewChange,
 }: ViewControlsProps = {}) {
+  if (view && onViewChange) {
+    return (
+      <ViewControlsForm
+        search={view}
+        onUpdate={(updates) => onViewChange({ ...view, ...updates, page: 1 })}
+        onClear={() => onViewChange(clearedViewSearch(view))}
+      />
+    );
+  }
+
   return route === "reports" ? (
     <ReportsViewControls />
   ) : (

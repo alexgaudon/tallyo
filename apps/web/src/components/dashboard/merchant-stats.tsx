@@ -13,11 +13,14 @@ export function MerchantStats({
   previous,
   from,
   to,
+  onMerchantSelect,
 }: {
   data: DashboardMerchantStats | undefined;
   previous?: DashboardPeriodComparison["merchants"];
   from?: string;
   to?: string;
+  /** When provided, drill-down opens a lens instead of navigating away. */
+  onMerchantSelect?: (merchantId: string, title: string) => void;
 }) {
   const navigate = useNavigate();
 
@@ -35,7 +38,11 @@ export function MerchantStats({
     );
   }
 
-  const handleMerchantClick = (merchantId: string) => {
+  const handleMerchantClick = (merchantId: string, title: string) => {
+    if (onMerchantSelect) {
+      onMerchantSelect(merchantId, title);
+      return;
+    }
     navigate({
       to: "/transactions",
       search: { merchants: [merchantId], from, to },
@@ -55,7 +62,9 @@ export function MerchantStats({
           <Card
             key={merchant.merchantId}
             className="px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => handleMerchantClick(merchant.merchantId)}
+            onClick={() =>
+              handleMerchantClick(merchant.merchantId, merchant.merchantName)
+            }
             aria-label={`View transactions for ${merchant.merchantName}`}
           >
             <div className="flex items-center justify-between">

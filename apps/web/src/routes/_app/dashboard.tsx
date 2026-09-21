@@ -17,12 +17,14 @@ import { Stats } from "@/components/dashboard/stats";
 import { TransactionStats } from "@/components/dashboard/transaction-stats";
 import { UnreviewedTransactionsBanner } from "@/components/dashboard/unreviewed-transactions-banner";
 import DateRangePicker from "@/components/date-picker/date-range-picker";
+import { useLens } from "@/components/layout/lens";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { ChartFrame } from "@/components/ui/chart-frame";
 import { Panel } from "@/components/ui/panel";
 import { useSession } from "@/lib/auth-client";
 import { canvasOverviewQueryOptions } from "@/lib/canvas";
+import { type ViewSearch, viewSearchSchema } from "@/lib/transaction-view";
 import { cn, dateRangeToApiFormat } from "@/lib/utils";
 
 const searchSchema = z.object({
@@ -56,6 +58,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 function RouteComponent() {
   const { data: session } = useSession();
   const navigate = useNavigate();
+  const { openLens } = useLens();
   const search = useSearch({ from: "/_app/dashboard" });
   const [showIncome, setShowIncome] = useState(false);
 
@@ -75,6 +78,19 @@ function RouteComponent() {
   const previousCategories = data?.periodComparison?.categories ?? [];
   const previousMerchants = data?.periodComparison?.merchants ?? [];
   const previousTotals = data?.periodComparison?.totals ?? null;
+
+  /**
+   * Drill-downs open a lens over the canvas rather than navigating away. The
+   * view is derived from the current canvas range plus the clicked entity, so
+   * the lens opens pre-filtered but stays independently filterable and pageable.
+   */
+  const openTransactionsLens = (title: string, view: Partial<ViewSearch>) => {
+    openLens({
+      kind: "transactions",
+      title,
+      view: viewSearchSchema.parse({ from: range.from, to: range.to, ...view }),
+    });
+  };
 
   const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
     navigate({
@@ -132,9 +148,10 @@ function RouteComponent() {
         <UnreviewedTransactionsBanner
           count={session?.meta?.unreviewedTransactionCount ?? 0}
           onReviewClick={() =>
-            navigate({
-              to: "/transactions",
-              search: { review: "unreviewed" },
+            openLens({
+              kind: "transactions",
+              title: "Transactions to review",
+              view: viewSearchSchema.parse({ review: "unreviewed" }),
             })
           }
         />
@@ -199,6 +216,9 @@ function RouteComponent() {
                   from={range.from}
                   to={range.to}
                   embedded
+                  onCategorySelect={(categoryId, label) =>
+                    openTransactionsLens(label, { categories: [categoryId] })
+                  }
                 />
               ) : null}
             </ChartFrame>
@@ -247,6 +267,9 @@ function RouteComponent() {
                 previous={previousMerchants}
                 from={range.from}
                 to={range.to}
+                onMerchantSelect={(merchantId, title) =>
+                  openTransactionsLens(title, { merchants: [merchantId] })
+                }
               />
             </ChartFrame>
           </Panel>
@@ -262,6 +285,9 @@ function RouteComponent() {
                 data={data?.transactionStats}
                 from={range.from}
                 to={range.to}
+                onTransactionSelect={(transactionId, title) =>
+                  openTransactionsLens(title, { q: transactionId })
+                }
               />
             </ChartFrame>
           </Panel>

@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createFileRoute,
   useNavigate,
@@ -8,16 +8,9 @@ import {
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
-import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
 import { PageHeader } from "@/components/layout/page-header";
-import { CreateMerchantDialog } from "@/components/merchants/create-merchant-dialog";
-import { EditMerchantDialog } from "@/components/merchants/edit-merchant-dialog";
 import { CreateTransactionForm } from "@/components/transactions/create-transaction-form";
-import { ReviewCard } from "@/components/transactions/review-card";
-import { SplitTransactionDialog } from "@/components/transactions/split-transaction-dialog";
-import { TransactionList } from "@/components/transactions/transaction-list";
-import { ViewControls } from "@/components/transactions/view-controls";
+import { LedgerView } from "@/components/transactions/ledger-view";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,14 +21,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { EntityPickerProvider } from "@/components/ui/entity-picker-sheet";
-import { type PaginationInfo, Paginator } from "@/components/ui/paginator";
-import { Panel } from "@/components/ui/panel";
 import {
-  type LedgerTransaction,
-  useTransactionMutations,
-} from "@/hooks/use-transaction-mutations";
-import {
-  hasActiveViewFilters,
+  type ViewSearch,
   viewQueryOptions,
   viewSearchSchema,
 } from "@/lib/transaction-view";
@@ -64,34 +51,8 @@ function RouteComponent() {
   const queryClient = useQueryClient();
   const search = useSearch({ from: "/_app/transactions" });
 
-  const { data } = useQuery(viewQueryOptions(search));
-  const mutations = useTransactionMutations(search);
-
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
-  const [editMerchant, setEditMerchant] = useState<{
-    open: boolean;
-    merchantId: string;
-  }>({ open: false, merchantId: "" });
-  const [editCategory, setEditCategory] = useState<{
-    open: boolean;
-    categoryId: string;
-  }>({ open: false, categoryId: "" });
-  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
-  const [createMerchantOpen, setCreateMerchantOpen] = useState(false);
-  const [splitDialog, setSplitDialog] = useState<{
-    open: boolean;
-    transaction: LedgerTransaction | null;
-  }>({ open: false, transaction: null });
 
-  const transactions = data?.transactions ?? [];
-  const pagination: PaginationInfo = data?.pagination ?? {
-    total: 0,
-    page: search.page,
-    pageSize: search.pageSize,
-    totalPages: 1,
-  };
-
-  const reviewing = search.review === "unreviewed";
   const viewKey = viewQueryOptions(search).queryKey;
 
   useEffect(() => {
@@ -105,31 +66,10 @@ function RouteComponent() {
     }
   }, [search.create, navigate]);
 
-  const goToPage = (page: number) => {
+  const handleViewChange = (next: ViewSearch) => {
     navigate({
       to: "/transactions",
-      search: (prev) => ({ ...prev, page }),
-    });
-  };
-
-  const changePageSize = (pageSize: number) => {
-    navigate({
-      to: "/transactions",
-      search: (prev) => ({ ...prev, pageSize, page: 1 }),
-    });
-  };
-
-  const handleCategoryClick = (categoryId: string) => {
-    navigate({
-      to: "/transactions",
-      search: (prev) => ({ ...prev, categories: [categoryId], page: 1 }),
-    });
-  };
-
-  const handleMerchantClick = (merchantId: string) => {
-    navigate({
-      to: "/transactions",
-      search: (prev) => ({ ...prev, merchants: [merchantId], page: 1 }),
+      search: (prev) => ({ ...prev, ...next }),
     });
   };
 
@@ -170,106 +110,9 @@ function RouteComponent() {
           }
         />
 
-        <div className="max-w-screen-2xl mx-auto space-y-6 px-4 py-8 lg:px-8">
-          <Panel dense>
-            <ViewControls />
-          </Panel>
-
-          {reviewing && transactions.length > 0 ? (
-            <ReviewCard
-              transactions={transactions}
-              mutations={mutations}
-              onEditMerchant={(merchantId) =>
-                setEditMerchant({ open: true, merchantId })
-              }
-              onEditCategory={(categoryId) =>
-                setEditCategory({ open: true, categoryId })
-              }
-              onCreateMerchant={() => setCreateMerchantOpen(true)}
-              onCreateCategory={() => setCreateCategoryOpen(true)}
-            />
-          ) : null}
-
-          <Panel className="gap-0 overflow-hidden p-0">
-            <TransactionList
-              transactions={transactions}
-              hasActiveFilters={hasActiveViewFilters(search)}
-              reviewOnly={reviewing}
-              isMutating={mutations.isPending}
-              mutations={mutations}
-              onCustomSplit={(transaction) =>
-                setSplitDialog({ open: true, transaction })
-              }
-              onEditMerchant={(merchantId) =>
-                setEditMerchant({ open: true, merchantId })
-              }
-              onEditCategory={(categoryId) =>
-                setEditCategory({ open: true, categoryId })
-              }
-              onCreateMerchant={() => setCreateMerchantOpen(true)}
-              onCreateCategory={() => setCreateCategoryOpen(true)}
-              onMerchantClick={handleMerchantClick}
-              onCategoryClick={handleCategoryClick}
-            />
-          </Panel>
-
-          <Paginator
-            pagination={pagination}
-            onPageChange={goToPage}
-            onPageSizeChange={changePageSize}
-          />
+        <div className="max-w-screen-2xl mx-auto px-4 py-8 lg:px-8">
+          <LedgerView view={search} onViewChange={handleViewChange} />
         </div>
-
-        <EditMerchantDialog
-          open={editMerchant.open}
-          onOpenChange={(open) =>
-            setEditMerchant({ open, merchantId: editMerchant.merchantId })
-          }
-          merchantId={editMerchant.merchantId}
-          onSuccess={handleCreateSuccess}
-        />
-
-        <EditCategoryDialog
-          open={editCategory.open}
-          onOpenChange={(open) =>
-            setEditCategory({ open, categoryId: editCategory.categoryId })
-          }
-          categoryId={editCategory.categoryId}
-          onSuccess={handleCreateSuccess}
-        />
-
-        <CreateMerchantDialog
-          open={createMerchantOpen}
-          onOpenChange={setCreateMerchantOpen}
-          onSuccess={() =>
-            queryClient.invalidateQueries({
-              queryKey: orpc.merchants.getUserMerchants.queryOptions().queryKey,
-            })
-          }
-        />
-
-        <CreateCategoryDialog
-          open={createCategoryOpen}
-          onOpenChange={setCreateCategoryOpen}
-          onSuccess={() =>
-            queryClient.invalidateQueries({
-              queryKey:
-                orpc.categories.getUserCategories.queryOptions().queryKey,
-            })
-          }
-        />
-
-        <SplitTransactionDialog
-          open={splitDialog.open}
-          onOpenChange={(open) =>
-            setSplitDialog({
-              open,
-              transaction: open ? splitDialog.transaction : null,
-            })
-          }
-          transaction={splitDialog.transaction}
-          queryKey={viewKey}
-        />
       </div>
     </EntityPickerProvider>
   );

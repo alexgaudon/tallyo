@@ -30,12 +30,15 @@ export function CategoryPieChart({
   from,
   to,
   embedded = false,
+  onCategorySelect,
 }: {
   data: DashboardCategoryData;
   previous?: DashboardPeriodComparison["categories"];
   from?: string;
   to?: string;
   embedded?: boolean;
+  /** When provided, drill-down opens a lens instead of navigating away. */
+  onCategorySelect?: (categoryId: string, label: string) => void;
 }) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
@@ -114,12 +117,19 @@ export function CategoryPieChart({
 
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
+      if (onCategorySelect) {
+        const label =
+          chartData.find((item) => item.categoryId === categoryId)?.label ??
+          "Transactions";
+        onCategorySelect(categoryId, label);
+        return;
+      }
       navigate({
         to: "/transactions",
         search: { categories: [categoryId], from, to },
       });
     },
-    [navigate],
+    [navigate, onCategorySelect, chartData, from, to],
   );
 
   // Allocate the chart data into angular slices
