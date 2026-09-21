@@ -49,8 +49,12 @@ const formatRelativeTime = (dateValue: string | Date) => {
 
 export function TransactionStats({
   data,
+  from,
+  to,
 }: {
   data: DashboardTransactionStats | undefined;
+  from?: string;
+  to?: string;
 }) {
   const navigate = useNavigate();
 
@@ -75,6 +79,8 @@ export function TransactionStats({
               to: "/transactions",
               search: {
                 q: transaction.id,
+                from,
+                to,
               },
             })
           }

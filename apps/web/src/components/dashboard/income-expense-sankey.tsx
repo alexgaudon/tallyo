@@ -48,7 +48,17 @@ interface SankeyLink {
   y1?: number;
 }
 
-export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
+export function IncomeExpenseSankey({
+  data,
+  from,
+  to,
+  embedded = false,
+}: {
+  data: DashboardSankeyData;
+  from?: string;
+  to?: string;
+  embedded?: boolean;
+}) {
   const svgRef = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
   const { data: session } = useSession();
@@ -66,7 +76,7 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     if (node.categoryId) {
       navigate({
         to: "/transactions",
-        search: { categories: [node.categoryId] },
+        search: { categories: [node.categoryId], from, to },
       });
     }
   };
@@ -379,256 +389,258 @@ export function IncomeExpenseSankey({ data }: { data: DashboardSankeyData }) {
     );
   }
 
+  const content = (
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[400px] w-full md:min-w-[550px]">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${Math.max(width, 400)} ${height}`}
+          preserveAspectRatio="xMidYMid meet"
+          className="w-full max-w-[400px] md:max-w-none overflow-visible"
+          role="img"
+          aria-label="Income and expense flow diagram"
+        >
+          <title>Income and expense flow diagram</title>
+          <defs>
+            {links.map((link) => {
+              const sourceNode = link.source as SankeyNode;
+              const targetNode = link.target as SankeyNode;
+              const linkId = `${sourceNode.id}-${targetNode.id}`;
+              const gradientId = `gradient-${linkId}`;
+              const sourceColor = sourceNode.color;
+              const targetColor = targetNode.color;
+
+              return (
+                <linearGradient
+                  key={gradientId}
+                  id={gradientId}
+                  gradientUnits="userSpaceOnUse"
+                  x1={sourceNode.x1 || 0}
+                  x2={targetNode.x0 || 0}
+                >
+                  <stop offset="0%" stopColor={sourceColor} />
+                  <stop offset="100%" stopColor={targetColor} />
+                </linearGradient>
+              );
+            })}
+          </defs>
+
+          <g>
+            {links.map((link) => {
+              const sourceNode = link.source as SankeyNode;
+              const targetNode = link.target as SankeyNode;
+              const linkId = `${sourceNode.id}-${targetNode.id}`;
+              const gradientId = `gradient-${linkId}`;
+              const isHovered = hoveredLink === linkId;
+              const isDimmed =
+                hoveredNode !== null ||
+                (hoveredLink !== null && hoveredLink !== linkId);
+
+              const linkData: D3SankeyLink<
+                D3SankeyNode<SankeyNode, SankeyLink>,
+                D3SankeyLink<SankeyNode, SankeyLink>
+              > = {
+                source: {
+                  x0: sourceNode.x0,
+                  x1: sourceNode.x1,
+                  y0: sourceNode.y0,
+                  y1: sourceNode.y1,
+                } as D3SankeyNode<SankeyNode, SankeyLink>,
+                target: {
+                  x0: targetNode.x0,
+                  x1: targetNode.x1,
+                  y0: targetNode.y0,
+                  y1: targetNode.y1,
+                } as D3SankeyNode<SankeyNode, SankeyLink>,
+                y0: link.y0,
+                y1: link.y1,
+                width: link.width,
+                value: link.value,
+              };
+
+              const pathD = sankeyLinkHorizontal()(linkData);
+
+              return (
+                <g key={linkId}>
+                  {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hover effect */}
+                  <path
+                    d={pathD || undefined}
+                    fill="none"
+                    stroke={`url(#${gradientId})`}
+                    strokeWidth={link.width || 0}
+                    strokeOpacity={isDimmed ? 0.1 : isHovered ? 0.7 : 0.4}
+                    className="transition-opacity duration-200"
+                    onMouseEnter={() => setHoveredLink(linkId)}
+                    onMouseLeave={() => setHoveredLink(null)}
+                  />
+                  {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hit area */}
+                  <path
+                    d={pathD || undefined}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth={Math.max(link.width || 0, 10)}
+                    onMouseEnter={() => setHoveredLink(linkId)}
+                    onMouseLeave={() => setHoveredLink(null)}
+                  >
+                    <title>
+                      {sourceNode.label} → {targetNode.label}:{" "}
+                      <CurrencyAmount amount={link.value} />
+                    </title>
+                  </path>
+                </g>
+              );
+            })}
+          </g>
+
+          <g>
+            {nodes.map((node) => {
+              const isHovered = hoveredNode === node.id;
+              const isDimmed =
+                hoveredLink !== null ||
+                (hoveredNode !== null && hoveredNode !== node.id);
+
+              const nodeWidth = (node.x1 || 0) - (node.x0 || 0);
+              const nodeHeight = (node.y1 || 0) - (node.y0 || 0);
+              const hitAreaPadding = 8;
+
+              return (
+                <g key={node.id}>
+                  {/* Visible node */}
+                  <rect
+                    x={node.x0}
+                    y={node.y0}
+                    width={nodeWidth}
+                    height={nodeHeight}
+                    fill={node.color}
+                    rx={2}
+                    className="transition-opacity duration-200"
+                    opacity={isDimmed ? 0.3 : 1}
+                    stroke={isHovered ? "#000" : "none"}
+                    strokeWidth={isHovered ? 2 : 0}
+                    pointerEvents="none"
+                  />
+                  {/* Invisible larger hit area */}
+                  {/* biome-ignore lint/a11y/useSemanticElements: SVG element */}
+                  <rect
+                    x={(node.x0 || 0) - hitAreaPadding}
+                    y={(node.y0 || 0) - hitAreaPadding}
+                    width={nodeWidth + hitAreaPadding * 2}
+                    height={nodeHeight + hitAreaPadding * 2}
+                    fill="transparent"
+                    className="cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleNodeClick(node)}
+                    onMouseEnter={(e) => {
+                      setHoveredNode(node.id);
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const percentDenom =
+                        node.kind === "income" || node.kind === "saved"
+                          ? data.totalIncome
+                          : data.totalExpenses;
+                      const amountText = formatCurrency(node.value || 0);
+                      const pctText = `${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%`;
+                      setTooltip({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top - 10,
+                        content: `${formatValueWithPrivacy(amountText, isPrivacyMode)} (${formatValueWithPrivacy(pctText, isPrivacyMode)})`,
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredNode(null);
+                      setTooltip(null);
+                    }}
+                  />
+
+                  {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
+                  <text
+                    x={
+                      (node.x0 || 0) < width / 2
+                        ? (node.x1 || 0) + 6
+                        : (node.x0 || 0) - 6
+                    }
+                    y={((node.y0 || 0) + (node.y1 || 0)) / 2}
+                    dy="0.35em"
+                    textAnchor={(node.x0 || 0) < width / 2 ? "start" : "end"}
+                    className="font-medium fill-foreground cursor-pointer"
+                    style={{
+                      fontSize: "10px",
+                      opacity: isDimmed ? 0.3 : 1,
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleNodeClick(node)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleNodeClick(node);
+                      }
+                    }}
+                    onMouseEnter={() => setHoveredNode(node.id)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                  >
+                    {node.label}
+                    {node.value != null && (
+                      <tspan className="fill-muted-foreground font-normal">
+                        {" "}
+                        {formatValueWithPrivacy(
+                          formatCurrency(node.value),
+                          isPrivacyMode,
+                        )}
+                      </tspan>
+                    )}
+                  </text>
+
+                  {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
+                  <text
+                    x={
+                      (node.x0 || 0) < width / 2
+                        ? (node.x1 || 0) + 6
+                        : (node.x0 || 0) - 6
+                    }
+                    y={((node.y0 || 0) + (node.y1 || 0)) / 2 + 8}
+                    dy="0.35em"
+                    textAnchor={(node.x0 || 0) < width / 2 ? "start" : "end"}
+                    className="fill-muted-foreground cursor-pointer"
+                    style={{
+                      fontSize: "10px",
+                      opacity: isDimmed ? 0.3 : 1,
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleNodeClick(node)}
+                    onMouseEnter={() => setHoveredNode(node.id)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                  >
+                    <CurrencyAmount amount={node.value || 0} />
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+        {tooltip && (
+          <div
+            className="fixed z-50 px-2 py-1 text-xs font-medium text-white bg-black rounded shadow-lg pointer-events-none"
+            style={{
+              left: tooltip.x,
+              top: tooltip.y,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            {tooltip.content}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
   return (
     <Card className="w-full">
-      <CardContent className="p-2 md:p-4">
-        <div className="w-full overflow-x-auto">
-          <div className="min-w-[400px] w-full md:min-w-[550px]">
-            <svg
-              ref={svgRef}
-              viewBox={`0 0 ${Math.max(width, 400)} ${height}`}
-              preserveAspectRatio="xMidYMid meet"
-              className="w-full max-w-[400px] md:max-w-none overflow-visible"
-              role="img"
-              aria-label="Income and expense flow diagram"
-            >
-              <title>Income and expense flow diagram</title>
-              <defs>
-                {links.map((link) => {
-                  const sourceNode = link.source as SankeyNode;
-                  const targetNode = link.target as SankeyNode;
-                  const linkId = `${sourceNode.id}-${targetNode.id}`;
-                  const gradientId = `gradient-${linkId}`;
-                  const sourceColor = sourceNode.color;
-                  const targetColor = targetNode.color;
-
-                  return (
-                    <linearGradient
-                      key={gradientId}
-                      id={gradientId}
-                      gradientUnits="userSpaceOnUse"
-                      x1={sourceNode.x1 || 0}
-                      x2={targetNode.x0 || 0}
-                    >
-                      <stop offset="0%" stopColor={sourceColor} />
-                      <stop offset="100%" stopColor={targetColor} />
-                    </linearGradient>
-                  );
-                })}
-              </defs>
-
-              <g>
-                {links.map((link) => {
-                  const sourceNode = link.source as SankeyNode;
-                  const targetNode = link.target as SankeyNode;
-                  const linkId = `${sourceNode.id}-${targetNode.id}`;
-                  const gradientId = `gradient-${linkId}`;
-                  const isHovered = hoveredLink === linkId;
-                  const isDimmed =
-                    hoveredNode !== null ||
-                    (hoveredLink !== null && hoveredLink !== linkId);
-
-                  const linkData: D3SankeyLink<
-                    D3SankeyNode<SankeyNode, SankeyLink>,
-                    D3SankeyLink<SankeyNode, SankeyLink>
-                  > = {
-                    source: {
-                      x0: sourceNode.x0,
-                      x1: sourceNode.x1,
-                      y0: sourceNode.y0,
-                      y1: sourceNode.y1,
-                    } as D3SankeyNode<SankeyNode, SankeyLink>,
-                    target: {
-                      x0: targetNode.x0,
-                      x1: targetNode.x1,
-                      y0: targetNode.y0,
-                      y1: targetNode.y1,
-                    } as D3SankeyNode<SankeyNode, SankeyLink>,
-                    y0: link.y0,
-                    y1: link.y1,
-                    width: link.width,
-                    value: link.value,
-                  };
-
-                  const pathD = sankeyLinkHorizontal()(linkData);
-
-                  return (
-                    <g key={linkId}>
-                      {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hover effect */}
-                      <path
-                        d={pathD || undefined}
-                        fill="none"
-                        stroke={`url(#${gradientId})`}
-                        strokeWidth={link.width || 0}
-                        strokeOpacity={isDimmed ? 0.1 : isHovered ? 0.7 : 0.4}
-                        className="transition-opacity duration-200"
-                        onMouseEnter={() => setHoveredLink(linkId)}
-                        onMouseLeave={() => setHoveredLink(null)}
-                      />
-                      {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hit area */}
-                      <path
-                        d={pathD || undefined}
-                        fill="none"
-                        stroke="transparent"
-                        strokeWidth={Math.max(link.width || 0, 10)}
-                        onMouseEnter={() => setHoveredLink(linkId)}
-                        onMouseLeave={() => setHoveredLink(null)}
-                      >
-                        <title>
-                          {sourceNode.label} → {targetNode.label}:{" "}
-                          <CurrencyAmount amount={link.value} />
-                        </title>
-                      </path>
-                    </g>
-                  );
-                })}
-              </g>
-
-              <g>
-                {nodes.map((node) => {
-                  const isHovered = hoveredNode === node.id;
-                  const isDimmed =
-                    hoveredLink !== null ||
-                    (hoveredNode !== null && hoveredNode !== node.id);
-
-                  const nodeWidth = (node.x1 || 0) - (node.x0 || 0);
-                  const nodeHeight = (node.y1 || 0) - (node.y0 || 0);
-                  const hitAreaPadding = 8;
-
-                  return (
-                    <g key={node.id}>
-                      {/* Visible node */}
-                      <rect
-                        x={node.x0}
-                        y={node.y0}
-                        width={nodeWidth}
-                        height={nodeHeight}
-                        fill={node.color}
-                        rx={2}
-                        className="transition-opacity duration-200"
-                        opacity={isDimmed ? 0.3 : 1}
-                        stroke={isHovered ? "#000" : "none"}
-                        strokeWidth={isHovered ? 2 : 0}
-                        pointerEvents="none"
-                      />
-                      {/* Invisible larger hit area */}
-                      {/* biome-ignore lint/a11y/useSemanticElements: SVG element */}
-                      <rect
-                        x={(node.x0 || 0) - hitAreaPadding}
-                        y={(node.y0 || 0) - hitAreaPadding}
-                        width={nodeWidth + hitAreaPadding * 2}
-                        height={nodeHeight + hitAreaPadding * 2}
-                        fill="transparent"
-                        className="cursor-pointer"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleNodeClick(node)}
-                        onMouseEnter={(e) => {
-                          setHoveredNode(node.id);
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          const percentDenom =
-                            node.kind === "income" || node.kind === "saved"
-                              ? data.totalIncome
-                              : data.totalExpenses;
-                          const amountText = formatCurrency(node.value || 0);
-                          const pctText = `${(((node.value ?? 0) / (percentDenom || 1)) * 100).toFixed(1)}%`;
-                          setTooltip({
-                            x: rect.left + rect.width / 2,
-                            y: rect.top - 10,
-                            content: `${formatValueWithPrivacy(amountText, isPrivacyMode)} (${formatValueWithPrivacy(pctText, isPrivacyMode)})`,
-                          });
-                        }}
-                        onMouseLeave={() => {
-                          setHoveredNode(null);
-                          setTooltip(null);
-                        }}
-                      />
-
-                      {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
-                      <text
-                        x={
-                          (node.x0 || 0) < width / 2
-                            ? (node.x1 || 0) + 6
-                            : (node.x0 || 0) - 6
-                        }
-                        y={((node.y0 || 0) + (node.y1 || 0)) / 2}
-                        dy="0.35em"
-                        textAnchor={
-                          (node.x0 || 0) < width / 2 ? "start" : "end"
-                        }
-                        className="font-medium fill-foreground cursor-pointer"
-                        style={{
-                          fontSize: "10px",
-                          opacity: isDimmed ? 0.3 : 1,
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleNodeClick(node)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            handleNodeClick(node);
-                          }
-                        }}
-                        onMouseEnter={() => setHoveredNode(node.id)}
-                        onMouseLeave={() => setHoveredNode(null)}
-                      >
-                        {node.label}
-                        {node.value != null && (
-                          <tspan className="fill-muted-foreground font-normal">
-                            {" "}
-                            {formatValueWithPrivacy(
-                              formatCurrency(node.value),
-                              isPrivacyMode,
-                            )}
-                          </tspan>
-                        )}
-                      </text>
-
-                      {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
-                      <text
-                        x={
-                          (node.x0 || 0) < width / 2
-                            ? (node.x1 || 0) + 6
-                            : (node.x0 || 0) - 6
-                        }
-                        y={((node.y0 || 0) + (node.y1 || 0)) / 2 + 8}
-                        dy="0.35em"
-                        textAnchor={
-                          (node.x0 || 0) < width / 2 ? "start" : "end"
-                        }
-                        className="fill-muted-foreground cursor-pointer"
-                        style={{
-                          fontSize: "10px",
-                          opacity: isDimmed ? 0.3 : 1,
-                        }}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleNodeClick(node)}
-                        onMouseEnter={() => setHoveredNode(node.id)}
-                        onMouseLeave={() => setHoveredNode(null)}
-                      >
-                        <CurrencyAmount amount={node.value || 0} />
-                      </text>
-                    </g>
-                  );
-                })}
-              </g>
-            </svg>
-            {tooltip && (
-              <div
-                className="fixed z-50 px-2 py-1 text-xs font-medium text-white bg-black rounded shadow-lg pointer-events-none"
-                style={{
-                  left: tooltip.x,
-                  top: tooltip.y,
-                  transform: "translate(-50%, -100%)",
-                }}
-              >
-                {tooltip.content}
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
+      <CardContent className="p-2 md:p-4">{content}</CardContent>
     </Card>
   );
 }

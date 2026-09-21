@@ -27,9 +27,15 @@ interface ChartItem {
 export function CategoryPieChart({
   data,
   previous,
+  from,
+  to,
+  embedded = false,
 }: {
   data: DashboardCategoryData;
   previous?: DashboardPeriodComparison["categories"];
+  from?: string;
+  to?: string;
+  embedded?: boolean;
 }) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
@@ -110,7 +116,7 @@ export function CategoryPieChart({
     (categoryId: string) => {
       navigate({
         to: "/transactions",
-        search: { categories: [categoryId] },
+        search: { categories: [categoryId], from, to },
       });
     },
     [navigate],
@@ -208,122 +214,128 @@ export function CategoryPieChart({
     );
   }
 
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Chart Section */}
-          <div className="flex-shrink-0 flex justify-center">
-            <div className="relative w-[220px] h-[220px]">
-              <Chart
-                definition={definition}
-                width={220}
-                height={220}
-                ariaLabel="Category spending breakdown"
-                onFocusChange={handleFocusChange}
-                onSelect={handleItemClick}
-              />
+  const content = (
+    <div className="flex flex-col sm:flex-row gap-4">
+      {/* Chart Section */}
+      <div className="flex-shrink-0 flex justify-center">
+        <div className="relative w-[220px] h-[220px]">
+          <Chart
+            definition={definition}
+            width={220}
+            height={220}
+            ariaLabel="Category spending breakdown"
+            onFocusChange={handleFocusChange}
+            onSelect={handleItemClick}
+          />
 
-              {/* Center Text */}
-              <div
-                className="absolute pointer-events-none"
-                style={{
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <div className="text-center">
-                  <div className="text-base font-semibold leading-tight whitespace-nowrap">
-                    <CurrencyAmount animate amount={totalAmount} />
-                  </div>
-                  <div className="mt-1 text-xs text-muted-foreground font-medium tracking-wide uppercase whitespace-nowrap">
-                    Total
-                  </div>
-                </div>
+          {/* Center Text */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <div className="text-center">
+              <div className="text-base font-semibold leading-tight whitespace-nowrap">
+                <CurrencyAmount animate amount={totalAmount} />
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground font-medium tracking-wide uppercase whitespace-nowrap">
+                Total
               </div>
             </div>
-          </div>
-
-          {/* Custom Legend - Scrollable if many items */}
-          <div className="flex-1 min-h-0 relative">
-            <div
-              ref={legendRef}
-              onScroll={handleScroll}
-              className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 max-h-[220px] overflow-y-auto pr-1"
-              style={{
-                scrollbarWidth: "thin",
-                scrollbarColor: "var(--muted-foreground) transparent",
-              }}
-            >
-              {chartData.map((item) => {
-                const percentage =
-                  totalAmount > 0
-                    ? ((item.value / totalAmount) * 100).toFixed(1)
-                    : "0.0";
-                const isActive = activeItemId === item.id;
-                const prevAmount = previousMap.get(item.categoryId);
-                const delta =
-                  prevAmount === undefined ? null : item.value - prevAmount;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
-                      isActive ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
-                    onClick={() => handleCategoryClick(item.categoryId)}
-                    onMouseEnter={() => setActiveItemId(item.id)}
-                    onMouseLeave={() => setActiveItemId(null)}
-                    title={`${item.label}: ${item.count} transactions`}
-                  >
-                    <div
-                      className="h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-                      <span className="text-sm font-medium truncate leading-tight">
-                        {item.label}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        <CurrencyAmount amount={item.value} /> ({percentage}%)
-                      </span>
-                      {delta !== null && (
-                        <span
-                          className={`text-[11px] tabular-nums ${
-                            delta > 0
-                              ? "text-expense"
-                              : delta < 0
-                                ? "text-income"
-                                : "text-muted-foreground"
-                          }`}
-                        >
-                          {delta === 0 ? (
-                            "Same as last period"
-                          ) : (
-                            <>
-                              {delta > 0 ? "▲" : "▼"}{" "}
-                              <CurrencyAmount amount={Math.abs(delta)} /> vs
-                              last period
-                            </>
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Scroll indicator - shown only when legend actually overflows */}
-            {hasLegendOverflow && !isScrolledToBottom && (
-              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent pointer-events-none flex items-end justify-center pb-0.5">
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              </div>
-            )}
           </div>
         </div>
-      </CardContent>
+      </div>
+
+      {/* Custom Legend - Scrollable if many items */}
+      <div className="flex-1 min-h-0 relative">
+        <div
+          ref={legendRef}
+          onScroll={handleScroll}
+          className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 max-h-[220px] overflow-y-auto pr-1"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "var(--muted-foreground) transparent",
+          }}
+        >
+          {chartData.map((item) => {
+            const percentage =
+              totalAmount > 0
+                ? ((item.value / totalAmount) * 100).toFixed(1)
+                : "0.0";
+            const isActive = activeItemId === item.id;
+            const prevAmount = previousMap.get(item.categoryId);
+            const delta =
+              prevAmount === undefined ? null : item.value - prevAmount;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={`flex items-center gap-2 px-2 py-1 rounded-md text-left transition-colors cursor-pointer ${
+                  isActive ? "bg-muted" : "hover:bg-muted/50"
+                }`}
+                onClick={() => handleCategoryClick(item.categoryId)}
+                onMouseEnter={() => setActiveItemId(item.id)}
+                onMouseLeave={() => setActiveItemId(null)}
+                title={`${item.label}: ${item.count} transactions`}
+              >
+                <div
+                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: item.color }}
+                />
+                <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                  <span className="text-sm font-medium truncate leading-tight">
+                    {item.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    <CurrencyAmount amount={item.value} /> ({percentage}%)
+                  </span>
+                  {delta !== null && (
+                    <span
+                      className={`text-[11px] tabular-nums ${
+                        delta > 0
+                          ? "text-expense"
+                          : delta < 0
+                            ? "text-income"
+                            : "text-muted-foreground"
+                      }`}
+                    >
+                      {delta === 0 ? (
+                        "Same as last period"
+                      ) : (
+                        <>
+                          {delta > 0 ? "▲" : "▼"}{" "}
+                          <CurrencyAmount amount={Math.abs(delta)} /> vs last
+                          period
+                        </>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Scroll indicator - shown only when legend actually overflows */}
+        {hasLegendOverflow && !isScrolledToBottom && (
+          <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent pointer-events-none flex items-end justify-center pb-0.5">
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-4">{content}</CardContent>
     </Card>
   );
 }

@@ -11,9 +11,13 @@ import { CurrencyAmount } from "../ui/currency-amount";
 export function MerchantStats({
   data,
   previous,
+  from,
+  to,
 }: {
   data: DashboardMerchantStats | undefined;
   previous?: DashboardPeriodComparison["merchants"];
+  from?: string;
+  to?: string;
 }) {
   const navigate = useNavigate();
 
@@ -34,7 +38,7 @@ export function MerchantStats({
   const handleMerchantClick = (merchantId: string) => {
     navigate({
       to: "/transactions",
-      search: { merchants: [merchantId] },
+      search: { merchants: [merchantId], from, to },
     });
   };
 
