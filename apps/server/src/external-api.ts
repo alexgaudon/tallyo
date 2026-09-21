@@ -79,7 +79,6 @@ externalApi.post("/transactions", async (c) => {
 
     const { transactions } = validationResult.data;
 
-    console.log("Transaction Count:", transactions.length);
     const { getUserMerchantsForMatching } = await import("./routers/merchants");
     const { findBestMatchingMerchant } = await import(
       "./lib/merchant-matching"

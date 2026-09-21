@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { merchant, merchantKeyword, transaction } from "@/db/schema";
 import {
@@ -263,63 +263,6 @@ export const transactionsRouter = {
           return { transaction: createdTransaction };
         },
         "Error creating transaction",
-        context.session?.user?.id,
-      );
-    }),
-
-  getUserTransactions: protectedProcedure
-    .input(
-      z.object({
-        page: z.number().min(1).default(1),
-        pageSize: z.number().min(1).max(100).default(10),
-        category: z.string().optional(),
-        filter: z.string().optional(),
-        merchant: z.string().optional(),
-        onlyWithoutMerchant: z.boolean().optional(),
-        onlyUnreviewed: z.boolean().optional(),
-      }),
-    )
-    .handler(async ({ input, context }) => {
-      return withErrorHandling(
-        async () => {
-          const userId = context.session.user.id;
-          const where = buildTransactionWhere(userId, {
-            scope: "ledger",
-            reviewState: input.onlyUnreviewed ? "unreviewed" : "all",
-            side: "all",
-            categories: input.category ? [input.category] : undefined,
-            merchants: input.merchant ? [input.merchant] : undefined,
-            text: input.filter,
-            withoutMerchant: input.onlyWithoutMerchant,
-          });
-
-          const [{ count }] = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(transaction)
-            .where(where);
-
-          const userTransactions = await db.query.transaction.findMany({
-            where,
-            with: {
-              merchant: true,
-              category: { with: { parentCategory: true } },
-            },
-            orderBy: buildTransactionOrderBy("date"),
-            limit: input.pageSize,
-            offset: (input.page - 1) * input.pageSize,
-          });
-
-          return {
-            transactions: userTransactions,
-            pagination: {
-              total: Number(count),
-              page: input.page,
-              pageSize: input.pageSize,
-              totalPages: Math.ceil(Number(count) / input.pageSize),
-            },
-          };
-        },
-        "Error fetching transactions",
         context.session?.user?.id,
       );
     }),
@@ -619,78 +562,6 @@ export const transactionsRouter = {
           });
         },
         "Error splitting transaction",
-        context.session?.user?.id,
-      );
-    }),
-
-  /**
-   * @deprecated Use `getView` plus `getViewSummary` instead. This procedure is
-   * kept only so the existing web report keeps working; it will be removed once
-   * the frontend report folds into the ledger. Its input and output shapes are
-   * frozen for that reason.
-   */
-  getTransactionReport: protectedProcedure
-    .input(
-      z.object({
-        dateFrom: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-          .optional(),
-        dateTo: z
-          .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
-          .optional(),
-        categoryIds: z.array(z.string()).optional(),
-        merchantIds: z.array(z.string()).optional(),
-        amountMin: z.number().optional(),
-        amountMax: z.number().optional(),
-        reviewed: z.boolean().optional(),
-        includeIncome: z.boolean().default(false),
-      }),
-    )
-    .handler(async ({ input, context }) => {
-      return withErrorHandling(
-        async () => {
-          const userId = context.session.user.id;
-          const filter: TransactionViewFilter = {
-            // The expense report hides categories flagged `hideFromInsights`,
-            // which is exactly the insights scope; the income-inclusive report
-            // historically returned every row.
-            scope: input.includeIncome ? "ledger" : "insights",
-            range: { from: input.dateFrom, to: input.dateTo },
-            categories: input.categoryIds,
-            merchants: input.merchantIds,
-            amount: { min: input.amountMin, max: input.amountMax },
-            reviewState:
-              input.reviewed === undefined
-                ? "all"
-                : input.reviewed
-                  ? "reviewed"
-                  : "unreviewed",
-            side: input.includeIncome ? "all" : "expense",
-          };
-
-          const reportTransactions = await db
-            .select({
-              id: transaction.id,
-              amount: transaction.amount,
-              date: transaction.date,
-              transactionDetails: transaction.transactionDetails,
-              notes: transaction.notes,
-              reviewed: transaction.reviewed,
-              merchantId: transaction.merchantId,
-              categoryId: transaction.categoryId,
-            })
-            .from(transaction)
-            .where(buildTransactionWhere(userId, filter))
-            .orderBy(desc(transaction.date));
-
-          return {
-            transactions: reportTransactions,
-            summary: computeTransactionSummary(reportTransactions, filter),
-          };
-        },
-        "Error generating transaction report",
         context.session?.user?.id,
       );
     }),

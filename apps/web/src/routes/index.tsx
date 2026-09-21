@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import {
   BarChart3,
@@ -27,8 +26,6 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  const _healthCheck = useQuery(orpc.healthCheck.queryOptions());
-
   const features = [
     {
       icon: <Upload className="h-5 w-5" />,

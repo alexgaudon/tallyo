@@ -23,7 +23,7 @@ export type MerchantWithKeywordsAndCategory = InferRouterOutputs<
 
 export type Transaction = InferRouterOutputs<
   typeof transactionsRouter
->["getUserTransactions"]["transactions"][number];
+>["getView"]["transactions"][number];
 
 export type DashboardStats = InferRouterOutputs<
   typeof dashboardRouter

@@ -23,7 +23,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { orpc, queryClient } from "@/utils/orpc";
+import { orpc } from "@/utils/orpc";
 import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
@@ -59,13 +59,7 @@ export function CreateTransactionForm({ callback }: { callback?: () => void }) {
   });
 
   const { mutateAsync: createTransaction, isPending } = useMutation(
-    orpc.transactions.createTransaction.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["transactions", "getUserTransactions"],
-        });
-      },
-    }),
+    orpc.transactions.createTransaction.mutationOptions({}),
   );
 
   async function onSubmit(values: FormValues) {
@@ -81,10 +75,6 @@ export function CreateTransactionForm({ callback }: { callback?: () => void }) {
         ...(values.merchantId && { merchantId: values.merchantId }),
         ...(values.categoryId && { categoryId: values.categoryId }),
         ...(values.notes && { notes: values.notes }),
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["transactions", "getUserTransactions"],
       });
 
       callback?.();
