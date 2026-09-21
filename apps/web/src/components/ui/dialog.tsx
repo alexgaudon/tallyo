@@ -48,9 +48,12 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeButtonClassName,
   ...props
 }: ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  /** Position/visibility overrides for the built-in close button. */
+  closeButtonClassName?: string
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -67,7 +70,10 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground absolute top-4 right-4 rounded-lg opacity-70 hover:opacity-100 focus:outline-2 focus:outline-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border border-border p-1.5 transition-colors"
+            className={cn(
+              "ring-offset-background focus:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground absolute top-4 right-4 rounded-lg opacity-70 hover:opacity-100 focus:outline-2 focus:outline-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 border border-border p-1.5 transition-colors",
+              closeButtonClassName
+            )}
           >
             <XIcon />
             <span className="sr-only">Close</span>
