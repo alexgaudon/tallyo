@@ -19,6 +19,18 @@ export const settingsNavItem = {
   icon: Settings,
 } as const;
 
+/**
+ * Destinations shown in the mobile bottom tab bar. Kept separate from
+ * `navItems` so the shell layout is configured here rather than in the
+ * components that render it.
+ */
+export const bottomNavItems = navItems;
+
+/**
+ * Every navigable destination, used by the command palette.
+ */
+export const allNavItems = [...navItems, settingsNavItem] as const;
+
 export function isNavActive(pathname: string, to: string) {
   return (
     pathname === to ||
