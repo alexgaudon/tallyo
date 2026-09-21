@@ -36,7 +36,7 @@ export function Panel({
 			data-slot="panel"
 			aria-labelledby={titleId}
 			className={cn(
-				"bg-card text-card-foreground flex flex-col border border-border rounded-xl shadow-soft",
+				"glass-surface text-card-foreground flex flex-col rounded-xl",
 				dense ? "gap-2 p-3" : "gap-4 p-5",
 				className,
 			)}

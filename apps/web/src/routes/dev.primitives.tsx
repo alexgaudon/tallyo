@@ -1,10 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BarChart3, Inbox } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { ChartFrame } from "@/components/ui/chart-frame";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Panel } from "@/components/ui/panel";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dev/primitives")({
@@ -44,18 +58,21 @@ function PrimitivesDevRoute() {
 
   return (
     <div className="mx-auto max-w-screen-2xl space-y-12 px-4 py-8 lg:px-8">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold tracking-[0.14em] uppercase text-muted-foreground">
-          Phase 0 · Review surface
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Product primitives
-        </h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Visual reference for <code>Panel</code> and <code>ChartFrame</code>,
-          shown at mobile and desktop widths with empty and loading
-          permutations. Fake data only.
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold tracking-[0.14em] uppercase text-muted-foreground">
+            Phase 0 · Review surface
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Product primitives
+          </h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Visual reference for <code>Panel</code>, <code>ChartFrame</code>,
+            and the soft-glass surfaces, shown at mobile and desktop widths in
+            light and dark. Fake data only.
+          </p>
+        </div>
+        <ModeToggle />
       </header>
 
       <section className="space-y-6">
@@ -235,7 +252,113 @@ function PrimitivesDevRoute() {
           </div>
         </div>
       </section>
+
+      <section className="space-y-6">
+        <SectionHeading
+          index="03"
+          title="Soft glass"
+          description="Layered translucent surfaces with backdrop blur and light-catching edges. The same markup renders in the active theme and inside a forced dark context."
+        />
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <GlassContext label="Active theme">
+            <GlassShowcase />
+          </GlassContext>
+          <GlassContext label="Dark context (forced)" dark>
+            <GlassShowcase />
+          </GlassContext>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function GlassContext({
+  label,
+  dark = false,
+  children,
+}: {
+  label: string;
+  dark?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-[11px] font-medium tracking-wider uppercase text-muted-foreground">
+        {label}
+      </p>
+      <div
+        className={cn(
+          "bg-background bg-ambient space-y-4 rounded-2xl p-4",
+          dark && "dark text-foreground",
+        )}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function GlassShowcase() {
+  return (
+    <>
+      <Panel
+        title="Glass panel"
+        description="Panel renders with the glass-surface utility."
+        actions={
+          <Button size="sm" variant="ghost">
+            Action
+          </Button>
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm">Primary</Button>
+          <Button size="sm" variant="secondary">
+            Secondary
+          </Button>
+          <Button size="sm" variant="outline">
+            Outline
+          </Button>
+          <Button size="sm" variant="ghost">
+            Ghost
+          </Button>
+        </div>
+      </Panel>
+
+      <div className="glass rounded-xl p-4">
+        <p className="text-sm text-muted-foreground">
+          Inline <code className="font-mono text-foreground">.glass</code>{" "}
+          surface for nested content.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline">
+              Overlay menu
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel>Glass overlay</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Rename</DropdownMenuItem>
+            <DropdownMenuItem>Duplicate</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button size="sm" variant="secondary">
+              Popover
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-64 p-3 text-sm">
+            Translucent popover with backdrop blur.
+          </PopoverContent>
+        </Popover>
+      </div>
+    </>
   );
 }
 
