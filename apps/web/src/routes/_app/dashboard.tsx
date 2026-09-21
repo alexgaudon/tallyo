@@ -144,7 +144,7 @@ function RouteComponent() {
         }
       />
 
-      <div className="max-w-screen-2xl mx-auto space-y-8 px-4 py-8 lg:px-8">
+      <div className="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 lg:px-8">
         <UnreviewedTransactionsBanner
           count={session?.meta?.unreviewedTransactionCount ?? 0}
           onReviewClick={() =>

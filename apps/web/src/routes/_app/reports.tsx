@@ -141,7 +141,7 @@ function RouteComponent() {
           description="Explore the patterns behind your spending with focused filters and summaries."
         />
 
-        <div className="max-w-screen-2xl mx-auto space-y-6 px-4 py-8 lg:px-8">
+        <div className="mx-auto max-w-screen-2xl space-y-6 px-4 py-8 lg:px-8">
           <Panel dense>
             <ViewControls route="reports" />
           </Panel>

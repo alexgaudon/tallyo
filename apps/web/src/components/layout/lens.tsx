@@ -181,13 +181,11 @@ function LensInstance({
     return (
       <DialogPrimitive.Root open onOpenChange={handleOpenChange}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Overlay className="motion-fade fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
           <DialogPrimitive.Content
             aria-describedby={undefined}
             className={cn(
-              "glass-strong fixed inset-y-0 right-0 z-50 flex w-full max-w-[52rem] flex-col border-l border-glass-border shadow-glass-lg outline-hidden",
-              "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-              "data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
+              "glass-strong motion-lens fixed inset-y-0 right-0 z-50 flex w-full max-w-[52rem] flex-col border-l border-glass-border shadow-glass-lg outline-hidden",
             )}
           >
             <DialogPrimitive.Title className="sr-only">

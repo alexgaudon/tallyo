@@ -529,6 +529,115 @@ body {
   background-repeat: no-repeat;
 }
 
+/* ==========================================
+   MOTION VOCABULARY
+   Reusable enter/exit animations built on the motion tokens above. Radix
+   surfaces expose data-state, so each utility binds both directions in a
+   single class; tw-animate-css stays imported for anything that wants its
+   mechanics directly.
+   ========================================== */
+
+@keyframes soft-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes soft-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes soft-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes soft-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes soft-lens-in {
+  from {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes soft-lens-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+
+/* Overlay scrims: short, soft fade. */
+@utility motion-fade {
+  &[data-state="open"] {
+    animation: soft-fade-in var(--duration-base) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-fade-out var(--duration-fast) var(--ease-out-soft);
+  }
+}
+
+/* Popover-style surfaces: fade plus a restrained scale. */
+@utility motion-pop {
+  &[data-state="open"] {
+    animation: soft-pop-in var(--duration-base) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-pop-out var(--duration-fast) var(--ease-out-soft);
+  }
+}
+
+/* Edge-docked lens: slight slide rather than a full-width travel. */
+@utility motion-lens {
+  &[data-state="open"] {
+    animation: soft-lens-in var(--duration-slow) var(--ease-out-soft);
+  }
+  &[data-state="closed"] {
+    animation: soft-lens-out var(--duration-base) var(--ease-out-soft);
+  }
+}
+
+/* Shared interaction transition for hovers, active states, and settling
+   optimistic updates. */
+@utility transition-soft {
+  transition-property:
+    color, background-color, border-color, opacity, box-shadow, transform;
+  transition-timing-function: var(--ease-out-soft);
+  transition-duration: var(--duration-base);
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -699,5 +808,23 @@ body {
   textarea,
   [role="button"] {
     font-size: 16px;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION
+   Disable non-essential animation and transition for users who ask for it.
+   Duration is collapsed rather than zeroed so fill-mode end states still
+   apply and overlays unmount immediately.
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

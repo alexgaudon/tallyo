@@ -6,21 +6,18 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-border/60 bg-background hidden md:block">
-      <div className="max-w-screen-2xl mx-auto px-4 lg:px-8 py-6">
+      <div className="mx-auto max-w-screen-2xl px-4 py-6 lg:px-8">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-4">
             <span className="font-medium text-foreground">
               © {currentYear} Tallyo
             </span>
-            <Link
-              to="/terms"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link to="/terms" className="hover:text-foreground transition-soft">
               Terms
             </Link>
             <Link
               to="/privacy"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground transition-soft"
             >
               Privacy Policy
             </Link>

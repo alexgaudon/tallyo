@@ -58,7 +58,7 @@ export function AppShell() {
                   to={item.to}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                     isActive
                       ? "bg-accent/10 text-accent"
                       : "text-foreground/75 hover:bg-secondary/55 hover:text-foreground",
@@ -80,7 +80,7 @@ export function AppShell() {
                   : undefined
               }
               className={cn(
-                "flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                "flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
                 isNavActive(location.pathname, settingsNavItem.to)
                   ? "bg-accent/10 text-accent"
                   : "text-foreground/75 hover:bg-secondary/55 hover:text-foreground",
@@ -114,7 +114,7 @@ export function AppShell() {
 
         {/* Content */}
         <div className="lg:flex lg:min-h-dvh lg:flex-col lg:pl-60">
-          <main className="min-h-dvh bg-ambient pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-[calc(3.5rem_+_env(safe-area-inset-top))] lg:min-h-0 lg:flex-1 lg:pb-0 lg:pt-0">
+          <main className="min-h-dvh pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-[calc(3.5rem_+_env(safe-area-inset-top))] lg:min-h-0 lg:flex-1 lg:pb-0 lg:pt-0">
             <Outlet />
           </main>
           <div className="hidden lg:block">
@@ -137,7 +137,7 @@ export function AppShell() {
                 >
                   <span
                     className={cn(
-                      "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+                      "flex h-7 w-12 items-center justify-center rounded-full transition-soft",
                       isActive
                         ? "bg-accent/15 text-accent"
                         : "text-muted-foreground",

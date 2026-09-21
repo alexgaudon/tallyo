@@ -182,7 +182,7 @@ export const TransactionRow = memo(function TransactionRow({
   return (
     <div
       className={cn(
-        "grid items-start gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-muted/40 sm:items-center",
+        "grid items-start gap-x-3 gap-y-2 px-3 py-3 transition-soft hover:bg-muted/40 sm:items-center",
         LEDGER_GRID_COLUMNS,
         !transaction.reviewed && "border-l-2 border-l-accent",
         isMutating && "opacity-60",
@@ -251,7 +251,7 @@ export const TransactionRow = memo(function TransactionRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-auto p-1 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              className="h-auto p-1 text-muted-foreground transition-soft hover:bg-muted/50 hover:text-foreground"
               onClick={() =>
                 transaction.merchant &&
                 onMerchantClick?.(transaction.merchant.id)
@@ -298,7 +298,7 @@ export const TransactionRow = memo(function TransactionRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-1 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                className="h-auto p-1 text-muted-foreground transition-soft hover:bg-muted/50 hover:text-foreground"
                 onClick={() =>
                   transaction.category &&
                   onCategoryClick?.(transaction.category.id)
@@ -350,7 +350,7 @@ export const TransactionRow = memo(function TransactionRow({
           }}
           placeholder="Add notes..."
           aria-label="Transaction notes"
-          className="h-9 w-full rounded-md border border-input bg-background/80 px-2 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-ring/70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+          className="h-9 w-full rounded-md border border-input bg-background/80 px-2 text-base transition-soft focus:outline-none focus:ring-2 focus:ring-ring/70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
           disabled={isMutating}
         />
       </div>
@@ -365,7 +365,7 @@ export const TransactionRow = memo(function TransactionRow({
                 size="icon"
                 onClick={() => mutations.toggleReviewed({ id: transaction.id })}
                 className={cn(
-                  "size-9 rounded-full border border-transparent bg-background transition-colors hover:border-muted-foreground/30 hover:bg-muted/60",
+                  "size-9 rounded-full border border-transparent bg-background transition-soft hover:border-muted-foreground/30 hover:bg-muted/60 active:scale-95",
                   transaction.reviewed
                     ? "text-income"
                     : "text-muted-foreground",
