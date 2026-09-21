@@ -1,19 +1,15 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useState } from "react";
 import Footer from "@/components/footer";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { LensHost, LensProvider } from "@/components/layout/lens";
+import { MobileNavDrawer } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import {
-  bottomNavItems,
-  isNavActive,
-  navItems,
-  settingsNavItem,
-} from "@/lib/nav";
+import { isNavActive, navItems, settingsNavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 function Brand() {
@@ -30,6 +26,7 @@ function Brand() {
 export function AppShell() {
   const location = useLocation();
   const [commandOpen, setCommandOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useHotkey(
     "Mod+K",
@@ -97,7 +94,18 @@ export function AppShell() {
         {/* Mobile top header */}
         <header className="glass fixed inset-x-0 top-0 z-40 pt-[env(safe-area-inset-top)] lg:hidden">
           <div className="flex h-14 items-center justify-between gap-2 px-3">
-            <Brand />
+            <div className="flex min-w-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open navigation"
+                aria-expanded={mobileNavOpen}
+                onClick={() => setMobileNavOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <Brand />
+            </div>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
@@ -114,7 +122,7 @@ export function AppShell() {
 
         {/* Content */}
         <div className="lg:flex lg:min-h-dvh lg:flex-col lg:pl-60">
-          <main className="min-h-dvh pb-[calc(4.5rem_+_env(safe-area-inset-bottom))] pt-[calc(3.5rem_+_env(safe-area-inset-top))] lg:min-h-0 lg:flex-1 lg:pb-0 lg:pt-0">
+          <main className="min-h-dvh pb-[calc(1.5rem_+_env(safe-area-inset-bottom))] pt-[calc(3.5rem_+_env(safe-area-inset-top))] lg:min-h-0 lg:flex-1 lg:pb-0 lg:pt-0">
             <Outlet />
           </main>
           <div className="hidden lg:block">
@@ -122,42 +130,7 @@ export function AppShell() {
           </div>
         </div>
 
-        {/* Mobile bottom tab bar */}
-        <nav className="glass fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)] lg:hidden">
-          <div className="flex items-stretch">
-            {bottomNavItems.map((item) => {
-              const isActive = isNavActive(location.pathname, item.to);
-
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  aria-current={isActive ? "page" : undefined}
-                  className="flex flex-1 flex-col items-center justify-center gap-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                >
-                  <span
-                    className={cn(
-                      "flex h-7 w-12 items-center justify-center rounded-full transition-soft",
-                      isActive
-                        ? "bg-accent/15 text-accent"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                  </span>
-                  <span
-                    className={cn(
-                      "text-[11px] font-medium",
-                      isActive ? "text-accent" : "text-muted-foreground",
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+        <MobileNavDrawer open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 
         <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
         <LensHost />
