@@ -22,6 +22,7 @@ import { Route as AppTaxonomyRouteImport } from './routes/_app/taxonomy'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 import { Route as AuthSigninRouteImport } from './routes/_auth/signin'
 import { Route as DevPrimitivesRouteImport } from './routes/dev.primitives'
+import { Route as AppDevJobQueueRouteImport } from './routes/_app/dev.job-queue'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -87,6 +88,11 @@ const DevPrimitivesRoute = DevPrimitivesRouteImport.update({
   path: '/dev/primitives',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppDevJobQueueRoute = AppDevJobQueueRouteImport.update({
+  id: '/dev/job-queue',
+  path: '/dev/job-queue',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/dev/job-queue': typeof AppDevJobQueueRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof AppTransactionsRoute
   '/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/dev/job-queue': typeof AppDevJobQueueRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_app/transactions': typeof AppTransactionsRoute
   '/_auth/signin': typeof AuthSigninRoute
   '/dev/primitives': typeof DevPrimitivesRoute
+  '/_app/dev/job-queue': typeof AppDevJobQueueRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
+    | '/dev/job-queue'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/signin'
     | '/dev/primitives'
+    | '/dev/job-queue'
   id:
     | '__root__'
     | '/'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_app/transactions'
     | '/_auth/signin'
     | '/dev/primitives'
+    | '/_app/dev/job-queue'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -280,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevPrimitivesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/dev/job-queue': {
+      id: '/_app/dev/job-queue'
+      path: '/dev/job-queue'
+      fullPath: '/dev/job-queue'
+      preLoaderRoute: typeof AppDevJobQueueRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -291,6 +310,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppTaxonomyRoute: typeof AppTaxonomyRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
+  AppDevJobQueueRoute: typeof AppDevJobQueueRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -301,6 +321,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppTaxonomyRoute: AppTaxonomyRoute,
   AppTransactionsRoute: AppTransactionsRoute,
+  AppDevJobQueueRoute: AppDevJobQueueRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
