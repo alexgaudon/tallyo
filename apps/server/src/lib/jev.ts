@@ -111,56 +111,139 @@ const CATEGORY_INSTRUCTIONS =
 const MERCHANT_INSTRUCTIONS =
   "Pick the single existing merchant that most likely matches this bank or card transaction, judging from the description. Only pick a merchant when the description plausibly refers to it; a generic or ambiguous description should not be forced onto a merchant.";
 
+// The Jev/OpenRouter decisions API rejects a request with more than 255
+// choices, so a user with hundreds of merchants cannot be asked in one go.
+// Chunk below that limit for headroom.
+const MAX_CHOICES = 200;
+
 interface SuggestionAnswers {
   category?: { name: string; confidence: number };
   merchant?: { name: string; confidence: number };
 }
 
-const requestSuggestion = async (
-  input: JevCategorizeInput,
-  transaction: JevCategorizeInput["transactions"][number],
-): Promise<SuggestionAnswers | null> => {
-  const questions: Record<string, WireQuestion> = {};
+const buildOptions = (
+  entities: { name: string }[],
+  describe: (name: string) => string | null,
+): Record<string, string | null> =>
+  Object.fromEntries(
+    entities.map((entity) => [entity.name, describe(entity.name)]),
+  );
 
-  if (transaction.needsCategory && input.categories.length > 0) {
-    questions.category = choice({
-      instructions: CATEGORY_INSTRUCTIONS,
-      options: Object.fromEntries(
-        input.categories.map((c) => [c.name, describeCategory(c.name)]),
-      ),
-    });
-  }
-
-  if (transaction.needsMerchant && input.merchants.length > 0) {
-    questions.merchant = choice({
-      instructions: MERCHANT_INSTRUCTIONS,
-      options: Object.fromEntries(input.merchants.map((m) => [m.name, null])),
-    });
-  }
-
-  if (Object.keys(questions).length === 0) {
-    return null;
-  }
-
-  const result = await decide({
+const runDecide = (state: string, questions: Record<string, WireQuestion>) =>
+  decide({
     adapter: openRouterDecider(getModel()),
-    state: buildState(transaction.transactionDetails, transaction.amount),
+    state,
     questions,
     abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
-  const answers: SuggestionAnswers = {};
-  if (result.category?.type === "choice") {
-    answers.category = {
-      name: result.category.value,
-      confidence: result.category.probability,
-    };
+const readChoice = (
+  answer: unknown,
+): { name: string; confidence: number } | null => {
+  const value = answer as
+    | { type?: string; value?: string; probability?: number }
+    | undefined;
+  if (value?.type !== "choice" || typeof value.value !== "string") return null;
+  return { name: value.value, confidence: value.probability ?? 0 };
+};
+
+/**
+ * Ask one question in chunks of at most MAX_CHOICES and keep the highest
+ * probability answer. Probabilities are only comparable within a chunk, so this
+ * is a heuristic across chunks — fine for an advisory suggestion.
+ */
+const decideInChunks = async (
+  state: string,
+  key: string,
+  entities: { name: string }[],
+  describe: (name: string) => string | null,
+  instructions: string,
+): Promise<{ name: string; confidence: number } | null> => {
+  let best: { name: string; confidence: number } | null = null;
+
+  for (let index = 0; index < entities.length; index += MAX_CHOICES) {
+    const chunk = entities.slice(index, index + MAX_CHOICES);
+    const result = await runDecide(state, {
+      [key]: choice({ instructions, options: buildOptions(chunk, describe) }),
+    });
+    const answer = readChoice((result as Record<string, unknown>)[key]);
+    if (answer && (!best || answer.confidence > best.confidence)) {
+      best = answer;
+    }
   }
-  if (result.merchant?.type === "choice") {
-    answers.merchant = {
-      name: result.merchant.value,
-      confidence: result.merchant.probability,
-    };
+
+  return best;
+};
+
+const requestSuggestion = async (
+  input: JevCategorizeInput,
+  transaction: JevCategorizeInput["transactions"][number],
+): Promise<SuggestionAnswers | null> => {
+  const wantsCategory =
+    transaction.needsCategory && input.categories.length > 0;
+  const wantsMerchant = transaction.needsMerchant && input.merchants.length > 0;
+  if (!wantsCategory && !wantsMerchant) {
+    return null;
+  }
+
+  const state = buildState(transaction.transactionDetails, transaction.amount);
+  const fitsInOneCall =
+    input.categories.length <= MAX_CHOICES &&
+    input.merchants.length <= MAX_CHOICES;
+
+  if (fitsInOneCall) {
+    const questions: Record<string, WireQuestion> = {};
+    if (wantsCategory) {
+      questions.category = choice({
+        instructions: CATEGORY_INSTRUCTIONS,
+        options: buildOptions(input.categories, describeCategory),
+      });
+    }
+    if (wantsMerchant) {
+      questions.merchant = choice({
+        instructions: MERCHANT_INSTRUCTIONS,
+        options: buildOptions(input.merchants, () => null),
+      });
+    }
+
+    const result = (await runDecide(state, questions)) as Record<
+      string,
+      unknown
+    >;
+    const answers: SuggestionAnswers = {};
+    const category = wantsCategory ? readChoice(result.category) : null;
+    const merchant = wantsMerchant ? readChoice(result.merchant) : null;
+    if (category) answers.category = category;
+    if (merchant) answers.merchant = merchant;
+    return answers;
+  }
+
+  // A list exceeds the API limit: ask each question separately, chunked.
+  logger.warn("Jev question exceeds the choice limit; chunking", {
+    categories: input.categories.length,
+    merchants: input.merchants.length,
+  });
+
+  const answers: SuggestionAnswers = {};
+  if (wantsCategory) {
+    const category = await decideInChunks(
+      state,
+      "category",
+      input.categories,
+      describeCategory,
+      CATEGORY_INSTRUCTIONS,
+    );
+    if (category) answers.category = category;
+  }
+  if (wantsMerchant) {
+    const merchant = await decideInChunks(
+      state,
+      "merchant",
+      input.merchants,
+      () => null,
+      MERCHANT_INSTRUCTIONS,
+    );
+    if (merchant) answers.merchant = merchant;
   }
   return answers;
 };

@@ -231,4 +231,32 @@ describe("suggestForTransactions", () => {
       merchantConfidence: 0.8,
     });
   });
+
+  it("chunks a question that exceeds the choice limit and keeps the best answer", async () => {
+    // 250 merchants exceeds MAX_CHOICES (200), so the merchant question is
+    // asked in two chunks.
+    const manyMerchants = Array.from({ length: 250 }, (_, i) => ({
+      id: `m${i}`,
+      name: `Merchant ${i}`,
+    }));
+    decideMock
+      .mockResolvedValueOnce({
+        merchant: { type: "choice", value: "Merchant 5", probability: 0.5 },
+      })
+      .mockResolvedValueOnce({
+        merchant: { type: "choice", value: "Merchant 220", probability: 0.9 },
+      });
+
+    const result = await suggestForTransactions({
+      categories: [],
+      merchants: manyMerchants,
+      transactions: [tx({ needsCategory: false, needsMerchant: true })],
+    });
+
+    expect(decideMock).toHaveBeenCalledTimes(2);
+    expect(result.get("t1")).toEqual({
+      merchantId: "m220",
+      merchantConfidence: 0.9,
+    });
+  });
 });
