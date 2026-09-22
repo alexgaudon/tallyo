@@ -233,7 +233,8 @@ async function rescheduleJobs(
   }
 }
 
-async function processBatch(): Promise<void> {
+/** Claim and process one batch. Exported for tests; the worker calls it on a timer. */
+export async function runSuggestionBatchOnce(): Promise<void> {
   const jobs = await claimJobs(BATCH_SIZE);
   if (jobs.length === 0) return;
 
@@ -259,7 +260,7 @@ export function startSuggestionWorker(): void {
   timer = setInterval(() => {
     if (running) return;
     running = true;
-    processBatch()
+    runSuggestionBatchOnce()
       .catch((error) =>
         logger.warn("Jev suggestion worker tick failed:", { error }),
       )
