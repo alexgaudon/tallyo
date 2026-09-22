@@ -132,7 +132,10 @@ export function TransactionsLens({
       <DrawerPrimitive.Portal>
         <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
         <DrawerPrimitive.Content
-          className="glass-strong fixed inset-x-0 bottom-0 z-50 flex h-dvh max-h-dvh flex-col rounded-t-2xl border-t border-glass-border outline-hidden"
+          // Fixed to the layout viewport (inset-0) rather than h-dvh: on iOS the
+          // on-screen keyboard shrinks dvh, which collapsed the sheet to half
+          // height whenever a field was focused.
+          className="glass-strong fixed inset-0 z-50 flex flex-col rounded-t-2xl border-t border-glass-border outline-hidden"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
           <DrawerPrimitive.Title className="sr-only">
