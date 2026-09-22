@@ -8,7 +8,10 @@ import type {
   LedgerTransaction,
   TransactionMutations,
 } from "@/hooks/use-transaction-mutations";
-import { CategorySuggestionButton } from "./suggestion-button";
+import {
+  CategorySuggestionButton,
+  MerchantSuggestionButton,
+} from "./suggestion-button";
 
 interface ReviewCardProps {
   transactions: LedgerTransaction[];
@@ -115,6 +118,12 @@ export function ReviewCard({
             <span className="text-xs font-medium text-muted-foreground">
               Merchant
             </span>
+            <MerchantSuggestionButton
+              transaction={transaction}
+              onApply={(merchantId) =>
+                mutations.updateMerchant({ id: transaction.id, merchantId })
+              }
+            />
             <EntityPicker
               kind="merchant"
               value={transaction.merchant?.id ?? null}

@@ -45,6 +45,7 @@ export const getTransactionWithRelations = async (transactionId: string) => {
         },
       },
       suggestedCategory: true,
+      suggestedMerchant: true,
     },
   });
 };
@@ -304,6 +305,7 @@ export const transactionsRouter = {
               merchant: true,
               category: { with: { parentCategory: true } },
               suggestedCategory: true,
+              suggestedMerchant: true,
             },
             limit: input.pageSize,
             offset,

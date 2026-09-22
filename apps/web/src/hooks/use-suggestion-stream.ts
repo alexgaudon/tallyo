@@ -5,8 +5,10 @@ import { orpc } from "@/utils/orpc";
 
 interface SuggestionEvent {
   transactionId: string;
-  suggestedCategoryId: string;
-  suggestedCategoryConfidence: number;
+  suggestedCategoryId: string | null;
+  suggestedCategoryConfidence: number | null;
+  suggestedMerchantId: string | null;
+  suggestedMerchantConfidence: number | null;
 }
 
 /** True for a `transactions.getView` query key: `[["transactions","getView"], input]`. */
@@ -45,6 +47,13 @@ export function useSuggestionStream(): void {
       const category =
         categories.find((c) => c.id === payload.suggestedCategoryId) ?? null;
 
+      const merchants =
+        queryClient.getQueryData<{ id: string; name: string }[]>(
+          orpc.merchants.getUserMerchants.queryOptions().queryKey,
+        ) ?? [];
+      const merchant =
+        merchants.find((m) => m.id === payload.suggestedMerchantId) ?? null;
+
       let patched = false;
       const queries = queryClient
         .getQueryCache()
@@ -71,6 +80,10 @@ export function useSuggestionStream(): void {
                     suggestedCategoryConfidence:
                       payload.suggestedCategoryConfidence,
                     suggestedCategory: category,
+                    suggestedMerchantId: payload.suggestedMerchantId,
+                    suggestedMerchantConfidence:
+                      payload.suggestedMerchantConfidence,
+                    suggestedMerchant: merchant,
                   }
                 : t,
             ),

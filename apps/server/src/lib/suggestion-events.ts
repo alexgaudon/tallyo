@@ -5,8 +5,10 @@
  */
 export interface SuggestionEvent {
   transactionId: string;
-  suggestedCategoryId: string;
-  suggestedCategoryConfidence: number;
+  suggestedCategoryId: string | null;
+  suggestedCategoryConfidence: number | null;
+  suggestedMerchantId: string | null;
+  suggestedMerchantConfidence: number | null;
 }
 
 type Subscriber = (event: SuggestionEvent) => void;

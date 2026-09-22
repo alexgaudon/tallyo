@@ -45,6 +45,13 @@ function JobQueueDevRoute() {
     (categoriesData?.categories ?? []).map((c) => [c.id, c.name]),
   );
 
+  const { data: merchantsData } = useQuery(
+    orpc.merchants.getUserMerchants.queryOptions(),
+  );
+  const merchantNameById = new Map(
+    (merchantsData ?? []).map((m) => [m.id, m.name]),
+  );
+
   const retry = useMutation(
     orpc.meta.retrySuggestionJob.mutationOptions({
       onSuccess: () => {
@@ -141,6 +148,14 @@ function JobQueueDevRoute() {
                       ? (categoryNameById.get(job.suggestedCategoryId) ??
                         job.suggestedCategoryId.slice(0, 8))
                       : null;
+                    const suggestedMerchantName = job.suggestedMerchantId
+                      ? (merchantNameById.get(job.suggestedMerchantId) ??
+                        job.suggestedMerchantId.slice(0, 8))
+                      : null;
+                    const merchantConfidence =
+                      job.suggestedMerchantConfidence !== null
+                        ? Math.round(job.suggestedMerchantConfidence * 100)
+                        : null;
                     const busy =
                       job.status === "pending" || job.status === "processing";
 
@@ -179,6 +194,14 @@ function JobQueueDevRoute() {
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
+                          {suggestedMerchantName ? (
+                            <div className="text-xs text-muted-foreground">
+                              merchant: {suggestedMerchantName}
+                              {merchantConfidence !== null
+                                ? ` (${merchantConfidence}%)`
+                                : ""}
+                            </div>
+                          ) : null}
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums">
                           {job.attempts}

@@ -240,6 +240,7 @@ externalApi.get("/transactions", async (c) => {
         merchant: true,
         category: { with: { parentCategory: true } },
         suggestedCategory: true,
+        suggestedMerchant: true,
       },
       orderBy: [desc(transaction.date), desc(transaction.amount)],
       limit: pageSize,
@@ -338,6 +339,7 @@ externalApi.get("/transactions/search", async (c) => {
           merchant: true,
           category: { with: { parentCategory: true } },
           suggestedCategory: true,
+          suggestedMerchant: true,
         },
       });
 

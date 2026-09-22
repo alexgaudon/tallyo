@@ -1,7 +1,11 @@
 import { and, asc, eq, inArray, isNull, lte } from "drizzle-orm";
-import { category, suggestionJob, transaction } from "@/db/schema";
+import { category, merchant, suggestionJob, transaction } from "@/db/schema";
 import { db } from "../db";
-import { isJevEnabled, suggestCategoriesForTransactions } from "./jev";
+import {
+  isJevEnabled,
+  type JevSuggestion,
+  suggestForTransactions,
+} from "./jev";
 import { logger } from "./logger";
 import { publishSuggestion } from "./suggestion-events";
 
@@ -95,37 +99,59 @@ async function processUserJobs(
         transactionDetails: true,
         amount: true,
         categoryId: true,
+        merchantId: true,
       },
     });
-    const uncategorized = rows.filter((row) => !row.categoryId);
+    const rowById = new Map(rows.map((row) => [row.id, row]));
+
+    const candidates = rows
+      .map((row) => ({
+        row,
+        needsCategory: !row.categoryId,
+        needsMerchant: !row.merchantId,
+      }))
+      .filter((c) => c.needsCategory || c.needsMerchant);
 
     const userCategories = await db.query.category.findMany({
       where: eq(category.userId, userId),
       columns: { id: true, name: true },
     });
+    const userMerchants = await db.query.merchant.findMany({
+      where: eq(merchant.userId, userId),
+      columns: { id: true, name: true },
+    });
 
-    const suggestions =
-      uncategorized.length > 0 && userCategories.length > 0
-        ? await suggestCategoriesForTransactions({
+    const suggestions: Map<string, JevSuggestion> =
+      candidates.length > 0 &&
+      (userCategories.length > 0 || userMerchants.length > 0)
+        ? await suggestForTransactions({
             categories: userCategories,
-            transactions: uncategorized.map((row) => ({
-              id: row.id,
-              transactionDetails: row.transactionDetails,
-              amount: row.amount,
+            merchants: userMerchants,
+            transactions: candidates.map((c) => ({
+              id: c.row.id,
+              transactionDetails: c.row.transactionDetails,
+              amount: c.row.amount,
+              needsCategory: c.needsCategory,
+              needsMerchant: c.needsMerchant,
             })),
           })
-        : new Map<string, { categoryId: string; confidence: number }>();
+        : new Map<string, JevSuggestion>();
 
     for (const job of jobs) {
       const suggestion = suggestions.get(job.transactionId);
-      if (suggestion) {
-        // Only write if the transaction is still uncategorized: a manual
-        // assignment always wins over a late suggestion.
+      const current = rowById.get(job.transactionId);
+
+      let categoryWritten = false;
+      let merchantWritten = false;
+
+      if (suggestion?.categoryId && current && !current.categoryId) {
+        // Guarded on the column: a manual assignment always wins over a
+        // late suggestion.
         const updated = await db
           .update(transaction)
           .set({
             suggestedCategoryId: suggestion.categoryId,
-            suggestedCategoryConfidence: suggestion.confidence,
+            suggestedCategoryConfidence: suggestion.categoryConfidence ?? null,
             updatedAt: new Date(),
           })
           .where(
@@ -135,14 +161,43 @@ async function processUserJobs(
             ),
           )
           .returning({ id: transaction.id });
+        categoryWritten = updated.length > 0;
+      }
 
-        if (updated.length > 0) {
-          publishSuggestion(userId, {
-            transactionId: job.transactionId,
-            suggestedCategoryId: suggestion.categoryId,
-            suggestedCategoryConfidence: suggestion.confidence,
-          });
-        }
+      if (suggestion?.merchantId && current && !current.merchantId) {
+        const updated = await db
+          .update(transaction)
+          .set({
+            suggestedMerchantId: suggestion.merchantId,
+            suggestedMerchantConfidence: suggestion.merchantConfidence ?? null,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(transaction.id, job.transactionId),
+              isNull(transaction.merchantId),
+            ),
+          )
+          .returning({ id: transaction.id });
+        merchantWritten = updated.length > 0;
+      }
+
+      if (categoryWritten || merchantWritten) {
+        publishSuggestion(userId, {
+          transactionId: job.transactionId,
+          suggestedCategoryId: categoryWritten
+            ? (suggestion?.categoryId ?? null)
+            : null,
+          suggestedCategoryConfidence: categoryWritten
+            ? (suggestion?.categoryConfidence ?? null)
+            : null,
+          suggestedMerchantId: merchantWritten
+            ? (suggestion?.merchantId ?? null)
+            : null,
+          suggestedMerchantConfidence: merchantWritten
+            ? (suggestion?.merchantConfidence ?? null)
+            : null,
+        });
       }
 
       await db

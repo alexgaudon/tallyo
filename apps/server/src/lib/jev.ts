@@ -1,23 +1,31 @@
-import { choice, decide } from "@tanstack/ai";
+import { choice, decide, type WireQuestion } from "@tanstack/ai";
 import { openRouterDecider } from "@tanstack/ai-openrouter";
 import { logger } from "./logger";
 
 const DEFAULT_JEV_MODEL = "typesafe/jev-1.13";
-const DEFAULT_CONFIDENCE_THRESHOLD = 0.7;
+const DEFAULT_CONFIDENCE_THRESHOLD = 0.5;
 const MAX_CONCURRENCY = 8;
 const REQUEST_TIMEOUT_MS = 15_000;
 
-export interface JevCategorySuggestion {
-  categoryId: string;
-  confidence: number;
+/** Advisory suggestions for one transaction. Either half may be absent. */
+export interface JevSuggestion {
+  categoryId?: string;
+  categoryConfidence?: number;
+  merchantId?: string;
+  merchantConfidence?: number;
 }
 
 export interface JevCategorizeInput {
   categories: { id: string; name: string }[];
+  merchants: { id: string; name: string }[];
   transactions: {
     id: string;
     transactionDetails: string;
     amount: number;
+    /** Ask Jev for a category only when the row has none. */
+    needsCategory: boolean;
+    /** Ask Jev for a merchant only when keyword matching did not match one. */
+    needsMerchant: boolean;
   }[];
 }
 
@@ -100,65 +108,116 @@ const describeCategory = (name: string): string | null => {
 const CATEGORY_INSTRUCTIONS =
   "Pick the single best category for this bank or card transaction. Judge the amount against each category's typical transaction size, then pick the most plausible category and assign it confidently. For example, a charge of only a few dollars at a fuel station or cafe counter is almost never the primary product (fuel, a full meal); it is usually a small convenience purchase such as snacks or a drink.";
 
-interface CategoryChoice {
-  choice: string;
-  confidence: number;
+const MERCHANT_INSTRUCTIONS =
+  "Pick the single existing merchant that most likely matches this bank or card transaction, judging from the description. Only pick a merchant when the description plausibly refers to it; a generic or ambiguous description should not be forced onto a merchant.";
+
+interface SuggestionAnswers {
+  category?: { name: string; confidence: number };
+  merchant?: { name: string; confidence: number };
 }
 
 const requestSuggestion = async (
-  categories: { id: string; name: string }[],
-  transaction: { transactionDetails: string; amount: number },
-): Promise<CategoryChoice | null> => {
+  input: JevCategorizeInput,
+  transaction: JevCategorizeInput["transactions"][number],
+): Promise<SuggestionAnswers | null> => {
+  const questions: Record<string, WireQuestion> = {};
+
+  if (transaction.needsCategory && input.categories.length > 0) {
+    questions.category = choice({
+      instructions: CATEGORY_INSTRUCTIONS,
+      options: Object.fromEntries(
+        input.categories.map((c) => [c.name, describeCategory(c.name)]),
+      ),
+    });
+  }
+
+  if (transaction.needsMerchant && input.merchants.length > 0) {
+    questions.merchant = choice({
+      instructions: MERCHANT_INSTRUCTIONS,
+      options: Object.fromEntries(input.merchants.map((m) => [m.name, null])),
+    });
+  }
+
+  if (Object.keys(questions).length === 0) {
+    return null;
+  }
+
   const result = await decide({
     adapter: openRouterDecider(getModel()),
     state: buildState(transaction.transactionDetails, transaction.amount),
-    questions: {
-      category: choice({
-        instructions: CATEGORY_INSTRUCTIONS,
-        options: Object.fromEntries(
-          categories.map((c) => [c.name, describeCategory(c.name)]),
-        ),
-      }),
-    },
+    questions,
     abortSignal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 
-  const answer = result.category;
-  if (answer.type !== "choice") {
-    return null;
+  const answers: SuggestionAnswers = {};
+  if (result.category?.type === "choice") {
+    answers.category = {
+      name: result.category.value,
+      confidence: result.category.probability,
+    };
   }
-  return { choice: answer.value, confidence: answer.probability };
+  if (result.merchant?.type === "choice") {
+    answers.merchant = {
+      name: result.merchant.value,
+      confidence: result.merchant.probability,
+    };
+  }
+  return answers;
 };
 
-export const suggestCategoriesForTransactions = async (
+/**
+ * Suggest a category and/or merchant per transaction. Advisory only — callers
+ * store the result as metadata and never auto-apply it.
+ */
+export const suggestForTransactions = async (
   input: JevCategorizeInput,
-): Promise<Map<string, JevCategorySuggestion>> => {
-  const result = new Map<string, JevCategorySuggestion>();
+): Promise<Map<string, JevSuggestion>> => {
+  const result = new Map<string, JevSuggestion>();
 
-  if (!isJevEnabled() || input.categories.length === 0) {
+  if (!isJevEnabled()) {
     return result;
   }
+  if (input.categories.length === 0 && input.merchants.length === 0) {
+    return result;
+  }
+
+  const threshold = getConfidenceThreshold();
 
   // One call per transaction: evaluation semantics treat a state as a single
   // shared context, so unrelated transactions must not share one call.
   // Requests are independent, so they run with bounded concurrency.
   const tasks = input.transactions.map(
-    async (t): Promise<[string, JevCategorySuggestion] | null> => {
+    async (t): Promise<[string, JevSuggestion] | null> => {
+      if (!t.needsCategory && !t.needsMerchant) return null;
       try {
-        const answer = await requestSuggestion(input.categories, t);
-        if (!answer) return null;
+        const answers = await requestSuggestion(input, t);
+        if (!answers) return null;
 
-        if (answer.confidence < getConfidenceThreshold()) return null;
+        const suggestion: JevSuggestion = {};
 
-        const category = input.categories.find((c) => c.name === answer.choice);
-        if (!category) return null;
+        if (answers.category && answers.category.confidence >= threshold) {
+          const category = input.categories.find(
+            (c) => c.name === answers.category?.name,
+          );
+          if (category) {
+            suggestion.categoryId = category.id;
+            suggestion.categoryConfidence = answers.category.confidence;
+          }
+        }
 
-        return [
-          t.id,
-          { categoryId: category.id, confidence: answer.confidence },
-        ];
+        if (answers.merchant && answers.merchant.confidence >= threshold) {
+          const merchant = input.merchants.find(
+            (m) => m.name === answers.merchant?.name,
+          );
+          if (merchant) {
+            suggestion.merchantId = merchant.id;
+            suggestion.merchantConfidence = answers.merchant.confidence;
+          }
+        }
+
+        return Object.keys(suggestion).length > 0 ? [t.id, suggestion] : null;
       } catch (error) {
-        logger.warn("Jev category suggestion failed:", {
+        logger.warn("Jev suggestion failed:", {
           error,
           transactionId: t.id,
         });

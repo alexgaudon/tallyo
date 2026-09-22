@@ -143,6 +143,8 @@ export const metaRouter = {
           categoryId: transaction.categoryId,
           suggestedCategoryId: transaction.suggestedCategoryId,
           suggestedCategoryConfidence: transaction.suggestedCategoryConfidence,
+          suggestedMerchantId: transaction.suggestedMerchantId,
+          suggestedMerchantConfidence: transaction.suggestedMerchantConfidence,
         })
         .from(suggestionJob)
         .leftJoin(transaction, eq(suggestionJob.transactionId, transaction.id))

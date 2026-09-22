@@ -36,7 +36,10 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
-import { CategorySuggestionButton } from "./suggestion-button";
+import {
+  CategorySuggestionButton,
+  MerchantSuggestionButton,
+} from "./suggestion-button";
 
 /**
  * Shared column template: two columns on narrow screens, six aligned columns on
@@ -265,25 +268,34 @@ export const TransactionRow = memo(function TransactionRow({
             <span className="text-sm text-muted-foreground">No merchant</span>
           )
         ) : (
-          <EntityPicker
-            kind="merchant"
-            value={transaction.merchant?.id ?? null}
-            onChange={(next) =>
-              mutations.updateMerchant({
-                id: transaction.id,
-                merchantId: next as string | null,
-              })
-            }
-            placeholder="Select merchant..."
-            className="w-full"
-            allowClear
-            allowCreate
-            allowEdit
-            disabled={pendingKind === "merchant"}
-            onCreate={onCreateMerchant}
-            onEdit={onEditMerchant}
-            transactionDetails={transaction.transactionDetails}
-          />
+          <div className="flex flex-col gap-1">
+            <MerchantSuggestionButton
+              transaction={transaction}
+              disabled={pendingKind === "merchant"}
+              onApply={(merchantId) =>
+                mutations.updateMerchant({ id: transaction.id, merchantId })
+              }
+            />
+            <EntityPicker
+              kind="merchant"
+              value={transaction.merchant?.id ?? null}
+              onChange={(next) =>
+                mutations.updateMerchant({
+                  id: transaction.id,
+                  merchantId: next as string | null,
+                })
+              }
+              placeholder="Select merchant..."
+              className="w-full"
+              allowClear
+              allowCreate
+              allowEdit
+              disabled={pendingKind === "merchant"}
+              onCreate={onCreateMerchant}
+              onEdit={onEditMerchant}
+              transactionDetails={transaction.transactionDetails}
+            />
+          </div>
         )}
         {isDevMode && transaction.externalId ? (
           <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
