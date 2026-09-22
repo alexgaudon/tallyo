@@ -19,11 +19,10 @@ eventsRoutes.get("/events", async (c) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  // Ask nginx (and any other proxy) not to buffer the stream.
-  c.header("X-Accel-Buffering", "no");
-  c.header("Cache-Control", "no-cache, no-transform");
-
-  return streamSSE(c, async (stream) => {
+  // Ask nginx (and any other proxy) not to buffer the stream. Hono's
+  // streamSSE builds its own Response, so the headers must be set on it
+  // directly — setting them on the context is silently dropped.
+  const response = streamSSE(c, async (stream) => {
     let closed = false;
     const unsubscribe = subscribeToSuggestions(userId, (event) => {
       void stream
@@ -47,4 +46,8 @@ eventsRoutes.get("/events", async (c) => {
       unsubscribe();
     }
   });
+
+  response.headers.set("X-Accel-Buffering", "no");
+  response.headers.set("Cache-Control", "no-cache, no-transform");
+  return response;
 });
