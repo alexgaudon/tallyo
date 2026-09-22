@@ -231,6 +231,14 @@ export const TransactionRow = memo(function TransactionRow({
 
       {/* Merchant */}
       <div className="col-span-2 min-w-0 sm:col-span-1">
+        {/* The raw bank descriptor: the thing you actually match a merchant
+            against, and the input to keyword matching. */}
+        <div
+          className="mb-1 truncate text-xs text-muted-foreground"
+          title={transaction.transactionDetails}
+        >
+          {transaction.transactionDetails}
+        </div>
         {showSuggestedMerchant && suggestedMerchant ? (
           <Button
             type="button"
