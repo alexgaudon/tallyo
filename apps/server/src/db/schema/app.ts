@@ -7,6 +7,7 @@ import {
   index,
   integer,
   pgTable,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -159,6 +160,14 @@ export const transaction = pgTable(
     transactionDetails: text("transaction_details").notNull(),
     notes: text("notes"),
     externalId: text("external_id"),
+    // AI (Jev) category suggestion. Advisory metadata only — never auto-applied;
+    // the UI offers it and the user accepts. Populated asynchronously by the
+    // suggestion worker.
+    suggestedCategoryId: text("suggested_category_id").references(
+      () => category.id,
+      { onDelete: "set null" },
+    ),
+    suggestedCategoryConfidence: real("suggested_category_confidence"),
     reviewed: boolean("reviewed").notNull().default(false),
     excludedFromInsights: boolean("excluded_from_insights")
       .notNull()
@@ -199,7 +208,43 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
     fields: [transaction.categoryId],
     references: [category.id],
   }),
+  suggestedCategory: one(category, {
+    fields: [transaction.suggestedCategoryId],
+    references: [category.id],
+  }),
 }));
+
+/**
+ * Durable queue for asynchronous AI category suggestions. One job per
+ * transaction; claimed with `FOR UPDATE SKIP LOCKED` by the in-process worker.
+ */
+export const suggestionJob = pgTable(
+  "suggestion_jobs",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn((): string => crypto.randomUUID()),
+    userId: text("user_id").notNull(),
+    transactionId: text("transaction_id")
+      .notNull()
+      .references(() => transaction.id, { onDelete: "cascade" }),
+    status: text("status", {
+      enum: ["pending", "processing", "done", "failed"],
+    })
+      .notNull()
+      .default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    // Earliest time the job may run; used for retry backoff.
+    runAt: timestamp("run_at").notNull().defaultNow(),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("suggestion_job_transaction_id_unique").on(table.transactionId),
+    index("suggestion_job_status_run_at_idx").on(table.status, table.runAt),
+  ],
+);
 
 export const authToken = pgTable(
   "auth_token",
