@@ -1,0 +1,3 @@
+ALTER TABLE "transactions" ADD COLUMN "suggested_merchant_id" text;--> statement-breakpoint
+ALTER TABLE "transactions" ADD COLUMN "suggested_merchant_confidence" real;--> statement-breakpoint
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_suggested_merchant_id_merchants_id_fk" FOREIGN KEY ("suggested_merchant_id") REFERENCES "public"."merchants"("id") ON DELETE set null ON UPDATE no action;

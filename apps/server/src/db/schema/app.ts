@@ -168,6 +168,13 @@ export const transaction = pgTable(
       { onDelete: "set null" },
     ),
     suggestedCategoryConfidence: real("suggested_category_confidence"),
+    // AI (Jev) merchant suggestion, used when keyword matching did not match a
+    // merchant. Advisory metadata only.
+    suggestedMerchantId: text("suggested_merchant_id").references(
+      () => merchant.id,
+      { onDelete: "set null" },
+    ),
+    suggestedMerchantConfidence: real("suggested_merchant_confidence"),
     reviewed: boolean("reviewed").notNull().default(false),
     excludedFromInsights: boolean("excluded_from_insights")
       .notNull()
@@ -211,6 +218,10 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   suggestedCategory: one(category, {
     fields: [transaction.suggestedCategoryId],
     references: [category.id],
+  }),
+  suggestedMerchant: one(merchant, {
+    fields: [transaction.suggestedMerchantId],
+    references: [merchant.id],
   }),
 }));
 
