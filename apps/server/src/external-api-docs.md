@@ -8,6 +8,37 @@ All endpoints return JSON. Error responses have the shape `{ "error": string }`.
 
 ---
 
+## AI category & merchant suggestions
+
+When the server is configured with an `OPENROUTER_API_KEY`, any transaction that
+ends up without a merchant or category after keyword matching is queued for an
+AI suggestion (Jev). The result is stored on the transaction as **advisory
+metadata** and is never applied automatically.
+
+| Field | Meaning |
+| --- | --- |
+| `suggestedCategoryId` / `suggestedCategory` | Suggested category (id and full object) |
+| `suggestedCategoryConfidence` | 0–1 confidence for the category suggestion |
+| `suggestedMerchantId` / `suggestedMerchant` | Suggested merchant (id and full object); only produced when keyword matching did not match one |
+| `suggestedMerchantConfidence` | 0–1 confidence for the merchant suggestion |
+
+- **Generation is asynchronous.** `POST /api/transactions` returns before
+  suggestions exist; they are filled in by a background worker. Poll
+  `GET /api/transactions` (or `/search`) until the fields populate. There is no
+  webhook for suggestions — the web UI uses an in-session SSE stream
+  (`GET /api/events`), which is session-cookie based and not available to
+  bearer-token clients.
+- A suggestion is only stored when the model is confident enough
+  (`JEV_CONFIDENCE_THRESHOLD`, default `0.5`). The fields stay `null` otherwise.
+- **To apply a suggestion**, `PATCH /api/transactions/:id` with the suggested
+  `categoryId` and/or `merchantId`. Applying does not clear the suggestion
+  fields; they remain as metadata.
+- Server configuration: `OPENROUTER_API_KEY` (enables suggestions),
+  `JEV_MODEL` (default `typesafe/jev-1.13`), `JEV_CONFIDENCE_THRESHOLD`
+  (default `0.5`).
+
+---
+
 ## POST /api/transactions
 
 Create transactions in bulk (1-100 per request).
@@ -88,12 +119,18 @@ List transactions with filtering, sorting, and pagination.
       "transactionDetails": "WHOLEFDS",
       "notes": null,
       "externalId": "unique-id-123",
+      "suggestedCategoryId": null,
+      "suggestedCategoryConfidence": null,
+      "suggestedMerchantId": null,
+      "suggestedMerchantConfidence": null,
       "reviewed": false,
       "splitGroupId": null,
       "createdAt": "2024-01-15T10:00:00.000Z",
       "updatedAt": "2024-01-15T10:00:00.000Z",
       "merchant": { "id": "...", "name": "Whole Foods", ... },
-      "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null }
+      "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null },
+      "suggestedCategory": null,
+      "suggestedMerchant": null
     }
   ],
   "pagination": {
@@ -137,6 +174,8 @@ At least one field is required.
 
 When `merchantId` is updated without `categoryId`, the category is automatically set to the merchant's recommended category (or cleared if the merchant has none). If both are provided, `categoryId` takes precedence.
 
+This is also how you apply an AI suggestion: pass the `suggestedMerchantId` and/or `suggestedCategoryId` from the list endpoints (see "AI category & merchant suggestions" above).
+
 Setting `reviewed` to `true` requires both a merchant and a category to be assigned (either already on the transaction or provided in the same request). Returns `400` if either is missing.
 
 Merchant and category IDs must belong to the authenticated user.
@@ -151,16 +190,22 @@ Merchant and category IDs must belong to the authenticated user.
     "categoryId": "category-uuid",
     "amount": -1250,
     "date": "2024-01-15",
-    "transactionDetails": "WHOLEFDS",
-    "notes": null,
-    "externalId": "unique-id-123",
-    "reviewed": true,
-    "splitFromId": null,
-    "createdAt": "2024-01-15T10:00:00.000Z",
-    "updatedAt": "2024-01-15T10:05:00.000Z",
-    "merchant": { "id": "...", "name": "Whole Foods", ... },
-    "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null }
-  }
+      "transactionDetails": "WHOLEFDS",
+      "notes": null,
+      "externalId": "unique-id-123",
+      "suggestedCategoryId": null,
+      "suggestedCategoryConfidence": null,
+      "suggestedMerchantId": null,
+      "suggestedMerchantConfidence": null,
+      "reviewed": true,
+      "splitGroupId": null,
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2024-01-15T10:05:00.000Z",
+      "merchant": { "id": "...", "name": "Whole Foods", ... },
+      "category": { "id": "...", "name": "Groceries", ..., "parentCategory": null },
+      "suggestedCategory": null,
+      "suggestedMerchant": null
+    }
 }
 ```
 
@@ -215,12 +260,18 @@ Broad search across transactions. Matches when the query appears in `transaction
       "transactionDetails": "SHELL OIL",
       "notes": null,
       "externalId": "unique-id-123",
+      "suggestedCategoryId": null,
+      "suggestedCategoryConfidence": null,
+      "suggestedMerchantId": null,
+      "suggestedMerchantConfidence": null,
       "reviewed": false,
       "splitGroupId": null,
       "createdAt": "2024-01-15T10:00:00.000Z",
       "updatedAt": "2024-01-15T10:00:00.000Z",
       "merchant": { "id": "...", "name": "Shell", ... },
-      "category": { "id": "...", "name": "Gas", ..., "parentCategory": null }
+      "category": { "id": "...", "name": "Gas", ..., "parentCategory": null },
+      "suggestedCategory": null,
+      "suggestedMerchant": null
     }
   ],
   "pagination": {

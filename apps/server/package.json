@@ -26,6 +26,8 @@
     "@orpc/react-query": "^1.13.6",
     "@orpc/server": "^1.13.6",
     "@orpc/zod": "^1.13.6",
+    "@tanstack/ai": "^0.58.0",
+    "@tanstack/ai-openrouter": "^0.19.16",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",

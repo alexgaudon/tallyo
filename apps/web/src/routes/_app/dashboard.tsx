@@ -196,6 +196,7 @@ function RouteComponent() {
           </>
         }
         description="Here's your financial picture for this period."
+        stackOnMobile
         actions={
           <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="w-full sm:w-auto">

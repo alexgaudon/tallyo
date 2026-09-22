@@ -369,6 +369,55 @@ export async function deleteSession(sessionToken: string): Promise<void> {
 }
 
 /**
+ * Development-only: start a session without Discord OAuth.
+ *
+ * Reuses the first existing user when there is one (so local data is visible),
+ * otherwise creates a fixed test user. Callers MUST gate this to non-production.
+ */
+export async function createDevLoginSession(opts?: {
+  fresh?: boolean;
+}): Promise<{ sessionToken: string; userId: string }> {
+  const now = new Date();
+  let userId: string;
+
+  const existing = opts?.fresh ? [] : await db.select().from(user).limit(1);
+
+  if (existing.length > 0) {
+    userId = existing[0].id;
+  } else {
+    userId = "user_dev";
+    const found = await db
+      .select()
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+    if (found.length === 0) {
+      await db.insert(user).values({
+        id: userId,
+        name: process.env.DEV_LOGIN_NAME || "Dev User",
+        email: process.env.DEV_LOGIN_EMAIL || "dev@tallyo.local",
+        emailVerified: true,
+        image: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+  }
+
+  const sessionToken = generateSessionToken();
+  await db.insert(session).values({
+    id: sessionToken,
+    userId,
+    token: sessionToken,
+    expiresAt: new Date(Date.now() + SESSION_DURATION_MS),
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return { sessionToken, userId };
+}
+
+/**
  * Generate and store state parameter for CSRF protection
  */
 export function generateState(): string {

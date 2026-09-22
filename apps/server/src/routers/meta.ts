@@ -1,7 +1,8 @@
 import { addDays, format } from "date-fns";
-import { and, asc, count, eq, lte } from "drizzle-orm";
+import { and, asc, count, desc, eq, lte } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/db";
-import { account, settings, transaction } from "@/db/schema";
+import { account, settings, suggestionJob, transaction } from "@/db/schema";
 import { protectedProcedure } from "../lib/orpc";
 
 export const metaRouter = {
@@ -123,4 +124,54 @@ export const metaRouter = {
       unreviewedTransactionCount: unreviewedTransactionCount[0]?.count ?? 0,
     };
   }),
+  /** Dev tooling: recent AI suggestion jobs with their transaction context. */
+  getSuggestionJobs: protectedProcedure
+    .input(z.object({ limit: z.number().min(1).max(200).default(50) }))
+    .handler(async ({ context, input }) => {
+      return db
+        .select({
+          id: suggestionJob.id,
+          status: suggestionJob.status,
+          attempts: suggestionJob.attempts,
+          runAt: suggestionJob.runAt,
+          lastError: suggestionJob.lastError,
+          createdAt: suggestionJob.createdAt,
+          updatedAt: suggestionJob.updatedAt,
+          transactionId: suggestionJob.transactionId,
+          transactionDetails: transaction.transactionDetails,
+          amount: transaction.amount,
+          categoryId: transaction.categoryId,
+          suggestedCategoryId: transaction.suggestedCategoryId,
+          suggestedCategoryConfidence: transaction.suggestedCategoryConfidence,
+          suggestedMerchantId: transaction.suggestedMerchantId,
+          suggestedMerchantConfidence: transaction.suggestedMerchantConfidence,
+        })
+        .from(suggestionJob)
+        .leftJoin(transaction, eq(suggestionJob.transactionId, transaction.id))
+        .where(eq(suggestionJob.userId, context.session.user.id))
+        .orderBy(desc(suggestionJob.createdAt))
+        .limit(input.limit);
+    }),
+  /** Dev tooling: put a suggestion job back on the queue. */
+  retrySuggestionJob: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ context, input }) => {
+      const updated = await db
+        .update(suggestionJob)
+        .set({
+          status: "pending",
+          attempts: 0,
+          runAt: new Date(),
+          lastError: null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(suggestionJob.id, input.id),
+            eq(suggestionJob.userId, context.session.user.id),
+          ),
+        )
+        .returning({ id: suggestionJob.id });
+      return { requeued: updated.length };
+    }),
 };

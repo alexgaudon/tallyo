@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { CreateCategoryDialog } from "@/components/categories/create-category-dialog";
 import { EditCategoryDialog } from "@/components/categories/edit-category-dialog";
@@ -33,12 +32,6 @@ export interface LedgerViewProps {
   scope?: ViewScope;
   /** Tighter vertical rhythm and padding, used by lenses. */
   dense?: boolean;
-  /**
-   * Collapse the filter controls behind a "Filters" disclosure (with a
-   * chevron) instead of showing them inline. Used by the mobile lens so it
-   * opens minimal rather than dumping the whole filter wall.
-   */
-  collapsibleFilters?: boolean;
   className?: string;
 }
 
@@ -54,7 +47,6 @@ export function LedgerView({
   onViewChange,
   scope = "ledger",
   dense = false,
-  collapsibleFilters = false,
   className,
 }: LedgerViewProps) {
   const queryClient = useQueryClient();
@@ -97,13 +89,9 @@ export function LedgerView({
 
   return (
     <div className={cn(dense ? "space-y-4" : "space-y-6", className)}>
-      {collapsibleFilters ? (
-        <FilterDisclosure view={view} onViewChange={onViewChange} />
-      ) : (
-        <Panel dense>
-          <ViewControls view={view} onViewChange={onViewChange} />
-        </Panel>
-      )}
+      <Panel dense>
+        <ViewControls view={view} onViewChange={onViewChange} />
+      </Panel>
 
       {reviewing && transactions.length > 0 ? (
         <ReviewCard
@@ -217,53 +205,5 @@ function activeFilterCount(view: ViewSearch): number {
     (view.noMerchant ? 1 : 0) +
     (view.min !== undefined ? 1 : 0) +
     (view.max !== undefined ? 1 : 0)
-  );
-}
-
-/**
- * Minimal, collapsed filter bar for tight surfaces (the mobile lens). The full
- * controls stay one tap away behind the chevron, and an active count keeps the
- * collapsed state honest.
- */
-function FilterDisclosure({
-  view,
-  onViewChange,
-}: {
-  view: ViewSearch;
-  onViewChange: (next: ViewSearch) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const count = activeFilterCount(view);
-
-  return (
-    <Panel dense className="gap-0">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 rounded-lg text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      >
-        <span className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-          <span>Filters</span>
-          {count > 0 ? (
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent">
-              {count}
-            </span>
-          ) : null}
-        </span>
-        <ChevronDown
-          className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform",
-            open && "rotate-180",
-          )}
-        />
-      </button>
-      {open ? (
-        <div className="pt-3">
-          <ViewControls view={view} onViewChange={onViewChange} />
-        </div>
-      ) : null}
-    </Panel>
   );
 }

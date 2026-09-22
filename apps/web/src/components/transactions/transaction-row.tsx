@@ -36,6 +36,10 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
+import {
+  CategorySuggestionButton,
+  MerchantSuggestionButton,
+} from "./suggestion-button";
 
 /**
  * Shared column template: two columns on narrow screens, six aligned columns on
@@ -227,6 +231,14 @@ export const TransactionRow = memo(function TransactionRow({
 
       {/* Merchant */}
       <div className="col-span-2 min-w-0 sm:col-span-1">
+        {/* The raw bank descriptor: the thing you actually match a merchant
+            against, and the input to keyword matching. */}
+        <div
+          className="mb-1 truncate text-xs text-muted-foreground"
+          title={transaction.transactionDetails}
+        >
+          {transaction.transactionDetails}
+        </div>
         {showSuggestedMerchant && suggestedMerchant ? (
           <Button
             type="button"
@@ -264,25 +276,34 @@ export const TransactionRow = memo(function TransactionRow({
             <span className="text-sm text-muted-foreground">No merchant</span>
           )
         ) : (
-          <EntityPicker
-            kind="merchant"
-            value={transaction.merchant?.id ?? null}
-            onChange={(next) =>
-              mutations.updateMerchant({
-                id: transaction.id,
-                merchantId: next as string | null,
-              })
-            }
-            placeholder="Select merchant..."
-            className="w-full"
-            allowClear
-            allowCreate
-            allowEdit
-            disabled={pendingKind === "merchant"}
-            onCreate={onCreateMerchant}
-            onEdit={onEditMerchant}
-            transactionDetails={transaction.transactionDetails}
-          />
+          <div className="flex flex-col gap-1">
+            <MerchantSuggestionButton
+              transaction={transaction}
+              disabled={pendingKind === "merchant"}
+              onApply={(merchantId) =>
+                mutations.updateMerchant({ id: transaction.id, merchantId })
+              }
+            />
+            <EntityPicker
+              kind="merchant"
+              value={transaction.merchant?.id ?? null}
+              onChange={(next) =>
+                mutations.updateMerchant({
+                  id: transaction.id,
+                  merchantId: next as string | null,
+                })
+              }
+              placeholder="Select merchant..."
+              className="w-full"
+              allowClear
+              allowCreate
+              allowEdit
+              disabled={pendingKind === "merchant"}
+              onCreate={onCreateMerchant}
+              onEdit={onEditMerchant}
+              transactionDetails={transaction.transactionDetails}
+            />
+          </div>
         )}
         {isDevMode && transaction.externalId ? (
           <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground">
@@ -312,24 +333,33 @@ export const TransactionRow = memo(function TransactionRow({
             )}
           </div>
         ) : (
-          <EntityPicker
-            kind="category"
-            value={transaction.category?.id ?? null}
-            onChange={(next) =>
-              mutations.updateCategory({
-                id: transaction.id,
-                categoryId: next as string | null,
-              })
-            }
-            placeholder="Select category..."
-            className="w-full"
-            allowClear
-            allowCreate
-            allowEdit
-            disabled={pendingKind === "category"}
-            onCreate={onCreateCategory}
-            onEdit={onEditCategory}
-          />
+          <div className="flex flex-col gap-1">
+            <CategorySuggestionButton
+              transaction={transaction}
+              disabled={pendingKind === "category"}
+              onApply={(categoryId) =>
+                mutations.updateCategory({ id: transaction.id, categoryId })
+              }
+            />
+            <EntityPicker
+              kind="category"
+              value={transaction.category?.id ?? null}
+              onChange={(next) =>
+                mutations.updateCategory({
+                  id: transaction.id,
+                  categoryId: next as string | null,
+                })
+              }
+              placeholder="Select category..."
+              className="w-full"
+              allowClear
+              allowCreate
+              allowEdit
+              disabled={pendingKind === "category"}
+              onCreate={onCreateCategory}
+              onEdit={onEditCategory}
+            />
+          </div>
         )}
       </div>
 

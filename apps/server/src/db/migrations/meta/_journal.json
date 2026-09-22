@@ -50,6 +50,20 @@
       "when": 1790020940829,
       "tag": "0006_flow_split_group",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790091372690,
+      "tag": "0007_elite_drax",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790092939149,
+      "tag": "0008_fair_stellaris",
+      "breakpoints": true
     }
   ]
 }
