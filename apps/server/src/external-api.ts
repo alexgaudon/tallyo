@@ -9,6 +9,7 @@ import { db } from "./db";
 import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
+import { enqueueSuggestionJobs } from "./lib/suggestion-queue";
 import { MAX_FUTURE_TRANSACTION_DAYS } from "./lib/transaction-view";
 import {
   getTransactionWithRelations,
@@ -121,6 +122,19 @@ externalApi.post("/transactions", async (c) => {
 
     const addedCount = insertedTransactions.length;
 
+    // Queue AI category suggestions for newly inserted rows with no category.
+    // Advisory only; the worker fills them in asynchronously.
+    const uncategorizedIds = insertedTransactions
+      .filter((row) => !row.categoryId)
+      .map((row) => row.id);
+    if (uncategorizedIds.length > 0) {
+      try {
+        await enqueueSuggestionJobs(uncategorizedIds, userId);
+      } catch (error) {
+        logger.warn("Failed to enqueue Jev suggestion jobs:", { error });
+      }
+    }
+
     return c.json({
       message: "Transactions received",
       count: addedCount,
@@ -225,6 +239,7 @@ externalApi.get("/transactions", async (c) => {
       with: {
         merchant: true,
         category: { with: { parentCategory: true } },
+        suggestedCategory: true,
       },
       orderBy: [desc(transaction.date), desc(transaction.amount)],
       limit: pageSize,
@@ -322,6 +337,7 @@ externalApi.get("/transactions/search", async (c) => {
         with: {
           merchant: true,
           category: { with: { parentCategory: true } },
+          suggestedCategory: true,
         },
       });
 

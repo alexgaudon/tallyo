@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { merchant, merchantKeyword, transaction } from "@/db/schema";
+import { enqueueSuggestionJobs } from "@/lib/suggestion-queue";
 import {
   buildTransactionOrderBy,
   buildTransactionWhere,
@@ -43,6 +44,7 @@ export const getTransactionWithRelations = async (transactionId: string) => {
           parentCategory: true,
         },
       },
+      suggestedCategory: true,
     },
   });
 };
@@ -257,6 +259,20 @@ export const transactionsRouter = {
             throw new Error("Failed to create transaction");
           }
 
+          // Queue an AI category suggestion when nothing was assigned. Advisory
+          // only; the worker stores it as metadata for the UI to offer. Never
+          // blocks the create.
+          if (!newTransaction[0].categoryId) {
+            try {
+              await enqueueSuggestionJobs(
+                [newTransaction[0].id],
+                context.session.user.id,
+              );
+            } catch (error) {
+              logger.warn("Failed to enqueue Jev suggestion job:", { error });
+            }
+          }
+
           const createdTransaction = await getTransactionWithRelations(
             newTransaction[0].id,
           );
@@ -287,6 +303,7 @@ export const transactionsRouter = {
             with: {
               merchant: true,
               category: { with: { parentCategory: true } },
+              suggestedCategory: true,
             },
             limit: input.pageSize,
             offset,
