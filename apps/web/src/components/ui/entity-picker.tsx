@@ -256,34 +256,12 @@ export function EntityPicker({
             selectedEntities.map((entity) => (
               <Badge key={entity.id} variant="secondary" className="text-xs">
                 {formatEntity(entity)}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onChange(selectedIds.filter((id) => id !== entity.id));
-                  }}
-                  className="ml-1 rounded-full hover:bg-muted-foreground/20 touch-manipulation"
-                >
-                  <XIcon className="h-3 w-3" />
-                </button>
               </Badge>
             ))
           ) : (
             <>
               <Badge variant="secondary" className="text-xs">
                 {formatEntity(selectedEntities[0])}
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onChange(
-                      selectedIds.filter((id) => id !== selectedEntities[0].id),
-                    );
-                  }}
-                  className="ml-1 rounded-full hover:bg-muted-foreground/20 touch-manipulation"
-                >
-                  <XIcon className="h-3 w-3" />
-                </button>
               </Badge>
               <span className="text-muted-foreground">
                 +{selectedEntities.length - 1} more
