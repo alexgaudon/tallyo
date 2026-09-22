@@ -8,7 +8,8 @@
 		"build": "vite build",
 		"serve": "vite preview",
 		"start": "vite",
-		"check-types": "tsc --noEmit"
+		"check-types": "tsc --noEmit",
+		"test": "vitest run"
 	},
 	"devDependencies": {
 		"@tanstack/react-query-devtools": "^5.90.2",
@@ -23,7 +24,8 @@
 		"postcss": "^8.5.18",
 		"server": "*",
 		"tailwindcss": "^4.1.16",
-		"vite": "^7.3.5"
+		"vite": "^7.3.5",
+		"vitest": "^5.0.1"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

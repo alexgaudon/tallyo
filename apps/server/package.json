@@ -7,6 +7,7 @@
     "build": "tsc && tsc-alias && cp src/external-api-docs.md dist/src/external-api-docs.md && cp -r src/db/migrations dist/src/db/migrations",
     "build:full": "npm run build && cd ../web && npm run build && mkdir -p ../server/public && cp -r dist/* ../server/public/",
     "check-types": "tsc --noEmit",
+    "test": "vitest run",
     "dev": "tsx watch src/start.ts",
     "start": "node dist/src/start.js",
     "db:backup": "./backup-db.sh",
@@ -41,6 +42,7 @@
     "drizzle-kit": "^0.31.5",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.1"
   }
 }
