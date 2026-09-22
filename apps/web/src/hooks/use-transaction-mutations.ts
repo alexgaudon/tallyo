@@ -16,6 +16,15 @@ export type LedgerViewData = Awaited<
 
 export type LedgerTransaction = LedgerViewData["transactions"][number];
 
+/** The ledger actions that can be in flight for a single row. */
+export type TransactionPendingKind =
+  | "review"
+  | "category"
+  | "merchant"
+  | "notes"
+  | "remove"
+  | "split";
+
 /**
  * The single optimistic-mutation surface for the ledger. Every row and the
  * review card drive these; the shared flow cancels the view query, snapshots
@@ -47,7 +56,6 @@ export function useTransactionMutations(
 
   const optimistic = <TVars>(
     transform: (data: LedgerViewData, vars: TVars) => LedgerViewData,
-    options?: { invalidateSession?: boolean },
   ) => ({
     onMutate: async (vars: TVars) => {
       await queryClient.cancelQueries({ queryKey: view.queryKey });
@@ -70,9 +78,6 @@ export function useTransactionMutations(
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: view.queryKey });
-      if (options?.invalidateSession) {
-        await queryClient.invalidateQueries({ queryKey: ["session"] });
-      }
     },
   });
 
@@ -133,18 +138,71 @@ export function useTransactionMutations(
     ),
   );
 
-  const toggleReviewed = useMutation(
-    orpc.transactions.toggleTransactionReviewed.mutationOptions(
-      optimistic<{ id: string }>(
-        (data, vars) => ({
-          ...data,
-          transactions: data.transactions.map((tx) =>
-            tx.id === vars.id ? { ...tx, reviewed: !tx.reviewed } : tx,
+  const sessionQueryKey = ["session"] as const;
+
+  /**
+   * Reviewing a row changes the unreviewed count in the session cache. Patch it
+   * directly instead of invalidating `["session"]`, which would refetch the
+   * session, meta, and settings on every toggle.
+   */
+  const patchUnreviewedCount = (delta: number) => {
+    queryClient.setQueryData<{
+      meta?: { unreviewedTransactionCount?: number };
+    }>(sessionQueryKey, (old) => {
+      if (typeof old?.meta?.unreviewedTransactionCount !== "number") return old;
+      return {
+        ...old,
+        meta: {
+          ...old.meta,
+          unreviewedTransactionCount: Math.max(
+            0,
+            old.meta.unreviewedTransactionCount + delta,
           ),
-        }),
-        { invalidateSession: true },
-      ),
-    ),
+        },
+      };
+    });
+  };
+
+  const toggleReviewed = useMutation(
+    orpc.transactions.toggleTransactionReviewed.mutationOptions({
+      onMutate: async ({ id }) => {
+        await queryClient.cancelQueries({ queryKey: view.queryKey });
+        const previousData = queryClient.getQueryData<LedgerViewData>(
+          view.queryKey,
+        );
+        const previousSession = queryClient.getQueryData(sessionQueryKey);
+        const wasReviewed = previousData?.transactions.find(
+          (tx) => tx.id === id,
+        )?.reviewed;
+
+        queryClient.setQueryData<LedgerViewData>(view.queryKey, (old) =>
+          old
+            ? {
+                ...old,
+                transactions: old.transactions.map((tx) =>
+                  tx.id === id ? { ...tx, reviewed: !tx.reviewed } : tx,
+                ),
+              }
+            : old,
+        );
+        if (wasReviewed !== undefined) {
+          patchUnreviewedCount(wasReviewed ? 1 : -1);
+        }
+
+        return { previousData, previousSession };
+      },
+      onError: (_error, _vars, context) => {
+        if (context?.previousData !== undefined) {
+          queryClient.setQueryData(view.queryKey, context.previousData);
+        }
+        if (context?.previousSession !== undefined) {
+          queryClient.setQueryData(sessionQueryKey, context.previousSession);
+        }
+      },
+      onSettled: async () => {
+        await queryClient.invalidateQueries({ queryKey: view.queryKey });
+      },
+    }),
   );
 
   const removeTransaction = (
@@ -187,6 +245,29 @@ export function useTransactionMutations(
     deleteTransaction.isPending ||
     splitTransaction.isPending;
 
+  /**
+   * The transaction currently in flight for each action, so a row can disable
+   * only its own control instead of dimming the whole list. `null` when idle.
+   */
+  const pending: Record<TransactionPendingKind, string | null> = {
+    review: toggleReviewed.isPending
+      ? (toggleReviewed.variables?.id ?? null)
+      : null,
+    category: updateCategory.isPending
+      ? (updateCategory.variables?.id ?? null)
+      : null,
+    merchant: updateMerchant.isPending
+      ? (updateMerchant.variables?.id ?? null)
+      : null,
+    notes: updateNotes.isPending ? (updateNotes.variables?.id ?? null) : null,
+    remove: deleteTransaction.isPending
+      ? (deleteTransaction.variables?.id ?? null)
+      : null,
+    split: splitTransaction.isPending
+      ? (splitTransaction.variables?.id ?? null)
+      : null,
+  };
+
   return {
     updateCategory: updateCategory.mutate,
     updateMerchant: updateMerchant.mutate,
@@ -195,6 +276,7 @@ export function useTransactionMutations(
     deleteTransaction: deleteTransaction.mutate,
     splitTransaction: splitTransaction.mutateAsync,
     isPending,
+    pending,
   };
 }
 

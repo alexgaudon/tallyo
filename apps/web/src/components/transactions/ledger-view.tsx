@@ -125,7 +125,6 @@ export function LedgerView({
           transactions={transactions}
           hasActiveFilters={hasActiveViewFilters(view)}
           reviewOnly={reviewing}
-          isMutating={mutations.isPending}
           mutations={mutations}
           onCustomSplit={(transaction) =>
             setSplitDialog({ open: true, transaction })

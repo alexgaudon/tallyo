@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import type {
   LedgerTransaction,
   TransactionMutations,
+  TransactionPendingKind,
 } from "@/hooks/use-transaction-mutations";
 import { findMerchantsMatchingDetails } from "@/lib/merchant-suggestions";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,6 @@ interface TransactionListProps {
   transactions: LedgerTransaction[];
   hasActiveFilters: boolean;
   reviewOnly: boolean;
-  isMutating?: boolean;
   mutations: TransactionMutations;
   onCustomSplit: (transaction: LedgerTransaction) => void;
   onEditMerchant: (merchantId: string) => void;
@@ -26,11 +26,21 @@ interface TransactionListProps {
   onCategoryClick?: (categoryId: string) => void;
 }
 
+/** Which action (if any) is in flight for a given row. */
+function pendingKindForRow(
+  id: string,
+  pending: TransactionMutations["pending"],
+): TransactionPendingKind | null {
+  for (const kind of Object.keys(pending) as TransactionPendingKind[]) {
+    if (pending[kind] === id) return kind;
+  }
+  return null;
+}
+
 export function TransactionList({
   transactions,
   hasActiveFilters,
   reviewOnly,
-  isMutating = false,
   mutations,
   onCustomSplit,
   onEditMerchant,
@@ -104,7 +114,7 @@ export function TransactionList({
           suggestedMerchant={
             suggestedMerchantByTransactionId.get(transaction.id) ?? null
           }
-          isMutating={isMutating}
+          pendingKind={pendingKindForRow(transaction.id, mutations.pending)}
           mutations={mutations}
           onCustomSplit={onCustomSplit}
           onEditMerchant={onEditMerchant}

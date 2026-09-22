@@ -20,6 +20,7 @@ import {
 import type {
   LedgerTransaction,
   TransactionMutations,
+  TransactionPendingKind,
 } from "@/hooks/use-transaction-mutations";
 import { cn } from "@/lib/utils";
 import type { MerchantWithKeywordsAndCategory } from "../../../../server/src/routers";
@@ -112,7 +113,8 @@ interface TransactionRowProps {
   transaction: LedgerTransaction;
   suggestedMerchant?: MerchantWithKeywordsAndCategory | null;
   isDevMode?: boolean;
-  isMutating?: boolean;
+  /** Which action is currently in flight for this row, if any. */
+  pendingKind?: TransactionPendingKind | null;
   mutations: TransactionMutations;
   onCustomSplit: (transaction: LedgerTransaction) => void;
   onEditMerchant: (merchantId: string) => void;
@@ -127,7 +129,7 @@ export const TransactionRow = memo(function TransactionRow({
   transaction,
   suggestedMerchant,
   isDevMode = false,
-  isMutating = false,
+  pendingKind = null,
   mutations,
   onCustomSplit,
   onEditMerchant,
@@ -185,7 +187,6 @@ export const TransactionRow = memo(function TransactionRow({
         "grid items-start gap-x-3 gap-y-2 px-3 py-3 transition-soft hover:bg-muted/40 sm:items-center",
         LEDGER_GRID_COLUMNS,
         !transaction.reviewed && "border-l-2 border-l-accent",
-        isMutating && "opacity-60",
       )}
     >
       {/* Date */}
@@ -232,7 +233,7 @@ export const TransactionRow = memo(function TransactionRow({
             variant="secondary"
             size="sm"
             className="mb-1 h-7 w-full justify-start text-left text-xs font-normal"
-            disabled={isMutating}
+            disabled={pendingKind === "merchant"}
             onClick={() =>
               mutations.updateMerchant({
                 id: transaction.id,
@@ -277,7 +278,7 @@ export const TransactionRow = memo(function TransactionRow({
             allowClear
             allowCreate
             allowEdit
-            disabled={isMutating}
+            disabled={pendingKind === "merchant"}
             onCreate={onCreateMerchant}
             onEdit={onEditMerchant}
             transactionDetails={transaction.transactionDetails}
@@ -325,7 +326,7 @@ export const TransactionRow = memo(function TransactionRow({
             allowClear
             allowCreate
             allowEdit
-            disabled={isMutating}
+            disabled={pendingKind === "category"}
             onCreate={onCreateCategory}
             onEdit={onEditCategory}
           />
@@ -351,7 +352,7 @@ export const TransactionRow = memo(function TransactionRow({
           placeholder="Add notes..."
           aria-label="Transaction notes"
           className="h-9 w-full rounded-md border border-input bg-background/80 px-2 text-base transition-soft focus:outline-none focus:ring-2 focus:ring-ring/70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
-          disabled={isMutating}
+          disabled={pendingKind === "notes"}
         />
       </div>
 
@@ -370,7 +371,7 @@ export const TransactionRow = memo(function TransactionRow({
                     ? "text-income"
                     : "text-muted-foreground",
                 )}
-                disabled={isReviewDisabled || isMutating}
+                disabled={isReviewDisabled || pendingKind === "review"}
                 aria-label={
                   transaction.reviewed
                     ? "Mark as unreviewed"

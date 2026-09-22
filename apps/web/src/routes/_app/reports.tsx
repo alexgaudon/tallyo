@@ -150,7 +150,6 @@ function RouteComponent() {
               transactions={transactions}
               hasActiveFilters={hasActiveViewFilters(search)}
               reviewOnly={reviewing}
-              isMutating={mutations.isPending}
               mutations={mutations}
               onCustomSplit={(transaction) =>
                 setSplitDialog({ open: true, transaction })
