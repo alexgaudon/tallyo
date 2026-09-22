@@ -11,6 +11,7 @@ import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";
 import { appRouter } from "./routers/index";
 import authRoutes from "./routes/auth";
+import { eventsRoutes } from "./routes/events";
 
 // ---- constants ----
 const IS_PROD = process.env.NODE_ENV === "production";
@@ -79,6 +80,8 @@ app.onError((err, c) => {
 
 // ---- routes ----
 app.route("/api/auth", authRoutes);
+// Session-authed SSE (mounted before the bearer-token external API).
+app.route("/api", eventsRoutes);
 app.route("/api", externalApi);
 
 // ---- RPC ----
