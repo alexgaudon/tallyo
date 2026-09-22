@@ -11,6 +11,7 @@
 		"dev": "turbo dev --filter=web --filter=server",
 		"build": "turbo build --filter=web --filter=server",
 		"check-types": "rm -rf apps/server/dist apps/web/tsconfig.tsbuildinfo && turbo check-types",
+		"test": "turbo test --filter=web --filter=server",
 		"dev:native": "turbo -F native dev",
 		"dev:web": "turbo -F web dev",
 		"dev:server": "turbo -F server dev",

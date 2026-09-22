@@ -38,6 +38,10 @@
 		"db:generate": {
 			"cache": false,
 			"persistent": true
+		},
+		"test": {
+			"cache": false,
+			"env": ["DATABASE_URL"]
 		}
 	}
 }
