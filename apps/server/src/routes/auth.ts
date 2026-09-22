@@ -1,5 +1,6 @@
 import { type Context, Hono } from "hono";
 import {
+  createDevLoginSession,
   deleteSession,
   getDiscordAuthUrl,
   getSession,
@@ -44,6 +45,30 @@ authRoutes.get("/session", async (c) => {
   const sessionToken = parseSessionToken(c.req.header("Cookie"));
   const session = await getSession(sessionToken);
   return c.json({ session: session ?? null });
+});
+
+/**
+ * Development-only shortcut: GET this URL to be signed in without Discord.
+ * It reuses the first existing user (so local data is visible) or creates a
+ * fixed test user. Add `?fresh=1` to force the test user. In production the
+ * route is indistinguishable from a missing one.
+ */
+authRoutes.get("/dev-login", async (c) => {
+  if (process.env.NODE_ENV === "production") {
+    return c.notFound();
+  }
+
+  try {
+    const { sessionToken } = await createDevLoginSession({
+      fresh: c.req.query("fresh") === "1",
+    });
+    const response = c.redirect(`${getRedirectOrigin(c)}/dashboard`);
+    response.headers.append("Set-Cookie", sessionCookieString(sessionToken));
+    return response;
+  } catch (error) {
+    logger.error("Dev login failed", { error });
+    return c.json({ error: "Dev login failed" }, 500);
+  }
 });
 
 authRoutes.get("/discord/authorize", async (c) => {
