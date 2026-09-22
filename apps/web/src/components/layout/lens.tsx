@@ -85,12 +85,7 @@ export function TransactionsLens({
 
   const body = (
     <EntityPickerProvider>
-      <LedgerView
-        view={view}
-        onViewChange={onViewChange}
-        dense
-        collapsibleFilters={!isDesktop}
-      />
+      <LedgerView view={view} onViewChange={onViewChange} dense />
     </EntityPickerProvider>
   );
 

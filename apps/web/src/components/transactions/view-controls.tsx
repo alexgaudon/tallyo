@@ -1,5 +1,12 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowUpDown, SearchIcon, Store, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  SearchIcon,
+  SlidersHorizontal,
+  Store,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EntityPicker } from "@/components/ui/entity-picker";
@@ -55,6 +62,22 @@ function Segmented<T extends string>({
         </button>
       ))}
     </fieldset>
+  );
+}
+
+/** Number of active filters, for the collapsed mobile summary badge. */
+function countActiveFilters(search: ViewSearch): number {
+  return (
+    (search.from ? 1 : 0) +
+    (search.to ? 1 : 0) +
+    (search.categories?.length ?? 0) +
+    (search.merchants?.length ?? 0) +
+    (search.q ? 1 : 0) +
+    (search.review !== "all" ? 1 : 0) +
+    (search.side !== "all" ? 1 : 0) +
+    (search.noMerchant ? 1 : 0) +
+    (search.min !== undefined ? 1 : 0) +
+    (search.max !== undefined ? 1 : 0)
   );
 }
 
@@ -214,6 +237,12 @@ function ViewControlsForm({
     setMaxInput(search.max !== undefined ? String(search.max) : "");
   }, [search.max]);
 
+  const [expanded, setExpanded] = useState(false);
+  const activeCount = countActiveFilters(search);
+  // On mobile the controls collapse to just the search bar; on lg they are
+  // always shown. `expandable` toggles the rest.
+  const expandable = expanded ? "flex" : "hidden lg:flex";
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -227,7 +256,31 @@ function ViewControlsForm({
             aria-label="Search transactions"
           />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 justify-between gap-2 lg:hidden"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          <span className="flex items-center gap-2">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Filters
+            {activeCount > 0 ? (
+              <span className="rounded-full bg-accent/15 px-1.5 text-xs font-semibold text-accent">
+                {activeCount}
+              </span>
+            ) : null}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform",
+              expanded && "rotate-180",
+            )}
+          />
+        </Button>
+        <div className={cn(expandable, "flex-wrap items-center gap-2")}>
           <Segmented
             label="Review state"
             value={search.review}
@@ -293,7 +346,7 @@ function ViewControlsForm({
 
       {/* Date range. The ledger and reports both filter on it; drill-downs and
           the reports page rely on it as the start/end of the reporting period. */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={cn(expandable, "flex-wrap items-center gap-2")}>
         <span className="text-xs font-medium text-muted-foreground">Dates</span>
         <Input
           type="date"
@@ -316,7 +369,9 @@ function ViewControlsForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div
+        className={cn(expandable, "flex-col gap-2 sm:flex-row sm:items-center")}
+      >
         <EntityPicker
           kind="category"
           multiple
