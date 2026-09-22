@@ -8,6 +8,7 @@ import { MobileNavDrawer } from "@/components/layout/mobile-nav";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
+import { useSuggestionStream } from "@/hooks/use-suggestion-stream";
 import { isNavActive, navItems, settingsNavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,9 @@ export function AppShell() {
   const location = useLocation();
   const [commandOpen, setCommandOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Patch the ledger in place when the AI suggestion worker finishes.
+  useSuggestionStream();
 
   useHotkey(
     "Mod+K",

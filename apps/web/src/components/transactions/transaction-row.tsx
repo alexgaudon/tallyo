@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
+import { CategorySuggestionButton } from "./suggestion-button";
 
 /**
  * Shared column template: two columns on narrow screens, six aligned columns on
@@ -312,24 +313,33 @@ export const TransactionRow = memo(function TransactionRow({
             )}
           </div>
         ) : (
-          <EntityPicker
-            kind="category"
-            value={transaction.category?.id ?? null}
-            onChange={(next) =>
-              mutations.updateCategory({
-                id: transaction.id,
-                categoryId: next as string | null,
-              })
-            }
-            placeholder="Select category..."
-            className="w-full"
-            allowClear
-            allowCreate
-            allowEdit
-            disabled={pendingKind === "category"}
-            onCreate={onCreateCategory}
-            onEdit={onEditCategory}
-          />
+          <div className="flex flex-col gap-1">
+            <CategorySuggestionButton
+              transaction={transaction}
+              disabled={pendingKind === "category"}
+              onApply={(categoryId) =>
+                mutations.updateCategory({ id: transaction.id, categoryId })
+              }
+            />
+            <EntityPicker
+              kind="category"
+              value={transaction.category?.id ?? null}
+              onChange={(next) =>
+                mutations.updateCategory({
+                  id: transaction.id,
+                  categoryId: next as string | null,
+                })
+              }
+              placeholder="Select category..."
+              className="w-full"
+              allowClear
+              allowCreate
+              allowEdit
+              disabled={pendingKind === "category"}
+              onCreate={onCreateCategory}
+              onEdit={onEditCategory}
+            />
+          </div>
         )}
       </div>
 
