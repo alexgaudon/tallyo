@@ -1,4 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { format, parseISO } from "date-fns";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -7,7 +8,9 @@ import {
   Store,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DateRange } from "react-day-picker";
+import DateRangePicker from "@/components/date-picker/date-range-picker";
 import { Button } from "@/components/ui/button";
 import { EntityPicker } from "@/components/ui/entity-picker";
 import { Input } from "@/components/ui/input";
@@ -164,20 +167,41 @@ function ReportsViewControls() {
     navigate({ to: "/reports", search: clearedViewSearch(search) });
   }, [navigate, search]);
 
-  return <ViewControlsForm search={search} onUpdate={update} onClear={clear} />;
+  return (
+    <ViewControlsForm
+      search={search}
+      onUpdate={update}
+      onClear={clear}
+      datePicker="range"
+    />
+  );
 }
 
 interface ViewControlsFormProps {
   search: ViewSearch;
   onUpdate: (updates: Partial<ViewSearch>) => void;
   onClear: () => void;
+  /**
+   * The date filter UI. The compact `inputs` variant (two native date fields)
+   * is the ledger default; `range` swaps in the dashboard's popover calendar.
+   */
+  datePicker?: "inputs" | "range";
 }
 
 function ViewControlsForm({
   search,
   onUpdate,
   onClear,
+  datePicker = "inputs",
 }: ViewControlsFormProps) {
+  const dateRange = useMemo<DateRange | undefined>(() => {
+    if (!search.from && !search.to) return undefined;
+    return {
+      from: search.from ? parseISO(search.from) : undefined,
+      to: search.to ? parseISO(search.to) : undefined,
+    };
+  }, [search.from, search.to]);
+
   const [text, setText] = useState(search.q ?? "");
   const debouncedText = useDebounce(text, 300);
   const lastTextRef = useRef(search.q ?? "");
@@ -348,25 +372,39 @@ function ViewControlsForm({
           the reports page rely on it as the start/end of the reporting period. */}
       <div className={cn(expandable, "flex-wrap items-center gap-2")}>
         <span className="text-xs font-medium text-muted-foreground">Dates</span>
-        <Input
-          type="date"
-          value={search.from ?? ""}
-          onChange={(event) =>
-            onUpdate({ from: event.target.value || undefined })
-          }
-          className="h-9 w-[10.5rem]"
-          aria-label="Start date"
-        />
-        <span className="text-muted-foreground">–</span>
-        <Input
-          type="date"
-          value={search.to ?? ""}
-          onChange={(event) =>
-            onUpdate({ to: event.target.value || undefined })
-          }
-          className="h-9 w-[10.5rem]"
-          aria-label="End date"
-        />
+        {datePicker === "range" ? (
+          <DateRangePicker
+            value={dateRange}
+            onRangeChange={(next) =>
+              onUpdate({
+                from: next?.from ? format(next.from, "yyyy-MM-dd") : undefined,
+                to: next?.to ? format(next.to, "yyyy-MM-dd") : undefined,
+              })
+            }
+          />
+        ) : (
+          <>
+            <Input
+              type="date"
+              value={search.from ?? ""}
+              onChange={(event) =>
+                onUpdate({ from: event.target.value || undefined })
+              }
+              className="h-9 w-[10.5rem]"
+              aria-label="Start date"
+            />
+            <span className="text-muted-foreground">–</span>
+            <Input
+              type="date"
+              value={search.to ?? ""}
+              onChange={(event) =>
+                onUpdate({ to: event.target.value || undefined })
+              }
+              className="h-9 w-[10.5rem]"
+              aria-label="End date"
+            />
+          </>
+        )}
       </div>
 
       <div
