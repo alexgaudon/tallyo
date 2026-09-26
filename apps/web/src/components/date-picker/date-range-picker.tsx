@@ -103,11 +103,10 @@ export default function DateRangePicker({
   const { data } = useSession();
   const earliestTransactionDate = data?.meta.earliestTransactionDate;
 
-  // Sync with external value
+  // Sync with external value so an emptied range (e.g. a cleared filter) also
+  // clears the picker, instead of leaving the previous selection on screen.
   useEffect(() => {
-    if (value !== undefined) {
-      setDate(value);
-    }
+    setDate(value);
   }, [value]);
 
   // Month navigation functions
