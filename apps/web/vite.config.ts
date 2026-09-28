@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -30,7 +30,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, "");
 
   return {
-    plugins: [tailwindcss(), TanStackRouterVite({}), react()],
+    plugins: lazyPlugins(() => [
+      tailwindcss(),
+      TanStackRouterVite({}),
+      react(),
+    ]),
     define: {
       "import.meta.env.VITE_BUILD_TIME": JSON.stringify(
         new Date().toISOString(),
@@ -75,32 +79,33 @@ export default defineConfig(({ mode }) => {
       // Enable code splitting
       rollupOptions: {
         output: {
-          // Split vendor chunks
-          manualChunks: {
-            // React and core libraries
-            vendor: ["react", "react-dom"],
-            // TanStack libraries
-            tanstack: ["@tanstack/react-router", "@tanstack/react-query"],
-            // Radix UI components
-            radix: [
-              "@radix-ui/react-alert-dialog",
-              "@radix-ui/react-avatar",
-              "@radix-ui/react-dialog",
-              "@radix-ui/react-dropdown-menu",
-              "@radix-ui/react-label",
-              "@radix-ui/react-popover",
-              "@radix-ui/react-select",
-              "@radix-ui/react-slot",
-              "@radix-ui/react-switch",
-            ],
-            // Icons and utilities
-            icons: ["lucide-react"],
-            // Form libraries
-            forms: ["react-hook-form", "@hookform/resolvers", "zod"],
-            // Date utilities
-            dates: ["date-fns"],
-            // ORPC libraries
-            orpc: ["@orpc/client", "@orpc/react-query", "@orpc/server"],
+          // Split vendor chunks. Rolldown only supports the function form of
+          // manualChunks, so the previous object mapping lives here as a
+          // matcher over the resolved module id.
+          manualChunks(id) {
+            if (!id.includes("node_modules")) return;
+            const mod = id.slice(id.lastIndexOf("node_modules/") + 13);
+            if (mod.startsWith("react/") || mod.startsWith("react-dom/")) {
+              return "vendor";
+            }
+            if (
+              mod.startsWith("@tanstack/react-router") ||
+              mod.startsWith("@tanstack/react-query")
+            ) {
+              return "tanstack";
+            }
+            if (mod.startsWith("@radix-ui/")) return "radix";
+            if (mod.startsWith("lucide-react")) return "icons";
+            if (
+              mod.startsWith("react-hook-form") ||
+              mod.startsWith("@hookform/") ||
+              mod.startsWith("zod")
+            ) {
+              return "forms";
+            }
+            if (mod.startsWith("date-fns")) return "dates";
+            if (mod.startsWith("@orpc/")) return "orpc";
+            return;
           },
         },
       },
@@ -114,6 +119,12 @@ export default defineConfig(({ mode }) => {
         "@tanstack/react-query",
         "lucide-react",
       ],
+    },
+    // Web tests cover pure logic (view encoding, formatting, matching), so a
+    // node environment is enough; no DOM/React rendering here.
+    test: {
+      environment: "node",
+      include: ["src/**/*.test.ts"],
     },
   };
 });

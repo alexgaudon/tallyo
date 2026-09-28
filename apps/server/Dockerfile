@@ -8,7 +8,7 @@ COPY package.json package-lock.json* ./
 COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 
-# Reproduce the committed workspace dependency graph (--ignore-scripts skips husky).
+# Reproduce the committed workspace dependency graph (--ignore-scripts skips the prepare hooks).
 RUN npm ci --ignore-scripts
 
 # Copy source code

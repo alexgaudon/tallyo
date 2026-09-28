@@ -462,7 +462,6 @@ export function IncomeExpenseSankey({
 
               return (
                 <g key={linkId}>
-                  {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hover effect */}
                   <path
                     d={pathD || undefined}
                     fill="none"
@@ -473,7 +472,6 @@ export function IncomeExpenseSankey({
                     onMouseEnter={() => setHoveredLink(linkId)}
                     onMouseLeave={() => setHoveredLink(null)}
                   />
-                  {/* biome-ignore lint/a11y/noStaticElementInteractions: SVG path hit area */}
                   <path
                     d={pathD || undefined}
                     fill="none"
@@ -520,7 +518,6 @@ export function IncomeExpenseSankey({
                     pointerEvents="none"
                   />
                   {/* Invisible larger hit area */}
-                  {/* biome-ignore lint/a11y/useSemanticElements: SVG element */}
                   <rect
                     x={(node.x0 || 0) - hitAreaPadding}
                     y={(node.y0 || 0) - hitAreaPadding}
@@ -552,7 +549,6 @@ export function IncomeExpenseSankey({
                     }}
                   />
 
-                  {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
                   <text
                     x={
                       (node.x0 || 0) < width / 2
@@ -590,7 +586,6 @@ export function IncomeExpenseSankey({
                     )}
                   </text>
 
-                  {/* biome-ignore lint/a11y/useSemanticElements: SVG text element */}
                   <text
                     x={
                       (node.x0 || 0) < width / 2

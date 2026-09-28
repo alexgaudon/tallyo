@@ -16,23 +16,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Setup Vite+
+      uses: voidzero-dev/setup-vp@v1.21.1
       with:
         node-version: "24"
-        cache: "npm"
+        cache: true
 
     - name: Install dependencies
-      run: npm ci
+      run: vp install
 
-    - name: Build server
-      run: npm run build --workspace=server
-
-    - name: Build web
-      run: npm run build --workspace=web
+    - name: Build
+      run: vp run -r build
 
     - name: Check types
-      run: npm run check-types
+      run: vp run -w check-types
       continue-on-error: true
 
     - name: Set up Docker Buildx

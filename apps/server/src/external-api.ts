@@ -81,9 +81,8 @@ externalApi.post("/transactions", async (c) => {
     const { transactions } = validationResult.data;
 
     const { getUserMerchantsForMatching } = await import("./routers/merchants");
-    const { findBestMatchingMerchant } = await import(
-      "./lib/merchant-matching"
-    );
+    const { findBestMatchingMerchant } =
+      await import("./lib/merchant-matching");
 
     // Load the user's merchants once and match all transactions in memory
     // instead of re-querying the full merchant list for each transaction.

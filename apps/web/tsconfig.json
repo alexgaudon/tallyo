@@ -9,7 +9,6 @@
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 		"types": ["vite/client"],
-		"baseUrl": ".",
 		"composite": true,
 		"paths": {
 			"@/*": ["./src/*"]

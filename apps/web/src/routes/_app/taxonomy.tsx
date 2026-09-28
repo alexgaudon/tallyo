@@ -235,8 +235,7 @@ function CategoryRow({
   onDelete: () => Promise<void>;
 }) {
   const Icon = category.icon
-    ? // biome-ignore lint: dynamic icon access is required for user-selected icons
-      (LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
+    ? (LucideIcons[category.icon as keyof typeof LucideIcons] as LucideIcon)
     : FolderIcon;
 
   return (

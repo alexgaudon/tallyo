@@ -1,7 +1,7 @@
 node_modules
 .git
 .github
-.husky
+.vite-hooks
 .vscode
 examples
 *.log
@@ -10,8 +10,6 @@ backup-db.sh
 restore-db.sh
 README.md
 .prettierignore
-biome.json
-turbo.json
 postgres-data
 logs
 backups

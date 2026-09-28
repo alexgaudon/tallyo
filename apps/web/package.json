@@ -4,12 +4,12 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite --port=3001",
-		"build": "vite build",
-		"serve": "vite preview",
-		"start": "vite",
+		"dev": "vp dev --port=3001",
+		"build": "vp build",
+		"serve": "vp preview",
+		"start": "vp dev",
 		"check-types": "tsc --noEmit",
-		"test": "vitest run"
+		"test": "vp test run"
 	},
 	"devDependencies": {
 		"@tanstack/react-query-devtools": "^5.90.2",
@@ -24,8 +24,8 @@
 		"postcss": "^8.5.18",
 		"server": "*",
 		"tailwindcss": "^4.1.16",
-		"vite": "^7.3.5",
-		"vitest": "^5.0.1"
+		"vite": "npm:@voidzero-dev/vite-plus-core@1.0.0",
+		"vite-plus": "1.0.0"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

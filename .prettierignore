@@ -1,1 +1,26 @@
-**
+# Generated or vendored files
+**/routeTree.gen.ts
+**/components/ui
+**/.next
+**/dist
+**/.turbo
+**/dev-dist
+**/.nuxt
+**/public
+**/.vscode
+**/.zed
+**/.vite-hooks
+**/src-tauri
+**/postgres-data
+**/ops
+**/backups
+
+# Non-JS/TS files that the previous tooling did not format
+**/*.md
+**/*.yml
+**/*.yaml
+**/*.json
+**/*.jsonc
+**/*.sh
+**/*.gitignore
+**/*.lockb

@@ -1,6 +1,5 @@
 .env
 node_modules
-.turbo
 postgres-data
 ops
 backups

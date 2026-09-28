@@ -63,7 +63,7 @@ function toInsightsFilter(dateRange: StatsDateRange): TransactionViewFilter {
  */
 function toCanvasFilter(input?: TransactionViewFilter): TransactionViewFilter {
   return {
-    ...(input ?? {}),
+    ...input,
     scope: "insights",
     reviewState: "reviewed",
     side: input?.side ?? "all",

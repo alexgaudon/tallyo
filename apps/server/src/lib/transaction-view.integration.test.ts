@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { db } from "@/db";
 import { transaction } from "@/db/schema";
 import {

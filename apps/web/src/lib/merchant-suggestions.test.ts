@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { findMerchantsMatchingDetails } from "@/lib/merchant-suggestions";
 import type { MerchantWithKeywordsAndCategory } from "../../../server/src/routers";
 
