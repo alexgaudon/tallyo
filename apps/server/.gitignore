@@ -56,3 +56,4 @@ next-env.d.ts
 
 # Ignore built frontend assets
 /public/
+.vitest/

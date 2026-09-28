@@ -1,5 +1,5 @@
 import { eq, inArray } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("./jev", () => ({
   isJevEnabled: vi.fn(() => true),

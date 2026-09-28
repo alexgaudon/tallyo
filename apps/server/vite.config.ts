@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   resolve: {
@@ -8,9 +8,9 @@ export default defineConfig({
     },
   },
   test: {
-    // Web tests cover pure logic (view encoding, formatting, matching), so a
-    // node environment is enough; no DOM/React rendering here.
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Integration tests hit a real Postgres and skip themselves when
+    // DATABASE_URL is absent, so unit tests run anywhere.
   },
 });

@@ -94,15 +94,15 @@ export function viewSummaryQueryOptions(
 export function hasActiveViewFilters(search: ViewSearch): boolean {
   return Boolean(
     search.from ||
-      search.to ||
-      search.categories?.length ||
-      search.merchants?.length ||
-      search.q ||
-      search.noMerchant ||
-      search.side !== "all" ||
-      search.review !== "all" ||
-      search.min !== undefined ||
-      search.max !== undefined,
+    search.to ||
+    search.categories?.length ||
+    search.merchants?.length ||
+    search.q ||
+    search.noMerchant ||
+    search.side !== "all" ||
+    search.review !== "all" ||
+    search.min !== undefined ||
+    search.max !== undefined,
   );
 }
 
