@@ -46,13 +46,15 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
       
-    - name: Build and push single image
-      if: github.event_name != 'pull_request'
+    # Build on PRs too (without pushing) so Dockerfile regressions are caught
+    # before merge. Publishing to `latest` stays limited to non-PR events; a PR
+    # build must never move that tag, since production pulls it.
+    - name: Build image
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./apps/server/Dockerfile
-        push: true
+        push: ${{ github.event_name != 'pull_request' }}
         tags: ghcr.io/${{ github.repository_owner }}/tallyo:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
