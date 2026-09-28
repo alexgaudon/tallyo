@@ -25,12 +25,19 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy built application and dependencies
-COPY --from=builder /app/apps/server/dist ./dist
-COPY --from=builder /app/apps/server/package.json ./
+# Install runtime dependencies from the committed workspace lockfile so the image
+# matches the tested dependency graph. Resolving fresh can drift to newer
+# releases whose peer ranges conflict with the pinned ones.
+COPY package.json package-lock.json ./
+COPY apps/server/package.json ./apps/server/
+COPY apps/web/package.json ./apps/web/
+RUN npm ci --omit=dev --ignore-scripts --workspace=server
 
-# Install production dependencies only
-RUN npm install --omit=dev --ignore-scripts
+# Put the server manifest at the image root so Node loads dist/ as ESM.
+COPY --from=builder /app/apps/server/package.json ./package.json
+
+# Copy built application
+COPY --from=builder /app/apps/server/dist ./dist
 
 # Copy the built frontend to public directory
 COPY --from=builder /app/apps/web/dist ./public
