@@ -3,7 +3,6 @@
 **/components/ui
 **/.next
 **/dist
-**/.turbo
 **/dev-dist
 **/.nuxt
 **/public
