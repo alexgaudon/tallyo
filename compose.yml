@@ -31,7 +31,7 @@ services:
       - BETTER_AUTH_URL=http://localhost
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres #placeholder creds, use secure values in prod.
     ports:
-      - "80:3000"
+      - "80:40002"
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
     networks:
       - public
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:40002/health"]
       interval: 10s
       timeout: 5s
       retries: 3
