@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => {
         ? env.VITE_ALLOWED_HOSTS.split(",").map((h) => h.trim())
         : undefined,
       host: true,
-      port: 3001,
+      port: Number(process.env.PORT ?? 3001),
       proxy: {
         "/api": {
           target: env.VITE_API_PROXY_TARGET || "http://localhost:3000",
