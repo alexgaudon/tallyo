@@ -120,8 +120,7 @@ app.get("/", async (c) => {
         c.req.header("origin") ||
         c.req.header("referer") ||
         `${url.protocol}//${url.host}`;
-      const webPort = process.env.WEB_PORT ?? "40001";
-      return c.redirect(`${origin.replace(/:\d+$/, "")}:${webPort}/dashboard`);
+      return c.redirect(`${origin.replace(/:3000$/, ":3001")}/dashboard`);
     }
     await healthCheck();
     if (IS_PROD) {

@@ -44,8 +44,7 @@ COPY --from=builder /app/apps/web/dist ./public
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=40002
 
-EXPOSE 40002
+EXPOSE 3000
 
 CMD ["sh", "-c", "node dist/src/db/migrate.js && exec node dist/src/start.js"]

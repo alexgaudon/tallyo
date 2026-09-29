@@ -4,7 +4,7 @@ import app from "./index";
 import { logger } from "./lib/logger";
 import { startSuggestionWorker } from "./lib/suggestion-queue";
 
-const port = parseInt(process.env.PORT || "40002", 10);
+const port = parseInt(process.env.PORT || "3000", 10);
 serve(
   {
     fetch: app.fetch,

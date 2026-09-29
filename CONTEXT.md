@@ -36,8 +36,8 @@ contract usually affects both applications at compile time.
 - `/rpc/*` — authenticated internal oRPC API used by the web app;
 - `/` — health check in development, or the built SPA in production.
 
-In development the web app runs at `http://localhost:40001` and the API at
-`http://localhost:40002`. The web oRPC client deliberately uses the current
+In development the web app runs at `http://localhost:3001` and the API at
+`http://localhost:3000`. The web oRPC client deliberately uses the current
 origin (`/rpc`), making the Vite proxy configuration relevant for local work.
 
 ## Domain model and invariants
@@ -129,7 +129,7 @@ npm run db:dev                 # starts local PostgreSQL (port 5432)
 cp apps/server/.env.example apps/server/.env
 # add Discord credentials to apps/server/.env
 npm run db:push                # apply schema to the database
-npm run dev                    # web :40001 and server :40002
+npm run dev                    # web :3001 and server :3000
 ```
 
 Useful commands:
