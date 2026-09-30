@@ -10,6 +10,12 @@ import type {
   MerchantWithKeywordsAndCategory,
 } from "../../../server/src/routers";
 
+/**
+ * Prefix key for every `dashboard.*` query. Reviewing a transaction changes what
+ * the dashboard aggregates, so the ledger invalidates this whole subtree.
+ */
+const dashboardQueryKey = orpc.dashboard.key();
+
 export type LedgerViewData = Awaited<
   ReturnType<typeof orpc.transactions.getView.call>
 >;
@@ -200,7 +206,13 @@ export function useTransactionMutations(
         }
       },
       onSettled: async () => {
-        await queryClient.invalidateQueries({ queryKey: view.queryKey });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: view.queryKey }),
+          // Review state gates every dashboard insight, so a toggle must refresh
+          // the canvas too. The dashboard query can stay mounted behind the
+          // review lens, where only re-running it reflects the new aggregation.
+          queryClient.invalidateQueries({ queryKey: dashboardQueryKey }),
+        ]);
       },
     }),
   );
