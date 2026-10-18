@@ -47,6 +47,13 @@ const presets = [
     }),
   },
   {
+    label: "Last 90 days",
+    value: () => ({
+      from: startOfDay(addDays(new Date(), -90)),
+      to: startOfDay(new Date()),
+    }),
+  },
+  {
     label: "This month",
     value: () => ({
       from: startOfDay(startOfMonth(new Date())),
@@ -58,6 +65,13 @@ const presets = [
     value: () => ({
       from: startOfDay(startOfMonth(subMonths(new Date(), 1))),
       to: startOfDay(endOfMonth(subMonths(new Date(), 1))),
+    }),
+  },
+  {
+    label: "Last 3 months",
+    value: () => ({
+      from: startOfDay(subMonths(new Date(), 3)),
+      to: startOfDay(new Date()),
     }),
   },
   {
