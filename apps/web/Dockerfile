@@ -1,5 +1,8 @@
 # Build stage
-FROM node:24-alpine AS builder
+# Node 24.22.1 fixes the October 2026 security releases (HIGH severity:
+# Brotli decoder OOB write, TLS hostname bypasses, dns.resolve NUL truncation).
+# See https://nodejs.org/en/blog/vulnerability/october-2026-security-releases
+FROM node:24.22.1-alpine AS builder
 
 ARG VITE_SERVER_URL=http://localhost:3000
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
