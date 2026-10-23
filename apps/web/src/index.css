@@ -340,17 +340,11 @@ body {
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-highlight: rgba(255, 255, 255, 0.07);
 
-  --ambient-image:
-    radial-gradient(
-      62rem 44rem at 6% -14%,
-      rgba(251, 146, 60, 0.16),
-      transparent 58%
-    ),
-    radial-gradient(
-      66rem 50rem at 50% 120%,
-      rgba(45, 212, 191, 0.09),
-      transparent 60%
-    );
+  --ambient-image: radial-gradient(
+    62rem 44rem at 6% -14%,
+    rgba(251, 146, 60, 0.16),
+    transparent 58%
+  );
 
   /* ==========================================
      FINANCE COLORS - Dark Mode
