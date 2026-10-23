@@ -45,6 +45,6 @@
     "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite-plus": "^1.1.0"
+    "vite-plus": "^1.4.0"
   }
 }
