@@ -36,11 +36,11 @@ COPY apps/server/package.json ./apps/server/
 COPY apps/web/package.json ./apps/web/
 RUN npm ci --omit=dev --ignore-scripts --workspace=server
 
-# Put the server manifest at the image root so Node loads dist/ as ESM.
-COPY --from=builder /app/apps/server/package.json ./package.json
-
-# Copy built application
-COPY --from=builder /app/apps/server/dist ./dist
+# Copy built application into its workspace. npm can install workspace
+# dependencies into apps/server/node_modules instead of hoisting them to the
+# root (TanStack AI 1.0 does this), so the compiled code has to stay under
+# apps/server for Node's resolution to find them.
+COPY --from=builder /app/apps/server/dist ./apps/server/dist
 
 # Copy the built frontend to public directory
 COPY --from=builder /app/apps/web/dist ./public
@@ -50,4 +50,13 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "node dist/src/db/migrate.js && exec node dist/src/start.js"]
+# Fail the build if the compiled runtime graph cannot resolve its imports.
+# A successful `npm ci` is not enough: a missing package only shows up when
+# Node actually loads the module at startup. The placeholder env values only
+# satisfy import-time validation and are scoped to this RUN command.
+RUN DISCORD_CLIENT_ID=build-check \
+    DISCORD_CLIENT_SECRET=build-check \
+    CORS_ORIGIN=http://build-check.invalid \
+    node --input-type=module -e "await import('./apps/server/dist/src/index.js'); await import('./apps/server/dist/src/lib/suggestion-queue.js')"
+
+CMD ["sh", "-c", "node apps/server/dist/src/db/migrate.js && exec node apps/server/dist/src/start.js"]
