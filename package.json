@@ -25,7 +25,7 @@
 		"db:refresh": "vp run --filter server db:refresh"
 	},
 	"dependencies": {
-		"@tanstack/react-hotkeys": "^0.10.0"
+		"@tanstack/react-hotkeys": "^0.16.0"
 	},
 	"devDependencies": {
 		"vite-plus": "^1.4.0"
