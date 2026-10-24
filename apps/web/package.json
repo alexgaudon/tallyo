@@ -24,8 +24,8 @@
 		"postcss": "^8.5.18",
 		"server": "*",
 		"tailwindcss": "^4.1.16",
-		"vite": "npm:@voidzero-dev/vite-plus-core@^1.1.0",
-		"vite-plus": "^1.1.0"
+		"vite": "npm:@voidzero-dev/vite-plus-core@^1.4.0",
+		"vite-plus": "^1.4.0"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",

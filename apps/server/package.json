@@ -8,7 +8,7 @@
     "build:full": "npm run build && cd ../web && npm run build && mkdir -p ../server/public && cp -r dist/* ../server/public/",
     "check-types": "tsc --noEmit",
     "test": "vp test run",
-    "dev": "tsx watch src/start.ts",
+    "dev": "vpx --watch src/start.ts",
     "start": "node dist/src/start.js",
     "db:backup": "./backup-db.sh",
     "db:restore": "./restore-db.sh",
@@ -16,8 +16,8 @@
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts",
-    "db:refresh": "tsx src/db/refresh.ts"
+    "db:seed": "vpx src/db/seed.ts",
+    "db:refresh": "vpx src/db/refresh.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.10",
@@ -43,8 +43,7 @@
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
     "tsc-alias": "^1.8.16",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vite-plus": "^1.1.0"
+    "vite-plus": "^1.4.0"
   }
 }
