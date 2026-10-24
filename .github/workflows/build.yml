@@ -33,7 +33,7 @@ jobs:
       continue-on-error: true
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
       
     # Publishing is limited to non-PR events. A pull request must never move the
     # `latest` tag: that tag is what the production deployment pulls, so a PR
