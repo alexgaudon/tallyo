@@ -50,7 +50,7 @@ jobs:
     # before merge. Publishing to `latest` stays limited to non-PR events; a PR
     # build must never move that tag, since production pulls it.
     - name: Build image
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v7
       with:
         context: .
         file: ./apps/server/Dockerfile
