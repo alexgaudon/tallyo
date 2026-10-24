@@ -42,7 +42,7 @@
     "@types/node": "^26.6.5",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
-    "tsc-alias": "^1.9.8",
+    "tsc-alias": "1.8.16",
     "typescript": "^5.9.3",
     "vite-plus": "^1.4.0"
   }
