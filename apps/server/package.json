@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
-    "@types/node": "^22.19.11",
+    "@types/node": "^26.6.5",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
     "tsc-alias": "^1.8.16",
