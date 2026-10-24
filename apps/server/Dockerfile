@@ -2,7 +2,7 @@
 # Node 24.22.1 fixes the October 2026 security releases (HIGH severity:
 # Brotli decoder OOB write, TLS hostname bypasses, dns.resolve NUL truncation).
 # See https://nodejs.org/en/blog/vulnerability/october-2026-security-releases
-FROM node:24.22.1-alpine AS builder
+FROM node:26.12.0-alpine AS builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN npm run build --workspace=server
 RUN npm run build --workspace=web
 
 # Production stage
-FROM node:24.22.1-alpine
+FROM node:26.12.0-alpine
 
 WORKDIR /app
 
