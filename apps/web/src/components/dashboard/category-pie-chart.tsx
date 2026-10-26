@@ -1,5 +1,10 @@
-import { defineChart } from "@tanstack/charts";
+import {
+  defineChart,
+  type ChartInteractionController,
+  type ChartRenderContext,
+} from "@tanstack/charts";
 import { focusGroupAngle, pie, polar, radialArc } from "@tanstack/charts/polar";
+import type { PieDatum } from "@tanstack/charts/polar";
 import { Chart } from "@tanstack/charts/react";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { useNavigate } from "@tanstack/react-router";
@@ -44,6 +49,12 @@ export function CategoryPieChart({
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
+  const chartHostRef = useRef<HTMLElement | null>(null);
+  const chartInteractionRef = useRef<ChartInteractionController<
+    PieDatum<ChartItem>,
+    number,
+    number
+  > | null>(null);
   const navigate = useNavigate();
 
   const previousMap = useMemo(() => {
@@ -114,6 +125,46 @@ export function CategoryPieChart({
       resizeObserver.disconnect();
     };
   }, [updateLegendOverflowState]);
+
+  const handleChartRender = useCallback(
+    (context: ChartRenderContext<PieDatum<ChartItem>, number, number>) => {
+      chartHostRef.current = context.container;
+      chartInteractionRef.current = context.interaction;
+    },
+    [],
+  );
+
+  // Clicking a slice pins the chart focus and tooltip. The chart only dismisses
+  // a pinned focus through Escape while it owns keyboard focus, so a click
+  // anywhere else would leave the slice (and the legend row) stuck selected.
+  // Clear the pinned focus on outside clicks and Escape.
+  useEffect(() => {
+    const clearPinnedFocus = () => {
+      chartInteractionRef.current?.setControlledFocus(null);
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const host = chartHostRef.current;
+      if (host && event.target instanceof Node && host.contains(event.target)) {
+        return;
+      }
+      clearPinnedFocus();
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        clearPinnedFocus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   const handleCategoryClick = useCallback(
     (categoryId: string) => {
@@ -204,6 +255,9 @@ export function CategoryPieChart({
     (point: { datum: ChartItem } | null) => {
       const categoryId = point?.datum.categoryId;
       if (categoryId) {
+        // The click drills into transactions, so drop the pinned tooltip and
+        // selection instead of leaving every other slice dimmed behind the lens.
+        chartInteractionRef.current?.setControlledFocus(null);
         handleCategoryClick(categoryId);
       }
     },
@@ -234,6 +288,7 @@ export function CategoryPieChart({
             width={220}
             height={220}
             ariaLabel="Category spending breakdown"
+            onRender={handleChartRender}
             onFocusChange={handleFocusChange}
             onSelect={handleItemClick}
           />
