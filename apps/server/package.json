@@ -38,7 +38,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
