@@ -28,7 +28,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:password@localhost:5432/postgres
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Setup Vite+
       uses: voidzero-dev/setup-vp@v1.21.2
