@@ -194,10 +194,14 @@ export function CategoryPieChart({
   const definition = useMemo(
     () =>
       defineChart({
+        // Charts require reserved cartesian scales even when unused.
+        scales: { x: null, y: null },
         marks: [
           polar({
             inset: 4,
             radiusRatio: 0.96,
+            // A pie carries its own geometry; no cartesian or polar scales.
+            scales: { angle: null, radius: null },
             marks: [
               radialArc(pieData, {
                 key: (datum) => datum.categoryId,
