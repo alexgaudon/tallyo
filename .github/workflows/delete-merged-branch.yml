@@ -26,6 +26,23 @@ jobs:
             echo "Skipping: refusing to delete base branch '$branch'"
             exit 0
           fi
-          gh api -X DELETE \
-            "repos/${{ github.repository }}/git/refs/heads/$branch"
+          # The ref can already be gone: GitHub's "automatically delete head
+          # branches" setting and `gh pr merge --delete-branch` both remove it
+          # right after the merge, before this job starts. A missing ref is
+          # success, not a failure.
+          if ! gh api "repos/${{ github.repository }}/git/refs/heads/$branch" >/dev/null 2>&1; then
+            echo "Skipping: branch '$branch' already deleted"
+            exit 0
+          fi
+
+          if ! gh api -X DELETE \
+            "repos/${{ github.repository }}/git/refs/heads/$branch"; then
+            # Deleted between the check above and this call: still fine.
+            if gh api "repos/${{ github.repository }}/git/refs/heads/$branch" >/dev/null 2>&1; then
+              echo "Failed to delete branch '$branch'"
+              exit 1
+            fi
+            echo "Branch '$branch' was deleted concurrently"
+            exit 0
+          fi
           echo "Deleted branch '$branch'"
