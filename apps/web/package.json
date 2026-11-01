@@ -20,7 +20,7 @@
 		"@types/node": "^26.6.5",
 		"@types/react": "^19.2.2",
 		"@types/react-dom": "^19.2.2",
-		"@vitejs/plugin-react": "^5.1.0",
+		"@vitejs/plugin-react": "^6.1.2",
 		"postcss": "^8.5.31",
 		"server": "*",
 		"tailwindcss": "^4.1.16",
