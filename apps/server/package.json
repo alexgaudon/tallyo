@@ -30,7 +30,7 @@
     "@tanstack/ai-openrouter": "1.0.0",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.7",
     "pg": "^8.16.3",
