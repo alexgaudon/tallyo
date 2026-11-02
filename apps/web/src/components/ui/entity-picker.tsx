@@ -178,15 +178,18 @@ export function EntityPicker({
   const formatEntity = (entity: PickerEntity): ReactNode => {
     if (entity.parentName) {
       return (
-        <span className="flex min-w-0 flex-wrap items-center gap-1">
-          <span className="min-w-0 break-words">{entity.parentName}</span>
+        <span className="flex items-center gap-1">
+          {entity.parentName}
           <ArrowRightIcon className="h-3 w-3 shrink-0 opacity-70" />
-          <span className="min-w-0 break-words">{entity.name}</span>
+          {entity.name}
         </span>
       );
     }
     return entity.name;
   };
+
+  const formatEntityText = (entity: PickerEntity) =>
+    entity.parentName ? `${entity.parentName} → ${entity.name}` : entity.name;
 
   const close = () => {
     setOpen(false);
@@ -269,9 +272,23 @@ export function EntityPicker({
             </>
           )}
         </div>
+      ) : singleSelected ? (
+        <div
+          className="flex min-w-0 flex-1 flex-col items-start leading-tight text-left"
+          title={formatEntityText(singleSelected)}
+        >
+          {singleSelected.parentName ? (
+            <span className="max-w-full truncate text-[11px] text-muted-foreground">
+              {singleSelected.parentName}
+            </span>
+          ) : null}
+          <span className="max-w-full truncate text-sm">
+            {singleSelected.name}
+          </span>
+        </div>
       ) : (
-        <div className="min-w-0 flex-1 whitespace-normal text-left">
-          {singleSelected ? formatEntity(singleSelected) : resolvedPlaceholder}
+        <div className="min-w-0 flex-1 truncate text-left">
+          {resolvedPlaceholder}
         </div>
       )}
       <ChevronsUpDownIcon className="h-3.5 w-3.5 shrink-0 opacity-50" />
