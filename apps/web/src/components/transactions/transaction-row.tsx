@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 import { Check, Split, Trash } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
-import { formatCategory } from "@/components/categories/category-select";
+import { formatCategoryText } from "@/components/categories/category-select";
 import { Button } from "@/components/ui/button";
 import { CurrencyAmount } from "@/components/ui/currency-amount";
 import {
@@ -47,7 +47,7 @@ import {
  * rest of the DOM can stack naturally underneath on mobile.
  */
 export const LEDGER_GRID_COLUMNS =
-  "grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[7rem_minmax(0,1.4fr)_minmax(0,1fr)_minmax(9rem,1.3fr)_auto_auto]";
+  "grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[7rem_minmax(0,1.3fr)_minmax(0,1.4fr)_minmax(9rem,1.1fr)_auto_auto]";
 
 function parseTransactionDate(dateValue: string | Date) {
   if (typeof dateValue === "string") {
@@ -320,13 +320,23 @@ export const TransactionRow = memo(function TransactionRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-auto p-1 text-muted-foreground transition-soft hover:bg-muted/50 hover:text-foreground"
+                title={formatCategoryText(transaction.category)}
+                className="h-auto w-full min-w-0 justify-start p-1 text-muted-foreground transition-soft hover:bg-muted/50 hover:text-foreground"
                 onClick={() =>
                   transaction.category &&
                   onCategoryClick?.(transaction.category.id)
                 }
               >
-                {formatCategory(transaction.category)}
+                <span className="flex min-w-0 flex-col items-start text-left leading-tight">
+                  {transaction.category.parentCategory ? (
+                    <span className="max-w-full truncate text-[11px] text-muted-foreground">
+                      {transaction.category.parentCategory.name}
+                    </span>
+                  ) : null}
+                  <span className="max-w-full truncate text-sm text-foreground">
+                    {transaction.category.name}
+                  </span>
+                </span>
               </Button>
             ) : (
               <span className="text-sm text-muted-foreground">No category</span>
