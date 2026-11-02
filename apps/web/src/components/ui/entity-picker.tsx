@@ -178,10 +178,10 @@ export function EntityPicker({
   const formatEntity = (entity: PickerEntity): ReactNode => {
     if (entity.parentName) {
       return (
-        <span className="flex items-center gap-1">
-          {entity.parentName}
+        <span className="flex min-w-0 flex-wrap items-center gap-1">
+          <span className="min-w-0 break-words">{entity.parentName}</span>
           <ArrowRightIcon className="h-3 w-3 shrink-0 opacity-70" />
-          {entity.name}
+          <span className="min-w-0 break-words">{entity.name}</span>
         </span>
       );
     }
@@ -270,7 +270,7 @@ export function EntityPicker({
           )}
         </div>
       ) : (
-        <div className="min-w-0 flex-1 truncate text-left">
+        <div className="min-w-0 flex-1 whitespace-normal text-left">
           {singleSelected ? formatEntity(singleSelected) : resolvedPlaceholder}
         </div>
       )}
@@ -402,7 +402,7 @@ export function EntityPicker({
       {open ? (
         <PopoverContent
           align="start"
-          className="w-[var(--radix-popover-trigger-width)] min-w-[16rem] max-w-[calc(100vw-2rem)] p-0"
+          className="w-[var(--radix-popover-trigger-width)] min-w-[20rem] max-w-[calc(100vw-2rem)] p-0"
         >
           <Command
             shouldFilter={false}
