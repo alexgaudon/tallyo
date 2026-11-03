@@ -118,3 +118,23 @@ curl -X POST http://localhost:3000/api/transactions \
 ```
 
 The full reference is in [`apps/server/src/external-api-docs.md`](apps/server/src/external-api-docs.md) and is also served at `/api/docs`.
+
+## MCP server
+
+The same bearer token also opens an [MCP](https://modelcontextprotocol.io) endpoint at `/mcp` (Streamable HTTP, stateless), so AI clients can read and write the ledger directly.
+
+```bash
+claude mcp add --transport http tallyo http://localhost:3000/mcp \
+  --header "Authorization: Bearer $TALLYO_TOKEN"
+```
+
+Tools cover the whole product surface:
+
+| Group | Tools |
+| --- | --- |
+| Transactions | `list_transactions`, `get_transactions_summary`, `create_transactions`, `update_transaction`, `apply_suggestion`, `split_transaction`, `delete_transaction` |
+| Insights | `get_dashboard_overview`, `get_spending_breakdown`, `get_period_comparison` |
+| Taxonomy | `list_categories`, `list_merchants`, `get_taxonomy_usage`, `create_category`, `update_category`, `delete_category`, `create_merchant`, `update_merchant`, `delete_merchant`, `merge_merchants`, `apply_merchant`, `apply_all_merchants` |
+
+Every tool runs through the same oRPC procedures as the web app, so ownership checks, merchant keyword learning, and review rules behave identically. Amounts are integer cents, and the token is scoped to one user. Generate or regenerate it in Settings, which also shows a copy-ready `claude mcp add` command for your host.
+

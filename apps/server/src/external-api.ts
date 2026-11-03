@@ -9,13 +9,14 @@ import { db } from "./db";
 import { category, merchant, merchantKeyword, transaction } from "./db/schema";
 import { validateAuthToken } from "./lib/auth-token";
 import { logger } from "./lib/logger";
-import { enqueueSuggestionJobs } from "./lib/suggestion-queue";
+import { importTransactions } from "./lib/transaction-import";
+import {
+  applyTransactionUpdate,
+  TransactionUpdateError,
+} from "./lib/transaction-update";
 import { MAX_FUTURE_TRANSACTION_DAYS } from "./lib/transaction-view";
 import {
-  getTransactionWithRelations,
-  handleKeywordAddition,
   handleKeywordRemoval,
-  updateTransactionField,
   validateTransactionOwnership,
 } from "./routers/transactions";
 
@@ -80,63 +81,11 @@ externalApi.post("/transactions", async (c) => {
 
     const { transactions } = validationResult.data;
 
-    const { getUserMerchantsForMatching } = await import("./routers/merchants");
-    const { findBestMatchingMerchant } =
-      await import("./lib/merchant-matching");
-
-    // Load the user's merchants once and match all transactions in memory
-    // instead of re-querying the full merchant list for each transaction.
-    const userMerchants = await getUserMerchantsForMatching(userId);
-
-    const transactionData = transactions.map((newTransaction) => {
-      // When doNotAutoMatch is set, keep the client-provided merchant and
-      // category instead of letting merchant matching override them.
-      if (newTransaction.doNotAutoMatch) {
-        return {
-          ...newTransaction,
-          userId: userId,
-          date: new Date(newTransaction.date).toISOString().split("T")[0],
-        };
-      }
-
-      const merchantRecord = findBestMatchingMerchant(
-        userMerchants,
-        newTransaction.transactionDetails,
-      );
-
-      return {
-        ...newTransaction,
-        merchantId: merchantRecord?.id,
-        categoryId: merchantRecord?.recommendedCategoryId,
-        userId: userId,
-        date: new Date(newTransaction.date).toISOString().split("T")[0],
-      };
-    });
-
-    const insertedTransactions = await db
-      .insert(transaction)
-      .values(transactionData)
-      .onConflictDoNothing()
-      .returning();
-
-    const addedCount = insertedTransactions.length;
-
-    // Queue AI category suggestions for newly inserted rows with no category.
-    // Advisory only; the worker fills them in asynchronously.
-    const uncategorizedIds = insertedTransactions
-      .filter((row) => !row.categoryId)
-      .map((row) => row.id);
-    if (uncategorizedIds.length > 0) {
-      try {
-        await enqueueSuggestionJobs(uncategorizedIds, userId);
-      } catch (error) {
-        logger.warn("Failed to enqueue Jev suggestion jobs:", { error });
-      }
-    }
+    const { count } = await importTransactions(userId, transactions);
 
     return c.json({
       message: "Transactions received",
-      count: addedCount,
+      count,
     });
   } catch (error) {
     logger.error("API transaction creation failed", {
@@ -416,123 +365,11 @@ externalApi.patch("/transactions/:id", async (c) => {
 
     const { reviewed, merchantId, categoryId } = validationResult.data;
 
-    const currentTransaction = await validateTransactionOwnership(
-      transactionId,
+    const updatedTransaction = await applyTransactionUpdate(
       userId,
+      transactionId,
+      { reviewed, merchantId, categoryId },
     );
-
-    if (merchantId) {
-      const merchantRecord = await db.query.merchant.findFirst({
-        where: and(eq(merchant.id, merchantId), eq(merchant.userId, userId)),
-      });
-      if (!merchantRecord) {
-        return c.json({ error: "Merchant not found" }, 404);
-      }
-    }
-
-    if (categoryId) {
-      const categoryRecord = await db.query.category.findFirst({
-        where: and(eq(category.id, categoryId), eq(category.userId, userId)),
-      });
-      if (!categoryRecord) {
-        return c.json({ error: "Category not found" }, 404);
-      }
-    }
-
-    let effectiveMerchantId = currentTransaction.merchantId;
-    let effectiveCategoryId = currentTransaction.categoryId;
-
-    if (merchantId !== undefined) {
-      effectiveMerchantId = merchantId;
-      if (categoryId === undefined) {
-        const newMerchantRecord = merchantId
-          ? await db.query.merchant.findFirst({
-              where: eq(merchant.id, merchantId),
-            })
-          : null;
-        effectiveCategoryId = newMerchantRecord?.recommendedCategoryId ?? null;
-      }
-    }
-
-    if (categoryId !== undefined) {
-      effectiveCategoryId = categoryId;
-    }
-
-    if (reviewed === true) {
-      if (!effectiveMerchantId && !effectiveCategoryId) {
-        return c.json(
-          { error: "Assign a category and merchant before reviewing" },
-          400,
-        );
-      }
-      if (!effectiveCategoryId) {
-        return c.json({ error: "Assign a category before reviewing" }, 400);
-      }
-      if (!effectiveMerchantId) {
-        return c.json({ error: "Assign a merchant before reviewing" }, 400);
-      }
-    }
-
-    const updates: Record<string, unknown> = {};
-
-    if (reviewed !== undefined) {
-      updates.reviewed = reviewed;
-    }
-
-    if (merchantId !== undefined) {
-      if (
-        currentTransaction.merchantId &&
-        currentTransaction.merchantId !== merchantId
-      ) {
-        await handleKeywordRemoval(
-          currentTransaction,
-          currentTransaction.merchantId,
-          transactionId,
-        );
-      }
-
-      const newMerchantRecord = merchantId
-        ? await db.query.merchant.findFirst({
-            where: eq(merchant.id, merchantId),
-            with: { keywords: true },
-          })
-        : null;
-
-      updates.merchantId = merchantId;
-
-      if (categoryId === undefined) {
-        updates.categoryId = newMerchantRecord?.recommendedCategoryId ?? null;
-      } else {
-        updates.categoryId = categoryId;
-      }
-
-      await updateTransactionField(
-        transactionId,
-        updates,
-        "updating transaction",
-        userId,
-      );
-
-      if (merchantId) {
-        await handleKeywordAddition(currentTransaction, merchantId, userId);
-      }
-    } else if (Object.keys(updates).length > 0 || categoryId !== undefined) {
-      if (categoryId !== undefined) {
-        updates.categoryId = categoryId;
-      }
-
-      await updateTransactionField(
-        transactionId,
-        updates,
-        "updating transaction",
-        userId,
-      );
-    }
-
-    const updatedTransaction = await getTransactionWithRelations(transactionId);
-    if (!updatedTransaction) {
-      return c.json({ error: "Transaction not found" }, 404);
-    }
 
     return c.json({ transaction: updatedTransaction });
   } catch (error) {
@@ -544,13 +381,11 @@ externalApi.patch("/transactions/:id", async (c) => {
       },
     });
 
+    if (error instanceof TransactionUpdateError) {
+      return c.json({ error: error.message }, error.status);
+    }
+
     if (error instanceof Error) {
-      if (error.message === "Transaction not found") {
-        return c.json({ error: error.message }, 404);
-      }
-      if (error.message === "Unauthorized to update this transaction") {
-        return c.json({ error: error.message }, 403);
-      }
       return c.json({ error: error.message }, 500);
     }
     return c.json({ error: "Internal server error" }, 500);

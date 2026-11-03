@@ -33,6 +33,7 @@ contract usually affects both applications at compile time.
 
 - `/api/auth/*` — custom authentication endpoints;
 - `/api/*` — bearer-token external REST API (including transaction import);
+- `/mcp` — bearer-token MCP endpoint (Streamable HTTP, stateless);
 - `/rpc/*` — authenticated internal oRPC API used by the web app;
 - `/` — health check in development, or the built SPA in production.
 
@@ -101,6 +102,14 @@ human-facing reference is `apps/server/src/external-api-docs.md`. It authenticat
 with `Authorization: Bearer <token>` and supports bulk transaction insertion,
 listing, and related resource operations. Imports are limited to 100
 transactions per request and ignore duplicate external IDs.
+
+`apps/server/src/mcp/` exposes the same product surface over MCP. Tools call the
+oRPC router through `createRouterClient` (in-process, no HTTP hop), so MCP and
+the web UI share one implementation of validation, ownership checks, keyword
+learning, and aggregation. Bulk import and transaction patching live in
+`lib/transaction-import.ts` and `lib/transaction-update.ts`, shared by the REST
+API and MCP. The endpoint is stateless: one server and transport per request,
+authenticated with the same per-user bearer token.
 
 ## Authentication and configuration
 

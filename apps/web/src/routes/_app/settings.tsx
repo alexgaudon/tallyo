@@ -34,9 +34,14 @@ function RouteComponent() {
 
   const devModeId = useId();
   const privacyModeId = useId();
+  const mcpEndpointId = useId();
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
+
+  const mcpEndpoint =
+    typeof window === "undefined" ? "/mcp" : `${window.location.origin}/mcp`;
+  const mcpCommand = `claude mcp add --transport http tallyo ${mcpEndpoint} \\\n  --header "Authorization: Bearer ${authToken ?? "<api-token>"}"`;
 
   const { data: settingsData } = useQuery(
     orpc.settings.getUserSettings.queryOptions(),
@@ -204,6 +209,62 @@ function RouteComponent() {
               <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                 Bearer YOUR_TOKEN_HERE
               </code>
+            </p>
+          </div>
+        </Panel>
+
+        <Panel
+          title="MCP server"
+          description="Connect an AI client (Claude Code, Claude Desktop, or any MCP-compatible agent) to your ledger. It uses the same API token as above."
+        >
+          <div className="space-y-3">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+              <div className="flex-1">
+                <Label htmlFor={mcpEndpointId} className="text-xs">
+                  Endpoint
+                </Label>
+                <Input
+                  id={mcpEndpointId}
+                  type="text"
+                  value={mcpEndpoint}
+                  readOnly
+                  className="font-mono"
+                />
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(mcpEndpoint);
+                  toast.success("MCP endpoint copied to clipboard");
+                }}
+                className="h-8 text-xs"
+              >
+                Copy endpoint
+              </Button>
+            </div>
+            <div className="relative">
+              <pre className="overflow-x-auto rounded-lg border border-border bg-muted/40 p-3 pr-20 font-mono text-xs">
+                {`claude mcp add --transport http tallyo ${mcpEndpoint} \\
+  --header "Authorization: Bearer <api-token>"`}
+              </pre>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(mcpCommand);
+                  toast.success("MCP command copied to clipboard");
+                }}
+                className="absolute right-2 top-2 h-8 text-xs"
+              >
+                Copy
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              The MCP server exposes read tools (transactions, categories,
+              merchants, dashboard and period comparisons) and write tools
+              (import, update, split, delete, and taxonomy management). Every
+              call is scoped to your account.
             </p>
           </div>
         </Panel>
