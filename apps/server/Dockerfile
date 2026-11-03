@@ -57,6 +57,6 @@ EXPOSE 3000
 RUN DISCORD_CLIENT_ID=build-check \
     DISCORD_CLIENT_SECRET=build-check \
     CORS_ORIGIN=http://build-check.invalid \
-    node --input-type=module -e "await import('./apps/server/dist/src/index.js'); await import('./apps/server/dist/src/lib/suggestion-queue.js')"
+    node --input-type=module -e "await import('./apps/server/dist/src/index.js'); await import('./apps/server/dist/src/mcp/server.js'); await import('./apps/server/dist/src/lib/suggestion-queue.js')"
 
 CMD ["sh", "-c", "node apps/server/dist/src/db/migrate.js && exec node apps/server/dist/src/start.js"]

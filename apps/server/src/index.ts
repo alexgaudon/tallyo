@@ -9,6 +9,7 @@ import { healthCheck } from "./db";
 import externalApi from "./external-api";
 import { createContext } from "./lib/context";
 import { logger } from "./lib/logger";
+import { mcpHandler } from "./mcp/route";
 import { appRouter } from "./routers/index";
 import authRoutes from "./routes/auth";
 import { eventsRoutes } from "./routes/events";
@@ -54,8 +55,15 @@ app.use(
       if (!IS_PROD) return origin || CORS_ORIGIN || "*";
       return CORS_ORIGIN;
     },
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "OPTIONS", "DELETE"],
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "mcp-protocol-version",
+      "mcp-session-id",
+      "Last-Event-ID",
+    ],
+    exposeHeaders: ["mcp-protocol-version", "mcp-session-id"],
     credentials: true,
   }),
 );
@@ -83,6 +91,8 @@ app.route("/api/auth", authRoutes);
 // Session-authed SSE (mounted before the bearer-token external API).
 app.route("/api", eventsRoutes);
 app.route("/api", externalApi);
+// Bearer-token MCP endpoint (Streamable HTTP).
+app.all("/mcp", mcpHandler);
 
 // ---- RPC ----
 const rpcHandler = new RPCHandler(appRouter);
@@ -144,7 +154,11 @@ if (IS_PROD) {
 
   app.get("*", async (c) => {
     const url = new URL(c.req.url);
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/rpc/")) {
+    if (
+      url.pathname.startsWith("/api/") ||
+      url.pathname.startsWith("/rpc/") ||
+      url.pathname === "/mcp"
+    ) {
       return c.notFound();
     }
     return c.html(

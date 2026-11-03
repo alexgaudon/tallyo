@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.0.10",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@orpc/client": "^1.16.1",
     "@orpc/openapi": "^1.16.1",
     "@orpc/react-query": "^1.16.1",
