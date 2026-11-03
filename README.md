@@ -138,3 +138,5 @@ Tools cover the whole product surface:
 
 Every tool runs through the same oRPC procedures as the web app, so ownership checks, merchant keyword learning, and review rules behave identically. Amounts are integer cents, and the token is scoped to one user. Generate or regenerate it in Settings, which also shows a copy-ready `claude mcp add` command for your host.
 
+`update_transaction` and `apply_suggestion` learn merchant keywords whenever they receive a merchant id: the transaction description is stored as a keyword for that merchant. Passing `categoryId` alongside `merchantId` does not prevent it. To edit category, notes, or review status without touching keyword rules, omit `merchantId`.
+
