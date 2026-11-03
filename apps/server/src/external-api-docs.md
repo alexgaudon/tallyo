@@ -174,6 +174,8 @@ At least one field is required.
 
 When `merchantId` is updated without `categoryId`, the category is automatically set to the merchant's recommended category (or cleared if the merchant has none). If both are provided, `categoryId` takes precedence.
 
+Merchant changes also update keyword rules: the transaction description is removed as an exact-match keyword from the previous merchant and, unless one of the new merchant's keywords already appears in it, stored as a keyword for the new merchant. Passing `categoryId` does not prevent this. To change only the category, omit `merchantId`.
+
 This is also how you apply an AI suggestion: pass the `suggestedMerchantId` and/or `suggestedCategoryId` from the list endpoints (see "AI category & merchant suggestions" above).
 
 Setting `reviewed` to `true` requires both a merchant and a category to be assigned (either already on the transaction or provided in the same request). Returns `400` if either is missing.

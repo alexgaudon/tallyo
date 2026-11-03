@@ -144,11 +144,20 @@ reviewed flag. Only the fields you pass change.
 
 Behaviour worth knowing:
 - Assigning "merchantId" without "categoryId" also applies that merchant's
-  recommended category (and learns the description as a merchant keyword).
-  Passing merchantId: null clears the merchant.
+  recommended category. Passing "categoryId" alongside "merchantId" only
+  overrides that recommended category; it does NOT suppress the keyword side
+  effect below. merchantId: null clears the merchant.
 - Marking "reviewed": true requires both a merchant and a category to be set,
   either already on the row or in the same call. Pass reviewed: false to
   unreview the row.
+
+Keyword side effects (keyed off "merchantId" only, never "categoryId"):
+- When "merchantId" changes, the transaction description is removed as an
+  exact-match keyword from the previous merchant.
+- The full description is then learned as a keyword of the new merchant,
+  unless one of that merchant's existing keywords already appears in it.
+- To change only the category, notes or reviewed flag without touching merchant
+  keyword rules, omit "merchantId" entirely.
 
 Returns the updated { transaction }.`,
       inputSchema: {
@@ -180,6 +189,11 @@ Returns the updated { transaction }.`,
       description: `Apply the advisory AI suggestion stored on a transaction
 (category and/or merchant) in one call. Suggestions are never applied
 automatically, so this is the explicit acceptance step.
+
+When the suggestion includes a merchant, applying it also learns the
+transaction description as a keyword of that merchant, with the same rules as
+update_transaction. Passing a category does not prevent this. Category-only
+suggestions leave merchant keyword rules untouched.
 
 Returns an error when the transaction has no suggestion, or the updated
 { transaction } otherwise.`,
