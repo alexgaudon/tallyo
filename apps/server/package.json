@@ -20,15 +20,15 @@
     "db:refresh": "vpx src/db/refresh.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.0.10",
+    "@hono/node-server": "^2.1.6",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@orpc/client": "^1.16.1",
     "@orpc/openapi": "^1.16.1",
     "@orpc/react-query": "^1.16.1",
     "@orpc/server": "^1.16.1",
     "@orpc/zod": "^1.16.1",
-    "@tanstack/ai": "^1.0.0",
-    "@tanstack/ai-openrouter": "1.0.0",
+    "@tanstack/ai": "^1.0.1",
+    "@tanstack/ai-openrouter": "1.0.1",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
     "dotenv": "^18.0.9",
@@ -43,7 +43,7 @@
     "@types/node": "^26.6.6",
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
-    "tsc-alias": "1.9.9",
+    "tsc-alias": "1.9.10",
     "typescript": "^5.9.3",
     "vite-plus": "^1.4.0"
   }
