@@ -44,7 +44,7 @@
     "@types/pg": "^8.15.6",
     "drizzle-kit": "^0.31.5",
     "tsc-alias": "1.9.9",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite-plus": "^1.4.0"
   }
 }
