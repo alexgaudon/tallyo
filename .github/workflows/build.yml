@@ -28,9 +28,12 @@ jobs:
     - name: Build
       run: vp run -r build
 
+    # Type errors block the build on purpose. While this was advisory, a bad
+    # `ClassNames` key in the calendar component sat on main for weeks because
+    # a failing check still reported success. Breaks are cheaper to fix when
+    # the PR that introduces them is still open.
     - name: Check types
       run: vp run -w check-types
-      continue-on-error: true
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
