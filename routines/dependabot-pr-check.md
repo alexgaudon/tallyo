@@ -27,7 +27,12 @@ CI is `.github/workflows/build.yml` and `.github/workflows/test.yml`.
 
 ## Steps
 
-1. From the repo root run `git fetch --all --prune`.
+1. From the repo root run `git fetch --all --prune`, then keep the local
+   checkout current: if the working tree is clean and `main` is checked out,
+   run `git pull --ff-only` and `vp install` (the owner wants local `main` to
+   stay up to date; `vite-plus` bumps change the toolchain, so installing is
+   part of the sync). If the tree is dirty or another branch is checked out,
+   skip the pull and say so in the report instead of stashing or switching.
 2. List open Dependabot PRs:
    ```bash
    gh pr list --repo alexgaudon/tallyo --author 'app/dependabot' --state open \
