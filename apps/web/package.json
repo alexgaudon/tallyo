@@ -28,7 +28,7 @@
 		"vite-plus": "^1.4.0"
 	},
 	"dependencies": {
-		"@hookform/resolvers": "^6.0.2",
+		"@hookform/resolvers": "^7.0.1",
 		"@orpc/client": "^1.16.1",
 		"@orpc/openapi": "^1.16.1",
 		"@orpc/react-query": "^1.16.1",
