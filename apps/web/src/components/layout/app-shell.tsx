@@ -79,7 +79,7 @@ export function AppShell() {
                 : undefined
             }
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              "flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
               isNavActive(location.pathname, settingsNavItem.to)
                 ? "bg-accent/10 text-accent"
                 : "text-foreground/75 hover:bg-secondary/55 hover:text-foreground",
@@ -88,8 +88,10 @@ export function AppShell() {
             <settingsNavItem.icon className="h-4 w-4" />
             <span>{settingsNavItem.label}</span>
           </Link>
-          <ModeToggle />
-          <UserMenu />
+          <div className="ml-auto flex items-center gap-1">
+            <ModeToggle />
+            <UserMenu />
+          </div>
         </div>
       </aside>
 

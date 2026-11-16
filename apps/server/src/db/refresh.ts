@@ -543,6 +543,18 @@ async function main() {
     });
     console.log("Cleared existing data.");
 
+    // Refresh resets preferences too, so seed a pay day (most recent Friday)
+    // to keep the dashboard pay day countdown visible in development.
+    const anchorToday = new Date();
+    const daysSinceFriday = (anchorToday.getDay() - 5 + 7) % 7;
+    await db.insert(settings).values({
+      userId: user.id,
+      payAnchorDate: format(
+        addDays(anchorToday, -daysSinceFriday),
+        "yyyy-MM-dd",
+      ),
+    });
+
     await db.insert(category).values(
       categories.map((c) => ({
         id: c.id,

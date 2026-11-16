@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { BuildIdentifier } from "@/components/build-identifier";
+import DatePicker from "@/components/date-picker/date-picker";
 import { PageHeader } from "@/components/layout/page-header";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import { Panel } from "@/components/ui/panel";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateSettings } from "@/hooks/use-update-settings";
 import { useSession } from "@/lib/auth-client";
+import { getPayCycle } from "@/lib/pay-cycle";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -35,6 +38,7 @@ function RouteComponent() {
   const devModeId = useId();
   const privacyModeId = useId();
   const mcpEndpointId = useId();
+  const payDayId = useId();
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
@@ -50,6 +54,11 @@ function RouteComponent() {
   const [displayName, setDisplayName] = useState(
     settingsData?.settings?.displayName ?? "",
   );
+  const [payAnchorDate, setPayAnchorDate] = useState<string | null>(
+    settingsData?.settings?.payAnchorDate ?? null,
+  );
+
+  const payCycle = getPayCycle(payAnchorDate ?? "");
 
   const webhookUrls: string[] = settingsData?.settings?.webhookUrls ?? [];
 
@@ -144,6 +153,75 @@ function RouteComponent() {
             >
               Save
             </Button>
+          </div>
+        </Panel>
+
+        <Panel
+          title="Pay schedule"
+          description="Set any pay day, past or future. Tallyo repeats it every two weeks and counts down to the next one on the dashboard."
+        >
+          <div className="space-y-3">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor={payDayId} className="text-xs">
+                  A pay day
+                </Label>
+                <DatePicker
+                  id={payDayId}
+                  value={payAnchorDate}
+                  disabled={isPending}
+                  onChange={(value) => {
+                    setPayAnchorDate(value);
+                    updateSettings(
+                      { payAnchorDate: value },
+                      {
+                        onSuccess: () =>
+                          toast.success(
+                            value
+                              ? "Pay schedule saved"
+                              : "Pay schedule cleared",
+                          ),
+                      },
+                    );
+                  }}
+                  placeholder="Pick a pay day"
+                />
+              </div>
+              {payAnchorDate ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Clear pay day"
+                  title="Clear pay day"
+                  disabled={isPending}
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => {
+                    setPayAnchorDate(null);
+                    updateSettings(
+                      { payAnchorDate: null },
+                      {
+                        onSuccess: () => toast.success("Pay schedule cleared"),
+                      },
+                    );
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              ) : null}
+            </div>
+            {payCycle ? (
+              <p className="text-xs text-muted-foreground">
+                Next pay day:{" "}
+                <span className="font-medium text-foreground">
+                  {format(payCycle.date, "EEEE, MMM d, y")}
+                </span>{" "}
+                · {payCycle.countdown}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No pay day set. Pick one to show the countdown on the dashboard.
+              </p>
+            )}
           </div>
         </Panel>
 

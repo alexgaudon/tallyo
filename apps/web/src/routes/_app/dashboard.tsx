@@ -12,6 +12,7 @@ import { z } from "zod";
 import { CategoryPieChart } from "@/components/dashboard/category-pie-chart";
 import { IncomeExpenseSankey } from "@/components/dashboard/income-expense-sankey";
 import { MerchantStats } from "@/components/dashboard/merchant-stats";
+import { PaydayPill } from "@/components/dashboard/payday-pill";
 import { PeriodInsights } from "@/components/dashboard/period-insights";
 import { Stats } from "@/components/dashboard/stats";
 import { TransactionStats } from "@/components/dashboard/transaction-stats";
@@ -199,6 +200,19 @@ function RouteComponent() {
         stackOnMobile
         actions={
           <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+            {session?.settings?.payAnchorDate ? (
+              <PaydayPill
+                anchorDate={session.settings.payAnchorDate}
+                className="w-full justify-center sm:w-auto sm:justify-start"
+                onSelect={(cycle) =>
+                  // Scope the canvas to the cycle the user is currently in.
+                  handleDateRangeChange({
+                    from: cycle.periodStart,
+                    to: new Date(),
+                  })
+                }
+              />
+            ) : null}
             <div className="w-full sm:w-auto">
               <DateRangePicker
                 value={dateRange}

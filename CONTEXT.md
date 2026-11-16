@@ -46,7 +46,9 @@ origin (`/rpc`), making the Vite proxy configuration relevant for local work.
 The primary schema is in `apps/server/src/db/schema/app.ts` (auth tables are
 separate in `schema/auth.ts`). All main records are scoped by `userId`.
 
-- `settings`: one row per user; developer mode, privacy mode, and webhook URLs.
+- `settings`: one row per user; developer mode, privacy mode, webhook URLs,
+  and the optional `payAnchorDate` (a single pay day used to derive the
+  bi-weekly pay cycle shown on the dashboard).
 - `categories`: optionally hierarchical via `parentCategoryId`; categories can
   be income categories or excluded from insights.
 - `merchants`: normalized vendors with an optional recommended category.

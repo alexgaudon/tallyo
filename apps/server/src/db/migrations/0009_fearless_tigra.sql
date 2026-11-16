@@ -1,0 +1,1 @@
+ALTER TABLE "settings" ADD COLUMN "pay_anchor_date" date;
