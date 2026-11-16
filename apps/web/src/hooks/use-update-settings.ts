@@ -117,7 +117,9 @@ export function useUpdateSettings(options?: {
 
   return {
     ...mutation,
-    mutate: (patch: UpdateSettingsPatch) =>
-      mutation.mutate({ ...getCachedSettings(), ...patch }),
+    mutate: (
+      patch: UpdateSettingsPatch,
+      options?: Parameters<typeof mutation.mutate>[1],
+    ) => mutation.mutate({ ...getCachedSettings(), ...patch }, options),
   };
 }

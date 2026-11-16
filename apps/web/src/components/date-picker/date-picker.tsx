@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -20,25 +20,29 @@ export default function DatePicker({
   value,
   onChange,
   placeholder = "Pick a date",
+  disabled = false,
   className,
 }: {
   id?: string;
   value?: string | null;
   onChange: (value: string | null) => void;
   placeholder?: string;
+  disabled?: boolean;
   className?: string;
 }) {
   const selected = useMemo(
     () => (value ? parseDateOnly(value) : null),
     [value],
   );
+  const [open, setOpen] = useState(false);
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
           variant="outline"
+          disabled={disabled}
           className={cn(
             "h-10 w-full justify-start text-left font-normal sm:w-auto sm:min-w-[200px]",
             !selected && "text-muted-foreground",
@@ -61,7 +65,9 @@ export default function DatePicker({
           selected={selected ?? undefined}
           onSelect={(date) => {
             // Ignore the deselect click: clearing is an explicit action.
-            if (date) onChange(toDateOnly(date));
+            if (!date) return;
+            onChange(toDateOnly(date));
+            setOpen(false);
           }}
         />
       </PopoverContent>

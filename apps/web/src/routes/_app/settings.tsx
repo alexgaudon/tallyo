@@ -87,17 +87,6 @@ function RouteComponent() {
         toast.success("Display name updated");
       }
 
-      if (
-        (newSettings.payAnchorDate ?? null) !==
-        (oldSettings?.payAnchorDate ?? null)
-      ) {
-        toast.success(
-          newSettings.payAnchorDate
-            ? "Pay schedule updated"
-            : "Pay schedule cleared",
-        );
-      }
-
       if (changedSettings.length > 0) {
         const descriptions = changedSettings.map(
           (setting) =>
@@ -172,7 +161,7 @@ function RouteComponent() {
           description="Set any pay day, past or future. Tallyo repeats it every two weeks and counts down to the next one on the dashboard."
         >
           <div className="space-y-3">
-            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+            <div className="flex items-end gap-2">
               <div className="flex-1 space-y-1.5">
                 <Label htmlFor={payDayId} className="text-xs">
                   A pay day
@@ -180,36 +169,45 @@ function RouteComponent() {
                 <DatePicker
                   id={payDayId}
                   value={payAnchorDate}
-                  onChange={setPayAnchorDate}
+                  disabled={isPending}
+                  onChange={(value) => {
+                    setPayAnchorDate(value);
+                    updateSettings(
+                      { payAnchorDate: value },
+                      {
+                        onSuccess: () =>
+                          toast.success(
+                            value
+                              ? "Pay schedule saved"
+                              : "Pay schedule cleared",
+                          ),
+                      },
+                    );
+                  }}
                   placeholder="Pick a pay day"
                 />
               </div>
-              <div className="flex gap-2">
+              {payAnchorDate ? (
                 <Button
-                  onClick={() => updateSettings({ payAnchorDate })}
-                  size="sm"
-                  disabled={
-                    isPending ||
-                    payAnchorDate ===
-                      (settingsData?.settings?.payAnchorDate ?? null)
-                  }
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Clear pay day"
+                  title="Clear pay day"
+                  disabled={isPending}
+                  className="h-10 w-10 shrink-0"
+                  onClick={() => {
+                    setPayAnchorDate(null);
+                    updateSettings(
+                      { payAnchorDate: null },
+                      {
+                        onSuccess: () => toast.success("Pay schedule cleared"),
+                      },
+                    );
+                  }}
                 >
-                  Save
+                  <X className="h-4 w-4" />
                 </Button>
-                {settingsData?.settings?.payAnchorDate ? (
-                  <Button
-                    onClick={() => {
-                      setPayAnchorDate(null);
-                      updateSettings({ payAnchorDate: null });
-                    }}
-                    size="sm"
-                    variant="outline"
-                    disabled={isPending}
-                  >
-                    Clear
-                  </Button>
-                ) : null}
-              </div>
+              ) : null}
             </div>
             {payCycle ? (
               <p className="text-xs text-muted-foreground">
@@ -221,7 +219,7 @@ function RouteComponent() {
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                No pay day set. Save one to show the countdown on the dashboard.
+                No pay day set. Pick one to show the countdown on the dashboard.
               </p>
             )}
           </div>
