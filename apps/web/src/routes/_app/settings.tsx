@@ -169,7 +169,7 @@ function RouteComponent() {
 
         <Panel
           title="Pay schedule"
-          description="Bi-weekly pay. Add one pay day — past or future — and Tallyo counts down to your next one on the dashboard."
+          description="Set any pay day, past or future. Tallyo repeats it every two weeks and counts down to the next one on the dashboard."
         >
           <div className="space-y-3">
             <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
