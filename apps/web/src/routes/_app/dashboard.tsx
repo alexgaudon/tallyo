@@ -204,13 +204,6 @@ function RouteComponent() {
               <PaydayPill
                 anchorDate={session.settings.payAnchorDate}
                 className="w-full justify-center sm:w-auto sm:justify-start"
-                onSelect={(cycle) =>
-                  // Scope the canvas to the cycle the user is currently in.
-                  handleDateRangeChange({
-                    from: cycle.periodStart,
-                    to: new Date(),
-                  })
-                }
               />
             ) : null}
             <div className="w-full sm:w-auto">
