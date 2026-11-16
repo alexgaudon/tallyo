@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
 import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { BuildIdentifier } from "@/components/build-identifier";
+import DatePicker from "@/components/date-picker/date-picker";
 import { PageHeader } from "@/components/layout/page-header";
 import { ConfirmPassword } from "@/components/settings/confirm-password";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import { Panel } from "@/components/ui/panel";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateSettings } from "@/hooks/use-update-settings";
 import { useSession } from "@/lib/auth-client";
+import { getPayCycle } from "@/lib/pay-cycle";
 import { orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -35,6 +38,7 @@ function RouteComponent() {
   const devModeId = useId();
   const privacyModeId = useId();
   const mcpEndpointId = useId();
+  const payDayId = useId();
 
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
@@ -50,6 +54,11 @@ function RouteComponent() {
   const [displayName, setDisplayName] = useState(
     settingsData?.settings?.displayName ?? "",
   );
+  const [payAnchorDate, setPayAnchorDate] = useState<string | null>(
+    settingsData?.settings?.payAnchorDate ?? null,
+  );
+
+  const payCycle = getPayCycle(payAnchorDate ?? "");
 
   const webhookUrls: string[] = settingsData?.settings?.webhookUrls ?? [];
 
@@ -76,6 +85,17 @@ function RouteComponent() {
         (newSettings.displayName ?? null) !== (oldSettings?.displayName ?? null)
       ) {
         toast.success("Display name updated");
+      }
+
+      if (
+        (newSettings.payAnchorDate ?? null) !==
+        (oldSettings?.payAnchorDate ?? null)
+      ) {
+        toast.success(
+          newSettings.payAnchorDate
+            ? "Pay schedule updated"
+            : "Pay schedule cleared",
+        );
       }
 
       if (changedSettings.length > 0) {
@@ -144,6 +164,66 @@ function RouteComponent() {
             >
               Save
             </Button>
+          </div>
+        </Panel>
+
+        <Panel
+          title="Pay schedule"
+          description="Bi-weekly pay. Add one pay day — past or future — and Tallyo counts down to your next one on the dashboard."
+        >
+          <div className="space-y-3">
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor={payDayId} className="text-xs">
+                  A pay day
+                </Label>
+                <DatePicker
+                  id={payDayId}
+                  value={payAnchorDate}
+                  onChange={setPayAnchorDate}
+                  placeholder="Pick a pay day"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => updateSettings({ payAnchorDate })}
+                  size="sm"
+                  disabled={
+                    isPending ||
+                    payAnchorDate ===
+                      (settingsData?.settings?.payAnchorDate ?? null)
+                  }
+                >
+                  Save
+                </Button>
+                {settingsData?.settings?.payAnchorDate ? (
+                  <Button
+                    onClick={() => {
+                      setPayAnchorDate(null);
+                      updateSettings({ payAnchorDate: null });
+                    }}
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                  >
+                    Clear
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            {payCycle ? (
+              <p className="text-xs text-muted-foreground">
+                Next pay day:{" "}
+                <span className="font-medium text-foreground">
+                  {format(payCycle.date, "EEEE, MMM d, y")}
+                </span>{" "}
+                · {payCycle.countdown}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No pay day set. Save one to show the countdown on the dashboard.
+              </p>
+            )}
           </div>
         </Panel>
 

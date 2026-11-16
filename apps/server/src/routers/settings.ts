@@ -14,6 +14,7 @@ export const settingsRouter = {
         isDevMode: true,
         isPrivacyMode: true,
         webhookUrls: true,
+        payAnchorDate: true,
       },
     });
 
@@ -29,6 +30,7 @@ export const settingsRouter = {
           isDevMode: true,
           isPrivacyMode: true,
           webhookUrls: true,
+          payAnchorDate: true,
         },
       });
     }
@@ -44,6 +46,7 @@ export const settingsRouter = {
         isDevMode: userSettings.isDevMode,
         isPrivacyMode: userSettings.isPrivacyMode,
         webhookUrls: userSettings.webhookUrls ?? [],
+        payAnchorDate: userSettings.payAnchorDate ?? null,
       },
     };
   }),
@@ -54,6 +57,9 @@ export const settingsRouter = {
         isDevMode: z.boolean(),
         isPrivacyMode: z.boolean(),
         webhookUrls: z.array(z.url()).optional(),
+        // A single known pay day (YYYY-MM-DD); clearing it turns the pay day
+        // countdown off.
+        payAnchorDate: z.iso.date().nullable().optional(),
       }),
     )
     .handler(async ({ context, input }) => {
@@ -63,6 +69,7 @@ export const settingsRouter = {
           isDevMode: boolean;
           isPrivacyMode: boolean;
           webhookUrls?: string[];
+          payAnchorDate?: string | null;
           updatedAt: Date;
         } = {
           isDevMode: input.isDevMode,
@@ -78,6 +85,10 @@ export const settingsRouter = {
 
         if (input.webhookUrls !== undefined) {
           updateData.webhookUrls = input.webhookUrls;
+        }
+
+        if (input.payAnchorDate !== undefined) {
+          updateData.payAnchorDate = input.payAnchorDate;
         }
 
         const updatedSettings = await db

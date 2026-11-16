@@ -23,6 +23,9 @@ export const settings = pgTable("settings", {
   isDevMode: boolean("is_dev_mode").notNull().default(false),
   isPrivacyMode: boolean("is_privacy_mode").notNull().default(false),
   webhookUrls: text("webhook_urls").array().default([]),
+  // A single known pay day. The pay cadence is bi-weekly, so every other pay
+  // day is derived from this anchor.
+  payAnchorDate: date("pay_anchor_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

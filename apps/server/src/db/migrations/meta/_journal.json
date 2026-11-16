@@ -64,6 +64,13 @@
       "when": 1790092939149,
       "tag": "0008_fair_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794868074788,
+      "tag": "0009_fearless_tigra",
+      "breakpoints": true
     }
   ]
 }

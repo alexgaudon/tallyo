@@ -7,6 +7,8 @@ export interface UserSettings {
   isDevMode: boolean;
   isPrivacyMode: boolean;
   webhookUrls?: string[];
+  /** A single known pay day as `YYYY-MM-DD`; null disables the countdown. */
+  payAnchorDate?: string | null;
 }
 
 export type UpdateSettingsPatch = Partial<UserSettings>;
@@ -25,7 +27,12 @@ function getCachedSettings(): UserSettings {
     settings?: UserSettings;
   }>(SESSION_QUERY_KEY)?.settings;
   return (
-    fromSession ?? { isDevMode: false, isPrivacyMode: false, displayName: null }
+    fromSession ?? {
+      isDevMode: false,
+      isPrivacyMode: false,
+      displayName: null,
+      payAnchorDate: null,
+    }
   );
 }
 
@@ -44,6 +51,7 @@ export function useUpdateSettings(options?: {
     isDevMode: boolean;
     isPrivacyMode: boolean;
     webhookUrls?: string[] | null;
+    payAnchorDate?: string | null;
   }) => void;
 }) {
   const mutation = useMutation(
