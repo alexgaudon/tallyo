@@ -29,6 +29,21 @@ interface ChartItem {
   categoryId: string;
 }
 
+/** Pie diameter used when the card is not stretched by the dashboard grid. */
+const DEFAULT_CHART_SIZE = 220;
+/** Cap so the slice geometry stays readable next to the legend columns. */
+const MAX_CHART_SIZE = 300;
+/**
+ * Share of the card width the pie may claim before the legend columns get too
+ * narrow to read. The pie never shrinks below its default size.
+ */
+const MAX_CHART_WIDTH_RATIO = 0.32;
+/**
+ * ResizeObserver can report sub-pixel changes on every frame, so ignore small
+ * deltas. Without the threshold the pie would creep upward indefinitely.
+ */
+const SIZE_CHANGE_THRESHOLD = 4;
+
 export function CategoryPieChart({
   data,
   previous,
@@ -48,6 +63,9 @@ export function CategoryPieChart({
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
   const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
+  const [chartSize, setChartSize] = useState(DEFAULT_CHART_SIZE);
+  const [legendMaxHeight, setLegendMaxHeight] = useState(DEFAULT_CHART_SIZE);
+  const [contentNode, setContentNode] = useState<HTMLDivElement | null>(null);
   const legendRef = useRef<HTMLDivElement>(null);
   const chartHostRef = useRef<HTMLElement | null>(null);
   const chartInteractionRef = useRef<ChartInteractionController<
@@ -125,6 +143,54 @@ export function CategoryPieChart({
       resizeObserver.disconnect();
     };
   }, [updateLegendOverflowState]);
+
+  // The dashboard stretches this card to match the cash flow panel, so let the
+  // pie grow into the extra height instead of leaving dead space below it. The
+  // stacked (mobile) layout sizes itself from content and keeps the default.
+  useEffect(() => {
+    const node = contentNode;
+    if (!node) return;
+
+    const updateSize = () => {
+      const isSideBySide = getComputedStyle(node).flexDirection === "row";
+      const available = node.clientHeight;
+      const nextLegendMax =
+        isSideBySide && available > 0 ? available : DEFAULT_CHART_SIZE;
+      setLegendMaxHeight((current) =>
+        Math.abs(current - nextLegendMax) > SIZE_CHANGE_THRESHOLD
+          ? nextLegendMax
+          : current,
+      );
+
+      const nextChart =
+        isSideBySide && available > 0
+          ? Math.floor(
+              Math.min(
+                Math.max(available, DEFAULT_CHART_SIZE),
+                MAX_CHART_SIZE,
+                // Keep the legend columns wide enough to read category names.
+                Math.max(
+                  DEFAULT_CHART_SIZE,
+                  node.clientWidth * MAX_CHART_WIDTH_RATIO,
+                ),
+              ),
+            )
+          : DEFAULT_CHART_SIZE;
+      setChartSize((current) =>
+        Math.abs(current - nextChart) > SIZE_CHANGE_THRESHOLD
+          ? nextChart
+          : current,
+      );
+    };
+
+    updateSize();
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(node);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [contentNode]);
 
   const handleChartRender = useCallback(
     (context: ChartRenderContext<PieDatum<ChartItem>, number, number>) => {
@@ -283,14 +349,20 @@ export function CategoryPieChart({
   }
 
   const content = (
-    <div className="flex flex-col sm:flex-row gap-4">
+    <div
+      ref={setContentNode}
+      className="flex h-full flex-col sm:flex-row sm:items-center gap-4"
+    >
       {/* Chart Section */}
-      <div className="flex-shrink-0 flex justify-center">
-        <div className="relative w-[220px] h-[220px]">
+      <div className="flex-shrink-0 flex items-center justify-center">
+        <div
+          className="relative"
+          style={{ width: chartSize, height: chartSize }}
+        >
           <Chart
             definition={definition}
-            width={220}
-            height={220}
+            width={chartSize}
+            height={chartSize}
             ariaLabel="Category spending breakdown"
             onRender={handleChartRender}
             onFocusChange={handleFocusChange}
@@ -323,8 +395,9 @@ export function CategoryPieChart({
         <div
           ref={legendRef}
           onScroll={handleScroll}
-          className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 max-h-[220px] overflow-y-auto pr-1"
+          className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 content-start overflow-y-auto pr-1"
           style={{
+            maxHeight: legendMaxHeight,
             scrollbarWidth: "thin",
             scrollbarColor: "var(--muted-foreground) transparent",
           }}
