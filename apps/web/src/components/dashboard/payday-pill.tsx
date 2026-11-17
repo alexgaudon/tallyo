@@ -20,19 +20,19 @@ export function PaydayPill({
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center gap-2 rounded-full border border-income/30 bg-background/70 px-3",
+        "inline-flex h-10 items-center gap-1.5 rounded-full border border-income/30 bg-background/70 px-3 sm:gap-2",
         className,
       )}
     >
       <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-income ring-3 ring-income/15" />
       <CalendarDays className="h-4 w-4 shrink-0 text-income" />
-      <span className="hidden text-xs text-muted-foreground sm:inline">
+      <span className="text-[11px] whitespace-nowrap text-muted-foreground sm:text-xs">
         Next pay day
       </span>
-      <span className="text-sm font-semibold text-foreground">
+      <span className="text-[13px] font-semibold whitespace-nowrap text-foreground sm:text-sm">
         {format(cycle.date, "EEE, MMM d")}
       </span>
-      <span className="rounded-full bg-income-muted px-2 py-0.5 text-[11px] font-semibold text-income">
+      <span className="rounded-full bg-income-muted px-1.5 py-0.5 text-[10px] font-semibold whitespace-nowrap text-income sm:px-2 sm:text-[11px]">
         {cycle.countdown}
       </span>
     </div>
