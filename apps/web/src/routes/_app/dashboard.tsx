@@ -252,6 +252,7 @@ function RouteComponent() {
 
           <Panel
             title="Spending breakdown"
+            className="xl:self-stretch"
             actions={
               <div className="flex w-fit items-center gap-1 rounded-lg bg-muted/60 p-0.5">
                 <button
@@ -284,6 +285,7 @@ function RouteComponent() {
             <ChartFrame
               isLoading={isLoading}
               isEmpty={!categoryData?.length}
+              className="h-full"
               emptyTitle={showIncome ? "No income data" : "No category data"}
               emptyDescription={
                 showIncome
