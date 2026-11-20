@@ -25,10 +25,10 @@
 		"server": "*",
 		"tailwindcss": "^4.1.16",
 		"vite": "npm:@voidzero-dev/vite-plus-core@^1.5.1",
-		"vite-plus": "^1.5.1"
+		"vite-plus": "^1.7.0"
 	},
 	"dependencies": {
-		"@hookform/resolvers": "^7.0.5",
+		"@hookform/resolvers": "^7.0.7",
 		"@orpc/client": "^1.16.2",
 		"@orpc/openapi": "^1.16.2",
 		"@orpc/react-query": "^1.16.2",
@@ -46,7 +46,7 @@
 		"@radix-ui/react-tooltip": "^1.2.8",
 		"@tailwindcss/vite": "^4.3.5",
 		"@tanstack/charts": "^1.5.0",
-		"@tanstack/react-hotkeys": "^0.23.0",
+		"@tanstack/react-hotkeys": "^0.27.0",
 		"@tanstack/react-query": "^5.107.1",
 		"@tanstack/react-router": "^1.170.46",
 		"class-variance-authority": "^0.7.1",
@@ -55,7 +55,7 @@
 		"d3-sankey": "^0.12.3",
 		"d3-shape": "^3.2.1",
 		"date-fns": "^4.1.0",
-		"lucide-react": "^1.71.0",
+		"lucide-react": "^1.74.0",
 		"react": "^19.3.1",
 		"react-day-picker": "^10.0.2",
 		"react-dom": "^19.3.1",
