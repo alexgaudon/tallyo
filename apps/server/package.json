@@ -20,7 +20,7 @@
     "db:refresh": "vpx src/db/refresh.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.8",
+    "@hono/node-server": "^2.1.9",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@orpc/client": "^1.16.2",
     "@orpc/openapi": "^1.16.2",
@@ -33,7 +33,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^18.0.10",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.13.17",
+    "hono": "^4.13.19",
     "pg": "^8.16.3",
     "winston": "^3.18.3",
     "zod": "^4.1.12"
@@ -45,6 +45,6 @@
     "drizzle-kit": "^0.31.5",
     "tsc-alias": "1.9.10",
     "typescript": "^7.0.2",
-    "vite-plus": "^1.5.1"
+    "vite-plus": "^1.7.0"
   }
 }
