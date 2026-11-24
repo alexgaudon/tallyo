@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, lazyPlugins } from "vite-plus";
+import { VitePWA } from "vite-plugin-pwa";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +35,71 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       TanStackRouterVite({}),
       react(),
+      VitePWA({
+        strategies: "generateSW",
+        registerType: "prompt",
+        // Registration happens via the `virtual:pwa-register` module in
+        // `src/main.tsx`, so the plugin must not inject its own script tag.
+        injectRegister: false,
+        includeAssets: [
+          "favicon.ico",
+          "apple-touch-icon-180x180.png",
+          "pwa-64x64.png",
+        ],
+        manifest: {
+          id: "/",
+          name: "Tallyo",
+          short_name: "Tallyo",
+          description: "Personal finance inspection tool",
+          start_url: "/",
+          scope: "/",
+          display: "standalone",
+          background_color: "#0b0a0c",
+          theme_color: "#0b0a0c",
+          icons: [
+            { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
+            { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
+            { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
+            {
+              src: "maskable-icon-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
+          ],
+        },
+        workbox: {
+          globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+          navigateFallback: "index.html",
+          // Data endpoints must always hit the network, never the cache.
+          navigateFallbackDenylist: [/^\/api\//, /^\/rpc\//, /^\/mcp/],
+          cleanupOutdatedCaches: true,
+          runtimeCaching: [
+            {
+              // Geist Mono is loaded from jsDelivr; keep it offline-capable.
+              urlPattern: ({ url }) =>
+                url.origin === "https://cdn.jsdelivr.net",
+              handler: "CacheFirst",
+              options: {
+                cacheName: "geist-font-cache",
+                expiration: {
+                  maxEntries: 8,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
+        },
+        devOptions: {
+          // Keep the service worker available in dev so installability can be
+          // exercised on the internal dev proxy. Unregister via DevTools
+          // (Application > Service Workers) when switching back to plain dev.
+          enabled: true,
+          type: "module",
+          navigateFallback: "index.html",
+        },
+      }),
     ]),
     define: {
       "import.meta.env.VITE_BUILD_TIME": JSON.stringify(
@@ -43,9 +109,13 @@ export default defineConfig(({ mode }) => {
     },
     base: process.env.NODE_ENV === "production" ? "/" : "/",
     server: {
-      allowedHosts: env.VITE_ALLOWED_HOSTS
-        ? env.VITE_ALLOWED_HOSTS.split(",").map((h) => h.trim())
-        : undefined,
+      allowedHosts: [
+        ...(env.VITE_ALLOWED_HOSTS || "")
+          .split(",")
+          .map((h) => h.trim())
+          .filter(Boolean),
+        "tallyo.dev.misery.systems",
+      ],
       host: true,
       port: Number(process.env.PORT ?? 3001),
       proxy: {
