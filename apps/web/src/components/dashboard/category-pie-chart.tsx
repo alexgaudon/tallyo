@@ -51,6 +51,7 @@ export function CategoryPieChart({
   to,
   embedded = false,
   onCategorySelect,
+  percentBasis,
 }: {
   data: DashboardCategoryData;
   previous?: DashboardPeriodComparison["categories"];
@@ -59,6 +60,17 @@ export function CategoryPieChart({
   embedded?: boolean;
   /** When provided, drill-down opens a lens instead of navigating away. */
   onCategorySelect?: (categoryId: string, label: string) => void;
+  /**
+   * Alternative legend percent denominator, e.g. period income for a
+   * "% of income" reading. When omitted, percentages stay relative to the
+   * breakdown total like the dashboard does today.
+   */
+  percentBasis?: {
+    /** Positive denominator; zero or less renders an em dash instead of a %. */
+    total: number;
+    /** Short suffix after the percent, e.g. "of income". */
+    label?: string;
+  };
 }) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [hasLegendOverflow, setHasLegendOverflow] = useState(false);
@@ -403,10 +415,11 @@ export function CategoryPieChart({
           }}
         >
           {chartData.map((item) => {
+            const percentDenominator = percentBasis?.total ?? totalAmount;
             const percentage =
-              totalAmount > 0
-                ? ((item.value / totalAmount) * 100).toFixed(1)
-                : "0.0";
+              percentDenominator > 0
+                ? ((item.value / percentDenominator) * 100).toFixed(1)
+                : null;
             const isActive = activeItemId === item.id;
             const prevAmount = previousMap.get(item.categoryId);
             const delta =
@@ -432,7 +445,12 @@ export function CategoryPieChart({
                     {item.label}
                   </span>
                   <span className="text-xs text-muted-foreground tabular-nums">
-                    <CurrencyAmount amount={item.value} /> ({percentage}%)
+                    <CurrencyAmount amount={item.value} />
+                    {percentage === null
+                      ? " (—)"
+                      : percentBasis?.label
+                        ? ` (${percentage}% ${percentBasis.label})`
+                        : ` (${percentage}%)`}
                   </span>
                   {delta !== null && (
                     <span
