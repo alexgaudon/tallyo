@@ -514,6 +514,29 @@ body {
 }
 
 /* ==========================================
+   SONNER TOAST CLEARANCE
+   Top-positioned toasts anchor below the fixed top chrome instead of the
+   raw viewport edge. Below lg the mobile app header (and the
+   unauthenticated TopNav) fill the first 3.5rem of the viewport, padding
+   up by env(safe-area-inset-top) in standalone mode. iOS WebKit paints
+   such a backdrop-filter surface above the toaster despite its z-index,
+   so an overlapping toast shows blurred through the glass and its taps
+   land on the header. Desktop (lg+) has no fixed top chrome, so toasts
+   keep sonner's default 1.5rem offset. Consumed by the Toaster's
+   offset/mobileOffset props in components/ui/sonner.tsx.
+   ========================================== */
+
+:root {
+  --toast-top-clearance: 1.5rem;
+}
+
+@media (width < 64rem) {
+  :root {
+    --toast-top-clearance: calc(env(safe-area-inset-top) + 4.25rem);
+  }
+}
+
+/* ==========================================
    MOTION VOCABULARY
    Reusable enter/exit animations built on the motion tokens above. Radix
    surfaces expose data-state, so each utility binds both directions in a

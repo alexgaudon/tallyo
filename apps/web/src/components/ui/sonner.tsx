@@ -12,6 +12,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       position="top-right"
       className="toaster group"
+      // Top-positioned toasts must clear the fixed top chrome (the mobile
+      // app header below lg, TopNav on unauthenticated pages). iOS WebKit
+      // paints a backdrop-filter surface above the toaster regardless of
+      // z-index, so an overlapping toast renders blurred behind the glass
+      // and loses its taps. --toast-top-clearance is breakpoint-aware and
+      // defined in index.css.
+      offset={{ top: "var(--toast-top-clearance, 1.5rem)" }}
+      mobileOffset={{ top: "var(--toast-top-clearance, 1.5rem)" }}
       style={
         {
           "--normal-bg": "var(--popover)",
