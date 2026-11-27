@@ -81,6 +81,10 @@ function RouteComponent() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/_app/dashboard" });
   const [showIncome, setShowIncome] = useState(false);
+  // Legend percent denominator for the spending breakdown, expenses mode.
+  const [percentMode, setPercentMode] = useState<"income" | "spending">(
+    "income",
+  );
 
   const dateRange = useMemo(
     () => toDateRange(search),
@@ -254,32 +258,26 @@ function RouteComponent() {
             title="Spending breakdown"
             className="xl:self-stretch"
             actions={
-              <div className="flex w-fit items-center gap-1 rounded-lg bg-muted/60 p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setShowIncome(false)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
-                    !showIncome
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Expenses
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowIncome(true)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
-                    showIncome
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  Income
-                </button>
-              </div>
+              <>
+                <SegmentedControl
+                  value={showIncome ? "income" : "expenses"}
+                  options={[
+                    { value: "expenses", label: "Expenses" },
+                    { value: "income", label: "Income" },
+                  ]}
+                  onChange={(value) => setShowIncome(value === "income")}
+                />
+                {!showIncome && (
+                  <SegmentedControl
+                    value={percentMode}
+                    options={[
+                      { value: "income", label: "% of income" },
+                      { value: "spending", label: "% of spending" },
+                    ]}
+                    onChange={setPercentMode}
+                  />
+                )}
+              </>
             }
           >
             <ChartFrame
@@ -300,6 +298,14 @@ function RouteComponent() {
                   from={range.from}
                   to={range.to}
                   embedded
+                  percentBasis={
+                    !showIncome && percentMode === "income"
+                      ? {
+                          total: stats?.stats.totalIncome ?? 0,
+                          label: "of income",
+                        }
+                      : undefined
+                  }
                   onCategorySelect={(categoryId, label) =>
                     openTransactionsLens(label, { categories: [categoryId] })
                   }
@@ -386,6 +392,40 @@ function RouteComponent() {
           onClose={closeLens}
         />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * Small pill-style toggle used by the dashboard panel headers. Mirrors the
+ * visual language of the Expenses/Income switch on the spending breakdown.
+ */
+function SegmentedControl<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="flex w-fit items-center gap-1 rounded-lg bg-muted/60 p-0.5">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={cn(
+            "px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer",
+            value === option.value
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 }
