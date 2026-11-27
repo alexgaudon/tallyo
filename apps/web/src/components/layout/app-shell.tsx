@@ -95,31 +95,38 @@ export function AppShell() {
         </div>
       </aside>
 
-      {/* Mobile top header */}
-      <header className="glass fixed inset-x-0 top-0 z-40 pt-[env(safe-area-inset-top)] lg:hidden">
-        <div className="flex h-14 items-center justify-between gap-2 px-3">
-          <div className="flex min-w-0 items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Open navigation"
-              aria-expanded={mobileNavOpen}
-              onClick={() => setMobileNavOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <Brand />
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Open command palette"
-              onClick={() => setCommandOpen(true)}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-            <UserMenu />
+      {/* Mobile top header. iOS 26 samples fixed elements pinned within 4px
+          of the top edge for status-bar tinting, and a backdrop-filter
+          surface there composites above other fixed layers (toasts render
+          blurred behind it and lose their taps). The outer fixed element
+          carries no background; the glass lives on an inner absolutely
+          positioned element, matching the TopNav pattern. */}
+      <header className="fixed inset-x-0 top-0 z-40 lg:hidden">
+        <div className="glass absolute inset-x-0 top-0 pt-[env(safe-area-inset-top)]">
+          <div className="flex h-14 items-center justify-between gap-2 px-3">
+            <div className="flex min-w-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open navigation"
+                aria-expanded={mobileNavOpen}
+                onClick={() => setMobileNavOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <Brand />
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open command palette"
+                onClick={() => setCommandOpen(true)}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+              <UserMenu />
+            </div>
           </div>
         </div>
       </header>
